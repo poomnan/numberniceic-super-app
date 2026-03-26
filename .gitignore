@@ -1,73 +1,116 @@
-# Node.js
-node_modules/
-pnpm-lock.yaml
-package-lock.json
-yarn.lock
-npm-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-# Build outputs
-dist/
-build/
-out/
-coverage/
-coverage_html_report/
+# ==== General temporary files ====
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+desktop.ini
 *.log
 *.tmp
 *.cache
-*.tsbuildinfo
-# Flutter / Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-build/
-generated_plugin_registrant.dart
-ios/Pods/
-ios/.symlinks/
-ios/Flutter/Flutter.framework
-ios/Flutter/Flutter.podspec
-macos/Flutter/ephemeral/
-macos/Runner/GeneratedPluginRegistrant.*
-linux/flutter/ephemeral/
-windows/flutter/ephemeral/
-# Android / Java / Kotlin
-.gradle/
-/local.properties
-**/build/
-**/captures/
-*.apk
-*.aab
-*.keystore
-*.class
-# iOS
-DerivedData/
-*.xcworkspace
-*.xcuserdata/
-*.xcuserstate
-*.xcodeproj/project.xcworkspace
-# Go
-vendor/
-*.exe
-*.test
-**/build_cache/
-# PHP
-vendor/
-.env
-# IDEs
+*.bak
+*.swp
+*.orig
+*.rej
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.tar.bz2
+*.tar.xz
+*.7z
+*.rar
+
+# ==== OS and tool caches ====
+*.lock
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.cache/
+
+# ==== Editor / IDE ====
 .vscode/
 .idea/
 *.iml
 *.ipr
 *.iws
-# Misc
-.DS_Store
-Thumbs.db
-desktop.ini
-*.zip
-*.tar.gz
-*.tgz
-*.7z
-*.rar
+
+# ==== macOS ====
+.icon?
+.Spotlight-V100
+.Trashes
+
+# ==== Node / Frontend tooling ====
+node_modules/
+.npm/
+bower_components/
+.bundle/
+jspm_packages/
+coverage/
+
+# ==== Flutter / Dart ====
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+build/
+generated_plugin_registrant.dart
+
+# iOS derived/generated
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Pods/
+ios/.symlinks/
+macos/Flutter/ephemeral/
+macos/Runner/GeneratedPluginRegistrant.*
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# ==== Android / JVM ====
+**/build/
+**/captures/
+.gradle/
+/local.properties
+*.keystore
+*.jks
+*.apk
+*.aab
+*.class
+*.dex
+
+# ==== Go ====
+**/bin/
+**/build/
+**/pkg/
+**/dist/
+**/build_cache/
+*.exe
+*.test
+*.out
+
+# ignore generated Go module cache (restore if you track vendor)
+vendor/
+
+# ==== PHP / Composer ====
+number-php/vendor/
+.env
+.env.*
+composer.phar
+phpunit.xml.cache
+
+# ==== Logs, reports, temp data ====
+logs/
+reports/
+*.pid
+*.seed
+*.pid.lock
+npm-debug.log*
+yarn-debug.log*
+
+# ==== Secrets and machines files ====
+*.key
+*.cert
+*.pem
+.secret
+.local.properties
