@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFDE7"> <!-- Light Yellow/Cream -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Left Accent Border -->
+        <View
+            android:layout_width="6dp"
+            android:layout_height="match_parent"
+            android:background="#FBC02D" /> <!-- Dark Yellow/Amber -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Name and Badge Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/txtName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="วชิรา"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A237E"
+                    android:fontFamily="@font/sarabun_semibold"/>
+
+                <TextView
+                    android:id="@+id/txtGrade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="มงคล"
+                    android:textSize="12sp"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/bg_green_pill"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:visibility="gone"
+                    android:fontFamily="@font/sarabun_semibold"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/txtMeaning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ความร่ำรวย"
+                android:textSize="16sp"
+                android:textColor="#424242"
+                android:layout_marginBottom="16dp"
+                android:fontFamily="@font/sarabun_regular"/>
+
+            <!-- Scores Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp"
+                android:baselineAligned="false">
+
+                <!-- Sat Component -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ศาสตร์: "
+                        android:textSize="12sp"
+                        android:textColor="#757575"
+                        android:fontFamily="@font/sarabun_regular"/>
+
+                    <LinearLayout
+                        android:id="@+id/pillSat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_green_pill"
+                        android:padding="2dp"
+                        android:paddingEnd="10dp"
+                        android:layout_marginEnd="4dp">
+
+                        <TextView
+                            android:id="@+id/txtSatScore"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:gravity="center"
+                            android:text="17"
+                            android:textColor="#FFFFFF"
+                            android:textStyle="bold"
+                            android:textSize="10sp"
+                            android:background="@drawable/bg_circle_dark_green"
+                            android:layout_marginEnd="4dp"/>
+
+                        <TextView
+                            android:id="@+id/txtSatResult"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ร้าย"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            android:fontFamily="@font/sarabun_semibold"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Sha Component -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="พลังเงา: "
+                        android:textSize="12sp"
+                        android:textColor="#757575"
+                        android:fontFamily="@font/sarabun_regular"/>
+
+                    <LinearLayout
+                        android:id="@+id/pillSha"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_red_pill"
+                        android:padding="2dp"
+                        android:paddingEnd="10dp">
+
+                        <TextView
+                            android:id="@+id/txtShaScore"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:gravity="center"
+                            android:text="38"
+                            android:textColor="#FFFFFF"
+                            android:textStyle="bold"
+                            android:textSize="10sp"
+                            android:background="@drawable/bg_circle_dark_red"
+                            android:layout_marginEnd="4dp"/>
+
+                        <TextView
+                            android:id="@+id/txtShaResult"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ร้ายมาก"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            android:fontFamily="@font/sarabun_semibold"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Descriptions (Web Style) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ความหมายเลขศาสตร์: "
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#333333"
+                        android:fontFamily="@font/sarabun_semibold"/>
+                    <TextView
+                        android:id="@+id/txtSatDesc"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="พลังแห่งความไม่แน่นอน"
+                        android:textSize="13sp"
+                        android:textColor="#555555"
+                        android:fontFamily="@font/sarabun_regular"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ความหมายพลังเงา: "
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="#333333"
+                        android:fontFamily="@font/sarabun_semibold"/>
+                    <TextView
+                        android:id="@+id/txtShaDesc"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="พลังแห่งโมหะจริต"
+                        android:textSize="13sp"
+                        android:textColor="#555555"
+                        android:fontFamily="@font/sarabun_regular"/>
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
+

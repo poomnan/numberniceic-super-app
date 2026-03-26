@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <LinearLayout
+        android:id="@+id/li_nick_vip"
+        android:background="#F7D74C"
+        android:padding="6dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/nicknameid"
+            android:textSize="@dimen/txt_size_nick_vip_list"
+            android:textColor="@color/txt_color_list_vip"
+            android:text="ลำดับ"
+            android:layout_marginStart="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:id="@+id/thainame"
+
+            android:text="ชื่อเล่นไทย"
+
+            android:textColor="@color/txt_color_list_vip"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17dp"
+            />
+
+
+        <TextView
+            android:id="@+id/leksat_thai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="เลขศาสตร์"
+            android:paddingStart="14dp"
+            android:textColor="@color/txt_color_list_vip"
+            android:textSize="15dp" />
+
+        <TextView
+
+            android:id="@+id/shadow"
+            android:textSize="@dimen/txt_size_nick_vip_list"
+            android:text="พลังเงา"
+            android:textAlignment="center"
+            android:textColor="@color/txt_color_list_vip"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/reangthai"
+            android:textSize="@dimen/txt_size_nick_vip_list"
+            android:text="เลขเรียง"
+            android:textColor="@color/txt_color_list_vip"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/engname"
+            android:textSize="17sp"
+            android:text="ชื่อ ENG"
+            android:layout_marginEnd="15sp"
+            android:textColor="@color/txt_color_list_vip"
+            android:textAlignment="center"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:id="@+id/leksat_eng"
+            android:textSize="@dimen/txt_size_nick_vip_list"
+            android:text="เลขศาสตร์"
+            android:textAlignment="center"
+            android:textColor="@color/txt_color_list_vip"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/reangeng"
+            android:textSize="@dimen/txt_size_nick_vip_list"
+            android:text="เลขเรียง"
+            android:textAlignment="center"
+            android:textColor="@color/txt_color_list_vip"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/sex"
+            android:textSize="@dimen/txt_size_nick_vip_list"
+            android:textColor="@color/txt_color_list_vip"
+            android:text="เพศ"
+            android:textAlignment="center"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

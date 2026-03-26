@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คุณนิน - ที่ปรึกษาตั้งชื่อมงคล</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #f39c12;
+            --secondary-color: #2c3e50;
+            --bg-color: #f4f7f6;
+            --chat-bg: #ffffff;
+            --user-msg: #e1f5fe;
+            --bot-msg: #fff9c4;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 80vh;
+            background-color: var(--chat-bg);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background-color: var(--bot-msg);
+            border-bottom-left-radius: 2px;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background-color: var(--user-msg);
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .suggestion-list {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            border-top: 1px dashed #ccc;
+            padding-top: 5px;
+        }
+
+        .suggestion-item {
+            background: #fff;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .badge-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .badge-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .bg-d10 {
+            background-color: #1b5e20;
+        }
+
+        /* Dark Green */
+        .bg-d8 {
+            background-color: #2e7d32;
+        }
+
+        /* Green */
+        .bg-d5 {
+            background-color: #4caf50;
+        }
+
+        /* Light Green */
+        .bg-r10 {
+            background-color: #b71c1c;
+        }
+
+        /* Dark Red */
+        .bg-r7 {
+            background-color: #d32f2f;
+        }
+
+        /* Red */
+        .bg-r5 {
+            background-color: #f57c00;
+        }
+
+        /* Orange/Risk */
+
+        .badge-status {
+            font-size: 0.7rem;
+            margin-left: 4px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        .badge-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-right: 4px;
+        }
+
+        .quick-replies {
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            background: #eee;
+            border-top: 1px solid #ddd;
+            scrollbar-width: none;
+            /* Hide scrollbar for cleaner look */
+        }
+
+        .quick-replies::-webkit-scrollbar {
+            display: none;
+        }
+
+        .qr-btn {
+            background: white;
+            color: var(--secondary-color);
+            border: 1px solid #ccc;
+            padding: 6px 15px;
+            border-radius: 20px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .qr-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .vip-highlight {
+            background-color: #fff3e0;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 600;
+            color: #e67e22;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">คุณทญา - ที่ปรึกษาตั้งชื่อมงคล ✨</div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">สวัสดีค่ะ ยินดีต้อนรับเข้าสู่ระบบปรึกษาตั้งชื่อมงคลกับคุณทญาค่ะ อยากได้ชื่อแนวไหน
+                หรือความหมายประมาณไหน บอกคุณทญาได้เลยนะคะ</div>
+        </div>
+
+        <div class="quick-replies" id="quickReplies">
+            <button class="qr-btn" onclick="sendQuickReply('วันจันทร์')">จันทร์</button>
+            <button class="qr-btn" onclick="sendQuickReply('วันอังคาร')">อังคาร</button>
+            <button class="qr-btn" onclick="sendQuickReply('วันพุธกลางวัน')">พุธกลางวัน (06:00-17:59)</button>
+            <button class="qr-btn" onclick="sendQuickReply('วันพุธกลางคืน')">พุธกลางคืน (18:00-05:59)</button>
+            <button class="qr-btn" onclick="sendQuickReply('วันพฤหัสบดี')">พฤหัสบดี</button>
+            <button class="qr-btn" onclick="sendQuickReply('วันศุกร์')">ศุกร์</button>
+            <button class="qr-btn" onclick="sendQuickReply('วันเสาร์')">เสาร์</button>
+            <button class="qr-btn" onclick="sendQuickReply('วันอาทิตย์')">อาทิตย์</button>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="พิมพ์ความต้องการของคุณ..."
+                onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button id="sendBtn" onclick="sendMessage()">ส่ง</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        let chatHistory = []; // Maintain chat history
+
+        function sendQuickReply(day) {
+            userInput.value = day;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            chatHistory.push({ role: 'user', content: text }); // Add to history
+
+            userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/naming/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        history: chatHistory.slice(-6) // Send last 6 messages as history
+                    })
+                });
+
+                const data = await response.json();
+                appendMessage(data.reply, 'bot', data.data);
+                chatHistory.push({ role: 'assistant', content: data.reply }); // Add bot reply to history
+            } catch (error) {
+                appendMessage('ขออภัยค่ะ ระบบขัดข้องชั่วคราว ลองใหม่อีกครั้งนะคะ', 'bot');
+            } finally {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            // Basic markdown: bold **text** -> <strong>text</strong>
+            // and newlines -> <br>
+            let html = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+
+            // Special treatment for VIP message to wrap in vip-highlight if it contains typical VIP keywords
+            if (html.includes('VIP') && html.includes('มงคลสูงสุด')) {
+                // If the VIP message is already there, we can try to separate it
+                const parts = html.split('<br>');
+                html = parts.map(p => {
+                    if (p.includes('VIP') && p.includes('มงคลสูงสุด')) {
+                        return `<div class="vip-highlight">${p}</div>`;
+                    }
+                    return p;
+                }).join('<br>');
+            }
+            return html;
+        }
+
+        function appendMessage(text, side, suggestions = null) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${side}`;
+            msgDiv.innerHTML = formatMarkdown(text);
+
+            if (suggestions && suggestions.length > 0) {
+                const listDiv = document.createElement('div');
+                listDiv.className = 'suggestion-list';
+                listDiv.innerHTML = '<div style="margin-bottom:8px; font-weight:600;">รายชื่อที่แนะนำจากฐานข้อมูล:</div>';
+
+                const gradeThai = {
+                    "D10": "ดีเยี่ยม", "D8": "ดีมาก", "D5": "ดี",
+                    "R10": "ร้ายมาก", "R7": "ร้าย", "R5": "ค่อนข้างร้าย"
+                };
+
+                suggestions.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'suggestion-item';
+
+                    const satClass = `bg-${item.sat_grade.toLowerCase()}`;
+                    const shaClass = `bg-${item.sha_grade.toLowerCase()}`;
+                    const satLabel = gradeThai[item.sat_grade] || '';
+                    const shaLabel = gradeThai[item.sha_grade] || '';
+
+                    itemDiv.innerHTML = `
+                        <div style="font-size:1.1rem; color:var(--secondary-color);"><strong>${item.thname}</strong></div>
+                        <div style="color:#555; margin:4px 0;">${item.meaning}</div>
+                        <div class="badge-container">
+                            <div>
+                                <span class="badge-label">ศาสตร์:</span>
+                                <span class="badge-num ${satClass}">${item.sat_sum} <span class="badge-status">${satLabel}</span></span>
+                            </div>
+                            <div>
+                                <span class="badge-label">พลังเงา:</span>
+                                <span class="badge-num ${shaClass}">${item.sha_sum} <span class="badge-status">${shaLabel}</span></span>
+                            </div>
+                        </div>
+                        <div style="font-size:0.85rem; color:#777; margin-top:8px; line-height:1.4;">
+                            <div><strong style="color:#444">ความหมายเลขศาสตร์:</strong> ${item.sat_desc}</div>
+                            <div style="margin-top:4px;"><strong style="color:#444">ความหมายพลังเงา:</strong> ${item.sha_desc}</div>
+                        </div>
+                    `;
+                    listDiv.appendChild(itemDiv);
+                });
+                msgDiv.appendChild(listDiv);
+            }
+
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+#!/usr/bin/expect
+
+set timeout 60
+spawn scp views/web_index.php tayap@43.228.85.200:/home/tayap/ananya-php/views/web_index.php
+expect {
+  "yes/no" { send "yes\r"; exp_continue }
+  "password:" { send "IntelliP24.X\r" }
+}
+expect eof

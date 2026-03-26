@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coor_user_register"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.auth.UserLogoutF">
+
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#E2E4E2"
+            android:paddingBottom="100dp"
+            android:orientation="vertical">
+
+
+
+            <!-- ✨ [NEW] บัตรข้อมูลสมาชิก (แยกออกมาตามที่คุณนินต้องการ) -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="9dp"
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:id="@+id/txt_general"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="19sp"
+                            android:text="สวัสดีคุณ"
+                            android:textColor="#1E88E5" />
+                        <TextView
+                            android:id="@+id/txt_member01"
+                            android:layout_marginStart="5dp"
+                            android:layout_marginEnd="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="17sp"
+                            tools:text="(ชื่อเมมเบอร์)"
+                            android:textColor="#43A047" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="19sp"
+                            android:text="คุณคือ"
+                            android:textColor="#1E88E5" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layout_member_header_normal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/txt_member_type01"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/img_member01"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_marginStart="16dp"
+                            android:padding="2dp"
+                            app:strokeWidth="2dp"
+                            app:strokeColor="#4CAF50"
+                            app:shapeAppearanceOverlay="@style/CircleAvatar"
+                            tools:src="@drawable/ic_avatar_10" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_status_explanation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:textSize="17sp"
+                        android:textColor="#388E3C"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        tools:text="ระดับสมาชิก: Member" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_user_edit_profile"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:text="แก้ไขข้อมูล"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="#FF9800"
+                            app:cornerRadius="28dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_user_logout_normal"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="ออกจากระบบ"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="#D32F2F"
+                            app:cornerRadius="28dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="9dp"
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:textColor="#43A047"
+                        android:layout_marginBottom="12dp"
+                        android:textSize="15sp"
+                        android:text="ขอให้คุณมีความสุขในการใช้งานแอพพลิเคชั่นของเรา"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:textSize="18sp"
+                            android:text="VIP CODE : "
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <EditText
+                            android:id="@+id/edt_vipcode_user"
+                            android:textSize="18sp"
+                            android:inputType="textFilter"
+                            android:digits="abcdefghijklmnopurstuvwxyzABCDEFGHIJKLMNOPURSTUVWXYZ1234567890"
+                            tools:text="VIP CODE"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_vip_codeuser"
+                        android:text="UPGRADE เป็น VIP"
+                        android:layout_gravity="end"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
+
+
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:textColor="#039BE5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="สิทธิ์ในการใช้งานแอพพลิเคชั่นของคุณ"
+                        android:textSize="17dp"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_normal_benefits_intro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:layout_marginTop="2dp"
+                        tools:text="สิทธิประโยชน์สมาชิกปกติ"/>
+
+
+
+
+
+                    <TextView
+                        android:id="@+id/txt_normal_details"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:layout_marginTop="2dp"
+                        tools:text="รายละเอียดสิทธิ์สมาชิกปกติ"/>
+
+
+
+
+
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_upgrade01"
+                        android:layout_marginStart="2dp"
+                        android:layout_marginEnd="2dp"
+                        app:cornerRadius="9dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:textSize="15sp"
+                        android:layout_weight="2"
+                        android:backgroundTint="#FFB300"
+                        android:text="UPGRADE YOUR VIP LEVEL" />
+
+
+                    <RelativeLayout
+                        android:layout_marginTop="9dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/tv_special_p"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Special Person (บุคคลพิเศษ)"
+                            android:textColor="#FB8C00"
+                            android:textSize="17sp" />
+
+                        <ImageView
+                            android:id="@+id/img_sp_p"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/tv_special_p"
+                            android:src="@drawable/tambun" />
+
+
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="0dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_sp_desc"
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+                        android:text="มีสิทธิ์เหมือนสมาชิกปรกติ แต่มีสิทธิพิเศษเพิ่มขึ้นดังนี้"
+                        android:textColor="#43A047"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="มิตรลูกค้าของเราที่ผ่านการเปิดดวงชะตานับตั้งแต่ปี 2562 เป็นต้นไป จะได้รับสถานะเป็น SpecialP โดยอัตโนมัติทั้งลูกค้าเก่า (เปิดดวงประจำปี ค่าครู 1,599 บาท) และลูกค้าใหม่ (เปิดดวงชะตา ค่าครู 2,999 บาท) โดยมีจุดประสงค์เพื่อเป็นการตอบแทนคุณของลูกค้าด้วยความเชื่อโบราณ ซึ่งเป็นการเสริมสิริมงคลและเสริมความรุ่งเรืองให้กับชะตาชีวิตของลูกค้าให้ดียิ่งๆ ขึ้นไป  (เป็นความเชื่อส่วนบุคคลโปรดใช้วิจารณญาน) เช่น"
+                        android:textSize="15sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="9dp"
+                            android:layout_height="9dp"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="5dp"
+                            app:chipBackgroundColor="#FF6D00" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="2dp"
+                            android:text="จะมีแจ้งเตือนพิเศษให้ว่า อายุย่าง....ปี เกิดวันนี้...สีกระเป๋าเงิน/กระเป๋าสะพายเสริมมงคลเสริมดวงชะตาที่ควรใช้ประจำปีนี้ คือสีอะไร เรียงตามลำดับ"
+                            android:textSize="15sp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="9dp"
+                            android:layout_height="9dp"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="5dp"
+                            app:chipBackgroundColor="#FF6D00" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="2dp"
+                            android:text="เกิดวันนี้....สีเสื้อผ้าอาภรณ์ที่ควรหรือไม่ควรสวมใส่ในแต่ละวัน คือ สีอะไรบ้าง ***โดยจะมีการแจ้งเตือนให้ทุกวัน เตือนกันรายวันเป็นตัวต่อตัวไปเลย"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="9dp"
+                            android:layout_height="9dp"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="5dp"
+                            app:chipBackgroundColor="#FF6D00" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="2dp"
+                            android:text="แจ้งเตือนพิเศษให้ เช่น คุณเกิดวัน.....วันนี้เป็นวัน....คุณควรสระ/ไม่สระผม วันนี้ควรตัดเล็บ/ไม่ตัดเล็บ วันนี้ควรตัดผม/ไม่ตัดผม ดีหรือไม่ อย่างไร"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="9dp"
+                            android:layout_height="9dp"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="5dp"
+                            app:chipBackgroundColor="#FF6D00" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="9dp"
+                            android:layout_marginTop="2dp"
+                            android:text="และลูกค้ายังสามารถดูวิธีและขั้นตอนในการทำบุญเพื่อเสริมดวงและคุ้มครองดวงชะตาตามวิธีของเราซึ่งมีอาถรรพ์ต่อผู้ให้ผู้บอก เราจึงบอกยากให้ยากให้ดูเองได้ด้วย"
+                            android:textSize="15sp" />
+
+                    </LinearLayout>
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/vip_silver"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textSize="17sp"
+                            tools:text="ชื่อสิทธิ์ Silver"
+                            android:textColor="#FB8C00" />
+
+                        <ImageView
+                            android:id="@+id/img_silver"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/vip_silver"
+                            android:src="@drawable/icon_vip_beauty" />
+
+
+                    </RelativeLayout>
+
+
+
+
+
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="0dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_silver_h"
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+                        tools:text="สิทธิประโยชน์ Silver"
+                        android:textColor="#43A047"
+                        android:textSize="15sp" />
+
+
+                    <TextView
+                        android:id="@+id/txt_vip_silver_details"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:layout_marginTop="2dp"
+                        tools:text="รายละเอียดและราคา Silver" />
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_vip_gold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textSize="17sp"
+                            tools:text="ชื่อสิทธิ์ Gold"
+                            android:textColor="#FB8C00" />
+
+                        <ImageView
+                            android:id="@+id/img_vip_gold"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/txt_vip_gold"
+                            android:src="@drawable/icon_gold01" />
+
+
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="0dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_gold"
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+
+                        tools:text="สิทธิประโยชน์ Gold"
+                        android:textColor="#43A047"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/txt_vip_gold_details"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        tools:text="รายละเอียดและราคา Gold" />
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_vip_daimond"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textSize="17sp"
+                            android:text="VIP Diamond  (มีส่วนลด 14% ตลอดชีวิต)"
+                            android:textColor="#FB8C00" />
+
+                        <ImageView
+                            android:id="@+id/img_daimond"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/txt_vip_daimond"
+                            android:src="@drawable/diamond" />
+
+
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="0dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_daimond"
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+
+                        android:text="สามารถทำได้ทุกอย่างเหมือนสมาชิกปรกติ แต่มีสิทธิพิเศษเพิ่มขึ้นดังนี้"
+                        android:textColor="#43A047"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/txt_vip_diamond_details"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:layout_marginTop="2dp"
+                        android:text="VIP Diamond สามารถดูรายการ ชื่อเล่น และชื่อจริงที่ดีทั้งเลขศาสตร์และพลังเงานับพันรายการ เพื่อนำไปใช้ในการตั้งชื่อของตัวเองและครอบครัว โดยเราจะเปิดดวงเจาะเลขเพื่อหาอักษรนำหน้าชื่อเล่นชื่อสกุลที่ดีที่สุดเพื่อให้ท่านนำไปเลือกตั้งชื่อให้ฟรี 2 ครั้ง คือ เจ้าของสิทธิ์นี้และคนที่เจ้าของสิทธิเลือกมาเท่านั้นและท่านยัง ***สามารถใช้แอพพลิเคชั่นในการทำนายทะเบียนรถได้ไม่จำกัดจำนวนตลอดชีวิต อัพเกรดเพียง 26,599 บาท"/>
+
+                </LinearLayout>
+
+
+
+
+            </androidx.cardview.widget.CardView>
+
+
+
+
+
+        </LinearLayout>
+
+
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

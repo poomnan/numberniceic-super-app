@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rich Editor</title>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: #fff;
+            padding: 0;
+        }
+
+        .note-editor {
+            border: 1px solid #ddd !important;
+            border-radius: 8px !important;
+            overflow: hidden;
+        }
+
+        .note-toolbar {
+            background: #f8f9fa !important;
+            border-bottom: 1px solid #ddd !important;
+            padding: 5px !important;
+        }
+
+        .note-btn {
+            padding: 5px 8px !important;
+            font-size: 14px !important;
+        }
+
+        .note-editable {
+            min-height: 300px !important;
+            padding: 15px !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+        }
+
+        .note-editable p {
+            margin-bottom: 10px;
+        }
+
+        /* Hide status bar */
+        .note-status-output {
+            display: none !important;
+        }
+
+        .note-statusbar {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="editor"></div>
+
+    <script>
+        $(document).ready(function () {
+            $('#editor').summernote({
+                placeholder: 'เขียนเนื้อหาบทความที่นี่...',
+                tabsize: 2,
+                height: 350,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture']],
+                    ['view', ['codeview']]
+                ],
+                styleTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+                callbacks: {
+                    onChange: function (contents) {
+                        // Notify Android when content changes
+                        if (window.AndroidInterface) {
+                            window.AndroidInterface.onContentChanged(contents);
+                        }
+                    },
+                    onImageUpload: function (files) {
+                        // Handle image upload via Android
+                        if (window.AndroidInterface) {
+                            window.AndroidInterface.onImageUploadRequested();
+                        }
+                    }
+                }
+            });
+        });
+
+        // Function to set content from Android
+        function setContent(html) {
+            $('#editor').summernote('code', html);
+        }
+
+        // Function to get content for Android
+        function getContent() {
+            return $('#editor').summernote('code');
+        }
+
+        // Function to insert image
+        function insertImage(url) {
+            $('#editor').summernote('insertImage', url);
+        }
+    </script>
+</body>
+
+</html>

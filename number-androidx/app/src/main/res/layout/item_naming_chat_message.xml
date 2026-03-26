@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Assistant Message -->
+    <LinearLayout
+        android:id="@+id/containerAssistant"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/circle_primary"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_avatar_12"
+            android:contentDescription="Taya Avatar" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/txtAssistantName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="คุณทญา"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#FFD700"
+                android:fontFamily="@font/sarabun_semibold" />
+
+            <TextView
+                android:id="@+id/txtAssistantMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_bubble_incoming"
+                android:textColor="#333333"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginTop="4dp"
+                android:text="สวัสดีค่ะ ต้องการตั้งชื่อแนวไหนคะ?"
+                android:textSize="16sp"
+                android:fontFamily="@font/sarabun_regular" />
+
+            <!-- Name List Container -->
+            <LinearLayout
+                android:id="@+id/layoutNameList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp" 
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- User Message -->
+    <LinearLayout
+        android:id="@+id/containerUser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:visibility="gone"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/txtUserMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_bubble_outgoing"
+            android:textColor="@color/green_text"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:text="User Input"
+            android:textSize="16sp"
+            android:fontFamily="@font/sarabun_regular" />
+
+    </LinearLayout>
+
+</LinearLayout>

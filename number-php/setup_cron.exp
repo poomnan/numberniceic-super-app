@@ -1,0 +1,34 @@
+#!/usr/bin/expect -f
+set timeout -1
+
+# Connect to Server
+spawn ssh tayap@43.228.85.200
+expect {
+    "password:" { send "IntelliP24.X\r" }
+    "yes/no" { send "yes\r"; exp_continue }
+}
+expect "$ "
+
+# Setup Crontab
+# We use a temporary file to load crontab, ensuring no duplication if ran multiple times is harder with simple cat,
+# so we will just append carefuly or write a full set.
+# Ideally: 0 7 * * * curl -s "http://localhost/cron/wanpra" >> /home/tayap/ananya-php/cron.log 2>&1
+# And: 0 18 * * * curl -s "http://localhost/cron/wanpra" >> /home/tayap/ananya-php/cron.log 2>&1
+
+send "crontab -l > mycron\r"
+expect "$ "
+
+# Append lines if not exist (simple grep check)
+send "grep -q 'cron/wanpra' mycron || echo '0 7,18 * * * /usr/bin/php /home/tayap/ananya-php/public/index.php /cron/wanpra >> /home/tayap/ananya-php/cron.log 2>&1' >> mycron\r"
+expect "$ "
+send "grep -q 'cron/cleanup-assignments' mycron || echo '* * * * * /usr/bin/php /home/tayap/ananya-php/public/index.php /cron/cleanup-assignments >> /home/tayap/ananya-php/cleanup.log 2>&1' >> mycron\r"
+expect "$ "
+
+# Install new cron
+send "crontab mycron\r"
+expect "$ "
+send "rm mycron\r"
+expect "$ "
+
+send "exit\r"
+expect eof

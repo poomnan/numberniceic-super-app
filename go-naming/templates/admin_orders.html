@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการสั่งซื้อและการจัดส่ง - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --secondary: #2C1810;
+            --success: #10B981;
+            --warning: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background: var(--card);
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #B8860B;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--warning);
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .stat-card h2 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .stat-card p {
+            margin: 5px 0 0;
+            color: #94A3B8;
+            font-size: 14px;
+        }
+
+        .order-card {
+            background: var(--card);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .order-header {
+            padding: 15px 20px;
+            background: #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-body {
+            padding: 20px;
+        }
+
+        .order-info {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 20px;
+        }
+
+        .address-box {
+            background: #FFF8E1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .address-box h4 {
+            margin-top: 0;
+            color: var(--warning);
+            font-size: 14px;
+        }
+
+        .address-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .items-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-row {
+            padding: 10px 0;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            border: 1px solid #F59E0B;
+        }
+
+        .badge-shipped {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary {
+            background: #334155;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: #94A3B8; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-truck-loading"></i> ออเดอร์และการจัดส่ง</h1>
+        </div>
+
+        <div id="stats" class="stats-grid">
+            <!-- Stats load via JS -->
+        </div>
+
+        <div id="orderList">
+            <!-- Orders load via JS -->
+            <div class="loading">กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadData);
+
+        async function loadData() {
+            try {
+                const res = await fetch('/admin/guest-addresses');
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+
+                renderStats(data.stats);
+                renderOrders(data.data);
+            } catch (err) {
+                document.getElementById('orderList').innerHTML = `<div class="card" style="padding:20px; color:#EF4444"> Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderStats(stats) {
+            const container = document.getElementById('stats');
+            container.innerHTML = `
+                <div class="stat-card"><h2>${stats.total_orders}</h2><p>ออเดอร์ทั้งหมด</p></div>
+                <div class="stat-card"><h2>${stats.pending_shipments}</h2><p>รอจัดส่ง</p></div>
+                <div class="stat-card"><h2>${stats.unique_guests}</h2><p>จำนวนลูกค้า</p></div>
+            `;
+        }
+
+        function renderOrders(addresses) {
+            const container = document.getElementById('orderList');
+            if (addresses.length === 0) {
+                container.innerHTML = '<div class="stat-card">ไม่มีรายการออเดอร์</div>';
+                return;
+            }
+
+            container.innerHTML = addresses.map(addr => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span><i class="fas fa-user"></i> <b>${addr.guest_id.substring(0, 8)}...</b> ${addr.device_info || ''}</span>
+                        <span><i class="fas fa-clock"></i> ${addr.server_created_at}</span>
+                    </div>
+                    <div class="order-body">
+                        <div class="order-info">
+                            <div class="address-box">
+                                <h4>🚚 ที่อยู่การจัดส่ง</h4>
+                                <p>${addr.address || '<span style="color:#EF4444">ไม่มีข้อมูลที่อยู่</span>'}</p>
+                                <div style="margin-top:10px">
+                                    <button class="btn btn-secondary" style="padding:4px 8px" onclick="editAddress('${addr.guest_id}', '${addr.address}')">
+                                        <i class="fas fa-edit"></i> แก้ไขที่อยู่
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="order-items">
+                                <h4>📦 รายการสินค้า</h4>
+                                <ul class="items-list">
+                                    ${(addr.orders || []).map(order => `
+                                        <li class="item-row">
+                                            <div>
+                                                <b>${order.product_name}</b><br>
+                                                <small style="color:#94A3B8">${order.category} | ${order.product_price} บาท</small>
+                                            </div>
+                                            <div style="display:flex; align-items:center; gap:10px">
+                                                <span class="badge badge-${order.shipping_status}">${order.shipping_status}</span>
+                                                <button class="btn ${order.shipping_status === 'shipped' ? 'btn-warning' : 'btn-success'}" 
+                                                        onclick="toggleStatus(${order.id}, '${order.shipping_status === 'shipped' ? 'pending' : 'shipped'}')">
+                                                    ${order.shipping_status === 'shipped' ? 'ทำเป็นรอส่ง' : 'จัดส่งแล้ว'}
+                                                </button>
+                                            </div>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function toggleStatus(orderId, newStatus) {
+            if (!confirm('ยืนยันการเปลี่ยนสถานะ?')) return;
+            const res = await fetch('/admin/guest-addresses/toggle-shipping', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order_id: orderId, status: newStatus })
+            });
+            if (res.ok) loadData();
+        }
+
+        async function editAddress(guestId, currentAddress) {
+            const newAddress = prompt('ระบุที่อยู่ใหม่:', currentAddress);
+            if (newAddress === null || newAddress === currentAddress) return;
+
+            const res = await fetch('/admin/guest-addresses/update-address', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ guest_id: guestId, address: newAddress })
+            });
+            if (res.ok) loadData();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,122 @@
+[
+    {
+        "tabian_id": 10,
+        "tabian_number": "5กร 4542",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 0,
+        "created_at": "2026-01-24 18:51:07",
+        "updated_at": "2026-01-24 18:51:07"
+    },
+    {
+        "tabian_id": 9,
+        "tabian_number": "6กฮ 5954",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 0,
+        "created_at": "2026-01-24 18:50:49",
+        "updated_at": "2026-01-24 18:50:49"
+    },
+    {
+        "tabian_id": 8,
+        "tabian_number": "6กษ 2454",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 0,
+        "created_at": "2026-01-24 18:50:19",
+        "updated_at": "2026-01-24 18:50:19"
+    },
+    {
+        "tabian_id": 7,
+        "tabian_number": "5ขร 5451",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 0,
+        "created_at": "2026-01-24 18:49:34",
+        "updated_at": "2026-01-24 18:49:34"
+    },
+    {
+        "tabian_id": 5,
+        "tabian_number": "5ขร 4695",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 0,
+        "created_at": "2026-01-24 18:48:39",
+        "updated_at": "2026-01-27 23:57:25"
+    },
+    {
+        "tabian_id": 4,
+        "tabian_number": "5ขร 4154",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 0,
+        "created_at": "2026-01-24 18:48:08",
+        "updated_at": "2026-01-24 18:48:08"
+    },
+    {
+        "tabian_id": 1,
+        "tabian_number": "ญช 9545",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 0,
+        "created_at": "2026-01-24 18:24:17",
+        "updated_at": "2026-01-24 18:46:38"
+    },
+    {
+        "tabian_id": 2,
+        "tabian_number": "4กธ 4245",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 1,
+        "created_at": "2026-01-24 18:46:24",
+        "updated_at": "2026-01-28 00:09:19"
+    },
+    {
+        "tabian_id": 3,
+        "tabian_number": "4กฮ 4145",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 2,
+        "created_at": "2026-01-24 18:47:19",
+        "updated_at": "2026-01-28 00:09:31"
+    },
+    {
+        "tabian_id": 6,
+        "tabian_number": "5ขร 4515",
+        "tabian_province": "กรุงเทพมหานคร",
+        "tabian_price": 1000000,
+        "tabian_status": "available",
+        "tabian_category": "เลขมงคล",
+        "tabian_tag": "VIP",
+        "order_no": 3,
+        "created_at": "2026-01-24 18:49:08",
+        "updated_at": "2026-01-28 00:09:45"
+    }
+]

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วันมงคล - ananya.in.th</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" type="text/css" href="/views/semantic/semantic.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/views/semantic/semantic.min.js"></script>
+    <style>
+        body {
+            background-color: #f4f7f6;
+            padding: 0;
+            margin: 0;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .main-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 1rem;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #1d976c 0%, #93f9b9 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .day-selector {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .day-btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+        }
+
+        .day-btn.active {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            border: 2px solid #333;
+        }
+
+        .sunday {
+            background-color: #ff4d4d;
+            color: white;
+        }
+
+        .monday {
+            background-color: #ffff4d;
+            color: #333;
+        }
+
+        .tuesday {
+            background-color: #ffb3ff;
+            color: #333;
+        }
+
+        .wednesday {
+            background-color: #4dff4d;
+            color: #333;
+        }
+
+        .thursday {
+            background-color: #ffb347;
+            color: white;
+        }
+
+        .friday {
+            background-color: #4dffff;
+            color: #333;
+        }
+
+        .saturday {
+            background-color: #a64dff;
+            color: white;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 20px;
+            border-left: 8px solid #ddd;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .activity-card.good {
+            border-left-color: #21ba45;
+        }
+
+        .activity-card.bad {
+            border-left-color: #db2828;
+        }
+
+        .status-badge {
+            margin-left: 10px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .status-badge.good {
+            background-color: #e2f9e1;
+            color: #1a7f37;
+        }
+
+        .status-badge.bad {
+            background-color: #ffeef0;
+            color: #d73a49;
+        }
+
+        .grid-header {
+            margin-top: 50px;
+            font-weight: bold;
+            border-bottom: 2px solid #1d976c;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <?php include 'web_menu.php'; ?>
+    <div class="main-container">
+        <div class="header-section">
+            <h1 class="ui header inverted">
+                <i class="magic icon"></i>
+                <div class="content">
+                    วันมงคลในการประกอบกิจกรรม
+                    <div class="sub header">เลือกวันเกิดของคุณเพื่อดูตารางวันมงคลประจำสัปดาห์</div>
+                </div>
+            </h1>
+        </div>
+
+        <div class="day-selector">
+            <?php foreach ($days as $key => $name): ?>
+                <a href="?day=<?= $key ?>" class="day-btn <?= $key ?> <?= $selected_day == $key ? 'active' : '' ?>">
+                    <?= $name ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
+        <h2 class="ui horizontal divider header">
+            <i class="calendar alternate outline icon"></i>
+            ตารางวันมงคลสำหรับท่านที่เกิด<?= $days[$selected_day] ?>
+        </h2>
+
+        <?php
+        $current_activity = '';
+        foreach ($miracles as $m):
+            if ($m['activity'] != $current_activity):
+                if ($current_activity != '')
+                    echo '</div>'; // close previous group cards
+                $current_activity = $m['activity'];
+                ?>
+                <h3 class="grid-header"><?= $current_activity ?></h3>
+                <div class="ui stackable three cards">
+                <?php endif; ?>
+
+                <div class="ui card activity-card <?= $m['action'] == 1 ? 'good' : 'bad' ?>">
+                    <div class="content">
+                        <div class="header">
+                            วัน<?= $days[$m['dayy']] ?>
+                            <span class="status-badge <?= $m['action'] == 1 ? 'good' : 'bad' ?>">
+                                <?= $m['action'] == 1 ? 'เป็นมงคล' : 'ควรเลี่ยง' ?>
+                            </span>
+                        </div>
+                        <div class="description" style="color: #555; margin-top: 10px;">
+                            <?= $m['mira_desc'] ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach;
+        if ($current_activity != '')
+            echo '</div>'; ?>
+
+            <h2 class="ui horizontal divider header" style="margin-top: 60px;">
+                <i class="star outline icon"></i>
+                ฤกษ์มงคล (วันธงชัย - วันอธิบดี)
+            </h2>
+
+            <div class="ui segment" style="border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="ui stackable grid" style="padding: 10px;">
+                    <?php foreach ($auspicious_days as $ad):
+                        $ad_date = new DateTime($ad['date']);
+                        $thai_months = [
+                            1 => 'ม.ค.',
+                            2 => 'ก.พ.',
+                            3 => 'มี.ค.',
+                            4 => 'เม.ย.',
+                            5 => 'พ.ค.',
+                            6 => 'มิ.ย.',
+                            7 => 'ก.ค.',
+                            8 => 'ส.ค.',
+                            9 => 'ก.ย.',
+                            10 => 'ต.ค.',
+                            11 => 'พ.ย.',
+                            12 => 'ธ.ค.'
+                        ];
+                        $thai_days = [
+                            'Sunday' => 'อา.',
+                            'Monday' => 'จ.',
+                            'Tuesday' => 'อ.',
+                            'Wednesday' => 'พ.',
+                            'Thursday' => 'พฤ.',
+                            'Friday' => 'ศ.',
+                            'Saturday' => 'ส.'
+                        ];
+                        ?>
+                        <div class="four wide column">
+                            <div
+                                style="padding: 15px; border: 1px solid #eee; border-radius: 8px; text-align: center; height: 100%;">
+                                <div style="font-weight: 600; margin-bottom: 5px; color: #2c3e50;">
+                                    <?= $thai_days[$ad_date->format('l')] ?>     <?= $ad_date->format('j') ?>
+                                    <?= $thai_months[(int) $ad_date->format('m')] ?>
+                                    <?= (int) $ad_date->format('Y') + 543 ?>
+                                </div>
+                                <div style="display: flex; justify-content: center; gap: 5px; margin-top: 8px;">
+                                    <?php if ($ad['is_tongchai']): ?>
+                                        <span class="ui mini yellow label">วันธงชัย</span>
+                                    <?php endif; ?>
+                                    <?php if ($ad['is_atipbadee']): ?>
+                                        <span class="ui mini blue label">วันอธิบดี</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="ui segment"
+                style="border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-top: 20px; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);">
+                <h3 style="color: #2c3e50; margin-top: 0;"><i class="info circle icon"></i>
+                    ความหมายของวันธงชัยและวันอธิบดี</h3>
+
+                <p style="line-height: 1.8; color: #555;">หากคุณกำลังมองหาฤกษ์ดีเพื่อประกอบการมงคล คำว่า
+                    <strong>"วันธงชัย"</strong> และ <strong>"วันอธิบดี"</strong>
+                    คือหัวใจหลักของโหราศาสตร์ไทยที่ใช้ในการหา "วันดี" ในแต่ละสัปดาห์
+                </p>
+
+                <div class="ui two stackable cards" style="margin-top: 20px;">
+                    <div class="card" style="border-left: 4px solid #f2c94c;">
+                        <div class="content">
+                            <div class="header" style="color: #f2c94c;"><i class="flag icon"></i> วันธงชัย (Great
+                                Victory Day)</div>
+                            <div class="description" style="margin-top: 10px; line-height: 1.7;">
+                                <p><strong>ความหมาย:</strong> ชัยชนะ หรือการได้รับความสำเร็จตามเป้าหมาย</p>
+                                <p><strong>ความเชื่อ:</strong> เป็นวันที่ดีที่สุดในสัปดาห์
+                                    มักใช้สำหรับการทำเรื่องที่ต้องการความเป็นที่หนึ่ง ความสำเร็จ
+                                    หรือการมีชัยชนะเหนือคู่แข่ง</p>
+                                <p><strong>เหมาะสำหรับ:</strong></p>
+                                <ul style="margin-left: 20px;">
+                                    <li>งานวิวาห์ (แต่งงาน)</li>
+                                    <li>การเปิดกิจการใหม่</li>
+                                    <li>การขึ้นบ้านใหม่</li>
+                                    <li>การออกรถใหม่</li>
+                                    <li>การเจรจาธุรกิจสำคัญที่ต้องการให้จบลงด้วยผลสำเร็จ</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-left: 4px solid #2185d0;">
+                        <div class="content">
+                            <div class="header" style="color: #2185d0;"><i class="chess king icon"></i> วันอธิบดี (Grand
+                                Superior Day)</div>
+                            <div class="description" style="margin-top: 10px; line-height: 1.7;">
+                                <p><strong>ความหมาย:</strong> ความเป็นใหญ่ หรือการมีอำนาจการปกครอง</p>
+                                <p><strong>ความเชื่อ:</strong> เป็นวันที่มีพลังส่งเสริมในด้านบารมี การใช้อำนาจ
+                                    และความมั่นคงถาวร</p>
+                                <p><strong>เหมาะสำหรับ:</strong></p>
+                                <ul style="margin-left: 20px;">
+                                    <li>การเข้ารับตำแหน่งงานใหม่</li>
+                                    <li>การวางศิลาฤกษ์</li>
+                                    <li>การสร้างบ้าน</li>
+                                    <li>การติดต่อราชการ</li>
+                                    <li>เรื่องที่เกี่ยวข้องกับการบริหารจัดการคนและองค์กร</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="ui celled table" style="margin-top: 20px;">
+                    <thead>
+                        <tr>
+                            <th>หัวข้อ</th>
+                            <th style="background-color: #fffbea;">วันธงชัย</th>
+                            <th style="background-color: #e8f4fd;">วันอธิบดี</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>จุดเด่น</strong></td>
+                            <td>ชัยชนะ, ความสำเร็จ, โชคลาภ</td>
+                            <td>อำนาจ, บารมี, ความมั่นคง</td>
+                        </tr>
+                        <tr>
+                            <td><strong>เป้าหมาย</strong></td>
+                            <td>เน้นผลลัพธ์ที่รวดเร็วและเป็นบวก</td>
+                            <td>เน้นความยั่งยืนและการควบคุม</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ตัวอย่าง</strong></td>
+                            <td>งานแต่งงาน, เปิดร้าน, ซื้อของชิ้นใหญ่</td>
+                            <td>รับตำแหน่ง, ปลูกบ้าน, ทำนิติกรรม</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="ui warning message" style="margin-top: 20px;">
+                    <div class="header"><i class="warning sign icon"></i> ข้อควรระวัง: วันกาลกิณี และ วันโลกาวินาศ</div>
+                    <p>นอกจากวันดีแล้ว โหราศาสตร์ไทยยังมี "วันไม่ดี" ประจำสัปดาห์ที่ควรเลี่ยงด้วย:</p>
+                    <ul>
+                        <li><strong>วันกาลกิณี:</strong> วันแห่งความโชคร้าย อุปสรรค และความขัดแย้ง</li>
+                        <li><strong>วันโลกาวินาศ:</strong> วันแห่งความวุ่นวาย ความสูญเสีย หรือเหตุการณ์ไม่คาดฝัน</li>
+                    </ul>
+                </div>
+
+                <div class="ui info message">
+                    <div class="header"><i class="lightbulb outline icon"></i> เกร็ดความรู้</div>
+                    <p>ในแต่ละปี (เปลี่ยนตามกาลโยคหลังวันสงกรานต์) วันธงชัยและอธิบดีจะขยับเปลี่ยนไป เช่น
+                        ปีนี้อาจเป็นวันเสาร์ ปีหน้าอาจเปลี่ยนเป็นวันอังคาร เป็นต้น</p>
+                </div>
+            </div>
+
+            <h2 class="ui horizontal divider header" style="margin-top: 60px;">
+                <i class="bell outline icon"></i>
+                ปฏิทินวันพระ (Buddhist Holy Day)
+            </h2>
+
+            <div class="ui segment" style="border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="ui very relaxed list">
+                    <?php foreach ($wan_pras as $wp):
+                        $wp_date = new DateTime($wp['wanpra_date']);
+                        $thai_months_full = [
+                            1 => 'มกราคม',
+                            2 => 'กุมภาพันธ์',
+                            3 => 'มีนาคม',
+                            4 => 'เมษายน',
+                            5 => 'พฤษภาคม',
+                            6 => 'มิถุนายน',
+                            7 => 'กรกฎาคม',
+                            8 => 'สิงหาคม',
+                            9 => 'กันยายน',
+                            10 => 'ตุลาคม',
+                            11 => 'พฤศจิกายน',
+                            12 => 'ธันวาคม'
+                        ];
+                        $thai_days_full = [
+                            'Sunday' => 'วันอาทิตย์',
+                            'Monday' => 'วันจันทร์',
+                            'Tuesday' => 'วันอังคาร',
+                            'Wednesday' => 'วันพุธ',
+                            'Thursday' => 'วันพฤหัสบดี',
+                            'Friday' => 'วันศุกร์',
+                            'Saturday' => 'วันเสาร์'
+                        ];
+                        $lunar = \App\Managers\ThaiCalendarHelper::getThaiLunarDate($wp['wanpra_date']);
+                        $lunar_text = ($lunar['phase'] == 'waxing' ? 'ขึ้น' : 'แรม') . ' ' . $lunar['day'] . ' ค่ำ เดือน ' . $lunar['month'];
+                        if ($lunar['is_second_8'])
+                            $lunar_text .= ' (8-2)';
+                        ?>
+                        <div class="item" style="padding: 1rem 0; border-bottom: 1px dashed #eee;">
+                            <i class="large bell middle aligned icon" style="color: #d4af37;"></i>
+                            <div class="content">
+                                <div class="header" style="font-size: 1.1rem; color: #2c3e50;">
+                                    <?= $thai_days_full[$wp_date->format('l')] ?>ที่ <?= $wp_date->format('j') ?>
+                                    <?= $thai_months_full[(int) $wp_date->format('m')] ?>
+                                    <?= (int) $wp_date->format('Y') + 543 ?>
+                                </div>
+                                <div class="description" style="color: #666; margin-top: 5px;">
+                                    ตรงกับ <span style="color: #b8860b; font-weight: 600;"><?= $lunar_text ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="ui segment basic center aligned" style="margin-top: 50px; color: #7f8c8d;">
+                <p>© 2026 ananya.in.th - ข้อมูลนี้เป็นความเชื่อส่วนบุคคล โปรดใช้วิจารณญาณ</p>
+                <a href="/" class="ui button teal circular">กลับหน้าหลัก</a>
+            </div>
+        </div>
+</body>
+
+</html>

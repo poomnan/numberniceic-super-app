@@ -1,0 +1,36 @@
+#!/usr/bin/expect
+
+set timeout 300
+set user "tayap"
+set host "43.228.85.200"
+set pass "IntelliP24.X"
+set remote_dir "/home/tayap/ananya-php"
+
+# Upload routes.php
+spawn scp app/routes.php $user@$host:$remote_dir/app/routes.php
+expect {
+  "yes/no" { send "yes\r"; exp_continue }
+  "password:" { send "$pass\r" }
+}
+expect eof
+
+# Upload HomePageManager.php
+spawn scp app/Managers/HomePageManager.php $user@$host:$remote_dir/app/Managers/HomePageManager.php
+expect {
+  "password:" { send "$pass\r" }
+}
+expect eof
+
+# Upload web_index.php
+spawn scp views/web_index.php $user@$host:$remote_dir/views/web_index.php
+expect {
+  "password:" { send "$pass\r" }
+}
+expect eof
+
+# Upload web_menu.php
+spawn scp views/web_menu.php $user@$host:$remote_dir/views/web_menu.php
+expect {
+  "password:" { send "$pass\r" }
+}
+expect eof

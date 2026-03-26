@@ -1,0 +1,18 @@
+{
+    "news_hot": [
+        {
+            "newsid": "999",
+            "news_headline": "ยินดีต้อนรับสู่ Number Nice IC",
+            "news_title_short": "ยินดีต้อนรับ",
+            "news_desc": "ขอต้อนรับเข้าสู่แอพพลิเคชั่นทำนายเบอร์อันดับ 1 ในไทย",
+            "news_pic_header": "https://numberniceic.online/assets/img/news/news_default.jpg",
+            "category": "ข่าวประชาสัมพันธ์"
+        }
+    ],
+    "news_feedback": [],
+    "news_phonenum": [],
+    "news_namesur": [],
+    "news_tabian": [],
+    "news_homenum": [],
+    "news_concept": []
+}

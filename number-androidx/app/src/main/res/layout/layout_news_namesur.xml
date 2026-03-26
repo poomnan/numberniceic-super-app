@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/bg_light"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginEnd="3dp"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:id="@+id/linear_news_namesur_item1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_recycler"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <FrameLayout
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+
+                <ImageView
+                    android:id="@+id/img_news_namesur_01"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/gold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="#80000000">
+
+                    <TextView
+                        android:id="@+id/txt_header_news_namesur_01"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginStart="9dp"
+                        android:layout_marginEnd="9dp"
+                        android:textColor="#FFFFFF"
+
+                        android:textSize="14sp"
+
+                        tools:text="ทำบุญปรางวันเสาร์" />
+                </FrameLayout>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:id="@+id/txt_desc_news_namesur_01"
+                    android:background="#FFFFFF"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/browa_0"
+                    android:maxLines="3"
+                    android:textSize="20sp"
+                    tools:text="ไปบูชาพระพุทธรูปปางนาคปรก 9 นิ้ว หรือ 5 นิ้ว หรือ มากกว่าก็เยี่ยมเลย โดยหาได้ที่ร้านขายเครื่องสังฆภัณฑ์ (ให้บูชาพระประจำวันเสาร์เนื้อทองเหลืองหรือเนื้อสัมฤทธิ์เท่านั้น) **พระนี้ก่อนนำไปถวาย ต้องบอกกล่าวว่า เมื่อเรานำไปถวายแล้ว ขอให้พระท่านนำเอาพระไปตั้งให้คนได้กราบไหว้ด้วยนะคะ จะดีมาก" />
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@android:color/darker_gray" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linear_news_namesur_item2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_recycler"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/img_news_namesur_02"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/gold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="#80000000">
+
+                    <TextView
+
+                        android:id="@+id/txt_header_news_namesur_02"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginStart="9dp"
+                        android:layout_marginEnd="9dp"
+                        android:textColor="#FFFFFF"
+
+                        android:textSize="14sp"
+
+                        tools:text="ทำบุญปรางวันเสาร์" />
+                </FrameLayout>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:id="@+id/txt_desc_news_namesur_02"
+                    android:background="#FFFFFF"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/browa_0"
+                    android:maxLines="3"
+                    android:textSize="20sp"
+                    tools:text="ไปบูชาพระพุทธรูปปางนาคปรก 9 นิ้ว หรือ 5 นิ้ว หรือ มากกว่าก็เยี่ยมเลย โดยหาได้ที่ร้านขายเครื่องสังฆภัณฑ์ (ให้บูชาพระประจำวันเสาร์เนื้อทองเหลืองหรือเนื้อสัมฤทธิ์เท่านั้น) **พระนี้ก่อนนำไปถวาย ต้องบอกกล่าวว่า เมื่อเรานำไปถวายแล้ว ขอให้พระท่านนำเอาพระไปตั้งให้คนได้กราบไหว้ด้วยนะคะ จะดีมาก" />
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@android:color/darker_gray" />
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:id="@+id/linear_news_namesur_item3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="2dp"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_recycler"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/img_news_namesur_03"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/gold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="#80000000">
+
+                    <TextView
+                        android:id="@+id/txt_header_news_namesur_03"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginStart="9dp"
+                        android:layout_marginEnd="9dp"
+                        android:textColor="#FFFFFF"
+
+                        android:textSize="14sp"
+
+                        tools:text="ทำบุญปรางวันเสาร์" />
+                </FrameLayout>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:id="@+id/txt_desc_news_namesur_03"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="3dp"
+                    android:background="#FFFFFF"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/browa_0"
+                    android:maxLines="3"
+                    android:textSize="20sp"
+                    tools:text="ไปบูชาพระพุทธรูปปางนาคปรก 9 นิ้ว หรือ 5 นิ้ว หรือ มากกว่าก็เยี่ยมเลย โดยหาได้ที่ร้านขายเครื่องสังฆภัณฑ์ (ให้บูชาพระประจำวันเสาร์เนื้อทองเหลืองหรือเนื้อสัมฤทธิ์เท่านั้น) **พระนี้ก่อนนำไปถวาย ต้องบอกกล่าวว่า เมื่อเรานำไปถวายแล้ว ขอให้พระท่านนำเอาพระไปตั้งให้คนได้กราบไหว้ด้วยนะคะ จะดีมาก" />
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@android:color/darker_gray" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linear_news_item_namesur4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_recycler"
+            android:clickable="true"
+
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/img_news_namesur_04"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/gold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:background="#80000000">
+
+                    <TextView
+                        android:id="@+id/txt_header_news_namesur_04"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginStart="9dp"
+                        android:layout_marginEnd="9dp"
+                        android:textColor="#FFFFFF"
+
+                        android:textSize="14sp"
+
+                        tools:text="ทำบุญปรางวันเสาร์" />
+                </FrameLayout>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:id="@+id/txt_desc_news_namesur_04"
+                    android:padding="3dp"
+                    android:background="#FFFFFF"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/browa_0"
+                    android:maxLines="3"
+                    android:textSize="20sp"
+                    tools:text="ไปบูชาพระพุทธรูปปางนาคปรก 9 นิ้ว หรือ 5 นิ้ว หรือ มากกว่าก็เยี่ยมเลย โดยหาได้ที่ร้านขายเครื่องสังฆภัณฑ์ (ให้บูชาพระประจำวันเสาร์เนื้อทองเหลืองหรือเนื้อสัมฤทธิ์เท่านั้น) **พระนี้ก่อนนำไปถวาย ต้องบอกกล่าวว่า เมื่อเรานำไปถวายแล้ว ขอให้พระท่านนำเอาพระไปตั้งให้คนได้กราบไหว้ด้วยนะคะ จะดีมาก" />
+            </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@android:color/darker_gray" />
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_marginBottom="9dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_news_namesur"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:backgroundTint="@color/btn_readmorenews"
+            android:textColor="@color/txt_btn_readmorenews"
+            android:text="อ่านบทความทั้งหมด"
+            />
+
+
+    </FrameLayout>
+
+</LinearLayout>

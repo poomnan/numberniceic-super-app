@@ -1,0 +1,46 @@
+package handlers
+
+import (
+    "bytes"
+    "encoding/json"
+    "net/http"
+    "os/exec"
+    "strings"
+)
+
+// OpenClawHandler handles chat requests to the OpenClaw agent
+func OpenClawHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    var req struct {
+        Message string `json:"message"`
+    }
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "Invalid body", http.StatusBadRequest)
+        return
+    }
+
+    // Prepare command for sudo tayap openclaw agent
+    cmd := exec.Command("sudo", "-u", "tayap", "/home/tayap/.npm-global/bin/openclaw", "agent", "--local", "--to", "+66800000000", "--message", req.Message, "--verbose", "off")
+    var out bytes.Buffer
+    var stderr bytes.Buffer
+    cmd.Stdout = &out
+    cmd.Stderr = &stderr
+
+    if err := cmd.Run(); err != nil {
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        // Log stderr if needed
+        return
+    }
+
+    resp := map[string]string{
+        "reply": strings.TrimSpace(out.String()),
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(resp)
+}
+

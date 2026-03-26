@@ -1,0 +1,11 @@
+# Increase output buffer for large JSON responses
+php_value output_buffering Off
+php_value implicit_flush On
+php_value max_execution_time 300
+php_value memory_limit 256M
+
+# Disable compression that might truncate
+php_flag zlib.output_compression Off
+
+# Allow large responses
+LimitRequestBody 0

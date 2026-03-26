@@ -1,0 +1,161 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+
+require_once 'configs/config.php';
+
+try {
+    $db = $config['db'];
+    $pdo = new PDO(
+        "mysql:host=" . $db['host'] . ";dbname=" . $db['dbname'],
+        $db['user'],
+        $db['pass']
+    );
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $pdo->exec("set names utf8mb4");
+    
+    // Get ALL orders with guest/member info
+    $orderSql = '
+        SELECT go.*, 
+            gu.android_id, gu.device_info, gu.app_version,
+            m.realname, m.surname, m.shipping_address as member_address
+        FROM guest_orders go
+        LEFT JOIN guest_users gu ON go.guest_id = gu.guest_id
+        LEFT JOIN membertb m ON go.member_id = m.memberid
+        ORDER BY go.server_created_at DESC
+    ';
+    $orderStmt = $pdo->prepare($orderSql);
+    $orderStmt->execute();
+    $allOrders = $orderStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $pendingCount = 0;
+    foreach ($allOrders as &$order) {
+        $orderDetail = json_decode($order['order_data'], true);
+        $order['product_name'] = $orderDetail['product_name'] ?? 'N/A';
+        $order['product_price'] = $orderDetail['product_price'] ?? 0;
+        $order['category'] = $orderDetail['category'] ?? '';
+        $order['payment_status'] = $orderDetail['payment_status'] ?? 'unknown';
+        if (empty($order['shipping_status'])) $order['shipping_status'] = 'pending';
+        if ($order['shipping_status'] === 'pending') $pendingCount++;
+        
+        if (empty($order['shipping_address']) && !empty($order['member_address'])) {
+            $order['shipping_address'] = $order['member_address'];
+            $order['address_source'] = 'registration';
+        } elseif (!empty($order['shipping_address'])) {
+            $order['address_source'] = 'order';
+        } else {
+            $order['address_source'] = 'none';
+        }
+        
+        if (!empty($order['realname'])) {
+            $order['customer_name'] = trim($order['realname'] . ' ' . ($order['surname'] ?? ''));
+            $order['customer_type'] = 'member';
+        } else {
+            $order['customer_name'] = '';
+            $order['customer_type'] = 'guest';
+        }
+    }
+    
+    // Get guest addresses
+    $addrSql = '
+        SELECT ga.*, gu.android_id, gu.device_info, gu.app_version
+        FROM guest_addresses ga
+        LEFT JOIN guest_users gu ON ga.guest_id = gu.guest_id
+        ORDER BY ga.server_created_at DESC
+    ';
+    $addrStmt = $pdo->prepare($addrSql);
+    $addrStmt->execute();
+    $addresses = $addrStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Group orders by guest_id
+    $ordersByGuest = [];
+    foreach ($allOrders as $order) {
+        $gid = $order['guest_id'];
+        if (!isset($ordersByGuest[$gid])) $ordersByGuest[$gid] = [];
+        $ordersByGuest[$gid][] = $order;
+    }
+    
+    // Attach orders to addresses
+    $guestIdsWithAddress = [];
+    foreach ($addresses as &$addr) {
+        $gid = $addr['guest_id'];
+        $guestIdsWithAddress[$gid] = true;
+        $addr['orders'] = isset($ordersByGuest[$gid]) ? $ordersByGuest[$gid] : [];
+        $addr['order_count'] = count($addr['orders']);
+        $productNames = [];
+        foreach ($addr['orders'] as $o) {
+            $statusIcon = ($o['shipping_status'] === 'shipped') ? '✅' : '⏳';
+            $productNames[] = $statusIcon . ' ' . $o['product_name'] . ' (' . number_format($o['product_price']) . ' บาท)';
+        }
+        $addr['order_summary'] = implode("\n", $productNames);
+    }
+    
+    // Find orders WITHOUT a guest_address entry (e.g. member orders)
+    $orphanGroups = [];
+    foreach ($ordersByGuest as $gid => $orders) {
+        if (!isset($guestIdsWithAddress[$gid])) {
+            // Create a virtual address entry for these orders
+            $firstOrder = $orders[0];
+            $productNames = [];
+            foreach ($orders as $o) {
+                $statusIcon = ($o['shipping_status'] === 'shipped') ? '✅' : '⏳';
+                $productNames[] = $statusIcon . ' ' . $o['product_name'] . ' (' . number_format($o['product_price']) . ' บาท)';
+            }
+            
+            $displayAddress = '';
+            if (!empty($firstOrder['shipping_address'])) {
+                $displayAddress = $firstOrder['shipping_address'];
+            } elseif (!empty($firstOrder['member_address'])) {
+                $displayAddress = $firstOrder['member_address'];
+            }
+            
+            $orphanGroups[] = [
+                'id' => 0,
+                'guest_id' => $gid,
+                'address' => $displayAddress ?: '(ยังไม่ได้กรอกที่อยู่)',
+                'android_id' => $firstOrder['android_id'] ?? '',
+                'device_info' => $firstOrder['device_info'] ?? '',
+                'app_version' => $firstOrder['app_version'] ?? '',
+                'server_created_at' => $firstOrder['server_created_at'] ?? '',
+                'orders' => $orders,
+                'order_count' => count($orders),
+                'order_summary' => implode("\n", $productNames),
+                'customer_name' => $firstOrder['customer_name'] ?? '',
+                'customer_type' => $firstOrder['customer_type'] ?? 'guest',
+                'member_id' => $firstOrder['member_id'] ?? null
+            ];
+        }
+    }
+    
+    // Merge: orphan member/guest orders first, then address entries
+    $combined = array_merge($orphanGroups, $addresses);
+    
+    // 🚀 Update: Sort by the LATEST order date in each group
+    usort($combined, function($a, $b) {
+        // Find most recent order date for group A
+        $dateA = !empty($a['orders']) ? $a['orders'][0]['server_created_at'] : ($a['server_created_at'] ?? '0000-00-00 00:00:00');
+        // Find most recent order date for group B
+        $dateB = !empty($b['orders']) ? $b['orders'][0]['server_created_at'] : ($b['server_created_at'] ?? '0000-00-00 00:00:00');
+        
+        return strcmp($dateB, $dateA); // Descending
+    });
+    
+    $totalEntries = count($combined);
+    $uniqueGuests = count(array_unique(array_column($combined, 'guest_id')));
+    
+    echo json_encode([
+        'success' => true,
+        'data' => $combined,
+        'orders' => $allOrders,
+        'count' => $totalEntries,
+        'stats' => [
+            'total_addresses' => $totalEntries,
+            'unique_guests' => $uniqueGuests,
+            'total_orders' => count($allOrders),
+            'pending_shipments' => $pendingCount
+        ]
+    ]);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+}

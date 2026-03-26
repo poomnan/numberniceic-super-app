@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout_legend_parent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#F7F5E8"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="สัญลักษณ์"
+        android:textColor="#333333"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Row 1: Stars -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView android:layout_width="10dp" android:layout_height="10dp" android:src="@drawable/yellowstar" />
+            <ImageView android:layout_width="10dp" android:layout_height="10dp" android:src="@drawable/yellowstar" />
+            <ImageView android:layout_width="10dp" android:layout_height="10dp" android:src="@drawable/yellowstar" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" อมฤตโชค" android:textSize="11sp" android:textColor="#333333" android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView android:layout_width="10dp" android:layout_height="10dp" android:src="@drawable/yellowstar" />
+            <ImageView android:layout_width="10dp" android:layout_height="10dp" android:src="@drawable/yellowstar" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" มหาสิทธิโชค" android:textSize="11sp" android:textColor="#333333" android:layout_marginStart="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView android:layout_width="10dp" android:layout_height="10dp" android:src="@drawable/yellowstar" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" สิทธิโชค" android:textSize="11sp" android:textColor="#333333" android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="X" android:textSize="12sp" android:textColor="#C62828" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" วันเสีย" android:textSize="11sp" android:textColor="#333333" android:layout_marginStart="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <ImageView android:layout_width="10dp" android:layout_height="10dp" android:src="@drawable/buddha" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" วันพระ" android:textSize="11sp" android:textColor="#333333" android:layout_marginStart="4dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <View android:layout_width="12dp" android:layout_height="12dp" android:background="#FFF9C4" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text=" ฤกษ์ดีที่สุด" android:textSize="11sp" android:textColor="#333333" android:layout_marginStart="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Additional labels -->
+    <com.google.android.flexbox.FlexboxLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:flexWrap="wrap"
+        app:justifyContent="center"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_green_pill"
+            android:layout_margin="2dp"
+            android:text="ได้คุณพิเศษ"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_orange_rounded"
+            android:layout_margin="2dp"
+            android:text="วันพระ"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_green_pill"
+            android:backgroundTint="#4CAF50"
+            android:layout_margin="2dp"
+            android:text="ลอย"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_green_pill"
+            android:backgroundTint="#388E3C"
+            android:layout_margin="2dp"
+            android:text="ฟู"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_red_pill"
+            android:backgroundTint="#E53935"
+            android:layout_margin="2dp"
+            android:text="จม"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_red_pill"
+            android:backgroundTint="#C62828"
+            android:layout_margin="2dp"
+            android:text="อุบาทว์"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_red_pill"
+            android:backgroundTint="#B71C1C"
+            android:layout_margin="2dp"
+            android:text="โลกาวินาศ"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_red_pill"
+            android:layout_margin="2dp"
+            android:text="อัปมงคล"
+            android:textSize="10sp" />
+
+        <TextView
+            style="@style/AuspiciousBadge"
+            android:background="@drawable/bg_pink_pill"
+            android:layout_margin="2dp"
+            android:text="เรียงหมอน"
+            android:textSize="10sp" />
+
+    </com.google.android.flexbox.FlexboxLayout>
+
+    <!-- Bottom note text matching the reference image -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="วันพระขึ้น ๘ ค่ำ หรือ ๑๕ ค่ำ | วันพระแรม ๘ ค่ำ\nวันพระแรม ๑๔ หรือ ๑๕ ค่ำ"
+        android:textColor="#666666"
+        android:textSize="10sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="วันเสาร์ขึ้น ๘ ค่ำ (ห้ามทำการมงคล ยกเว้นอนุเคราะห์กิเณ)\nวันพฤหัสบดี (ห้ามแต่งงาน)"
+        android:textColor="#888888"
+        android:textSize="9sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:gravity="center"
+        android:text="วันศุกร์ ค่ำ วันเสาร์ ๕ ค่ำ (ห้ามปลูกบ้าน แต่โบสถ์ วิหาร ดี)\nวันอาทิตย์ (ห้ามอยู่บ้านใหม่)"
+        android:textColor="#888888"
+        android:textSize="9sp" />
+
+</LinearLayout>

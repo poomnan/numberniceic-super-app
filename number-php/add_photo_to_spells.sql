@@ -1,0 +1,1 @@
+ALTER TABLE spells_warnings ADD COLUMN photo VARCHAR(255) DEFAULT NULL;

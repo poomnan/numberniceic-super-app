@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คุณนิน - ผู้ช่วยตั้งชื่ออัจฉริยะ</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E91E63;
+            /* Pink 500 */
+            --primary-dark: #C2185B;
+            --secondary: #9C27B0;
+            /* Purple 500 */
+            --bg-gradient: linear-gradient(135deg, #FCE4EC 0%, #F3E5F5 100%);
+            /* Light Pink to Lavender */
+            --container-bg: rgba(255, 255, 255, 0.85);
+            --text-color: #333333;
+            --chat-bg-user: #E91E63;
+            --chat-text-user: #ffffff;
+            --chat-bg-ai: #ffffff;
+            --chat-text-ai: #333333;
+            --input-bg: #ffffff;
+            --input-border: #E0E0E0;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
+            background: var(--container-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .ai-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            margin-right: 15px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3);
+        }
+
+        .ai-info h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .ai-info span {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: var(--chat-bg-ai);
+            color: var(--chat-text-ai);
+            border-bottom-left-radius: 2px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--chat-bg-user);
+            color: var(--chat-text-user);
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 10px rgba(233, 30, 99, 0.2);
+        }
+
+        .message strong {
+            color: #C2185B;
+            font-weight: 600;
+        }
+
+        .highlight-box {
+            background: rgba(233, 30, 99, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 5px;
+            border-left: 3px solid var(--primary);
+            color: #444;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 25px;
+            padding: 12px 20px;
+            color: #333;
+            font-family: 'Prompt';
+            outline: none;
+            transition: 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+        }
+
+        button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(233, 30, 99, 0.3);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(233, 30, 99, 0.4);
+        }
+
+        /* Setup Form (Overlay) */
+        .setup-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .setup-box {
+            width: 80%;
+            text-align: center;
+            color: #333;
+        }
+
+        .setup-input {
+            width: 100%;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 10px;
+            color: #333;
+            font-family: 'Prompt';
+        }
+
+        .start-btn {
+            width: 100%;
+            border-radius: 25px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+        }
+
+        /* Loading Dots */
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1s infinite;
+            margin: 0 2px;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: translateY(-5px);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="ai-avatar">🟣</div>
+            <div class="ai-info">
+                <h2>คุณนิน (Khun Ninin)</h2>
+                <span>ผู้ช่วยตั้งชื่ออัจฉริยะ ✨</span>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="message ai">
+                สวัสดีค่ะ! 🟣 คุณนินยินดีต้อนรับสู่บริการตั้งชื่อมงคลนะคะ <br><br>
+                เพื่อให้คุณนินช่วยวิเคราะห์ได้แม่นยำที่สุด รบกวนขอทราบข้อมูลเบื้องต้นก่อนได้ไหมคะ? 😊
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="พิมพ์ข้อความ..." onkeypress="handleEnter(event)">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+
+        <!-- Setup Overlay -->
+        <div class="setup-overlay" id="setupOverlay">
+            <div class="setup-box">
+                <h2 style="margin-bottom: 20px;">เริ่มกันเลย! 🚀</h2>
+                <input type="text" id="setupSurname" class="setup-input" placeholder="นามสกุลของคุณ (จำเป็น)">
+                <select id="setupDay" class="setup-input">
+                    <option value="">-- วันเกิด (ไม่ระบุก็ได้) --</option>
+                    <option value="Sunday">อาทิตย์</option>
+                    <option value="Monday">จันทร์</option>
+                    <option value="Tuesday">อังคาร</option>
+                    <option value="Wednesday1">พุธ (กลางวัน)</option>
+                    <option value="Wednesday2">พุธ (กลางคืน)</option>
+                    <option value="Thursday">พฤหัสบดี</option>
+                    <option value="Friday">ศุกร์</option>
+                    <option value="Saturday">เสาร์</option>
+                </select>
+                <button class="start-btn" onclick="startChat()">เข้าสู่ระบบ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userSurname = "";
+        let userDay = "";
+
+        function startChat() {
+            const surname = document.getElementById('setupSurname').value.trim();
+            const day = document.getElementById('setupDay').value;
+
+            if (!surname) {
+                alert("กรุณากรอกนามสกุลก่อนนะคะ เพื่อให้เราคำนวณเลขศาสตร์ที่แม่นยำที่สุดให้ค่ะ");
+                return;
+            }
+
+            userSurname = surname;
+            userDay = day;
+            document.getElementById('setupOverlay').style.display = 'none';
+
+            const dayText = day ? `วัน${getDayThai(day)}` : "";
+            addMessage(`นามสกุล: ${userSurname} ${dayText}`, 'user');
+
+            setTimeout(() => {
+                addMessage(`รับทราบค่ะ! คุณนินพร้อมดูแลแล้วค่ะ ✨<br>อยากได้ชื่อสไตล์ไหน บอกโจทย์มาได้เลยนะคะ <br>(เช่น "ขอชื่อที่ร่ำรวย", "ชื่อเท่ๆ ทันสมัย")`, 'ai');
+            }, 800);
+        }
+
+        function getDayThai(eng) {
+            const map = {
+                'Sunday': 'อาทิตย์', 'Monday': 'จันทร์', 'Tuesday': 'อังคาร',
+                'Wednesday1': 'พุธกลางวัน', 'Wednesday2': 'พุธกลางคืน',
+                'Thursday': 'พฤหัสบดี', 'Friday': 'ศุกร์', 'Saturday': 'เสาร์'
+            };
+            return map[eng] || eng;
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            input.value = '';
+
+            // Show Loading
+            const loadingId = addLoading();
+
+            try {
+                // Call API (OpenClawHandler)
+                // Note: In real setup, point to the actual backend URL
+                const response = await fetch('/api/openclaw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: text,
+                        surname: userSurname,
+                        day_of_birth: userDay
+                    })
+                });
+
+                const data = await response.json();
+                removeMessage(loadingId);
+
+                // Format Response (Markdown to HTML simple conversion)
+                let formattedReply = data.reply
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                    .replace(/\n/g, '<br>');
+
+                addMessage(formattedReply, 'ai');
+
+            } catch (error) {
+                console.error(error);
+                removeMessage(loadingId);
+                // Fallback for Demo (If backend not connected yet)
+                setTimeout(() => {
+                    const kalakiniCheck = userDay ? '<br>✅ ตรวจสอบแล้ว: ไม่มีอักษรกาลกิณีวันเกิด' : '';
+                    const demoReply = `
+                    คุณนินคัดเลือกชื่อมงคลที่สุดมาให้ค่ะ:<br><br>
+                    1. <strong>ธนภัทร</strong> (รวม 45)<br>
+                    <div class="highlight-box">
+                        ✨ จุดเด่น: <strong>คู่เลข 45 (ปัญญาญาณ)</strong> และ <strong>คู่เลข 24 (เมตตามหานิยม)</strong>
+                        ${kalakiniCheck}
+                    </div><br>
+                    2. <strong>ภัทรพล</strong> (รวม 36)<br>
+                    <div class="highlight-box">
+                         ✨ จุดเด่น: <strong>คู่เลข 36 (ความรักและการเงิน)</strong>
+                         <br>🤩 ชื่อนี้ออกเสียงคล้าย <strong>"พีรพล (ไฮโซลูกนัท)"</strong> นักธุรกิจหนุ่มไฟแรงด้วยนะคะ
+                    </div><br>
+                    💡 ชื่อเหล่านี้คัดมาเฉพาะเกรด A+ ตามหลักเลขศาสตร์แน่นอนค่ะ
+                `;
+                    addMessage(demoReply, 'ai');
+                }, 1000);
+            }
+        }
+
+        function addMessage(html, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = html;
+            document.getElementById('chatArea').appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+            return div.id = 'msg-' + Date.now();
+        }
+
+        function addLoading() {
+            const div = document.createElement('div');
+            div.className = 'message ai typing-indicator';
+            div.innerHTML = '<span></span><span></span><span></span>';
+            document.getElementById('chatArea').appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+            return div.id = 'loading-' + Date.now();
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Account Deletion - Number เลขศาสตร์ พลังเงา</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #ef4444;
+            --secondary: #f87171;
+            --accent: #dc2626;
+            --bg-dark: #450a0a;
+            --text-light: #fef2f2;
+            --text-dim: #fca5a5;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', 'Prompt', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            background-image:
+                radial-gradient(at 0% 0%, hsla(0, 100%, 10%, 1) 0, transparent 50%),
+                radial-gradient(at 50% 0%, hsla(350, 60%, 20%, 1) 0, transparent 50%),
+                radial-gradient(at 100% 0%, hsla(340, 70%, 15%, 1) 0, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #f87171, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--secondary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        p {
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            list-style-position: inside;
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--secondary);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-light);
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .contact-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid var(--glass-border);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก
+        </a>
+
+        <div class="glass-card">
+            <h1>แจ้งขอลบข้อมูลบัญชี (Request Account Deletion)</h1>
+
+            <div
+                style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid var(--glass-border);">
+                <h3 style="color: var(--secondary); margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem;">
+                    สำหรับแอปพลิเคชัน Number เลขศาสตร์ พลังเงา</h3>
+                <p style="margin-bottom: 0;">
+                    หน้านี้ให้บริการสำหรับผู้ใช้งานแอปพลิเคชัน <strong>Number เลขศาสตร์ พลังเงา</strong>
+                    ซึ่งพัฒนาและให้บริการโดย <span
+                        style="color: var(--secondary); font-weight: bold;">numberniceic</span>
+                    เพื่อแจ้งความประสงค์ขอลบข้อมูลบัญชี
+                </p>
+            </div>
+
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                หากท่านต้องการลบบัญชีผู้ใช้และข้อมูลส่วนตัวออกจากระบบของเรา กรุณาดำเนินการตามขั้นตอนดังนี้
+            </p>
+
+            <div style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+                <!-- Option 1: Form -->
+                <div>
+                    <h2><i class="fa-solid fa-pen-to-square"></i> ช่องทางที่ 1: แบบฟอร์มออนไลน์</h2>
+                    <p>กรอกข้อมูล Username หรือ Email ที่ท่านใช้ในการสมัครสมาชิก เพื่อแจ้งคำร้อง</p>
+
+                    <div class="contact-box">
+                        <form id="delete-form" action="" method="post" onsubmit="return showSuccess(event)">
+                            <div class="form-group">
+                                <label for="identity">Username หรือ Email</label>
+                                <input type="text" id="identity" name="identity"
+                                    placeholder="ระบุชื่อผู้ใช้ หรือ อีเมลของท่าน" required>
+                            </div>
+                            <button type="submit">
+                                <i class="fa-solid fa-paper-plane"></i> ส่งเรื่องขอลบข้อมูล
+                            </button>
+                        </form>
+
+                        <!-- Success Message (Hidden by default) -->
+                        <div id="success-msg" style="display: none; text-align: center; padding: 1rem;">
+                            <i class="fa-solid fa-circle-check"
+                                style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                            <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">
+                                ส่งเรื่องขอลบข้อมูลเรียบร้อยแล้ว</h3>
+                            <p style="font-size: 0.9rem; color: var(--text-dim);">
+                                ระบบได้รับคำร้องของท่านแล้ว<br>เจ้าหน้าที่จะดำเนินการตรวจสอบและลบข้อมูลภายใน 30-90 วัน
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 2: Email -->
+                <div>
+                    <h2><i class="fa-solid fa-envelope"></i> ช่องทางที่ 2: ส่งอีเมล</h2>
+                    <p>กรุณาส่งอีเมลระบุ Username ของท่านมาที่เจ้าหน้าที่ของเราโดยตรง</p>
+
+                    <div class="contact-box">
+                        <p style="margin-bottom: 0.5rem;"><strong>ถึง:</strong> msaccess2013@gmail.com</p>
+                        <!-- Replace with actual email if known, user said [อีเมลของคุณ] -->
+                        <p style="margin-bottom: 0.5rem;"><strong>หัวข้อ:</strong> ขอลบข้อมูลบัญชี</p>
+                        <p style="margin-bottom: 1rem;"><strong>เนื้อหา:</strong> ระบุ Username ที่ต้องการลบ</p>
+
+                        <a href="mailto:msaccess2013@gmail.com?subject=ขอลบข้อมูลบัญชี" style="text-decoration: none;">
+                            <button type="button" style="background: linear-gradient(135deg, #4b5563, #374151);">
+                                <i class="fa-solid fa-envelope-open-text"></i> ส่งอีเมลทันที
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function showSuccess(e) {
+                    e.preventDefault();
+                    // Basic validation
+                    const input = document.getElementById('identity');
+                    if (input.value.trim() === '') return false;
+
+                    // UI Transition
+                    document.getElementById('delete-form').style.display = 'none';
+                    document.getElementById('success-msg').style.display = 'block';
+                    return false;
+                }
+            </script>
+
+            <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                <h2><i class="fa-solid fa-clock"></i> ระยะเวลาดำเนินการ</h2>
+                <p>
+                    เมื่อเราได้รับคำร้องของท่านแล้ว เจ้าหน้าที่จะดำเนินการตรวจสอบความเป็นเจ้าของบัญชี
+                    และดำเนินการลบข้อมูลส่วนตัวของท่านออกจากระบบอย่างถาวร <strong>ภายใน 30-90 วัน</strong>
+                    นับจากวันที่ได้รับคำร้องที่ถูกต้องครบถ้วน
+                </p>
+                <p style="font-size: 0.9rem; color: #fca5a5; opacity: 0.8;">
+                    *หมายเหตุ: ข้อมูลบางส่วนอาจถูกเก็บรักษาไว้ตามระยะเวลาที่กฎหมายกำหนด
+                    หรือเพื่อวัตถุประสงค์ในการตรวจสอบทางบัญชี
+                </p>
+            </div>
+
+        </div>
+
+        <footer>
+            &copy;
+            <?php echo date('Y'); ?> Number เลขศาสตร์ พลังเงา. All rights reserved.
+            <br>
+            <span style="font-size: 0.9em; color: var(--secondary);">Developed by numberniceic</span>
+        </footer>
+    </div>
+</body>
+
+</html>

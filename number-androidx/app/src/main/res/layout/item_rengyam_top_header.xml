@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/frame_top_header_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingVertical="0dp"
+        android:paddingHorizontal="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/btn_chat_ninin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="0dp"
+                android:background="@drawable/bg_premium_button_selector"
+                android:elevation="8dp"
+                android:paddingVertical="12dp"
+                android:paddingHorizontal="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:stateListAnimator="@null">
+                
+                <!-- Right Side: Chat Button (Fixed) -->
+                <LinearLayout
+                    android:id="@+id/container_chat_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    
+                    <ImageView
+                        android:id="@+id/img_banner_moon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/moon"
+                        app:tint="#2196F3" />
+                </LinearLayout>
+
+                <!-- Content Area (Centered) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    
+                    <!-- Line 1: Main Greeting (Single line centered) -->
+                    <TextView
+                        android:id="@+id/txt_greeting_message"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/sarabun_semibold"
+                        tools:text="ดูฤกษ์ดีฤกษ์เศรษฐีปี 2569 สำหรับคุณ admin6 >>"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:textStyle="bold" />
+
+                    <!-- Line 2: Date + Icons -->
+                    <LinearLayout
+                        android:id="@+id/container_date_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/txt_greeting_subtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/sarabun_semibold"
+                            tools:text="20 มีนาคม"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/bottom_icon_calendar"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/baseline_calendar_month_24"
+                            app:tint="#FFFFFF" />
+
+                        <com.google.android.flexbox.FlexboxLayout 
+                            android:id="@+id/flex_today_badges" 
+                            android:layout_width="wrap_content" 
+                            android:layout_height="wrap_content" 
+                            android:layout_marginStart="4dp"
+                            app:flexWrap="wrap" 
+                            app:justifyContent="flex_start" />
+                    </LinearLayout>
+                </LinearLayout>
+            </RelativeLayout>
+
+            <!-- 🏰 Taksa Summary Badges (Vertical Layout for readability) -->
+            <LinearLayout
+                android:id="@+id/flex_taksa_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:layout_marginHorizontal="0dp"
+                android:background="#FFF176"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:visibility="gone">
+                
+                <TextView
+                    android:id="@+id/badge_bad_birth"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#37474F"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:fontFamily="@font/sarabun_semibold"
+                    android:includeFontPadding="false"
+                    tools:text="เกิดวันพฤหัสหลีกเลี่ยงฤกษ์วันเสาร์ วันจันทร์" />
+
+                <TextView
+                    android:id="@+id/badge_bad_age"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="-4dp"
+                    android:textColor="#37474F"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:fontFamily="@font/sarabun_semibold"
+                    android:includeFontPadding="false"
+                    tools:text="อายุย่าง 39 วันอัปมงคงประจำปีคือ วันพุธกลางคืน" />
+            </LinearLayout>
+
+            <!-- Auspicious Grid (ADMIN ONLY) -->
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/layout_auspicious_cards_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="4dp"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                app:flexWrap="wrap"
+                app:justifyContent="flex_start"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/card_marriage"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_marriage" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_marriage" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์แต่งงาน" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_marriage" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="7, 10\nมี.ค." />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_surgery"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_surgery" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_surgery" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ผ่าตัด" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_surgery" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_house"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_house" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_house" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ขึ้นบ้านใหม่" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_house" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_ordination"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_ordination" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_ordination" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์บวช" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_ordination" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_deordination"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_deordination" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_deordination" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์สึก" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_deordination" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_car"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_car" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_car" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ออกรถ" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_car" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_buy_car"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_buy_car" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_buy_car" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ซื้อรถ" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_buy_car" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_childbirth"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_childbirth" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_childbirth" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์คลอด" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_childbirth" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_shop"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_shop" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_shop" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์เปิดร้าน" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_shop" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_build_house"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_build_house" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_build_house" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์สร้างบ้าน" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_build_house" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_move_house"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_move_house" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_move_house" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ย้ายบ้าน" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_move_house" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <!-- New Categories -->
+                <LinearLayout
+                    android:id="@+id/card_merit"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_merit" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_merit" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ทำบุญ" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_merit" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_engagement"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_engagement" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_engagement" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์สู่ขอ" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_engagement" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_debt"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_debt" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_debt" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ทวงหนี้" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_debt" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+                
+                <LinearLayout
+                    android:id="@+id/card_plant"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_plant" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_plant" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ปลูกพืช" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_plant" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_spirit_house"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_spirit_house" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_spirit_house" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ตั้งศาล" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_spirit_house" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_travel"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_travel" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_travel" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์เดินทาง" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_travel" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_promotion"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_promotion" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_promotion" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์รับตำแหน่ง" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_promotion" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_job"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_job" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_job" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์สมัครงาน" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_job" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_business"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_business" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_business" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์เปิดกิจการ" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_business" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+            </com.google.android.flexbox.FlexboxLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_month_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:paddingVertical="4dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="visible">
+                
+                <ImageView
+                    android:id="@+id/btn_prev_month"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="20dp"
+                    android:padding="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="#333333" />
+
+                <TextView
+                    android:id="@+id/txt_current_mount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/sarabun_semibold"
+                    android:textColor="#000000"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    tools:text="มีนาคม" />
+                <TextView
+                    android:id="@+id/txt_current_year"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:fontFamily="@font/sarabun_semibold"
+                    android:textColor="#000000"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    tools:text="๒๕๖๙" />
+
+                <ImageView
+                    android:id="@+id/btn_next_month"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="20dp"
+                    android:padding="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_double_arrow_right"
+                    app:tint="#333333" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

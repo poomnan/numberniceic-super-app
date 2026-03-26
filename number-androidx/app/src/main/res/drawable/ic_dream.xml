@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24"
+    android:tint="?attr/colorControlNormal">
+    
+    <!-- Moon (Crescent) -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.64,-0.12 2.4,-0.33 -2.82,-1.6 -4.73,-4.65 -4.73,-8.17 0,-3.52 1.91,-6.57 4.73,-8.17C13.64,3.12 12.83,3 12,3z"/>
+    
+    <!-- Small star 1 -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M18,4l-0.66,1.97L15.34,6.66 17.31,7.34 18,9.31 18.69,7.34 20.66,6.66 18.69,5.97z"/>
+    
+    <!-- Small star 2 -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M20,10l-0.5,1.5L18,12l1.5,0.5L20,14l0.5,-1.5L22,12l-1.5,-0.5z"/>
+</vector>

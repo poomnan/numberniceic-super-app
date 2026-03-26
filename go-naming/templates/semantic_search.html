@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ananya Naming - ค้นหาชื่อตามความรู้สึก</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600&family=Sarabun:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --accent: #ec4899;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Anuphan', 'Sarabun', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 40%);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 1.2rem;
+        }
+
+        .search-box {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            padding: 2rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 3rem;
+            display: flex;
+            gap: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 1.25rem;
+            padding: 0.5rem;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.5);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .name-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .name-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .match-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(129, 140, 248, 0.3);
+        }
+
+        .name-thai {
+            font-size: 2rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .meaning {
+            color: #94a3b8;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #64748b;
+            padding: 5rem;
+        }
+
+        .numerology-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .num-badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .sat-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .sha-badge {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Ananya Naming</h1>
+            <p class="subtitle">ค้นหาชื่อจากนิยาม ความรู้สึก หรือความหมายที่ซ่อนอยู่</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="feelingInput" placeholder="พิมพ์ความรู้สึกที่ต้องการ เช่น 'แสงสว่างที่อ่อนน้อม'..."
+                onkeypress="if(event.key==='Enter') searchNames()">
+            <button onclick="searchNames()">ค้นหาด้วย ANANYA</button>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 2rem;">
+            <label
+                style="display: flex; align-items: center; cursor: pointer; color: #94a3b8; font-size: 0.9rem; gap: 0.5rem;">
+                <input type="checkbox" id="goodOnlyToggle" onchange="searchNames()"
+                    style="width: 18px; height: 18px; accent-color: var(--primary);">
+                แสดงเฉพาะเลขดีทั้งหมด (%)
+            </label>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>กำลังค้นหาชื่อที่คู่ควร...</p>
+        </div>
+
+        <div id="results" class="results-grid">
+            <!-- Results will be injected here -->
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <p>ลองพิมพ์ความหมายที่คุณต้องการ เช่น "ผู้มีความรู้และรุ่งโรจน์"</p>
+        </div>
+    </div>
+
+    <script>
+        async function searchNames() {
+            const input = document.getElementById('feelingInput').value;
+            if (!input) return;
+
+            const resultsDiv = document.getElementById('results');
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('emptyState');
+
+            resultsDiv.innerHTML = '';
+            loading.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            try {
+                const goodOnly = document.getElementById('goodOnlyToggle').checked;
+                const response = await fetch(`/api/search-feeling?q=${encodeURIComponent(input)}&limit=30&good_only=${goodOnly}`);
+                let data = await response.json();
+
+                loading.style.display = 'none';
+
+                if (data.length === 0) {
+                    emptyState.innerHTML = goodOnly ?
+                        '<p>ไม่พบชื่อที่มงคลทั้งหมด (สีเขียวคู่) สำหรับคำนี้ ลองปิดตัวกรอง หรือปรับคำค้นหาดูนะครับ</p>' :
+                        '<p>ไม่พบชื่อที่ตรงกับความรู้สึกนี้ ลองปรับคำค้นหาดูนะครับ</p>';
+                    emptyState.style.display = 'block';
+                    return;
+                }
+
+                data.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'name-card';
+                    card.style.animationDelay = `${index * 0.1}s`;
+
+                    // Helper to get color based on quality
+                    const getBadgeStyle = (qual) => {
+                        const level = qual.level || 5;
+                        if (qual.is_good) {
+                            // Green scale: Light (20% opacity) to Dark (full)
+                            // HSL: 158 is green
+                            const lightness = 40 - (level * 2); // 38% to 20%
+                            return `background: hsla(158, 70%, ${lightness}%, ${0.1 + (level * 0.09)}); color: hsl(158, 80%, 45%); border: 1px solid hsla(158, 70%, 40%, 0.3)`;
+                        } else {
+                            // Red scale: 0 is red
+                            const lightness = 60 - (level * 3);
+                            return `background: hsla(0, 70%, ${lightness}%, ${0.1 + (level * 0.09)}); color: hsl(0, 80%, 45%); border: 1px solid hsla(0, 70%, 40%, 0.3)`;
+                        }
+                    };
+
+                    const satStyle = getBadgeStyle(item.sat_qual);
+                    const shaStyle = getBadgeStyle(item.sha_qual);
+
+                    card.innerHTML = `
+                        <div class="match-badge">${item.score}% Match</div>
+                        <div class="name-thai">${item.name}</div>
+                        <div class="numerology-badges">
+                            <span class="num-badge" style="${satStyle}">ศาสตร์: ${item.sat_sum}</span>
+                            <span class="num-badge" style="${shaStyle}">พลังเงา: ${item.sha_sum}</span>
+                        </div>
+                        <div class="meaning">${item.meaning || 'ค้นหาความหมายเพิ่มเติมได้ในรายละเอียด'}</div>
+                    `;
+                    resultsDiv.appendChild(card);
+                });
+
+            } catch (error) {
+                loading.style.display = 'none';
+                console.error('Search failed:', error);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+            }
+        }
+    </script>
+</body>
+
+</html>

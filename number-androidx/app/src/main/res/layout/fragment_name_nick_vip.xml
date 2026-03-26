@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coor_vip_nick"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFF"
+    tools:context=".ui.namenick.NameNickVipF">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_nickname_vip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+    <FrameLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <include layout="@layout/item_namenick_header"/>
+
+        <FrameLayout
+            android:id="@+id/fragment_block_vip_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+
+        </LinearLayout>
+
+
+
+
+
+    </FrameLayout>
+
+
+
+
+    <ProgressBar
+        android:id="@+id/progress_vip_namelist"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" />
+
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

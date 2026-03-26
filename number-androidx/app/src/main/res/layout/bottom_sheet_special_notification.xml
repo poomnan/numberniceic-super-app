@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_bottom_sheet_rounded">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:background="#DDDDDD" />
+
+    <ImageView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/notification"
+        app:tint="#4CAF50" />
+
+    <TextView
+        android:id="@+id/txt_special_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="หัวข้อข้อความ"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#333"
+        android:gravity="center"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/txt_special_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="รายละเอียดข้อความที่คุณนินส่งมาให้คุณ"
+        android:textSize="16sp"
+        android:textColor="#666"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_go_dashboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ดูข้อมูลใน Dashboard"
+        android:padding="10dp"
+        app:cornerRadius="12dp"
+        android:backgroundTint="#FFD600"
+        android:textColor="#333"
+        app:icon="@drawable/ic_vip02"
+        app:iconGravity="textStart"
+        app:iconPadding="12dp"
+        app:iconSize="32dp"
+        app:iconTint="@null"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_close_special"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="รับทราบ"
+        android:padding="12dp"
+        app:cornerRadius="12dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#4CAF50" />
+
+</LinearLayout>

@@ -1,0 +1,35 @@
+#!/bin/bash
+set -e
+
+# Configuration
+SERVER_IP="43.228.85.200"
+SERVER_USER="root"
+SERVER_PASSWORD="Lydh@58LTG"
+SERVICE_NAME="go-naming"
+REMOTE_DIR="/home/tayap/go-naming"
+LOCAL_DIR="/Users/tayap/project-naming/go-naming"
+
+echo "=== Deploying go-naming backend to $SERVER_IP ==="
+
+# Step 1: Build for Linux
+echo "Building for Linux/amd64..."
+cd "$LOCAL_DIR"
+GOOS=linux GOARCH=amd64 go build -o server-linux main.go
+
+# Step 2: Stop service first (to release binary lock)
+echo "Stopping service..."
+sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no -T \
+    "$SERVER_USER@$SERVER_IP" "systemctl stop $SERVICE_NAME"
+
+# Step 3: Copy new binary to server
+echo "Copying new binary..."
+sshpass -p "$SERVER_PASSWORD" scp -o StrictHostKeyChecking=no \
+    server-linux \
+    "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/server"
+
+# Step 4: Start service with new binary
+echo "Starting service..."
+sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no -T \
+    "$SERVER_USER@$SERVER_IP" "systemctl start $SERVICE_NAME && sleep 2 && systemctl status $SERVICE_NAME --no-pager | head -5"
+
+echo "Deployment completed successfully!"

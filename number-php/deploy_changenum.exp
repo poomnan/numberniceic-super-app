@@ -1,0 +1,24 @@
+#!/usr/bin/expect
+
+set timeout 60
+set password "IntelliP24.X"
+set host "43.228.85.200"
+set user "tayap"
+set remote_dir "/home/tayap/ananya-php"
+
+set files {
+    "views/changenum/home.phtml"
+    "views/changenum/namenick.phtml"
+    "views/changenum/namesur.phtml"
+    "views/changenum/tabian.phtml"
+    "views/changenum/phone.phtml"
+}
+
+foreach file $files {
+    puts "📦 Uploading $file..."
+    spawn scp -o StrictHostKeyChecking=no $file $user@$host:$remote_dir/$file
+    expect {
+        "password:" { send "$password\r" }
+    }
+    expect eof
+}

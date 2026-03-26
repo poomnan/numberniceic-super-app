@@ -1,0 +1,157 @@
+package main
+
+import (
+	"encoding/json"
+	"go-naming/database"
+	"go-naming/handlers"
+	"go-naming/models"
+	"go-naming/services"
+	"log"
+	"net/http"
+	"os"
+)
+
+// Helper to send JSON response
+func jsonResponse(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("Error encoding response: %v", err)
+	}
+}
+
+func main() {
+	// Initialize Database Connection
+
+	// Initialize FCM (Firebase Cloud Messaging)
+	serviceAccountPath := os.Getenv("FCM_SERVICE_ACCOUNT_PATH")
+	if serviceAccountPath == "" {
+		serviceAccountPath = "/home/tayap/firebase-service-account.json"
+	}
+	if err := services.InitFCM(serviceAccountPath); err != nil {
+		log.Printf("Warning: FCM initialization failed: %v", err)
+	}
+	database.Connect()
+	defer database.DB.Close()
+
+	// Handler: /ping
+	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		jsonResponse(w, http.StatusOK, map[string]string{
+			"status":  "ok",
+			"version": "1.0.5-debug-log",
+		})
+	})
+
+	// Handler: /users
+	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		rows, err := database.DB.Query("SELECT id, username, email, display_name, created_at, is_admin, updated_at FROM users LIMIT 10")
+		if err != nil {
+			jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		var users []models.User
+		for rows.Next() {
+			var u models.User
+			if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.DisplayName, &u.CreatedAt, &u.IsAdmin, &u.UpdatedAt); err != nil {
+				jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				return
+			}
+			users = append(users, u)
+		}
+
+		// Handle empty result case
+		if users == nil {
+			users = []models.User{}
+		}
+
+		jsonResponse(w, http.StatusOK, users)
+	})
+
+	// Handler: Root (Serve index.html)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFile(w, r, "templates/index.html")
+	})
+
+	// Handler: API Documentation
+	http.HandleFunc("/api-doc", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "templates/api_doc.html")
+	})
+
+	// Name Handlers
+	http.HandleFunc("/names", handlers.GetNames)
+	http.HandleFunc("/name-detail", handlers.GetNameDetail)
+	http.HandleFunc("/name-similar", handlers.GetSimilarNames)
+	http.HandleFunc("/decode", handlers.DecodeNameHandler)
+	http.HandleFunc("/recommend", handlers.RecommendHandler)
+	http.HandleFunc("/debug-embedding", handlers.DebugEmbeddingHandler)
+	http.HandleFunc("/debug-db", handlers.DebugDBHandler)
+	http.HandleFunc("/debug-log", handlers.DebugLogHandler)
+	http.HandleFunc("/debug-gender-log", handlers.DebugGenderLogHandler)
+	http.HandleFunc("/debug-gender-stats", handlers.DebugGenderStatsHandler)
+	http.HandleFunc("/openclaw", handlers.OpenClawHandler)
+
+	http.HandleFunc("/openclaw", handlers.OpenClawHandler)
+	// http.HandleFunc("/api/search-feeling", handlers.SearchFeelingHandler)
+	http.HandleFunc("/search-feeling", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "templates/semantic_search.html")
+	})
+
+	// Assignment Handlers (New)
+	http.HandleFunc("/check-assignment", handlers.CheckAssignmentHandler)
+	http.HandleFunc("/get-buddha-pangs", handlers.GetBuddhaPangsHandler)
+	http.HandleFunc("/assign-buddha", handlers.AssignBuddhaHandler)
+	http.HandleFunc("/add-buddha-pang", handlers.AddBuddhaPangHandler)
+
+	// Android Compatibility API
+	http.HandleFunc("/get-assigned-inauspicious", handlers.GetAssignedInauspiciousHandler)
+	http.HandleFunc("/get-assigned-buddha", handlers.GetAssignedBuddhaHandler)
+
+	// Admin API
+	http.HandleFunc("/admin/add-name", handlers.AddNameHandler)
+	http.HandleFunc("/admin/update-name", handlers.UpdateNameHandler)
+	http.HandleFunc("/admin/delete-name", handlers.DeleteNameHandler)
+
+	// Phonetic Handlers
+	http.HandleFunc("/phonetic-code", handlers.PhoneticHandler)
+	http.HandleFunc("/phonetic-match", handlers.CheckPhoneticMatchHandler)
+	http.HandleFunc("/recommend-spelling", handlers.RecommendSpellingHandler)
+
+	// Chat Handlers
+	http.HandleFunc("/chat/init", handlers.InitChatHandler)
+	http.HandleFunc("/chat/send", handlers.SendMessageHandler)
+	http.HandleFunc("/chat/poll", handlers.PollMessageHandler)
+	http.HandleFunc("/chat/history", handlers.GetHistoryHandler)
+	http.HandleFunc("/chat/admin/poll", handlers.AdminPollHandler)
+	http.HandleFunc("/chat/admin/recent", handlers.GetRecentAdminMessagesHandler)
+	http.HandleFunc("/chat/delete", handlers.DeleteMessageHandler) // DELETE
+	http.HandleFunc("/chat/unread-count", handlers.GetUnreadCountHandler)
+	http.HandleFunc("/chat/mark-read", handlers.MarkReadHandler)
+	http.HandleFunc("/chat/admin/mark-read", handlers.AdminMarkReadHandler)
+	http.HandleFunc("/chat/upload", handlers.UploadHandler)
+	http.HandleFunc("/chat/call/initiate", handlers.InitiateCallHandler)
+	http.HandleFunc("/chat/call/reject", handlers.RejectCallHandler)
+
+	// Serve Uploaded Files
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+
+	log.Println("Server starting on port 8095...")
+	// Run the server
+	if err := http.ListenAndServe(":8095", nil); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
+}

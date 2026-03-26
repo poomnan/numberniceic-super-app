@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardRe"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+
+    android:layout_margin="1dp"
+    app:cardElevation="10dp">
+
+
+    <com.battleent.ribbonviews.RibbonLayout
+        android:id="@+id/ribbonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        app:bottom_height="100"
+
+        app:bottom_padding="11"
+        app:bottom_ribbonColor="@color/pale_magenta_90"
+        app:bottom_text="Updated today"
+        app:bottom_textColor="@android:color/white"
+        app:bottom_textSize="18"
+        app:header_padding="9"
+
+        app:header_ribbonColor="#ff8731"
+        app:header_ribbonRadius="6"
+
+        app:header_text="เบอร์นี้ดี : "
+        app:header_textColor="@android:color/white"
+        app:header_textSize="16"
+        app:show_bottom="false"
+        app:show_header="true">
+
+        <RelativeLayout
+            android:id="@+id/linHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#2d2d2d"
+            android:paddingStart="15dp"
+            android:paddingTop="36dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="14dp">
+
+
+            <TextView
+                android:id="@+id/txtHeadTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="ข้อความ"
+                android:textColor="#FFF"
+                android:textSize="16sp"
+                />
+
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/linDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/linHeader"
+            android:background="#5c5c5c"
+            android:orientation="vertical"
+
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="16dp"
+
+
+            >
+
+            <TextView
+                android:id="@+id/txtDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="20dp"
+                android:fontFamily="@font/browa_0"
+                tools:text="ข้อความ"
+                android:textColor="#FFF"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+    </com.battleent.ribbonviews.RibbonLayout>
+
+
+</androidx.cardview.widget.CardView>
+

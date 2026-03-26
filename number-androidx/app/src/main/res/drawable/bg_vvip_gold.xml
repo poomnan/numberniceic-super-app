@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base Premium Gold -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#000000" />
+            <stroke
+                android:width="2dp"
+                android:color="#FFD700" />
+        </shape>
+    </item>
+    
+    <!-- Shimmering Sheen Layer (Sliding Highlight) -->
+    <item
+        android:id="@+id/shimmer_layer"
+        android:left="-50dp"
+        android:right="50dp">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="#00FFFFFF"
+                android:centerColor="#B0FFFFFF"
+                android:endColor="#00FFFFFF"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>

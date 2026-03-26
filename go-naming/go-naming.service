@@ -1,0 +1,17 @@
+[Unit]
+Description=Go Naming API Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/usr/local/bin
+ExecStart=/usr/local/bin/go-naming
+Restart=always
+RestartSec=5
+Environment="DATABASE_URL=postgres://tayap:IntelliP24.X@localhost:5432/tayap?sslmode=disable"
+Environment="PORT=8095"
+Environment="OPENAI_API_KEY=sk-dummy"
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="nickNameObs"
+            type="com.numberniceic.ui.namenick.NameNickObs" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinator_nickname"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#EEEEEE">
+
+        <FrameLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            tools:context=".ui.namenick.NameNickF">
+
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nestScView"
+
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="10dp"
+                    android:background="#EEEEEE"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_marginTop="0.5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#FFB300"
+                                android:orientation="horizontal">
+
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginStart="10dp"
+
+                                    android:layout_weight="2"
+                                    android:fontFamily="@font/browa_0"
+                                    android:gravity="start|center_vertical"
+                                    android:text="เลือกวันเกิด "
+                                    android:textColor="#ffffff"
+                                    android:textSize="28sp"
+                                    android:textStyle="bold" />
+
+                                <Spinner
+                                    android:layout_margin="1dp"
+                                    android:id="@+id/days_spinner"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1" />
+
+                            </LinearLayout>
+
+
+                            <LinearLayout
+
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="0dp"
+                                android:orientation="vertical">
+
+
+                                <LinearLayout
+                                    android:background="#FFFfff"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="6dp"
+                                        android:text="พิมพ์ชื่อเล่น :"
+                                        android:textColor="#290B0B"
+                                        android:textSize="24sp" />
+
+                                    <AutoCompleteTextView
+                                        android:id="@+id/edtName"
+                                        android:layout_width="222dp"
+                                        android:layout_height="wrap_content"
+                                        android:paddingStart="12dp"
+                                        android:hint="ชื่อเล่น"
+                                        android:imeOptions="actionDone"
+                                        android:maxLines="1"
+                                        android:inputType="text"
+                                        android:maxLength="16"
+                                        android:textSize="26sp"
+                                        android:completionThreshold="1" />
+
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_marginTop="6dp"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="#6CBD15"
+                                    android:orientation="vertical">
+
+
+                                    <com.google.android.material.textfield.TextInputLayout
+                                        android:id="@+id/input_layout_surname"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content">
+
+                                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                                    <LinearLayout
+                                        android:id="@+id/linBottom"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center_horizontal"
+                                        android:layout_marginTop="0dp"
+                                        android:layout_marginBottom="0dp"
+                                        android:orientation="horizontal">
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:id="@+id/btnNickNameClear"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="ล้าง"
+                                            app:backgroundTint="#6CBD15"
+                                            app:cornerRadius="9dp"
+                                            app:icon="@drawable/ic_stop_48"
+                                            app:iconSize="24dp" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_marginStart="9dp"
+                                            android:id="@+id/btnNickNameMiracle"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+
+                                            android:text="ผลทำนาย"
+                                            app:backgroundTint="#6CBD15"
+                                            app:cornerRadius="9dp"
+                                            app:icon="@drawable/ic_eye_48"
+                                            app:iconSize="24dp" />
+
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:id="@+id/btnNickNameCal"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="9dp"
+                                            android:text="ถอดรหัส"
+                                            app:backgroundTint="#6CBD15"
+                                            app:cornerRadius="9dp"
+                                            app:icon="@drawable/ic_clover"
+                                            app:iconSize="24dp" />
+
+
+                                    </LinearLayout>
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="0dp"
+                                        android:layout_gravity="bottom"
+                                        android:background="#C6CCC7"
+
+                                        android:textColor="#FFF"
+                                        android:textSize="12sp" />
+
+
+                                </LinearLayout>
+
+
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
+
+                    <RelativeLayout
+                        android:id="@+id/fragment_ad_container_nickname"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_margin="0dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="#404040"
+                                        android:padding="6dp"
+                                        android:text="คำนวณเลขศาสตร์"
+                                        android:textColor="#FDD835"
+                                        android:fontFamily="@font/browa_0"
+                                        android:textSize="24sp"
+                                        android:textStyle="bold" />
+
+                                    <FrameLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:background="#F0EEED">
+
+                                        <LinearLayout
+                                            android:layout_marginTop="5dp"
+                                            android:layout_marginBottom="5dp"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="14dp"
+                                            android:orientation="horizontal">
+
+                                            <TextView
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+
+                                                android:layout_weight="1"
+                                                android:fontFamily="@font/browa_0"
+                                                android:padding="3dp"
+                                                android:text="รวมเลขศาสตร์ชื่อ"
+                                                android:textColor="#3C3434"
+                                                android:textSize="24sp"
+
+                                                android:textStyle="bold" />
+
+
+                                            <TextView
+                                                android:id="@+id/txtSumSatNickName"
+
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:layout_gravity="center_horizontal"
+                                                android:layout_weight="1"
+                                                android:padding="3dp"
+                                                android:text="@{nickNameObs.pairSatNickName}"
+                                                android:textColor="#3C3434"
+                                                android:fontFamily="@font/browa_0"
+                                                android:textSize="25sp"
+                                                android:textStyle="bold"
+                                                tools:text="ศาสตร์ชื่อ" />
+
+
+                                            <TextView
+                                                android:id="@+id/txt_grade_sat_nickname"
+                                                android:textColor="@{nickNameObs.bgColorSatSum==1 ? @color/color_bg_shasatD : nickNameObs.bgColorSatSum==2 ? @color/color_bg_shasatR : @color/color_txt_nocircle_tabian}"
+                                                android:fontFamily="@font/browa_0"
+                                                android:layout_marginStart="19dp"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                tools:text="ดีมาก"
+                                                android:text="@{nickNameObs.gradeSatNickname}"
+                                                android:textSize="24sp"
+                                                android:textStyle="bold"
+                                                />
+                                        </LinearLayout>
+                                    </FrameLayout>
+
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="5dp"
+                                        android:layout_marginTop="5dp"
+                                        android:orientation="horizontal"
+                                        android:padding="9dp">
+
+                                        <TextView
+
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text=" เลขเรียงชื่อเล่น  : "
+                                            android:textSize="18sp" />
+
+
+                                        <TextView
+                                            android:id="@+id/txtSatNickName"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@{nickNameObs.satNickName}"
+                                            android:textSize="15sp"
+                                            android:textStyle="bold"
+                                            tools:text="[n]" />
+
+
+                                    </LinearLayout>
+
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="1dp"
+                                        android:layout_marginStart="3dp"
+                                        android:layout_marginEnd="3dp"
+                                        android:layout_marginBottom="6dp"
+                                        android:background="@android:color/darker_gray" />
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:orientation="horizontal"
+                                        android:padding="9dp">
+
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="6dp"
+                                            android:text="ตัวอักษรกาลกิณี : "
+                                            android:textSize="18sp" />
+
+
+                                        <TextView
+                                            android:id="@+id/txtKName"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:textSize="16sp"
+                                            android:text="@{nickNameObs.kName}"
+                                            android:textStyle="bold"
+                                            android:textColor="#FB8C00"
+                                            tools:text="กาลกิณี" />
+
+
+
+
+                                    </LinearLayout>
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="1dp"
+                                        android:layout_marginStart="3dp"
+                                        android:layout_marginEnd="3dp"
+                                        android:layout_marginBottom="6dp"
+                                        android:background="@android:color/darker_gray" />
+
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical">
+
+
+                                        <TextView
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:background="#404040"
+                                            android:padding="6dp"
+
+                                            android:text="คำนวณพลังเงา"
+                                            android:textColor="#FDD835"
+                                            android:fontFamily="@font/browa_0"
+                                            android:textSize="24sp"
+                                            android:textStyle="bold" />
+
+                                        <LinearLayout
+                                            android:background="#DFDEDE"
+                                            android:orientation="vertical"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content">
+
+
+
+
+
+
+                                        <LinearLayout
+                                            android:background="#F1F1EE"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:orientation="horizontal">
+
+                                            <TextView
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:gravity="center_vertical"
+                                                android:paddingStart="15dp"
+                                                android:text="ค่าพลังเงาชื่อเล่น"
+                                                android:textColor="#3C3434"
+                                                android:fontFamily="@font/browa_0"
+                                                android:textSize="24sp"
+                                                android:textStyle="bold" />
+
+
+                                            <TextView
+                                                android:id="@+id/txtShaNickName"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+
+                                                android:padding="9dp"
+                                                android:text="@{nickNameObs.pairShaNickName}"
+                                                android:textColor="#3C3434"
+                                                android:fontFamily="@font/browa_0"
+                                                android:textSize="25sp"
+                                                android:textStyle="bold"
+                                                tools:text="พลังเงา" />
+
+                                            <TextView
+                                                android:id="@+id/txt_grade_sha_nickname"
+
+                                                android:text="@{nickNameObs.gradeShaNickname}"
+                                                android:textColor="@{nickNameObs.bgColorShaSum==1 ? @color/color_bg_shasatD : nickNameObs.bgColorShaSum==2 ? @color/color_bg_shasatR : @color/color_txt_nocircle_tabian}"
+                                                android:fontFamily="@font/browa_0"
+                                                android:layout_marginStart="19dp"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                tools:text="ดีมาก"
+                                                android:textSize="24sp"
+                                                android:textStyle="bold"
+                                                />
+
+
+                                        </LinearLayout>
+
+                                            <View
+                                                android:layout_width="match_parent"
+                                                android:layout_height="1dp"
+                                                android:layout_marginStart="3dp"
+                                                android:layout_marginEnd="3dp"
+                                                android:layout_marginBottom="1dp"
+                                                android:background="#FFF" />
+
+                                            <View
+                                                android:layout_width="match_parent"
+                                                android:layout_height="1dp"
+                                                android:layout_marginStart="3dp"
+                                                android:layout_marginEnd="3dp"
+                                                android:layout_marginBottom="6dp"
+                                                android:background="#FFF" />
+
+                                        </LinearLayout>
+
+
+                                    </LinearLayout>
+
+
+                                </LinearLayout>
+
+
+                            </androidx.cardview.widget.CardView>
+
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:layout_marginTop="6dp"
+                                android:layout_marginEnd="6dp" />
+
+
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"/>
+
+                            <FrameLayout
+                                android:id="@+id/fragment_ad_container_nickname_re"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+
+            </androidx.core.widget.NestedScrollView>
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
+                <ProgressBar
+                    android:id="@+id/progressbar_nickname"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal" />
+            </FrameLayout>
+
+
+        </FrameLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

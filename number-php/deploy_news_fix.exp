@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 120
+set user "tayap"
+set host "43.228.85.200"
+set pass "IntelliP24.X"
+set remote_dir "/home/tayap/ananya-php"
+
+# Upload NewsController
+spawn scp "app/Managers/news/NewsController.php" "$user@$host:$remote_dir/app/Managers/news/NewsController.php"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$pass\r" }
+}
+expect eof

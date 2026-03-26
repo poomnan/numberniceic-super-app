@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astro Calendar API Documentation - ชื่อดี.com</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-sidebar: #020617;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-hover: #818cf8;
+            --accent-cyan: #22d3ee;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --border: #334155;
+            --code-bg: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: var(--bg-card);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* API Card */
+        .api-card {
+            background-color: var(--bg-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .api-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .method-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+
+        .method-get {
+            background-color: var(--accent-emerald);
+            color: black;
+        }
+
+        .api-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .api-description {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .api-url {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .param-table th,
+        .param-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .param-table th {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .example-box {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .try-button {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .try-button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .response-box {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>🌌 Astro API</h1>
+            <p>API ดวงดาวและโหราศาสตร์ไทย</p>
+        </div>
+
+        <div class="nav-section">
+            <h3>เมนูหลัก</h3>
+            <a href="/" class="nav-link">🏠 หน้าหลัก</a>
+            <a href="/astro-api" class="nav-link active">🌌 Astro API</a>
+        </div>
+
+        <div class="nav-section">
+            <h3>Endpoints</h3>
+            <a href="#foo-days" class="nav-link">📅 วันฟู</a>
+            <a href="#kalagni" class="nav-link">⚠️ วันกาลกิณี</a>
+            <a href="#sitti-chok" class="nav-link">🍀 สิทธิโชค</a>
+            <a href="#health" class="nav-link">💚 Health Check</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Astro Calendar API Documentation</h1>
+            <p>API สำหรับคำนวณวันมงคลและวันอัปมงคลตามหลักโหราศาสตร์ไทย</p>
+        </div>
+
+        <!-- Foo Days API -->
+        <div class="api-card" id="foo-days">
+            <div class="api-header">
+                <span class="method-badge method-get">GET</span>
+                <h2 class="api-title">วันฟู (Foo Days)</h2>
+            </div>
+            
+            <p class="api-description">
+                คำนวณวันฟู - วันมงคลสูงสุดตามเดือนจันทรคติและวันในสัปดาห์
+                เหมาะสำหรับการเริ่มต้นงานใหม่ ขึ้นบ้านใหม่ หรือจัดงานมงคล
+            </p>
+
+            <div class="api-url">
+                http://localhost:8095/api/foo-days<br>
+                http://localhost:8095/api/foo-days/2026
+            </div>
+
+            <h3>Parameters</h3>
+            <table class="param-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>year (optional)</td>
+                    <td>integer</td>
+                    <td>ปีที่ต้องการ (default: ปีปัจจุบัน)</td>
+                </tr>
+            </table>
+
+            <h3>Example Request</h3>
+            <div class="example-box">
+                # วันฟูปีปัจจุบัน<br>
+                curl http://localhost:8095/api/foo-days<br><br>
+                # วันฟูปี 2026<br>
+                curl http://localhost:8095/api/foo-days/2026
+            </div>
+
+            <button class="try-button" onclick="testEndpoint('/api/foo-days')">
+                ทดสอบ API
+            </button>
+
+            <div class="response-box" id="response-foo-days">
+                // Response will appear here
+            </div>
+        </div>
+
+        <!-- Kalagni API -->
+        <div class="api-card" id="kalagni">
+            <div class="api-header">
+                <span class="method-badge method-get">GET</span>
+                <h2 class="api-title">วันกาลกิณี (Kalagni Days)</h2>
+            </div>
+            
+            <p class="api-description">
+                คำนวณวันกาลกิณี - วันอัปมงคลตามวันเกิด
+                ควรหลีกเลี่ยงการทำกิจกรรมสำคัญในวันเหล่านี้
+            </p>
+
+            <div class="api-url">
+                http://localhost:8095/api/kalagni?birth_day=อาทิตย์<br>
+                http://localhost:8095/api/kalagni/age?birth_day=อาทิตย์&age=45
+            </div>
+
+            <h3>Parameters</h3>
+            <table class="param-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>birth_day</td>
+                    <td>string</td>
+                    <td>วันเกิด (อาทิตย์, จันทร์, อังคาร, พุธ, พฤหัสบดี, ศุกร์, เสาร์, พุธ กลางคืน)</td>
+                </tr>
+                <tr>
+                    <td>age (optional)</td>
+                    <td>integer</td>
+                    <td>อายุสำหรับคำนวณแบบพิเศษ</td>
+                </tr>
+            </table>
+
+            <h3>Example Request</h3>
+            <div class="example-box">
+                # วันกาลกิณีพื้นฐาน<br>
+                curl "http://localhost:8095/api/kalagni?birth_day=อาทิตย์"<br><br>
+                # วันกาลกิณีตามอายุ<br>
+                curl "http://localhost:8095/api/kalagni/age?birth_day=อาทิตย์&age=45"
+            </div>
+
+            <button class="try-button" onclick="testEndpoint('/api/kalagni?birth_day=อาทิตย์')">
+                ทดสอบ API
+            </button>
+
+            <div class="response-box" id="response-kalagni">
+                // Response will appear here
+            </div>
+        </div>
+
+        <!-- Sitti Chok API -->
+        <div class="api-card" id="sitti-chok">
+            <div class="api-header">
+                <span class="method-badge method-get">GET</span>
+                <h2 class="api-title">สิทธิโชค (Sitti Chok Days)</h2>
+            </div>
+            
+            <p class="api-description">
+                คำนวณวันสิทธิโชค, มหาสิทธิโชค, และชัยโชค
+                วันที่นำโชคนำความสำเร็จมาให้
+            </p>
+
+            <div class="api-url">
+                http://localhost:8095/api/sitti-chok<br>
+                http://localhost:8095/api/sitti-chok?year=2026
+            </div>
+
+            <h3>Parameters</h3>
+            <table class="param-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>year (optional)</td>
+                    <td>integer</td>
+                    <td>ปีที่ต้องการ (default: ปีปัจจุบัน)</td>
+                </tr>
+            </table>
+
+            <h3>Example Request</h3>
+            <div class="example-box">
+                # วันสิทธิโชคปีปัจจุบัน<br>
+                curl http://localhost:8095/api/sitti-chok<br><br>
+                # วันสิทธิโชคปี 2026<br>
+                curl "http://localhost:8095/api/sitti-chok?year=2026"
+            </div>
+
+            <button class="try-button" onclick="testEndpoint('/api/sitti-chok')">
+                ทดสอบ API
+            </button>
+
+            <div class="response-box" id="response-sitti-chok">
+                // Response will appear here
+            </div>
+        </div>
+
+        <!-- Health Check API -->
+        <div class="api-card" id="health">
+            <div class="api-header">
+                <span class="method-badge method-get">GET</span>
+                <h2 class="api-title">Health Check</h2>
+            </div>
+            
+            <p class="api-description">
+                ตรวจสอบสถานะการทำงานของ API
+            </p>
+
+            <div class="api-url">
+                http://localhost:8095/api/health
+            </div>
+
+            <h3>Example Request</h3>
+            <div class="example-box">
+                curl http://localhost:8095/api/health
+            </div>
+
+            <button class="try-button" onclick="testEndpoint('/api/health')">
+                ทดสอบ API
+            </button>
+
+            <div class="response-box" id="response-health">
+                // Response will appear here
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testEndpoint(url) {
+            const responseBox = document.getElementById(`response-${url.split('/')[2]}`);
+            responseBox.innerHTML = '🔄 กำลังทดสอบ...';
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                responseBox.innerHTML = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseBox.innerHTML = `❌ เกิดข้อผิดพลาด: ${error.message}`;
+            }
+        }
+
+        // Handle anchor links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (link.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(link.getAttribute('href'));
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

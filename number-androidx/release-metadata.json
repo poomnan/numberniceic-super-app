@@ -1,0 +1,121 @@
+{
+  "app_info": {
+    "package_name": "com.numberniceic",
+    "app_name": "Number",
+    "application_id": "com.numberniceic"
+  },
+  "current_release": {
+    "version_code": 1003,
+    "version_name": "3.0.7",
+    "release_date": "2026-01-23",
+    "build_type": "release",
+    "min_sdk": 24,
+    "target_sdk": 35,
+    "compile_sdk": 35
+  },
+  "signing": {
+    "keystore_path": "/Users/tayap/KeyStoreNumberniceIc.jks",
+    "key_alias": "key0",
+    "note": "ห้ามแชร์ข้อมูล password!"
+  },
+  "build_output": {
+    "aab_path": "app/build/outputs/bundle/release/app-release.aab",
+    "release_folder": "releases/v3.0.6_1002/"
+  },
+  "google_play": {
+    "console_url": "https://play.google.com/console",
+    "app_url": "https://play.google.com/store/apps/details?id=com.numberniceic",
+    "status": "pending_upload"
+  },
+  "release_notes": {
+    "th": [
+      "เพิ่มระบบแนะนำชื่อเล่นอัจฉริยะ",
+      "ปรับปรุงการค้นหาด้วย Levenshtein Algorithm",
+      "เพิ่มความเร็วในการโหลดข้อมูล",
+      "ปรับปรุง UI/UX ให้ใช้งานง่ายขึ้น",
+      "แก้ไขปัญหาการแสดงผลบางหน้าจอ",
+      "เพิ่มประสิทธิภาพการทำงานโดยรวม"
+    ],
+    "en": [
+      "Smart nickname suggestion system",
+      "Enhanced search with Levenshtein Algorithm",
+      "Faster data loading",
+      "Improved UI/UX",
+      "Fixed display issues",
+      "Overall performance improvements"
+    ]
+  },
+  "features": {
+    "new": [
+      "Nickname suggestion with AI",
+      "Levenshtein-based search algorithm"
+    ],
+    "improved": [
+      "Data loading speed",
+      "UI/UX enhancements",
+      "Overall performance"
+    ],
+    "fixed": [
+      "Display issues on some screens",
+      "Data synchronization issues",
+      "App stability improvements"
+    ]
+  },
+  "testing": {
+    "tested_devices": [
+      "Samsung S8 (API 26)",
+      "Emulator (API 24)",
+      "Emulator (API 35)"
+    ],
+    "tested_features": [
+      "Nickname suggestion",
+      "Name search",
+      "Article viewing",
+      "Firebase notifications",
+      "VIP features"
+    ]
+  },
+  "rollout_plan": {
+    "type": "staged",
+    "stages": [
+      {
+        "percentage": 10,
+        "duration_days": 2,
+        "note": "Monitor crashes and ANRs"
+      },
+      {
+        "percentage": 50,
+        "duration_days": 2,
+        "note": "Check user feedback"
+      },
+      {
+        "percentage": 100,
+        "duration_days": 0,
+        "note": "Full rollout"
+      }
+    ]
+  },
+  "previous_versions": [
+    {
+      "version_code": 1002,
+      "version_name": "3.0.6",
+      "release_date": "2026-01-23"
+    },
+    {
+      "version_code": 1001,
+      "version_name": "3.0.5",
+      "release_date": "2026-01-16"
+    },
+    {
+      "version_code": 1000,
+      "version_name": "3.0.0",
+      "release_date": "2026-01-10"
+    }
+  ],
+  "notes": [
+    "ตรวจสอบ crash reports หลังเผยแพร่",
+    "ตอบกลับ user reviews ภายใน 24 ชั่วโมง",
+    "เตรียม hotfix สำหรับบั๊กที่อาจพบ",
+    "Backup keystore file อย่างปลอดภัย"
+  ]
+}

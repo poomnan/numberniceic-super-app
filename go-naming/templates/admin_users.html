@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการสมาชิก - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background: var(--card);
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #B8860B;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin: 0;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1E293B;
+            color: white;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary {
+            background: #334155;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            background: #334155;
+            font-size: 14px;
+            color: #94A3B8;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid #334155;
+            font-size: 15px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-vip {
+            background: #FDB931;
+            color: #000;
+        }
+
+        .badge-normal {
+            background: #334155;
+            color: #94A3B8;
+        }
+
+        select {
+            background: #0F172A;
+            color: white;
+            border: 1px solid #334155;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: #94A3B8; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-users"></i> จัดการสมาชิก</h1>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="ค้นหาชื่อผู้ใช้, ชื่อจริง, หรือ Member ID..."
+                onkeyup="if(event.key === 'Enter') searchUsers()">
+            <button class="btn" onclick="searchUsers()"><i class="fas fa-search"></i> ค้นหา</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Member ID</th>
+                    <th>Username</th>
+                    <th>ชื่อ - นามสกุล</th>
+                    <th>สถานะดาว (VIP)</th>
+                    <th>การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+        <div id="loading" class="loading" style="display:none;">กำลังโหลด...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => searchUsers());
+
+        async function searchUsers() {
+            const search = document.getElementById('searchInput').value;
+            const tableBody = document.getElementById('userTableBody');
+            const loading = document.getElementById('loading');
+
+            tableBody.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                const res = await fetch(`/admin/users/list?search=${encodeURIComponent(search)}`);
+                const data = await res.json();
+
+                loading.style.display = 'none';
+
+                if (data.status === 'success' && data.users) {
+                    data.users.forEach(user => {
+                        const tr = document.createElement('tr');
+                        const isVip = user.vipcode && user.vipcode !== 'normal';
+
+                        tr.innerHTML = `
+                            <td><code>${user.memberid}</code></td>
+                            <td>${user.username}</td>
+                            <td>${user.realname} ${user.surname}</td>
+                            <td>
+                                <span class="badge ${isVip ? 'badge-vip' : 'badge-normal'}">
+                                    ${user.vipcode || 'normal'}
+                                </span>
+                            </td>
+                            <td>
+                                <select onchange="updateStatus('${user.memberid}', this.value)">
+                                    <option value="normal" ${user.vipcode === 'normal' ? 'selected' : ''}>Normal</option>
+                                    <option value="vip" ${user.vipcode === 'vip' ? 'selected' : ''}>VIP</option>
+                                    <option value="premium" ${user.vipcode === 'premium' ? 'selected' : ''}>Premium</option>
+                                </select>
+                            </td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                }
+            } catch (err) {
+                loading.innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+            }
+        }
+
+        async function updateStatus(memberId, newStatus) {
+            try {
+                const res = await fetch('/admin/member/update-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        memberid: memberId,
+                        vipcode: newStatus
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    alert('อัพเดทสถานะสำเร็จ');
+                    searchUsers();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + data.message);
+                }
+            } catch (err) {
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+            }
+        }
+    </script>
+</body>
+
+</html>

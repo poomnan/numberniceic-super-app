@@ -1,0 +1,14 @@
+# Ignore AAB files (too large for Git)
+*.aab
+
+# Ignore APK files
+*.apk
+
+# Ignore checksum files
+*.sha256
+
+# Keep README
+!README.md
+
+# Keep release notes
+!release-notes-*.txt

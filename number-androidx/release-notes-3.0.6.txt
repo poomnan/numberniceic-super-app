@@ -1,0 +1,41 @@
+เวอร์ชัน 3.0.6 - อัปเดตใหม่
+
+✨ ฟีเจอร์ใหม่
+• เพิ่มระบบแนะนำชื่อเล่นอัจฉริยะ - แนะนำชื่อที่คล้ายกันขณะพิมพ์
+• ปรับปรุงการค้นหาด้วย Levenshtein Algorithm เพื่อความแม่นยำสูงสุด
+
+🚀 การปรับปรุง
+• เพิ่มความเร็วในการโหลดข้อมูล
+• ปรับปรุง UI/UX ให้ใช้งานง่ายขึ้น
+• เพิ่มประสิทธิภาพการทำงานโดยรวม
+
+🐛 แก้ไขบั๊ก
+• แก้ไขปัญหาการแสดงผลบางหน้าจอ
+• แก้ไขปัญหาการซิงค์ข้อมูล
+• ปรับปรุงเสถียรภาพของแอป
+
+📱 การรองรับ
+• รองรับ Android 7.0 (API 24) ขึ้นไป
+• ปรับให้เหมาะกับ Android 14 และ 15
+
+---
+
+Version 3.0.6 - New Update
+
+✨ New Features
+• Smart nickname suggestion system - Get similar name suggestions while typing
+• Enhanced search with Levenshtein Algorithm for maximum accuracy
+
+🚀 Improvements
+• Faster data loading
+• Improved UI/UX for better usability
+• Overall performance enhancements
+
+🐛 Bug Fixes
+• Fixed display issues on some screens
+• Fixed data synchronization issues
+• Improved app stability
+
+📱 Support
+• Supports Android 7.0 (API 24) and above
+• Optimized for Android 14 and 15

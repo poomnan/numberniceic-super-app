@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Icon Container -->
+    <FrameLayout
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_circle_gold_light">
+
+        <ImageView
+            android:id="@+id/img_noti_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/notification_w"
+            android:tint="#FFD600" />
+    </FrameLayout>
+
+    <!-- Content -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txt_noti_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="พรุ่งนี้วันพระ"
+            android:textSize="16sp"
+            android:textColor="#212121"
+            android:fontFamily="@font/kanit_light"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/txt_noti_body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            tools:text="แรม 15 ค่ำ เดือน 2 อย่าลืมทำบุญตักบาตร"
+            android:textSize="14sp"
+            android:textColor="#616161"
+            android:fontFamily="@font/sarabun_regular"/>
+
+        <TextView
+            android:id="@+id/txt_noti_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            tools:text="วันนี้, 08:00 น."
+            android:textSize="12sp"
+            android:textColor="#9E9E9E"
+            android:fontFamily="@font/sarabun_regular"/>
+    </LinearLayout>
+
+
+
+</LinearLayout>

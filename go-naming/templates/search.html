@@ -1,0 +1,2153 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ชื่อดี.com Naming - เปลี่ยนชีวิตด้วยพลังตัวเลข</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --primary-dark: #B8860B;
+            --secondary: #FFD700;
+            --accent: #FFF8E1;
+            --bg-dark: #FFFAF0;
+            --bg-darker: #FFF8E1;
+            --text-light: #2C1810;
+            --text-gray: #5D4037;
+            --glass: rgba(212, 175, 55, 0.05);
+            --glass-border: rgba(212, 175, 55, 0.1);
+            --card-hover: rgba(212, 175, 55, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Header & Nav --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-light);
+        }
+
+        .cta-btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .sugg-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            position: relative;
+            padding: 120px 2rem 4rem;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0f172a 100%);
+            z-index: -2;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 10s infinite ease-in-out;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .blob-1 {
+            top: 20%;
+            left: 20%;
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+        }
+
+        .blob-2 {
+            bottom: 20%;
+            right: 20%;
+            width: 500px;
+            height: 500px;
+            background: var(--secondary);
+            animation-delay: -5s;
+        }
+
+        /* Avatar styling */
+        .avatar-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .avatar-item {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .avatar-item:hover {
+            transform: scale(1.1);
+        }
+
+        .avatar-item:active {
+            transform: scale(0.95);
+        }
+
+        .avatar-item:hover .avatar-circle {
+            border-color: white !important;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, -30px);
+            }
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-gray);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* --- Services Section --- */
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            background: var(--card-hover);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background: var(--bg-darker);
+            border-top: 1px solid var(--glass-border);
+            padding: 4rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+        }
+
+        .footer-col h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-col ul li a {
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .footer-col ul li a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 3rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+                /* Add valid mobile menu later */
+            }
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .skeleton-card {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 12px;
+            height: 120px;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .results-container {
+            min-height: auto;
+            transition: all 0.3s ease;
+        }
+
+        /* Input Clear Button */
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            z-index: 5;
+            font-size: 0.9rem;
+        }
+
+        .clear-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .gold-shimmer {
+            background: linear-gradient(90deg, #FFD700 0%, #FFFACD 25%, #FFD700 50%, #FFFACD 75%, #FFD700 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gold-shimmer-ani 3s linear infinite;
+            font-weight: 700;
+        }
+
+        @keyframes gold-shimmer-ani {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        /* Pure Semantic Suggestion Styles */
+        .sugg-header {
+            padding: 12px 16px 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f59e0b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .idea-pill {
+            display: inline-block;
+            padding: 6px 14px;
+            margin: 4px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            color: #c4b5fd;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .idea-pill:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .sugg-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .sugg-item:hover {
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        .search-glow {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3), inset 0 0 10px rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.6) !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <i class="fa-solid fa-infinity"></i> ชื่อดี.com
+        </a>
+        <div class="nav-links">
+            <a href="#home">หน้าแรก</a>
+            <a href="#about">เกี่ยวกับเรา</a>
+            <a href="/api-mobile-doc">API Doc</a>
+            <a href="/how-ranking">วิธีจัดอันดับ</a>
+            <a href="/admin/naming-examples">จัดการดารา</a>
+            <a href="/play-store" style="color: #fbbf24;"><i class="fa-brands fa-google-play"></i> Play Store Prep</a>
+        </div>
+        <a href="https://play.google.com/store/apps/details?id=com.numberniceic" target="_blank" class="cta-btn">
+            ดาวน์โหลดแอป <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </nav>
+
+    <!-- Hero Section with Search -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>ค้นหาชื่อมงคล<br><span>ที่ตรงกับความหมาย</span></h1>
+            <p>ระบบ AI วิเคราะห์รากศัพท์ ค้นหาชื่อที่มีความหมายใกล้เคียงจากฐานข้อมูล 301,226 รายชื่อ</p>
+
+            <!-- Search Form -->
+            <form id="search-form" style="max-width: 600px; margin: 2rem auto;">
+                <!-- Main Input Row -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px; position: relative;" class="input-wrapper">
+                        <div
+                            style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #8b5cf6; font-size: 1.1rem; z-index: 2;">
+                            <i class="fa-solid fa-search"></i>
+                        </div>
+                        <input type="text" id="search-keyword" autocomplete="off"
+                            placeholder="พิมพ์ความหมายที่ต้องการ เช่น 'ร่ำรวย', 'ผู้นำ', 'สวยงาม'..."
+                            style="width: 100%; padding: 0.9rem 1rem 0.9rem 2.8rem; background: rgba(15,23,42,0.8); border: 2px solid rgba(139,92,246,0.3); border-radius: 16px; color: white; font-size: 1.05rem; outline: none; transition: all 0.4s; backdrop-filter: blur(10px);"
+                            onfocus="this.classList.add('search-glow')" onblur="this.classList.remove('search-glow')">
+
+                        <!-- Hero Suggestion Dropdown (Structured) -->
+                        <div id="hero-autocomplete-list"
+                            style="position:absolute; top:calc(100% + 10px); left:0; right:0; background:rgba(15,23,42,0.98); border:1px solid rgba(139,92,246,0.4); border-radius:18px; z-index:99; display:none; max-height:450px; overflow-y:auto; backdrop-filter:blur(20px); box-shadow:0 20px 50px rgba(0,0,0,0.8); text-align:left; animation: fadeSlideIn 0.3s ease;">
+                        </div>
+
+                        <button type="button" class="clear-btn" onclick="clearInput('search-keyword')">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <button type="submit"
+                        style="padding: 0.9rem 2rem; background: linear-gradient(135deg,#B8860B,#D4AF37); border: none; border-radius: 14px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; white-space: nowrap; transition: all 0.3s; box-shadow: 0 4px 20px rgba(212,175,55,0.4);"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(139,92,246,0.6)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(139,92,246,0.4)'">
+                        <i class="fa-solid fa-search"></i> ค้นหาชื่อ
+                    </button>
+                </div>
+
+                <!-- Day of Birth Row -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <!-- Day of Birth Selector -->
+                    <div style="flex: 1; min-width: 250px; position: relative;" class="input-wrapper">
+                        <div
+                            style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #fbbf24; font-size: 1rem; z-index: 2;">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                        <select id="search-day"
+                            style="width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; color: white; font-size: 0.9rem; outline: none; transition: all 0.3s; cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none;"
+                            onfocus="this.style.borderColor='rgba(251,191,36,0.5)'; this.style.background='rgba(255,255,255,0.12)'"
+                            onblur="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.background='rgba(255,255,255,0.08)'">
+                            <option value="" style="color: #333; background: white;">เลือกวันเกิด (เพื่อกรองกาลกิณี)
+                            </option>
+                            <option value="Sunday" style="color: #333; background: white;">วันอาทิตย์</option>
+                            <option value="Monday" style="color: #333; background: white;">วันจันทร์</option>
+                            <option value="Tuesday" style="color: #333; background: white;">วันอังคาร</option>
+                            <option value="Wednesday1" style="color: #333; background: white;">วันพุธกลางวัน</option>
+                            <option value="Wednesday2" style="color: #333; background: white;">วันพุธ (ราหู)</option>
+                            <option value="Thursday" style="color: #333; background: white;">วันพฤหัสบดี</option>
+                            <option value="Friday" style="color: #333; background: white;">วันศุกร์</option>
+                            <option value="Saturday" style="color: #333; background: white;">วันเสาร์</option>
+                        </select>
+                        <div
+                            style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #fbbf24; font-size: 0.8rem; z-index: 2; pointer-events: none;">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sample Names -->
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.8rem; text-align: center;">
+                        <i class="fa-solid fa-sparkles" style="color: #fbbf24; margin-right: 6px;"></i>
+                        ชื่อตัวอย่างที่น่าสนใจ คลิกเลือกได้เลย
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center;">
+                        <button onclick="setPrompt('ผู้มีอำนาจ')"
+                            style="padding: 0.5rem 1rem; background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3); border-radius: 20px; color: #c4b5fd; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(139,92,246,0.3)'; this.style.borderColor='rgba(139,92,246,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(139,92,246,0.15)'; this.style.borderColor='rgba(139,92,246,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-crown" style="margin-right: 4px; font-size: 0.75rem;"></i>ผู้มีอำนาจ
+                        </button>
+                        <button onclick="setPrompt('ฉลาดเฉลียว')"
+                            style="padding: 0.5rem 1rem; background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); border-radius: 20px; color: #f9a8d4; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(236,72,153,0.3)'; this.style.borderColor='rgba(236,72,153,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(236,72,153,0.15)'; this.style.borderColor='rgba(236,72,153,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-brain" style="margin-right: 4px; font-size: 0.75rem;"></i>ฉลาดเฉลียว
+                        </button>
+                        <button onclick="setPrompt('ร่ำรวย')"
+                            style="padding: 0.5rem 1rem; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); border-radius: 20px; color: #fcd34d; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(251,191,36,0.3)'; this.style.borderColor='rgba(251,191,36,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(251,191,36,0.15)'; this.style.borderColor='rgba(251,191,36,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-coins" style="margin-right: 4px; font-size: 0.75rem;"></i>ร่ำรวย
+                        </button>
+                        <button onclick="setPrompt('จิตใจดี')"
+                            style="padding: 0.5rem 1rem; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); border-radius: 20px; color: #6ee7b7; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(16,185,129,0.3)'; this.style.borderColor='rgba(16,185,129,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(16,185,129,0.15)'; this.style.borderColor='rgba(16,185,129,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-heart" style="margin-right: 4px; font-size: 0.75rem;"></i>จิตใจดี
+                        </button>
+                        <button onclick="setPrompt('มีความสุข')"
+                            style="padding: 0.5rem 1rem; background: rgba(251,146,60,0.15); border: 1px solid rgba(251,146,60,0.3); border-radius: 20px; color: #fed7aa; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(251,146,60,0.3)'; this.style.borderColor='rgba(251,146,60,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(251,146,60,0.15)'; this.style.borderColor='rgba(251,146,60,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-smile" style="margin-right: 4px; font-size: 0.75rem;"></i>มีความสุข
+                        </button>
+                        <button onclick="setPrompt('นำโชค')"
+                            style="padding: 0.5rem 1rem; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); border-radius: 20px; color: #e9d5ff; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(168,85,247,0.3)'; this.style.borderColor='rgba(168,85,247,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(168,85,247,0.15)'; this.style.borderColor='rgba(168,85,247,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-clover" style="margin-right: 4px; font-size: 0.75rem;"></i>นำโชค
+                        </button>
+                        <button onclick="setPrompt('แข็งแกร่ง')"
+                            style="padding: 0.5rem 1rem; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); border-radius: 20px; color: #fca5a5; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(239,68,68,0.3)'; this.style.borderColor='rgba(239,68,68,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(239,68,68,0.15)'; this.style.borderColor='rgba(239,68,68,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-shield-alt"
+                                style="margin-right: 4px; font-size: 0.75rem;"></i>แข็งแกร่ง
+                        </button>
+                        <button onclick="setPrompt('สวยงาม')"
+                            style="padding: 0.5rem 1rem; background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.3); border-radius: 20px; color: #f9a8d4; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(236,72,153,0.3)'; this.style.borderColor='rgba(236,72,153,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(236,72,153,0.15)'; this.style.borderColor='rgba(236,72,153,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-star" style="margin-right: 4px; font-size: 0.75rem;"></i>สวยงาม
+                        </button>
+                        <button onclick="setPrompt('ซื่อสัตย์')"
+                            style="padding: 0.5rem 1rem; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 20px; color: #93c5fd; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(59,130,246,0.3)'; this.style.borderColor='rgba(59,130,246,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(59,130,246,0.15)'; this.style.borderColor='rgba(59,130,246,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-handshake"
+                                style="margin-right: 4px; font-size: 0.75rem;"></i>ซื่อสัตย์
+                        </button>
+                        <button onclick="setPrompt('เจริญรุ่งเรือง')"
+                            style="padding: 0.5rem 1rem; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 20px; color: #86efac; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Prompt', sans-serif;"
+                            onmouseover="this.style.background='rgba(34,197,94,0.3)'; this.style.borderColor='rgba(34,197,94,0.5)'; this.style.transform='translateY(-1px)'"
+                            onmouseout="this.style.background='rgba(34,197,94,0.15)'; this.style.borderColor='rgba(34,197,94,0.3)'; this.style.transform='translateY(0)'">
+                            <i class="fa-solid fa-rocket"
+                                style="margin-right: 4px; font-size: 0.75rem;"></i>เจริญรุ่งเรือง
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kaki Alert Box -->
+                <div id="kaki-alert"
+                    style="display: none; padding: 0.8rem 1rem; border-radius: 10px; margin-bottom: 1rem; border: 1px solid; transition: all 0.3s;">
+                    <div id="kaki-text" style="font-size: 0.9rem; font-weight: 500;"></div>
+                </div>
+
+                <!-- Filter Options -->
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <div style="font-size: 0.9rem; color: #94a3b8; font-weight: 600;">
+                        <i class="fa-solid fa-filter" style="color: #D4AF37; margin-right: 6px;"></i> ตัวเลือก:
+                    </div>
+
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
+                        <input type="checkbox" id="toggle-sat"
+                            style="width: 18px; height: 18px; accent-color: #10b981;">
+                        <span>เลขศาสตร์ดี</span>
+                    </label>
+
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
+                        <input type="checkbox" id="toggle-sha"
+                            style="width: 18px; height: 18px; accent-color: #10b981;">
+                        <span>พลังเงาดี</span>
+                    </label>
+
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #e2e8f0; font-size: 0.9rem;">
+                        <input type="checkbox" id="toggle-kaki"
+                            style="width: 18px; height: 18px; accent-color: #f59e0b;" disabled>
+                        <span>ไร้กาลกิณี (ต้องเลือกวันเกิด)</span>
+                    </label>
+                </div>
+            </form>
+
+
+
+
+            <!-- Suggestions Box -->
+            <div id="lastname-suggestions"
+                style="display: none; position: absolute; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts & Modals (moved from hero) -->
+    <script>
+        // --- Dream Chat Removed (Moved to /dream) ---
+
+        // --- Kalakini Display Logic ---
+        const kakiMap = {
+            'Sunday': 'ศ ษ ส ห ฬ ฮ',
+            'Monday': 'ะ ั า ำ ิ ี ึ ื ุ ู เ แ โ ใ ไ ็ ์ อ ๊ ้',
+            'Tuesday': 'ก ข ค ฆ ง',
+            'Wednesday1': 'จ ฉ ช ซ ฌ ญ (พุธกลางวัน)',
+            'Wednesday2': 'บ ป ผ ฝ พ ฟ ภ ม (ราหู)',
+            'Thursday': 'ด ต ถ ท ธ น',
+            'Friday': 'ย ร ล ว',
+            'Saturday': 'ฎ ฏ ฐ ฑ ฒ ณ'
+        };
+
+        const dayInput = document.getElementById('search-day');
+        const alertBox = document.getElementById('kaki-alert');
+        const alertText = document.getElementById('kaki-text');
+        const toggleKakiInput = document.getElementById('toggle-kaki');
+
+        function updateKakiAlert() {
+            if (!dayInput) return;
+            const day = dayInput.value;
+            if (day && kakiMap[day]) {
+                alertBox.style.display = 'block';
+                if (toggleKakiInput && toggleKakiInput.checked) {
+                    alertBox.style.background = 'rgba(16, 185, 129, 0.1)';
+                    alertBox.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                    alertBox.style.color = '#a7f3d0';
+                    alertText.innerHTML = `<i class="fa-solid fa-shield-halved"></i> ระบบกำลังป้องกันอักษรกาลกิณีออกจากผลลัพธ์ให้คุณ`;
+                } else {
+                    alertBox.style.background = 'rgba(245, 158, 11, 0.1)';
+                    alertBox.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+                    alertBox.style.color = '#fcd34d';
+                    alertText.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> แสดงผลรวมถึงชื่อที่มีอักษรกาลกิณีปนอยู่`;
+                }
+            } else {
+                alertBox.style.display = 'none';
+            }
+        }
+
+        function setPrompt(text) {
+            const keywordInput = document.getElementById('search-keyword');
+            if (keywordInput) {
+                keywordInput.value = text;
+                updateClearBtn(keywordInput);
+                // Trigger auto search
+                const form = document.getElementById('search-form');
+                const event = new Event('submit', { bubbles: true, cancelable: true });
+                form.dispatchEvent(event);
+            }
+        }
+
+        window.setLastname = function (name) {
+            const input = document.getElementById('search-lastname');
+            if (input) {
+                input.value = name;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                // Scroll to input slowly on mobile
+                if (window.innerWidth < 768) {
+                    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function clearInput(id) {
+            const input = document.getElementById(id);
+            input.value = '';
+            updateClearBtn(input);
+            input.focus();
+        }
+
+        function updateClearBtn(input) {
+            const btn = input.parentElement.querySelector('.clear-btn');
+            if (btn) {
+                btn.style.display = input.value ? 'flex' : 'none';
+            }
+        }
+
+        // Sync clear buttons on input
+        document.querySelectorAll('.input-wrapper input').forEach(input => {
+            input.addEventListener('input', () => updateClearBtn(input));
+        });
+
+        if (dayInput) {
+            let dayChangeTimeout = null;
+            const handleDayChange = () => {
+                const hasDay = !!dayInput.value;
+                if (toggleKakiInput) {
+                    toggleKakiInput.disabled = !hasDay;
+                    if (hasDay) {
+                        // Only auto-check if user hasn't explicitly unchecked it? No, simpler to default true on new day selection.
+                        // But if user switches day, maybe keep checked? Yes.
+                        if (!toggleKakiInput.checked) toggleKakiInput.checked = true;
+                    } else {
+                        toggleKakiInput.checked = false;
+                    }
+                }
+                updateKakiAlert();
+
+                // Debounced auto-search on day change (wait 800ms)
+                clearTimeout(dayChangeTimeout);
+                const keyword = document.getElementById('search-keyword').value.trim();
+                if (keyword) {
+                    dayChangeTimeout = setTimeout(() => {
+                        const form = document.getElementById('search-form');
+                        const event = new Event('submit', { bubbles: true, cancelable: true });
+                        form.dispatchEvent(event);
+                    }, 800);
+                }
+            };
+
+            dayInput.addEventListener('change', handleDayChange);
+            // Call once on load to set initial state correctly
+            handleDayChange();
+        }
+
+        if (toggleKakiInput) toggleKakiInput.addEventListener('change', updateKakiAlert);
+
+        // --- Auto search on any input change ---
+        const keywordInput = document.getElementById('search-keyword');
+        const toggleSatInput = document.getElementById('toggle-sat');
+        const toggleShaInput = document.getElementById('toggle-sha');
+
+        // Function to trigger search if keyword exists
+        const triggerAutoSearch = () => {
+            const keyword = keywordInput.value.trim();
+            if (keyword) {
+                const form = document.getElementById('search-form');
+                const event = new Event('submit', { bubbles: true, cancelable: true });
+                form.dispatchEvent(event);
+            }
+        };
+
+        // Auto search enabled for checkboxes only (keyword input excluded)
+        if (toggleSatInput) {
+            toggleSatInput.addEventListener('change', triggerAutoSearch);
+        }
+        if (toggleShaInput) {
+            toggleShaInput.addEventListener('change', triggerAutoSearch);
+        }
+
+        // Note: Keyword input excluded from auto search - users must click button
+
+        // --- Numerology Logic ---
+        const satValues = {
+            "A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 8, "G": 3, "H": 5, "I": 1, "J": 1, "K": 2, "L": 3, "M": 4,
+            "N": 5, "O": 7, "P": 8, "Q": 1, "R": 2, "S": 3, "T": 4, "U": 6, "V": 6, "W": 6, "X": 5, "Y": 1, "Z": 7,
+            "a": 1, "b": 2, "c": 3, "d": 4, "e": 5, "f": 8, "g": 3, "h": 5, "i": 1, "j": 1, "k": 2, "l": 3, "m": 4,
+            "n": 5, "o": 7, "p": 8, "q": 1, "r": 2, "s": 3, "t": 4, "u": 6, "v": 6, "w": 6, "x": 5, "y": 1, "z": 7,
+            "ก": 1, "ข": 2, "ฃ": 3, "ค": 4, "ฅ": 5, "ฆ": 3, "ง": 2, "จ": 6, "ฉ": 5, "ช": 2, "ซ": 7, "ฌ": 5, "ญ": 4, "ฎ": 5, "ฏ": 9,
+            "ฐ": 9, "ฑ": 3, "ฒ": 3, "ณ": 5, "ด": 1, "ต": 3, "ถ": 1, "ท": 1, "ธ": 4, "น": 5, "บ": 2, "ป": 2, "ผ": 8, "ฝ": 8, "พ": 8,
+            "ฟ": 8, "ภ": 1, "ม": 5, "ย": 8, "ร": 4, "ล": 6, "ว": 6, "ศ": 7, "ษ": 4, "ส": 7, "ห": 5, "ฬ": 5, "อ": 6, "ฮ": 5,
+            "ะ": 4, "ั": 4, "า": 1, "ำ": 1, "ิ": 4, "ี": 7, "ึ": 5, "ื": 7, "ุ": 1, "ู": 2, "เ": 2, "แ": 2, "โ": 4, "ใ": 6, "ไ": 9,
+            "็": 8, "่": 1, "้": 2, "๊": 7, "๋": 3, "์": 9, "ฤ": 1, "ฦ": 1
+        };
+
+        const shaValues = {
+            "ก": 15, "ข": 15, "ฃ": 15, "ค": 15, "ฅ": 15, "ฆ": 15, "ง": 15,
+            "จ": 8, "ฉ": 8, "ช": 8, "ซ": 8, "ฌ": 8, "ญ": 8,
+            "ฎ": 17, "ฏ": 17, "ฐ": 17, "ฑ": 17, "ฒ": 17, "ณ": 17,
+            "ด": 10, "ต": 10, "ถ": 10, "ท": 10, "ธ": 10, "น": 10,
+            "บ": 19, "ป": 19, "ผ": 19, "ฝ": 19, "พ": 19, "ฟ": 19, "ภ": 19, "ม": 19,
+            "ย": 12, "ร": 12, "ล": 12, "ว": 12,
+            "ศ": 21, "ษ": 21, "ส": 21, "ห": 21, "ฬ": 21, "อ": 6, "ฮ": 21,
+            "ะ": 6, "า": 6, "ิ": 6, "ี": 6, "ุ": 6, "ู": 6, "เ": 6, "โ": 6
+        };
+
+        function explainSum(text, map) {
+            if (!text) return { sum: 0, text: '', details: '' };
+            let details = [];
+            let sum = 0;
+            for (let char of text) {
+                if (char === ' ') continue;
+                const val = map[char] || 0;
+                if (val > 0 || (map === satValues && val === 0)) {
+                    if (val > 0 || val === 0) {
+                        details.push(`${char}(${val})`);
+                        sum += val;
+                    }
+                }
+            }
+            return {
+                sum: sum,
+                details: details.join(' + ') + ' = ' + sum
+            };
+        }
+
+        // --- Real-time Lastname Scoring ---
+        const lnInput = document.getElementById('search-lastname');
+        const lnDisplay = document.getElementById('lastname-numeric-display');
+        const lnSatRes = document.getElementById('lastname-sat-res');
+        const lnShaRes = document.getElementById('lastname-sha-res');
+
+        const badgePlaceholder = (label) => `
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.75rem; color: #64748b;">${label}:</span>
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.1);"></div>
+        </div>`;
+
+        let goodSumsGlobal = [];
+
+        // Fetch Good Sums once on load
+        async function fetchGoodSums() {
+            try {
+                const res = await fetch('/api/v1/good-sums');
+                if (res.ok) {
+                    goodSumsGlobal = await res.json();
+                }
+            } catch (e) {
+                console.error("Failed to fetch good sums:", e);
+            }
+        }
+        fetchGoodSums();
+
+        const isGoodNum = (num) => goodSumsGlobal.includes(parseInt(num));
+
+        const suggBox = document.getElementById('lastname-suggestions');
+        let suggTimeout = null;
+        let isSelecting = false;
+
+        if (lnInput) {
+            lnInput.addEventListener('input', () => {
+                const val = lnInput.value.trim();
+
+                // Numerology Logic
+                if (!val) {
+                    lnSatRes.innerHTML = badgePlaceholder('เลขศาสตร์');
+                    lnShaRes.innerHTML = badgePlaceholder('พลังเงา');
+                    lnDisplay.style.background = 'rgba(0,0,0,0.1)';
+                    lnDisplay.style.borderLeftColor = 'rgba(255,255,255,0.1)';
+                    suggBox.style.display = 'none';
+                    return;
+                }
+                const sat = explainSum(val, satValues);
+                const sha = explainSum(val, shaValues);
+                const getBg = (isGood) => isGood ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #b91c1c)';
+                const badgeStyle = "width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3);";
+
+                lnSatRes.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.75rem; color: #aaa;">เลขศาสตร์:</span>
+                ${sat.sum >= 100 ?
+                        `<div style="display:flex; gap:2px;">
+                        <div onclick="showNumberMeaning('${String(sat.sum).substring(0, 2)}', 'เลขศาสตร์ (คู่หน้า)', '<div>${sat.details}</div>')" 
+                         style="${badgeStyle} background: ${getBg(isGoodNum(String(sat.sum).substring(0, 2)))}; width:28px; height:28px; font-size:0.8rem;"
+                         onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${String(sat.sum).substring(0, 2)}</div>
+                        <div onclick="showNumberMeaning('${String(sat.sum).substring(1, 3)}', 'เลขศาสตร์ (คู่หลัง)', '<div>${sat.details}</div>')" 
+                         style="${badgeStyle} background: ${getBg(isGoodNum(String(sat.sum).substring(1, 3)))}; width:28px; height:28px; font-size:0.8rem;"
+                         onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${String(sat.sum).substring(1, 3)}</div>
+                    </div>` :
+                        `<div onclick="showNumberMeaning('${sat.sum}', 'เลขศาสตร์ (Matching)', '<div>${sat.details}</div>')" 
+                     style="${badgeStyle} background: ${getBg(isGoodNum(sat.sum))};"
+                     onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${sat.sum}</div>`
+                    }
+            </div>`;
+                lnShaRes.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.75rem; color: #aaa;">พลังเงา:</span>
+                ${sha.sum >= 100 ?
+                        `<div style="display:flex; gap:2px;">
+                        <div onclick="showNumberMeaning('${String(sha.sum).substring(0, 2)}', 'พลังเงา (คู่หน้า)', '<div>${sha.details}</div>')" 
+                         style="${badgeStyle} background: ${getBg(isGoodNum(String(sha.sum).substring(0, 2)))}; width:28px; height:28px; font-size:0.8rem;"
+                         onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${String(sha.sum).substring(0, 2)}</div>
+                        <div onclick="showNumberMeaning('${String(sha.sum).substring(1, 3)}', 'พลังเงา (คู่หลัง)', '<div>${sha.details}</div>')" 
+                         style="${badgeStyle} background: ${getBg(isGoodNum(String(sha.sum).substring(1, 3)))}; width:28px; height:28px; font-size:0.8rem;"
+                         onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${String(sha.sum).substring(1, 3)}</div>
+                    </div>` :
+                        `<div onclick="showNumberMeaning('${sha.sum}', 'พลังเงา (Matching)', '<div>${sha.details}</div>')" 
+                     style="${badgeStyle} background: ${getBg(isGoodNum(sha.sum))};"
+                     onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">${sha.sum}</div>`
+                    }
+            </div>`;
+                lnDisplay.style.background = 'rgba(251, 191, 36, 0.05)';
+                lnDisplay.style.borderLeftColor = (isGoodNum(sat.sum) && isGoodNum(sha.sum)) ? '#10b981' : '#fbbf24';
+
+                // Suggestions Logic
+                clearTimeout(suggTimeout);
+                if (isSelecting) {
+                    isSelecting = false;
+                    suggBox.style.display = 'none';
+                    return;
+                }
+
+                if (val.length < 2) {
+                    suggBox.style.display = 'none';
+                    return;
+                }
+
+                suggTimeout = setTimeout(async () => {
+                    // Trigger search automatically when typing in match box
+                    triggerAutoSearch();
+
+                    try {
+                        const res = await fetch(`/api/v1/name-suggestions?q=${encodeURIComponent(val)}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.length > 0) {
+                                suggBox.innerHTML = data.map(name => `
+                    <div class="sugg-item" style="padding: 0.8rem 1rem; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e2e8f0; font-size: 0.9rem;">
+                        <i class="fa-solid fa-signature" style="margin-right: 8px; color: #D4AF37; font-size: 0.7rem;"></i> ${name}
+                    </div>
+                    `).join('');
+                                suggBox.style.display = 'block';
+
+                                suggBox.querySelectorAll('.sugg-item').forEach(item => {
+                                    item.onclick = (e) => {
+                                        const name = item.textContent.trim();
+                                        isSelecting = true;
+                                        lnInput.value = name;
+                                        suggBox.style.display = 'none';
+                                        lnInput.dispatchEvent(new Event('input'));
+                                    };
+                                });
+                            } else {
+                                suggBox.style.display = 'none';
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Suggestion error:", err);
+                    }
+                }, 300);
+            });
+
+            // Close suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!lnInput.contains(e.target) && !suggBox.contains(e.target)) {
+                    suggBox.style.display = 'none';
+                }
+            });
+        }
+
+        // --- Smart Search Demo Script ---
+        async function performSearch() {
+            const keyword = document.getElementById('search-keyword').value.trim();
+            const day = document.getElementById('search-day').value;
+            const toggleSat = document.getElementById('toggle-sat').checked;
+            const toggleSha = document.getElementById('toggle-sha').checked;
+            const toggleKaki = document.getElementById('toggle-kaki').checked;
+
+            if (!keyword) return;
+
+            const resultsDiv = document.getElementById('search-results');
+            const resultsHeader = document.getElementById('search-results-header');
+            const resultsCount = document.getElementById('results-count');
+
+            // Show Skeleton (12 items) IMMEDIATELY
+            resultsHeader.style.display = 'block';
+            resultsCount.textContent = '...';
+            resultsDiv.innerHTML = Array(12).fill('<div class="skeleton-card"></div>').join('');
+
+            try {
+                const res = await fetch('/api/demo/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        keyword: keyword,
+                        lastname: "",
+                        day: day,
+                        filter_sat: toggleSat,
+                        filter_sha: toggleSha,
+                        filter_kaki: toggleKaki
+                    })
+                });
+
+                if (!res.ok) throw new Error('Network error');
+                const data = await res.json();
+
+                if (data && data.error) {
+                    resultsDiv.innerHTML = `<div style="color: #ef4444; text-align: center; padding: 1rem; white-space: pre-wrap;">${data.error}</div>`;
+                    resultsHeader.style.display = 'none';
+                    return;
+                }
+
+                resultsDiv.innerHTML = '';
+                const actualResults = (data && Array.isArray(data)) ? data : [];
+                const displayList = actualResults.slice(0, 12);
+                resultsCount.textContent = displayList.length;
+
+                if (displayList.length === 0) {
+                    resultsDiv.innerHTML = '<div style="color: #aaa; text-align: center; padding: 3rem;">ไม่พบชื่อที่ตรงเงื่อนไข</div>';
+                    resultsHeader.style.display = 'none';
+                    return;
+                }
+
+                // Prepare kaki regex
+                let kakiRegex = null;
+                if (day && kakiMap[day]) {
+                    let chars = kakiMap[day];
+                    if (day !== 'Monday') {
+                        chars = chars.replace(/[^ก-ฮ]/g, '');
+                    } else {
+                        chars = chars.replace(/\s+/g, '');
+                    }
+                    if (chars) kakiRegex = new RegExp(`[${chars}]`);
+                }
+
+                // Canvas-based name renderer
+                function renderNameCanvas(name, regex) {
+                    const dpr = window.devicePixelRatio || 1;
+                    const fontSize = 16;
+                    const font = `bold ${fontSize}px Sarabun, sans-serif`;
+                    const measure = document.createElement('canvas').getContext('2d');
+                    measure.font = font;
+                    const totalW = Math.ceil(measure.measureText(name).width) + 8;
+                    const h = Math.ceil(fontSize * 2);
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = totalW * dpr;
+                    canvas.height = h * dpr;
+                    canvas.style.width = totalW + 'px';
+                    canvas.style.height = h + 'px';
+                    canvas.style.display = 'block';
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.scale(dpr, dpr);
+                    ctx.font = font;
+                    ctx.textBaseline = 'alphabetic';
+                    const y = fontSize * 1.4;
+
+                    if (!regex) {
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.fillText(name, 0, y);
+                        return canvas;
+                    }
+
+                    const characters = [...name];
+                    let x = 0;
+                    for (let i = 0; i < characters.length; i++) {
+                        ctx.fillStyle = regex.test(characters[i]) ? '#ef4444' : '#f8fafc';
+                        ctx.fillText(characters[i], x, y);
+                        x += measure.measureText(characters[i]).width;
+                    }
+                    return canvas;
+                }
+
+                displayList.forEach(item => {
+                    const row = document.createElement('div');
+                    row.style.background = 'rgba(255,255,255,0.05)';
+                    row.style.padding = '0.8rem';
+                    row.style.borderRadius = '8px';
+                    row.style.marginBottom = '0.5rem';
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+
+                    const left = document.createElement('div');
+                    const nameCanvas = renderNameCanvas(item.name, kakiRegex);
+                    left.appendChild(nameCanvas);
+
+                    const mDiv = document.createElement('div');
+                    mDiv.style.cssText = 'font-size:0.8rem;color:#ccc;margin-top:2px';
+                    mDiv.textContent = item.meaning || '';
+                    left.appendChild(mDiv);
+
+                    const dDiv = document.createElement('div');
+                    dDiv.style.cssText = 'font-size:0.7rem;color:var(--text-gray);margin-top:2px';
+
+                    let displayDist = item.distance;
+                    let simPercent = 0;
+
+                    // If exact name match, force 100%
+                    if (item.name === keyword) {
+                        simPercent = 100;
+                    } else if (typeof displayDist === 'number' && !isNaN(displayDist) && isFinite(displayDist)) {
+                        // Better curve for semantic similarity (100 - dist*100 is too harsh for vectors)
+                        // A distance of 0.6-0.7 is often the threshold.
+                        simPercent = Math.max(0, Math.min(100, (1 - displayDist) * 100));
+                        // Boost if it's quite close
+                        if (simPercent > 70) simPercent = Math.min(100, simPercent + 10);
+                    }
+
+                    dDiv.textContent = `ความตรง: ${simPercent.toFixed(1)}%`;
+                    left.appendChild(dDiv);
+
+                    const right = document.createElement('div');
+                    right.style.textAlign = 'right';
+
+                    const commonStyle = "width: 40px; height: 40px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer; transition: transform 0.2s;";
+                    const getSumBg = (isGood) => isGood ? 'background: linear-gradient(135deg, #10b981, #059669);' : 'background: linear-gradient(135deg, #ef4444, #b91c1c);';
+
+                    // Always show individual name numerology
+                    right.innerHTML = `
+                <div style="margin-bottom: 8px;">
+                <div style="font-size: 0.65rem; color: #94a3b8; margin-bottom: 2px; text-align: right;">ชื่อ</div>
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                    <div onclick="showNumberMeaning('${item.sat_sum}', 'เลขศาสตร์')" style="${commonStyle} ${getSumBg(item.is_sat_good)}" title="เลขศาสตร์">${item.sat_sum}</div>
+                    <div onclick="showNumberMeaning('${item.sha_sum}', 'พลังเงา')" style="${commonStyle} ${getSumBg(item.is_sha_good)}" title="พลังเงา">${item.sha_sum}</div>
+                </div>
+                </div>
+            `;
+
+                    const safeMeaning = (item.meaning || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const rootBtn = document.createElement('button');
+                    rootBtn.innerHTML = '<i class="fa-solid fa-book-open"></i> รากศัพท์';
+                    rootBtn.style.cssText = 'margin-top: 10px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2)); border: 1px solid rgba(59, 130, 246, 0.5); color: #93c5fd; font-size: 0.75rem; font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);';
+
+                    rootBtn.onmouseover = () => {
+                        rootBtn.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.4))';
+                        rootBtn.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.3)';
+                        rootBtn.style.transform = 'translateY(-1px)';
+                    };
+                    rootBtn.onmouseout = () => {
+                        rootBtn.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))';
+                        rootBtn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.1)';
+                        rootBtn.style.transform = 'translateY(0)';
+                    };
+
+                    rootBtn.onclick = () => showRootWord(item.name, safeMeaning);
+                    left.appendChild(rootBtn);
+
+                    row.appendChild(left);
+                    row.appendChild(right);
+                    resultsDiv.appendChild(row);
+                });
+
+                // If less than 12, fill with empty cards to keep height stable
+                for (let i = displayList.length; i < 12; i++) {
+                    const emptySlot = document.createElement('div');
+                    emptySlot.style.cssText = 'height: 120px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.05); margin-bottom: 0.8rem; opacity: 0.3;';
+                    resultsDiv.appendChild(emptySlot);
+                }
+
+            } catch (err) {
+                resultsDiv.innerHTML = `<div style="color: red; text-align: center; padding: 1rem;">Error: ${err.message}</div>`;
+            }
+        }
+
+        // Bind performSearch to form and filters
+        document.getElementById('search-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('search-lab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setTimeout(() => runLabSearch(), 100);
+        });
+
+        // Auto-search on filter changes → re-run Lab analysis
+        ['toggle-sat', 'toggle-sha', 'toggle-kaki', 'search-day'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', () => {
+                    const kw = document.getElementById('search-keyword').value.trim();
+                    if (kw) runLabSearch();
+                });
+            }
+        });
+
+        async function showRootWord(name, meaning) {
+            const modal = document.getElementById('root-modal');
+            const content = document.getElementById('root-content');
+            const title = document.getElementById('root-title');
+
+            title.innerText = `รากศัพท์: ${name}`;
+            content.innerHTML = '<div style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังวิเคราะห์...</div>';
+            modal.style.display = 'flex';
+
+            try {
+                const encodedName = encodeURIComponent(name);
+                const encodedMeaning = encodeURIComponent(meaning || '');
+                const res = await fetch(`/api/v1/name-root?name=${encodedName}&meaning=${encodedMeaning}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    content.innerText = 'ไม่สามารถวิเคราะห์ได้: ' + data.error;
+                } else {
+                    content.innerText = data.root_word;
+                }
+            } catch (e) {
+                content.innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+            }
+        }
+
+        async function showNumberMeaning(number, type, calculation = null) {
+            const modal = document.getElementById('root-modal');
+            const content = document.getElementById('root-content');
+            const title = document.getElementById('root-title');
+
+            number = String(number); // Ensure string
+            title.innerHTML = `${type}: <span style="font-size: 1.5rem; color: #fbbf24; margin-left: 8px;">${number}</span>`;
+            content.innerHTML = '<div style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดคำทำนาย...</div>';
+            modal.style.display = 'flex';
+
+            try {
+                let calcHtml = '';
+                if (calculation) {
+                    calcHtml = `<div style="margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 0.9rem; color: #94a3b8; text-align: center;">
+                    <i class="fa-solid fa-calculator" style="margin-right: 6px;"></i> วิธีคิด: ${calculation}
+                    </div>`;
+                }
+
+                if (number.length >= 3) {
+                    // 3+ Digits Logic: Sliding Window (e.g., 105 -> 10, 05)
+                    let pairs = [];
+                    for (let i = 0; i < number.length - 1; i++) {
+                        pairs.push(number.substring(i, i + 2));
+                    }
+
+                    const promises = pairs.map(p => fetch(`/api/v1/number-meaning?number=${p}`).then(res => res.json()));
+                    const results = await Promise.all(promises);
+
+                    content.innerHTML = calcHtml;
+
+                    results.forEach((data, index) => {
+                        const pairNum = pairs[index];
+                        const label = index === 0 ? "คู่หน้า" : (index === pairs.length - 1 ? "คู่หลัง" : "คู่กลาง");
+
+                        content.innerHTML += `
+                            <div style="margin-top: 16px; border-left: 3px solid #fbbf24; padding-left: 12px;">
+                                <h4 style="color: #fbbf24; margin: 0 0 4px 0;">${label} ${pairNum}</h4>
+                                <div style="font-weight: 600; font-size: 1rem; color: #a7f3d0; margin-bottom: 4px;">"${data.description || 'ไม่พบข้อมูล'}"</div>
+                                <div style="font-size: 0.9rem; color: #cbd5e1; text-align: justify;">${data.detail || ''}</div>
+                            </div>
+                        `;
+                    });
+
+                } else {
+                    // Normal Logic (1-2 digits)
+                    const res = await fetch(`/api/v1/number-meaning?number=${number}`);
+                    const data = await res.json();
+
+                    if (!data || data.error) {
+                        content.innerText = 'ไม่พบข้อมูลคำทำนาย';
+                    } else {
+                        content.innerHTML = calcHtml + `
+                <div style="margin-bottom: 16px; font-weight: 600; font-size: 1.1rem; color: #a7f3d0; text-align: center;">
+                    "${data.description}"
+                </div>
+                <div style="font-size: 0.95rem; color: #cbd5e1; text-align: justify; white-space: pre-wrap;">
+                    ${data.detail}
+                </div>
+                `;
+                    }
+                }
+
+            } catch (e) {
+                console.error("Number Meaning Fetch Error:", e);
+                content.innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + e.message;
+            }
+        }
+
+        function closeRootModal() {
+            document.getElementById('root-modal').style.display = 'none';
+        }
+    </script>
+
+    <!-- Use a proper Modal structure -->
+    <div id="root-modal" onclick="closeRootModal()"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
+        <div onclick="event.stopPropagation()"
+            style="background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; max-width: 500px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 id="root-title" style="margin: 0; color: #fff; font-size: 1.2rem;">รากศัพท์</h3>
+                <button onclick="closeRootModal()"
+                    style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+            </div>
+            <div id="root-content" style="color: #cbd5e1; line-height: 1.6; font-size: 1rem;">
+                ...
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="closeRootModal()"
+                    style="background: #334155; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">ปิด</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         NAME SEARCH LAB SECTION
+         Flow: ชื่อ → รากศัพท์ → Keywords → ชื่อมงคลที่คล้ายกัน
+    ═══════════════════════════════════════════════════ -->
+    <section id="search-lab"
+        style="padding: 2rem 1.5rem 5rem; background: linear-gradient(180deg, #0f172a 0%, #0a0f1e 100%); position: relative; overflow: hidden;">
+
+        <!-- Decorative blobs -->
+        <div
+            style="position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent 70%);border-radius:50%;pointer-events:none;">
+        </div>
+        <div
+            style="position:absolute;bottom:-80px;left:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(236,72,153,0.12),transparent 70%);border-radius:50%;pointer-events:none;">
+        </div>
+
+        <div style="max-width: 960px; margin: 0 auto; position: relative; z-index: 1;">
+
+            <!-- Section Header -->
+            <div style="text-align:center; margin-bottom: 3rem;">
+                <div
+                    style="display:inline-flex; align-items:center; gap:10px; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); border-radius:50px; padding:0.4rem 1.2rem; margin-bottom:1rem;">
+                    <i class="fa-solid fa-flask-vial" style="color:#a78bfa; font-size:0.85rem;"></i>
+                    <span style="font-size:0.85rem; color:#a78bfa; font-weight:600; letter-spacing:0.05em;">NAME SEARCH
+                        LAB</span>
+                </div>
+                <h2 style="font-size:2.2rem; font-weight:800; color:#f8fafc; margin-bottom:0.8rem; line-height:1.2;">
+                    ค้นหาชื่อมงคล<br>
+                    <span
+                        style="background:linear-gradient(135deg,#B8860B,#D4AF37);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">จากรากศัพท์ของชื่อ</span>
+                </h2>
+                <p style="color:#94a3b8; font-size:1rem; max-width:500px; margin:0 auto; line-height:1.7;">
+                    ใส่ชื่อที่ต้องการ ระบบจะวิเคราะห์รากศัพท์ สกัด keyword
+                    แล้วค้นหาชื่อมงคลที่มีความหมายใกล้เคียงจากฐานข้อมูล 301,226 รายชื่อ
+                </p>
+            </div>
+
+
+
+            <!-- Results Area (Educational UX) -->
+            <div id="lab-results" style="display:none;">
+
+                <!-- Step 1: AI Etymology Extraction -->
+                <div id="lab-step-root"
+                    style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.3); border-radius:20px; padding:1.5rem; margin-bottom:1.5rem; animation:fadeSlideIn 0.4s ease;">
+                    <div
+                        style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; border-bottom:1px dashed rgba(139,92,246,0.2); padding-bottom:1rem;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div
+                                style="width:40px;height:40px;background:linear-gradient(135deg,#B8860B,#D4AF37);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(212,175,55,0.3);">
+                                <i class="fa-solid fa-robot" style="color:white;font-size:1.1rem;"></i>
+                            </div>
+                            <div>
+                                <div
+                                    style="font-size:0.75rem;color:#c4b5fd;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;">
+                                    STEP 1 : AI ANALYSIS</div>
+                                <div
+                                    style="font-size:1.2rem;font-weight:800;color:#f8fafc;font-family:'Prompt',sans-serif;">
+                                    วิเคราะห์ชื่อ "<span id="lab-name-display" style="color:#a78bfa;"></span>"</div>
+                            </div>
+                        </div>
+                        <div
+                            style="font-size:0.8rem;color:#D4AF37;background:rgba(212,175,55,0.15);padding:4px 12px;border-radius:20px;">
+                            <i class="fa-solid fa-microchip"></i> NLP Etymology
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem;">
+                        <!-- Roots -->
+                        <div style="background:rgba(0,0,0,0.2); border-radius:12px; padding:1.2rem;">
+                            <div style="font-size:0.8rem;color:#94a3b8;margin-bottom:8px;font-weight:600;"><i
+                                    class="fa-solid fa-puzzle-piece" style="color:#a78bfa;margin-right:6px;"></i>1.
+                                สกัดรากศัพท์ (Sub-words)</div>
+                            <div id="lab-root-text"
+                                style="font-size:1.1rem;color:#e2e8f0;font-family:'Prompt',sans-serif;font-weight:600;">
+                            </div>
+                            <div style="margin-top:8px;font-size:0.75rem;color:#64748b;"><i
+                                    class="fa-solid fa-arrow-turn-down fa-rotate-270" style="margin-right:4px;"></i>
+                                ส่งไปยัง Trigram Index Matching (40%)</div>
+                        </div>
+                        <!-- MeaningSummary -->
+                        <div style="background:rgba(0,0,0,0.2); border-radius:12px; padding:1.2rem;">
+                            <div style="font-size:0.8rem;color:#94a3b8;margin-bottom:8px;font-weight:600;"><i
+                                    class="fa-solid fa-book-open" style="color:#ec4899;margin-right:6px;"></i>2.
+                                ถอดรหัสบริบท (Context Summary)</div>
+                            <div id="lab-meaning-text" style="font-size:0.95rem;color:#fbcfe8;line-height:1.5;"></div>
+                            <div style="margin-top:8px;font-size:0.75rem;color:#64748b;"><i
+                                    class="fa-solid fa-arrow-turn-down fa-rotate-270" style="margin-right:4px;"></i>
+                                ส่งไปทำ Vector Embedding (60%)</div>
+                        </div>
+                        <!-- Keywords -->
+                        <div style="background:rgba(0,0,0,0.2); border-radius:12px; padding:1.2rem; grid-column:1/-1;">
+                            <div style="font-size:0.8rem;color:#94a3b8;margin-bottom:8px;font-weight:600;"><i
+                                    class="fa-solid fa-tags" style="color:#38bdf8;margin-right:6px;"></i>3. คำค้นหาหลัก
+                                (Keywords)</div>
+                            <div id="lab-keywords-wrap" style="display:flex;flex-wrap:wrap;gap:0.6rem;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arrow down -->
+                <div id="lab-arrow-1"
+                    style="text-align:center;margin-bottom:1.5rem;color:#64748b;font-size:1.5rem;animation:fadeSlideIn 0.5s ease;">
+                    <i class="fa-solid fa-angles-down"></i>
+                </div>
+
+                <!-- Step 2: Database Pipeline Process -->
+                <div id="lab-step-pipeline"
+                    style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:20px; padding:1.5rem; margin-bottom:1.5rem; animation:fadeSlideIn 0.6s ease;">
+
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:1.5rem;">
+                        <div
+                            style="width:40px;height:40px;background:linear-gradient(135deg,#10b981,#059669);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(16,185,129,0.3);">
+                            <i class="fa-solid fa-server" style="color:white;font-size:1.1rem;"></i>
+                        </div>
+                        <div>
+                            <div
+                                style="font-size:0.75rem;color:#6ee7b7;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;">
+                                STEP 2 : SQL HYBRID PIPELINE</div>
+                            <div
+                                style="font-size:1.2rem;font-weight:800;color:#f8fafc;font-family:'Prompt',sans-serif;">
+                                กวาดค้นหาจากฐานข้อมูล 300,000 ชื่อ</div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-wrap:wrap; gap:1rem;">
+                        <div
+                            style="flex:1; min-width:280px; background:rgba(0,0,0,0.25); border:1px dashed rgba(16,185,129,0.4); border-radius:12px; padding:1rem; text-align:center; position:relative;">
+                            <div style="font-size:0.8rem;color:#34d399;font-weight:bold;margin-bottom:6px;">Trigram
+                                Matching (pg_trgm)</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;line-height:1.5;">ใช้ รากศัพท์
+                                เข้าเทียบเพื่อหารูปแบบคำพ้องเสียง/รูป</div>
+                            <div
+                                style="margin-top:10px;font-size:1rem;font-weight:700;color:#e2e8f0;font-family:'Courier New',Courier,monospace;">
+                                weight: 0.4</div>
+                        </div>
+                        <div style="display:flex;align-items:center;color:#10b981;font-size:1.5rem;font-weight:bold;">+
+                        </div>
+                        <div
+                            style="flex:1; min-width:280px; background:rgba(0,0,0,0.25); border:1px dashed rgba(236,72,153,0.4); border-radius:12px; padding:1rem; text-align:center; position:relative;">
+                            <div style="font-size:0.8rem;color:#f472b6;font-weight:bold;margin-bottom:6px;">Semantic
+                                Matching (PGVector)</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;line-height:1.5;">แปลงความหมายเป็น Vector [0.11,
+                                -0.22, ...] เทียบระยะ Cosine</div>
+                            <div
+                                style="margin-top:10px;font-size:1rem;font-weight:700;color:#e2e8f0;font-family:'Courier New',Courier,monospace;">
+                                weight: 0.6</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; margin-top:1rem; font-size:0.8rem; color:#64748b;">
+                        <i class="fa-solid fa-filter" style="color:#fbbf24;margin-right:4px;"></i> หากเปิดการกรอง
+                        (เลขศาสตร์, พลังเงา) ระบบจะ <span style="color:#fcd34d;font-weight:bold;">Pre-filter</span>
+                        ที่ระดับ SQL ก่อนเสมอ เพื่อความแม่นยำ
+                    </div>
+                </div>
+
+                <!-- Arrow down -->
+                <div id="lab-arrow-2"
+                    style="text-align:center;margin-bottom:1.5rem;color:#64748b;font-size:1.5rem;animation:fadeSlideIn 0.7s ease;">
+                    <i class="fa-solid fa-angles-down"></i>
+                </div>
+
+
+                <!-- Step 3: Similar Names -->
+                <div id="lab-step-similar" style="animation:fadeSlideIn 0.8s ease;">
+                    <div
+                        style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.2rem; flex-wrap:wrap; gap:0.5rem;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div
+                                style="width:40px;height:40px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(59,130,246,0.3);">
+                                <i class="fa-solid fa-ranking-star" style="color:white;font-size:1.1rem;"></i>
+                            </div>
+                            <div>
+                                <div
+                                    style="font-size:0.75rem;color:#93c5fd;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;">
+                                    STEP 3 : RESULTS</div>
+                                <div
+                                    style="font-size:1.2rem;font-weight:800;color:#e2e8f0;font-family:'Prompt',sans-serif;">
+                                    ชื่อมงคลบริบทคล้ายคลึง <span id="lab-similar-count" style="color:#93c5fd;"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            style="font-size:0.8rem;color:#64748b;background:rgba(255,255,255,0.05);padding:6px 16px;border-radius:20px;">
+                            <i class="fa-solid fa-sort-amount-down"></i> เรียงตามคะแนน Final Rank
+                        </div>
+                    </div>
+                    <div id="lab-similar-grid"
+                        style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="lab-loading" style="display:none; text-align:center; padding:3rem;">
+                <div style="display:inline-flex;flex-direction:column;align-items:center;gap:1.5rem;">
+                    <div style="position:relative;width:72px;height:72px;">
+                        <div
+                            style="position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:#D4AF37;animation:spin 1s linear infinite;">
+                        </div>
+                        <div
+                            style="position:absolute;inset:6px;border-radius:50%;border:3px solid transparent;border-top-color:#ec4899;animation:spin 1.5s linear infinite reverse;">
+                        </div>
+                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                            <i class="fa-solid fa-wand-magic-sparkles" style="color:#a78bfa;font-size:1.2rem;"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="lab-loading-text"
+                            style="color:#e2e8f0;font-weight:600;font-size:1rem;margin-bottom:4px;">
+                            กำลังวิเคราะห์รากศัพท์...</div>
+                        <div style="color:#64748b;font-size:0.85rem;">กรุณารอสักครู่</div>
+                    </div>
+                    <!-- Step progress -->
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <div id="prog-1"
+                            style="height:4px;width:60px;border-radius:4px;background:rgba(255,255,255,0.1);transition:background 0.5s;">
+                            <div style="height:100%;width:0%;border-radius:4px;background:#D4AF37;transition:width 1s;">
+                            </div>
+                        </div>
+                        <div id="prog-2"
+                            style="height:4px;width:60px;border-radius:4px;background:rgba(255,255,255,0.1);">
+                            <div style="height:100%;width:0%;border-radius:4px;background:#ec4899;transition:width 1s;">
+                            </div>
+                        </div>
+                        <div id="prog-3"
+                            style="height:4px;width:60px;border-radius:4px;background:rgba(255,255,255,0.1);">
+                            <div style="height:100%;width:0%;border-radius:4px;background:#10b981;transition:width 1s;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="lab-error"
+                style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:16px;padding:1.5rem;text-align:center;">
+                <i class="fa-solid fa-circle-exclamation"
+                    style="color:#f87171;font-size:1.5rem;margin-bottom:0.5rem;display:block;"></i>
+                <div id="lab-error-text" style="color:#fca5a5;"></div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .kw-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: rgba(236, 72, 153, 0.15);
+            border: 1px solid rgba(236, 72, 153, 0.35);
+            color: #f9a8d4;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .kw-chip:hover {
+            background: rgba(236, 72, 153, 0.3);
+            border-color: rgba(236, 72, 153, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .lab-toggle-btn.active {
+            background: rgba(139, 92, 246, 0.15) !important;
+            border-color: rgba(139, 92, 246, 0.4) !important;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .lab-toggle-btn.active .toggle-dot {
+            background: #a78bfa !important;
+            box-shadow: 0 0 10px #D4AF37;
+            transform: scale(1.2);
+        }
+
+        .name-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.2rem;
+            transition: all 0.25s;
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .name-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #B8860B, #FFD700);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .name-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .name-card:hover::before {
+            opacity: 1;
+        }
+
+        .num-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .num-badge:hover {
+            transform: scale(1.12);
+        }
+
+        .gender-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+    </style>
+
+    <script>
+        /* ─── Good sums cache (reuse from main section) ───────────────────── */
+        let labGoodSums = [];
+        let labPairStatus = {}; // { "15": true, "11": false }
+
+        (async () => {
+            try {
+                // Fetch good sums (for filtering names)
+                const rSums = await fetch('/api/v1/good-sums');
+                if (rSums.ok) labGoodSums = await rSums.json();
+
+                // Fetch all pair statuses (for coloring badges)
+                const rPairs = await fetch('/api/v1/number-meaning/all-status');
+                if (rPairs.ok) labPairStatus = await rPairs.json();
+            } catch (e) { }
+        })();
+
+        const isGoodSum = n => labGoodSums.includes(parseInt(n));
+        const isGoodPair = p => labPairStatus[String(p)] === true;
+        const getBadgeBg = ok => ok ? 'linear-gradient(135deg,#10b981,#059669)' : 'linear-gradient(135deg,#ef4444,#b91c1c)';
+
+        // General Autocomplete setup for both Lab and Hero inputs
+        function setupAutocomplete(inputId, listId, onSelectCallback) {
+            const inputEl = document.getElementById(inputId);
+            const listEl = document.getElementById(listId);
+            if (!inputEl || !listEl) return;
+
+            let debounceTimer;
+            let currentRequestID = 0;
+
+            function fetchSuggestions() {
+                clearTimeout(debounceTimer);
+                const q = inputEl.value.trim();
+                // If it's the hero search, we might only want to suggest if they actually type something that looks like a name.
+                // But trigram search is fast, so we just run it.
+                if (!q) {
+                    listEl.style.display = 'none';
+                    return;
+                }
+
+                const reqID = ++currentRequestID;
+
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const resp = await fetch(`/api/v1/name-suggestions?q=${encodeURIComponent(q)}`);
+                        if (!resp.ok) return;
+                        const data = await resp.json(); // Data is now {ideas: [], names: []}
+
+                        if (reqID !== currentRequestID) return;
+
+                        if ((!data.names || data.names.length === 0) && (!data.ideas || data.ideas.length === 0)) {
+                            listEl.style.display = 'none';
+                            return;
+                        }
+
+                        listEl.innerHTML = '';
+
+                        // 1. Render Ideas Section
+                        if (data.ideas && data.ideas.length > 0) {
+                            const header = document.createElement('div');
+                            header.className = 'sugg-header';
+                            header.style.color = '#D4AF37';
+                            header.style.fontSize = '0.85rem';
+                            header.style.textTransform = 'uppercase';
+                            header.style.letterSpacing = '1px';
+                            header.innerHTML = `<i class="fa-solid fa-lightbulb"></i> ไอเดียค้นหาเพิ่มเติม:`;
+                            listEl.appendChild(header);
+
+                            const pillContainer = document.createElement('div');
+                            pillContainer.style.padding = '4px 12px 12px 12px';
+                            data.ideas.forEach(idea => {
+                                const pill = document.createElement('span');
+                                pill.className = 'idea-pill';
+                                pill.textContent = idea;
+                                pill.onclick = (e) => {
+                                    e.stopPropagation();
+                                    inputEl.value = idea;
+                                    listEl.style.display = 'none';
+                                    onSelectCallback(idea);
+                                };
+                                pillContainer.appendChild(pill);
+                            });
+                            listEl.appendChild(pillContainer);
+                        }
+
+                        // 2. Render Names Section
+                        const nameHeader = document.createElement('div');
+                        nameHeader.className = 'sugg-header';
+                        nameHeader.style.color = '#fbbf24';
+                        nameHeader.style.fontSize = '0.85rem';
+                        nameHeader.style.textTransform = 'uppercase';
+                        nameHeader.style.letterSpacing = '1px';
+                        nameHeader.style.marginTop = '4px';
+                        nameHeader.style.borderTop = '1px solid rgba(255,255,255,0.05)';
+                        nameHeader.style.paddingTop = '12px';
+                        nameHeader.innerHTML = `<i class="fa-solid fa-sparkles"></i> รายชื่อที่ความหมายใกล้เคียง:`;
+                        listEl.appendChild(nameHeader);
+
+                        (data.names || []).forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'sugg-item';
+                            div.innerHTML = `
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="font-weight:600; color:#fff; font-size:1.1rem;">${item.name}</span>
+                                    <span style="font-size:0.75rem; color:#D4AF37; background:rgba(212,175,55,0.1); padding:2px 8px; border-radius:10px;">Semantic Match</span>
+                                </div>
+                                <div style="font-size:0.8rem; color:#94a3b8; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    ${item.meaning}
+                                </div>
+                            `;
+
+                            div.onclick = (e) => {
+                                e.stopPropagation();
+                                listEl.style.display = 'none';
+                                onSelectCallback(item.name);
+                            };
+
+                            listEl.appendChild(div);
+                        });
+
+                        listEl.style.display = 'block';
+
+                    } catch (e) { console.error(e); }
+                }, 400);
+            }
+
+            inputEl.addEventListener('input', fetchSuggestions);
+            inputEl.addEventListener('click', fetchSuggestions);
+            inputEl.addEventListener('focus', fetchSuggestions);
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (e.target !== inputEl && e.target !== listEl && !listEl.contains(e.target)) {
+                    listEl.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize Hero Autocomplete
+
+        // For Hero Search, selecting a name suggestion runs the Lab Search
+        setupAutocomplete('search-keyword', 'hero-autocomplete-list', (selectedName) => {
+            document.getElementById('search-keyword').value = selectedName;
+            document.getElementById('search-keyword').value = selectedName;
+            document.getElementById('search-lab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setTimeout(() => runLabSearch(), 500);
+        });
+
+        function setLoadingStep(step, text) {
+            const loadingText = document.getElementById('lab-loading-text');
+            if (loadingText) loadingText.textContent = text;
+            // Animate progress bars
+            ['prog-1', 'prog-2', 'prog-3'].forEach((id, i) => {
+                const bar = document.querySelector(`#${id} div`);
+                if (bar) bar.style.width = (i < step) ? '100%' : '0%';
+            });
+        }
+
+        async function runLabSearch() {
+            const name = document.getElementById('search-keyword').value.trim();
+            if (!name) { alert('กรุณาใส่ชื่อที่ต้องการวิเคราะห์'); return; }
+
+            // UI reset
+            document.getElementById('lab-results').style.display = 'none';
+            document.getElementById('lab-error').style.display = 'none';
+            document.getElementById('lab-loading').style.display = 'block';
+
+            // Close autocomplete dropdown immediately
+            const acList = document.getElementById('hero-autocomplete-list');
+            if (acList) acList.style.display = 'none';
+
+            setLoadingStep(0, 'กำลังวิเคราะห์รากศัพท์...');
+
+            try {
+                const goodSat = (document.getElementById('lab-good-sat') && document.getElementById('lab-good-sat').checked) || (document.getElementById('toggle-sat') && document.getElementById('toggle-sat').checked);
+                const goodSha = (document.getElementById('lab-good-sha') && document.getElementById('lab-good-sha').checked) || (document.getElementById('toggle-sha') && document.getElementById('toggle-sha').checked);
+
+                const day = document.getElementById('search-day')?.value || '';
+                const filterKaki = (document.getElementById('toggle-kaki') && document.getElementById('toggle-kaki').checked) && day !== '';
+
+                // Single endpoint call — backend handles all 3 steps + filters
+                const url = `/api/v1/name-keywords?name=${encodeURIComponent(name)}&good_sat=${goodSat}&good_sha=${goodSha}&day=${encodeURIComponent(day)}&filter_kaki=${filterKaki}`;
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+
+                setLoadingStep(1, 'สกัด keywords...');
+                setLoadingStep(2, 'ค้นหาชื่อมงคล...');
+                setLoadingStep(3, 'เสร็จสิ้น!');
+
+                renderLabResults(data);
+
+            } catch (err) {
+                document.getElementById('lab-error').style.display = 'block';
+                document.getElementById('lab-error-text').textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+            } finally {
+                document.getElementById('lab-loading').style.display = 'none';
+            }
+        }
+
+        function renderLabResults(data) {
+            /* Step 1: Root Word & Context */
+            document.getElementById('lab-name-display').textContent = data.name || '';
+            document.getElementById('lab-root-text').textContent = data.roots || '-';
+            document.getElementById('lab-meaning-text').textContent = data.meaning_summary || '-';
+
+            // Show the UI to start animation
+            document.getElementById('lab-results').style.display = 'block';
+
+            /* Keywords */
+            const kwWrap = document.getElementById('lab-keywords-wrap');
+            kwWrap.innerHTML = '';
+            (data.keywords || []).forEach(kw => {
+                const chip = document.createElement('span');
+                chip.className = 'kw-chip';
+                chip.innerHTML = `<i class="fa-solid fa-hashtag" style="font-size:0.7rem;opacity:0.7;"></i> ${kw}`;
+                chip.title = `ค้นหาชื่อที่มีความหมาย "${kw}"`;
+                kwWrap.appendChild(chip);
+            });
+
+            /* Similar Names */
+            const similar = data.similar || [];
+            document.getElementById('lab-similar-count').textContent = similar.length > 0 ? `(${similar.length} รายการ)` : '';
+            const grid = document.getElementById('lab-similar-grid');
+            grid.innerHTML = '';
+
+            if (similar.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#64748b;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size:2rem;margin-bottom:0.5rem;display:block;opacity:0.4;"></i>
+                ไม่พบชื่อที่ใกล้เคียง
+            </div>`;
+            } else {
+                // Canvas Single-Pass Rendering for Thai Kaki highlight (per SKILL.md §6.5)
+                // วาดทีละตัวอักษร: combining marks (์ ิ ี ฯลฯ) มี width=0 → วาดซ้อนพยัญชนะด้วยสีแดงได้
+                const renderNameCanvas = (container, name, kakiChars) => {
+                    const kakiSet = new Set(kakiChars || []);
+                    const fontSize = 18; // px
+                    const fontStr = `700 ${fontSize}px Prompt, sans-serif`;
+
+                    const canvas = document.createElement('canvas');
+                    const dpr = window.devicePixelRatio || 1;
+                    const ctx = canvas.getContext('2d');
+
+                    // Measure total width
+                    ctx.font = fontStr;
+                    const totalW = Math.ceil(ctx.measureText(name).width) + 4;
+                    const totalH = fontSize + 10;
+
+                    canvas.width = totalW * dpr;
+                    canvas.height = totalH * dpr;
+                    canvas.style.width = totalW + 'px';
+                    canvas.style.height = totalH + 'px';
+                    canvas.style.verticalAlign = 'middle';
+                    canvas.style.display = 'block';
+                    canvas.title = kakiSet.size > 0 ? `กาลกิณี: ${[...kakiSet].join(' ')}` : '';
+
+                    ctx.scale(dpr, dpr);
+                    ctx.font = fontStr;
+                    ctx.textBaseline = 'middle';
+
+                    // Single-pass: draw each char with its own color
+                    let x = 0;
+                    const y = totalH / 2;
+                    for (const ch of name) {
+                        ctx.fillStyle = kakiSet.has(ch) ? '#ef4444' : '#f8fafc';
+                        ctx.fillText(ch, x, y);
+                        x += ctx.measureText(ch).width; // combining marks have ~0 width → overdraw
+                    }
+
+                    container.innerHTML = '';
+                    container.appendChild(canvas);
+                };
+
+                similar.forEach((item, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'name-card';
+                    card.style.animationDelay = `${idx * 50}ms`;
+
+                    const renderBadges = (sum, label) => {
+                        const s = String(sum);
+                        const isOk = isGoodSum(sum);
+                        const bg = getBadgeBg(isOk);
+                        if (s.length < 3) {
+                            return `<div class="num-badge" style="background:${bg};" title="${label} ${sum}" onclick="showNumberMeaning('${sum}','${label}')">
+                                        ${sum}<span style="font-size:0.45rem;margin-top:-2px;">${label}</span>
+                                    </div>`;
+                        }
+                        // Split 132 -> 13, 32
+                        let html = '';
+                        for (let i = 0; i < s.length - 1; i++) {
+                            const pair = s.substring(i, i + 2);
+                            const subLabel = i === 0 ? 'หน้า' : (i === s.length - 2 ? 'หลัง' : 'กลาง');
+                            // Use fallback if labPairStatus not loaded yet
+                            const pairOk = labPairStatus && labPairStatus[String(pair)] === true;
+                            const pairBg = getBadgeBg(pairOk);
+
+                            html += `<div class="num-badge" style="background:${pairBg}; width:34px; height:34px; font-size:0.75rem; ${i > 0 ? 'margin-left:-12px' : ''}; border:2px solid rgba(0,0,0,0.15); box-shadow: -2px 0 5px rgba(0,0,0,0.2);" 
+                                         title="${label} ${pair}" onclick="showNumberMeaning('${pair}','${label} - คู่${subLabel}')">
+                                        ${pair}<span style="font-size:0.35rem;margin-top:-3px;opacity:0.9;">${subLabel}</span>
+                                    </div>`;
+                        }
+                        return `<div style="display:flex; align-items:center; margin-left:10px;">${html}</div>`;
+                    };
+
+                    const safePercent = (val) => (typeof val === 'number' && !isNaN(val) && isFinite(val)) ? (val * 100).toFixed(0) : '0';
+                    card.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(236,72,153,0.3));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:0.85rem;color:#e2e8f0;">${idx + 1}</div>
+                            <div style="min-width:0;">
+                                <div class="name-canvas-wrap" data-name="${item.name}" data-kaki='${JSON.stringify(item.kaki_chars || [])}' style="line-height:1;"></div>
+                                <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                                    <span style="font-size:0.68rem;color:#64748b;" title="Trigram: ${safePercent(item.root_score)}%  Semantic: ${safePercent(item.semantic_score)}%">
+                                        ⚡ ${safePercent(item.final_rank)}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;">
+                            <div style="font-size:0.62rem;color:#64748b;text-align:right;">เลขศาสตร์ · พลังเงา</div>
+                            <div style="display:flex;gap:5px;align-items:center;">
+                                ${renderBadges(item.sat_sum, 'เลขศาสตร์')}
+                                ${renderBadges(item.sha_sum, 'พลังเงา')}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Meaning -->
+                    <div style="font-size:0.82rem;color:#94a3b8;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;" title="${(item.meaning || '').replace(/"/g, '&quot;')}">
+                        ${item.meaning || '<em style="opacity:0.5">ไม่มีความหมาย</em>'}
+                    </div>
+                    <!-- Hybrid score bar -->
+                    <div style="margin-top:10px;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:#475569;margin-bottom:3px;">
+                            <span>🔤 Roots ${safePercent(item.root_score)}%</span>
+                            <span>🧠 Semantic ${safePercent(item.semantic_score)}%</span>
+                            <span style="color:#a78bfa;font-weight:600;">⚡ Final ${safePercent(item.final_rank)}%</span>
+                        </div>
+                        <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;position:relative;">
+                            <div style="position:absolute;left:0;top:0;height:100%;background:#6366f1;border-radius:3px;opacity:0.7;width:${safePercent(item.root_score)}%;"></div>
+                            <div style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,transparent ${safePercent(item.root_score)}%,#ec4899 ${safePercent(item.root_score)}%,#ec4899 ${safePercent(item.final_rank)}%,transparent ${safePercent(item.final_rank)}%);"></div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;gap:8px;margin-top:10px;">
+                        <button onclick="showRootWord('${item.name.replace(/'/g, "\\'")}','${(item.meaning || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').slice(0, 80)}')"
+                            style="flex:1;padding:6px 10px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:8px;color:#93c5fd;font-size:0.75rem;cursor:pointer;font-family:'Sarabun',sans-serif;transition:all 0.2s;"
+                            onmouseover="this.style.background='rgba(59,130,246,0.3)'"
+                            onmouseout="this.style.background='rgba(59,130,246,0.15)'">
+                            <i class="fa-solid fa-book-open" style="margin-right:4px;"></i>รากศัพท์
+                        </button>
+                        <button onclick="document.getElementById('search-keyword').value='${item.name}';runLabSearch()"
+                            style="padding:6px 10px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:8px;color:#c4b5fd;font-size:0.75rem;cursor:pointer;font-family:'Sarabun',sans-serif;transition:all 0.2s;"
+                            onmouseover="this.style.background='rgba(139,92,246,0.3)'"
+                            onmouseout="this.style.background='rgba(139,92,246,0.15)'"
+                            title="ค้นหาชื่อที่ใกล้เคียงกับชื่อนี้">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                    </div>
+                `;
+                    grid.appendChild(card);
+
+                    // Render name with Canvas (must happen after DOM insertion)
+                    const wrap = card.querySelector('.name-canvas-wrap');
+                    if (wrap) {
+                        const kakiData = JSON.parse(wrap.dataset.kaki || '[]');
+                        renderNameCanvas(wrap, wrap.dataset.name, kakiData);
+                    }
+                });
+            }
+
+            // Show results
+            document.getElementById('lab-results').style.display = 'block';
+
+            // Smooth scroll to results
+            document.getElementById('lab-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Auto-run on Enter
+        document.addEventListener('DOMContentLoaded', () => {
+            const inp = document.getElementById('search-keyword');
+            if (inp) {
+                inp.addEventListener('keydown', e => { if (e.key === 'Enter') runLabSearch(); });
+            }
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col" style="max-width: 300px;">
+                <a href="#" class="logo" style="margin-bottom: 1rem; display: inline-block;">
+                    <i class="fa-solid fa-infinity"></i> ชื่อดี.com
+                </a>
+                <p style="color: var(--text-gray); font-size: 0.9rem; line-height: 1.6;">
+                    ชื่อดี.com Naming - ผู้นำด้านศาสตร์ตัวเลขและการตั้งชื่อมงคล
+                    ผสานภูมิปัญญาโบราณเข้ากับเทคโนโลยี AI
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h4>เมนูหลัก</h4>
+                <ul>
+                    <li><a href="#home">หน้าแรก</a></li>
+                    <li><a href="#services">บริการ</a></li>
+                    <li><a href="#about">เกี่ยวกับ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>ช่วยเหลือ</h4>
+                <ul>
+                    <li><a href="#">ศูนย์ช่วยเหลือ</a></li>
+                    <li><a href="/privacy-policy">นโยบายความเป็นส่วนตัว</a></li>
+                    <li><a href="#">ข้อกำหนดการใช้งาน</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>สำหรับนักพัฒนา</h4>
+                <ul>
+                    <li><a href="/api-mobile-doc" target="_blank"><i class="fa-solid fa-mobile-screen"></i> Mobile API
+                            Doc</a></li>
+                    <li><a href="/api-doc" target="_blank"><i class="fa-solid fa-code"></i> API Documentation</a></li>
+                    <li><a href="/api-mobile-doc#outfit-miracle" target="_blank"><i class="fa-solid fa-palette"></i>
+                            Outfit Miracle API</a></li>
+                    <li><a href="/how-ranking" target="_blank"><i class="fa-solid fa-ranking-star"></i>
+                            วิธีจัดอันดับชื่อ</a></li>
+                    <li><a href="/play-store" target="_blank"><i class="fa-brands fa-google-play"></i>
+                            Google Play Store Prep</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 ชื่อดี.com Naming. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ชื่อดี.com (ชื่อดี.com) - ดีสมบูรณ์แบบทั้ง 4 มิติ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=3">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="/" class="logo" style="text-decoration: none;">
+                <span class="logo-text"
+                    style="font-family: 'Prompt'; font-weight: 800; font-size: 24px; background: linear-gradient(135deg, #B8860B, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">แอปชื่อดี</span>
+            </a>
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i data-lucide="menu"></i>
+            </button>
+
+            <div class="nav-links desktop-menu">
+                <a href="/">หน้าแรก</a>
+                <a href="#features">ศาสตร์ทั้ง 4</a>
+
+                <a href="#knowledge">ความรู้คู่ชื่อมงคล</a>
+                <a href="/how-ranking">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="nav-link">🌌 ดวงดาว</a>
+                <a href="#download" class="btn-primary">ดาวน์โหลดเลย</a>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-content">
+                <a href="/" class="mobile-link">หน้าแรก</a>
+                <a href="#features" class="mobile-link">ศาสตร์ทั้ง 4</a>
+
+                <a href="#knowledge" class="mobile-link">ความรู้คู่ชื่อมงคล</a>
+                <a href="/how-ranking" class="mobile-link">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="mobile-link">🌌 ดวงดาว</a>
+                <a href="#download" class="btn-primary-mobile">ดาวน์โหลดเลย</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="highlight-news">
+        <div class="container highlight-grid">
+            {{range $index, $item := .Highlights}}
+            {{if eq $index 0}}
+            <a href="/article/{{$item.Slug}}" class="grid-item large">
+                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else}}1024x500.png{{end}}" alt="{{$item.Title}}">
+                <div class="item-content">
+                    <span class="category-tag">{{$item.Category}}</span>
+                    <h3>{{$item.Title}}</h3>
+                    <p>{{$item.Excerpt}}</p>
+                </div>
+            </a>
+            {{else}}
+            <a href="/article/{{$item.Slug}}" class="grid-item small">
+                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else}}Screenshot_1772810719.png{{end}}"
+                    alt="{{$item.Title}}">
+                <div class="item-content">
+                    <span class="category-tag">{{$item.Category}}</span>
+                    <h3>{{if $item.TitleShort}}{{$item.TitleShort}}{{else}}{{$item.Title}}{{end}}</h3>
+                </div>
+            </a>
+            {{end}}
+            {{else}}
+            <!-- Fallback Static Content -->
+            <a href="#" class="grid-item large">
+                <img src="1024x500.png" alt="Main Highlight">
+                <div class="item-content">
+                    <span class="category-tag">Feature</span>
+                    <h3>ค้นพบชื่อที่มงคล ดีสมบูรณ์แบบทั้ง 4 มิติ</h3>
+                    <p>ครั้งแรกของโลก! ที่นำศาสตร์ความเชื่อโบราณมาผสานกับพลัง AI อัจฉริยะ
+                        เพื่อค้นหาชื่อที่ดีที่สุดสำหรับชีวิตคุณ</p>
+                </div>
+            </a>
+            <a href="#" class="grid-item small">
+                <div class="grid-icon-box" style="background: linear-gradient(135deg, #B8860B, #D4AF37);">
+                    <i data-lucide="binary" style="color: white; width: 40px; height: 40px;"></i>
+                </div>
+                <div class="item-content">
+                    <span class="category-tag">Numerology</span>
+                    <h3>เลขศาสตร์ ศาสตร์แห่งตัวเลขมงคล</h3>
+                </div>
+            </a>
+            <a href="#" class="grid-item small">
+                <div class="grid-icon-box" style="background: linear-gradient(135deg, #D4AF37, #FFF8E1);">
+                    <i data-lucide="shield" style="color: #2C1810; width: 40px; height: 40px;"></i>
+                </div>
+                <div class="item-content">
+                    <span class="category-tag">Shadow Power</span>
+                    <h3>พลังเงา (Shadow Power) เบื้องหลังความสำเร็จ</h3>
+                </div>
+            </a>
+            <a href="#" class="grid-item small">
+                <div class="grid-icon-box" style="background: linear-gradient(135deg, #2C1810, #B8860B);">
+                    <i data-lucide="award" style="color: white; width: 40px; height: 40px;"></i>
+                </div>
+                <div class="item-content">
+                    <span class="category-tag">Expert Tips</span>
+                    <h3>เคล็ดลับการตั้งชื่อให้รุ่งเรือง</h3>
+                </div>
+            </a>
+            {{end}}
+
+            <div class="grid-item text-list">
+                <ul>
+                    {{range $index, $item := .Popular}}
+                    <li><a href="/article/{{$item.Slug}}">{{if
+                            $item.TitleShort}}{{$item.TitleShort}}{{else}}{{$item.Title}}{{end}}</a></li>
+                    {{else}}
+                    <li><a href="/guide-change-name">วิธีเปลี่ยนชื่อที่อำเภอใน 1 วัน</a></li>
+                    <li><a href="#">รวมชื่อมงคลตามวันเกิดปี 2567</a></li>
+                    <li><a href="#">ทำไมชื่อต้องมีเลขศาสตร์ที่ดี?</a></li>
+                    {{end}}
+                    <li class="view-all-item">
+                        <a href="/articles" class="view-all-btn">
+                            บทความทั้งหมด <i data-lucide="chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <header class="hero">
+        <div class="hero-glow"></div>
+        <div class="container hero-content">
+            <div class="hero-text">
+                <div class="badge-vip">✨ Exclusive VIP Feature</div>
+                <h1>ค้นพบชื่อที่มงคล <br><span class="highlight">ดีสมบูรณ์แบบทั้ง 4 มิติ</span></h1>
+                <p>ครั้งแรกของโลก! ที่นำศาสตร์ความเชื่อโบราณมาผสานกับพลัง AI อัจฉริยะ
+                    เพื่อค้นหาชื่อที่ดีที่สุดสำหรับชีวิตคุณ ทั้งความหมาย เลขศาสตร์ พลังเงา และคู่สมพงษ์</p>
+                <div class="hero-cta">
+                    <a href="#download" class="btn-download">
+                        <i data-lucide="download"></i> เริ่มค้นหาชื่อดี
+                    </a>
+                    <a href="#features" class="btn-secondary">เรียนรู้ศาสตร์มงคล</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="hero-image-container">
+                    <img src="1024x500.png" alt="ชื่อดี.com App Mockup" class="main-mockup">
+                    <div class="hero-glow-sphere"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>นิยามความสำเร็จ <br><span>"ดีสมบูรณ์แบบทั้ง 4 มิติ"</span></h2>
+                <p>เราไม่ได้แค่หาชื่อที่ไพเราะ แต่เราหาชื่อที่ "เขียวทั้งระบบ" เพื่อความรุ่งเรืองในทุกด้านของชีวิต</p>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <img src="Screenshot_1772810719.png" alt="ค้นหาอัจฉริยะ (AI Search)">
+                    </div>
+                    <h3>1. ค้นหาอัจฉริยะ (AI Search)</h3>
+                    <p>เลือกค้นหาจากความหมาย หรือตาม "บุคคลที่ประสบความสำเร็จ" เพื่อสแกนความโชคดีมาถึงตัวคุณ</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <img src="Screenshot_1772810728.png" alt="เลขศาสตร์เป็นเลิศ (SAT)">
+                    </div>
+                    <h3>2. เลขศาสตร์เป็นเลิศ (SAT)</h3>
+                    <p>ถอดรหัสพยัญชนะและสระให้ได้ผลรวมที่เป็นคู่เลขมงคลระดับ Double Bonus เพื่อส่งเสริมโชคลาภ</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <img src="Screenshot_1772810752.png" alt="พลังเงาทรงพลัง (SHA)">
+                    </div>
+                    <h3>3. พลังเงาทรงพลัง (SHA)</h3>
+                    <p>ตรวจสอบพลังแฝงที่ซ่อนอยู่หลังชื่อ (Shadow Power) เพื่อความมั่นคงและบารมีที่ยั่งยืน</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-image-wrapper">
+                        <img src="Screenshot_1772810777.png" alt="คัดกรองขั้นสูง (VIP Zone)">
+                    </div>
+                    <h3>4. คัดกรองขั้นสูง (VIP Zone)</h3>
+                    <p>คัดออกอักขระกาลกิณีอัตโนมัติ พร้อมระบบกรองเฉพาะชื่อระดับ "ดีเยี่ยม" ที่ผ่านเกณฑ์มงคลสูงสุด</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ai" class="ai-tech">
+        <div class="container ai-content">
+            <div class="ai-visual">
+                <div class="ai-circle">
+                    <i data-lucide="cpu"></i>
+                    <div class="orbit"></div>
+                </div>
+            </div>
+            <div class="ai-text">
+                <h2>นวัตกรรม AI <br>เพื่อศาสตร์การตั้งชื่อ</h2>
+                <p>เราใช้ระบบ <strong>Hybrid AI Algorithm</strong> ที่วิเคราะห์เจาะลึกถึงรากศัพท์ (Root Word Analysis)
+                    เพื่อให้ได้ชื่อที่ความหมายลึกซึ้งและไพเราะที่สุด</p>
+                <ul class="ai-list">
+                    <li><i data-lucide="check"></i> วิเคราะห์รากอักษรและความหมายเชิงลึก</li>
+                    <li><i data-lucide="check"></i> ระบบแนะนำชื่อที่ความหมายใกล้เคียงอัตโนมัติ</li>
+                    <li><i data-lucide="check"></i> การันตีความหมายถูกต้องตามพจนานุกรมและตำรา</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Analysis Showcase Section -->
+    <section class="analysis-showcase">
+        <div class="container showcase-content">
+            <div class="showcase-text">
+                <div class="badge-vip">🛡️ แม่นยำ & ละเอียดที่สุด</div>
+                <h2>วิเคราะห์ผลลัพธ์ <br><span class="highlight">Triple Lucky x3</span></h2>
+                <p>ไม่ใช่แค่ชื่อดี แต่ต้องดีทั้งระบบ! เราวิเคราะห์เจาะลึกทั้งเลขศาสตร์ ชื่อของคุณ และผลรวมกับนามสกุล
+                    เพื่อเป้าหมายสูงสุดคือความมงคลที่สมบูรณ์แบบ</p>
+            </div>
+            <div class="showcase-visual">
+                <div class="visual-glow"></div>
+                <img src="Screenshot_1772810777.png" alt="วิเคราะห์ชื่อ Triple Lucky">
+            </div>
+        </div>
+    </section>
+
+    <!-- Knowledge Section -->
+    <section id="knowledge" class="knowledge-section" style="padding: 100px 0; background: rgba(184, 134, 11, 0.03);">
+        <div class="container">
+            <div class="section-header">
+                <h2 style="color: var(--text-light);">ความรู้คู่ชื่อมงคล</h2>
+                <p style="color: var(--text-gray);">บทความแนะนำและเคล็ดลับการตั้งชื่อให้รุ่งเรือง</p>
+            </div>
+            <div style="display: flex; justify-content: center;">
+                <a href="/guide-change-name" class="feature-card"
+                    style="max-width: 600px; text-decoration: none; text-align: left; transition: transform 0.3s ease; background: var(--bg-card); border: 1px solid rgba(184, 134, 11, 0.2);">
+                    <div class="card-icon" style="--icon-color: #D4AF37; background: rgba(184, 134, 11, 0.1);">
+                        <i data-lucide="file-text"></i>
+                    </div>
+                    <h3 style="color: var(--text-light); margin-bottom: 12px; font-size: 1.6rem; font-weight: 700;">
+                        ขั้นตอนการเปลี่ยนชื่อที่อำเภอ</h3>
+                    <p style="color: var(--text-gray); font-size: 1rem; line-height: 1.7;">เตรียมตัวให้พร้อมก่อนไปอำเภอ
+                        ทั้งเอกสารที่ต้องใช้ และขั้นตอนสำคัญที่เจ้าหน้าที่จะตรวจสอบ
+                        เพื่อให้การเปลี่ยนชื่อใหม่ของคุณเป็นไปอย่างราบรื่นและเป็นสิริมงคลที่สุด...</p>
+                    <div
+                        style="margin-top: 24px; color: var(--secondary); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                        อ่านบทความฉบับเต็ม <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i></div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="download" class="cta-section">
+        <div class="container text-center">
+            <h2>พร้อมเริ่มต้นชีวิตใหม่ด้วย <span class="highlight">"ชื่อดี"</span> หรือยัง?</h2>
+            <p>ร่วมเป็นหนึ่งในผู้คนนับแสนที่พบชื่อที่ "ดีสมบูรณ์แบบทั้ง 4 มิติ" กับเรา</p>
+            <div class="download-btns">
+
+                <a href="/download" style="display: inline-block;">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                        alt="Get it on Google Play" style="height: 64px;">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-logo">ชื่อดี.com</div>
+            <p>&copy; 2026 ชื่อดี.com - All Rights Reserved. <br>แอปพลิเคชันเพื่อการตั้งชื่อมงคลที่ดีที่สุด | <a
+                    href="/privacy-policy" style="color: inherit; text-decoration: underline;">นโยบายความเป็นส่วนตัว</a>
+            </p>
+            <div class="footer-dev-menu">
+                <a href="/api-mobile-doc" target="_blank">📱 Mobile API Document</a>
+                <a href="/api-doc" target="_blank">🧩 Web API Document</a>
+                <a href="/api-mobile-doc#outfit-miracle" target="_blank">🎨 Outfit Miracle API</a>
+            </div>
+            <div class="social-links">
+                <a href="#"><i data-lucide="facebook"></i></a>
+                <a href="#"><i data-lucide="instagram"></i></a>
+                <a href="#"><i data-lucide="line"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            const isActive = mobileMenu.classList.toggle('active');
+            const iconContainer = mobileMenuBtn;
+
+            if (isActive) {
+                iconContainer.innerHTML = '<i data-lucide="x"></i>';
+            } else {
+                iconContainer.innerHTML = '<i data-lucide="menu"></i>';
+            }
+            lucide.createIcons();
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuBtn.innerHTML = '<i data-lucide="menu"></i>';
+                lucide.createIcons();
+            });
+        });
+    </script>
+</body>
+
+</html>

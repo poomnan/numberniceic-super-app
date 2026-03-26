@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coor_user_edit_profile"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#E2E4E2"
+            android:orientation="vertical"
+            android:paddingBottom="40dp">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="9dp"
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="แก้ไขข้อมูลการลงทะเบียน"
+                        android:textColor="#FB8C00"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <!-- Real Name -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:text="ชื่อจริง : "
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+
+                        <EditText
+                            android:id="@+id/edt_realname"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="ชื่อจริง"
+                            android:inputType="text"
+                            android:maxLength="30"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+
+                    <!-- Surname -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:text="นามสกุล : "
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+
+                        <EditText
+                            android:id="@+id/edt_surname"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="นามสกุล"
+                            android:inputType="text"
+                            android:maxLength="30"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <!-- Birthday -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="วันเกิด : "
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="4dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <Spinner
+                                android:id="@+id/spin_day"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+
+                            <Spinner
+                                android:id="@+id/spin_month"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1" />
+
+                            <Spinner
+                                android:id="@+id/spin_year"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.2" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Birth Time -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:text="เวลาเกิด : "
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+
+                        <Spinner
+                            android:id="@+id/spin_time_hour"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                        <Spinner
+                            android:id="@+id/spin_time_minute"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+                        
+                        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+                    </LinearLayout>
+
+                    <!-- Province -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:text="จังหวัดเกิด : "
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+
+                        <Spinner
+                            android:id="@+id/spin_province"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@android:color/darker_gray" />
+
+                     <!-- Avatar Selection -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="เลือกรูปประจำตัว :"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_horizontal">
+
+                                <com.google.android.material.imageview.ShapeableImageView
+                                    android:id="@+id/img_avatar_10"
+                                    android:layout_width="60dp"
+                                    android:layout_height="60dp"
+                                    android:src="@drawable/ic_avatar_10"
+                                    android:padding="6dp"
+                                    android:layout_margin="2dp"
+                                    android:scaleType="centerCrop"
+                                    app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                    android:clickable="true"
+                                    android:focusable="true" />
+
+                                <com.google.android.material.imageview.ShapeableImageView
+                                    android:id="@+id/img_avatar_11"
+                                    android:layout_width="60dp"
+                                    android:layout_height="60dp"
+                                    android:src="@drawable/ic_avatar_11"
+                                    android:padding="6dp"
+                                    android:layout_margin="2dp"
+                                    android:scaleType="centerCrop"
+                                    app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                    android:clickable="true"
+                                    android:focusable="true" />
+
+                                <com.google.android.material.imageview.ShapeableImageView
+                                    android:id="@+id/img_avatar_12"
+                                    android:layout_width="60dp"
+                                    android:layout_height="60dp"
+                                    android:src="@drawable/ic_avatar_12"
+                                    android:padding="6dp"
+                                    android:layout_margin="2dp"
+                                    android:scaleType="centerCrop"
+                                    app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                    android:clickable="true"
+                                    android:focusable="true" />
+
+                                <com.google.android.material.imageview.ShapeableImageView
+                                    android:id="@+id/img_avatar_13"
+                                    android:layout_width="60dp"
+                                    android:layout_height="60dp"
+                                    android:src="@drawable/ic_avatar_13"
+                                    android:padding="6dp"
+                                    android:layout_margin="2dp"
+                                    android:scaleType="centerCrop"
+                                    app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                    android:clickable="true"
+                                    android:focusable="true" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <!-- Gender -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:text="เพศ : "
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+
+                        <RadioGroup
+                            android:id="@+id/rad_gender_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginStart="16dp">
+
+                            <RadioButton
+                                android:id="@+id/radio_woman"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="หญิง"
+                                android:textSize="16sp" />
+
+                            <RadioButton
+                                android:id="@+id/radio_man"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="16dp"
+                                android:text="ชาย"
+                                android:textSize="16sp" />
+                        </RadioGroup>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <!-- Shipping Address -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ที่อยู่จัดส่งสินค้า :"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="4dp" />
+
+                        <EditText
+                            android:id="@+id/edt_shipping_address"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="ระบุจังหวัด อำเภอ เขต รหัสไปรษณีย์..."
+                            android:inputType="textMultiLine"
+                            android:lines="3"
+                            android:gravity="top"
+                            android:background="@android:drawable/edit_text"
+                            android:padding="8dp"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <!-- Username (Read Only) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:text="บัญชีผู้ใช้ : "
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="end" />
+
+                        <TextView
+                            android:id="@+id/txt_username_readonly"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Username"
+                            android:textSize="18sp"
+                            android:textColor="#757575" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_save_profile"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="32dp"
+                        android:text="บันทึกข้อมูล"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="28dp"
+                        app:backgroundTint="#4CAF50" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_cancel_edit"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="ยกเลิก"
+                        android:textColor="#F44336" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#558B2F</color>
+    <color name="colorPrimaryDark">#33691E</color>
+    <color name="colorAccent">#FFC107</color>
+
+    <color name="colorPairD">#3a9900</color>
+    <!--<color name="colorPairR">#FB2817</color>-->
+    <color name="colorPairR">#D13124</color>
+
+
+    <color name="colorTextPair">#FFFFFF</color>
+
+    <color name="colorTextSumR">#ef3e67</color>
+    <color name="colorTextSumD">#000000</color>
+
+    <color name="colorBGWhite">#FFFFFF</color>
+    <color name="colorBGGray">#f5f5f5</color>
+
+    <color name="colorChipHashTagClick">#00C853</color>
+    <color name="colorChipHashTagNonClick">#E8E8E8</color>
+
+
+
+    <color name="colorBGDay">#F3F3F2</color>
+
+
+
+
+    <color name="grade_color">#9B5E07</color>
+    <color name="color_txt_report_sum">#FF5722</color>
+    <color name="color_bg_report_sum">#FFFFFF</color>
+    <color name="color_bg_title_sum">#055A0A</color>
+    <color name="color_title_sum">#FFFFFF</color>
+
+
+    <color name="color_test_r10">#D13124</color>
+    <color name="color_test_r7">#FF5722</color>
+    <color name="color_test_r5">#FF9800</color>
+    <color name="bg_mainact">#818080</color>
+
+    <color name="bg_mainactx">#515151</color>
+
+
+    <color name="bg_special">#8DE425</color>
+    <color name="bg_special2">#71C512</color>
+    <color name="bg_special3">#B2F564</color>
+    <color name="color_txt_circle_tabian">#FFFFFF</color>
+    <color name="color_txt_nocircle_tabian">#FF8F00</color>
+
+
+    <color name="bg_chip_tabian">#F7F7F6</color>
+
+
+
+
+    <color name="bg_color_chip_tabian">#FFFFFF</color>
+    <color name="txt_color_list_vip">#000000</color>
+
+
+
+    <color name="color_head_realname_table">#EAA3F0</color>
+    <color name="color_head_nickname_table">#7CB342</color>
+
+
+    <color name="color_bg_shasatD">#4E8F09</color>
+    <color name="color_bg_shasatR">#F30A2D</color>
+
+    <color name="red_txt">#F80303</color>
+    <color name="green_txt">#489B15</color>
+
+
+    <color name="dress_juck">#00C853</color>
+
+
+    <color name="txt_bag_desc">#D50000</color>
+    <color name="txt_bag_desc_current">#444342</color>
+    <color name="btn_readmorenews">#EDEEEB</color>
+    <color name="txt_btn_readmorenews">#FF6D00</color>
+
+    <color name="bg_light">#F0EFEF</color>
+    <color name="color_wanpra_me">#FADA9A</color>
+
+
+    <color name="color_m_fah">#F5E79D</color>
+    <color name="color_m_yellow">#FCF7DD</color>
+    <color name="chip_color_01">#DD2C00</color>
+    <color name="pale_magenta_90">#F984EF</color>
+
+    <color name="green_bg">#DEF7EC</color>
+    <color name="green_text">#03543F</color>
+    <color name="gray_bg">#F3F4F6</color>
+    <color name="gray_text">#4B5563</color>
+    <color name="wanpra_today">#FF6D00</color>
+    <color name="wanpra_tomorrow">#FF9800</color>
+    
+    <!-- Additional colors for guest dialog -->
+    <color name="black">#000000</color>
+    <color name="gray_600">#4B5563</color>
+    <color name="purple_500">#558B2F</color>
+    <color name="white">#FFFFFF</color>
+</resources>

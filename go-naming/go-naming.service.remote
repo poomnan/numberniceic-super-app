@@ -1,0 +1,18 @@
+[Unit]
+Description=Go Naming Web Service (Landing Page Update)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/tayap/go-naming
+ExecStart=/home/tayap/go-naming/server
+Restart=always
+RestartSec=5
+Environment="DATABASE_URL=postgres://tayap:IntelliP24.X@localhost:5432/tayap?sslmode=disable"
+Environment="PORT=8095"
+Environment="OPENAI_API_KEY=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"
+Environment="FCM_SERVICE_ACCOUNT_PATH=/home/tayap/firebase-service-account.json"
+
+[Install]
+WantedBy=multi-user.target

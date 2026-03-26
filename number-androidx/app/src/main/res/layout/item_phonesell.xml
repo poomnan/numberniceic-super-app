@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.cardview.widget.CardView
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="9dp"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="9dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+    <LinearLayout
+        android:padding="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/icon_group_phone"
+            android:layout_marginStart="5dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/ic_vip02" />
+
+        <TextView
+            android:layout_gravity="center_vertical"
+            android:id="@+id/txt_phone_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:textStyle="bold"
+            android:text="09-5142-4515"
+            android:textColor="#4A96EB"
+            android:textSize="18sp"
+            app:chipBackgroundColor="#FFF" />
+
+        <TextView
+            android:layout_gravity="center_vertical"
+            android:id="@+id/txt_phone_sum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:text="(36)"
+            android:textStyle="bold"
+            android:textColor="#FF8F00"
+            android:textSize="18sp"
+            app:chipBackgroundColor="#FFF" />
+
+
+        <TextView
+            android:layout_gravity="center_vertical"
+            android:id="@+id/txt_phone_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:text="ราคา 999,999 บาท"
+            android:textColor="#4A96EB"
+            android:textSize="18sp"
+            app:chipBackgroundColor="#FFF" />
+
+        <!--<ImageView
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/icon_bth"
+            android:layout_marginStart="3dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp" />-->
+
+
+
+
+
+    </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    </FrameLayout>

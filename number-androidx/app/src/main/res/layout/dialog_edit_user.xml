@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="แก้ไขข้อมูลลูกค้า"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ชื่อจริง"/>
+    <EditText
+        android:id="@+id/edt_realname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="ชื่อจริง"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="นามสกุล"/>
+    <EditText
+        android:id="@+id/edt_surname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="นามสกุล"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="วันเกิด (YYYY-MM-DD)"/>
+    <EditText
+        android:id="@+id/edt_birthday"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="2000-01-01"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btn_save_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="บันทึก"
+        android:backgroundTint="#4CAF50"
+        android:textColor="@android:color/white"/>
+
+</LinearLayout>

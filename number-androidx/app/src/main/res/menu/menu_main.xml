@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.AppActivity">
+
+
+    <item
+        android:id="@+id/action_chat"
+        android:orderInCategory="60"
+        android:title="Chat"
+        app:showAsAction="always"
+        app:actionLayout="@layout/layout_chat_badge"/>
+
+    <item
+        android:id="@+id/action_dream"
+        android:orderInCategory="50"
+        android:title="Dream"
+        app:showAsAction="always"
+        app:actionLayout="@layout/layout_dream_badge"/>
+
+
+    <item
+        android:id="@+id/action_notification"
+        android:orderInCategory="40"
+        android:title="Notification"
+        app:showAsAction="always"
+        app:actionLayout="@layout/layout_notification_badge"/>
+
+    <item
+        android:id="@+id/action_sell_product"
+        android:orderInCategory="45"
+        android:title="ขายสินค้า"
+        app:showAsAction="always"
+        app:actionLayout="@layout/layout_cart_icon_action" />
+
+    <item
+        android:id="@+id/action_vip_code"
+        android:orderInCategory="75"
+        android:title="VIP Code"
+        app:showAsAction="always"
+        app:actionLayout="@layout/layout_vip_icon_action"/>
+
+
+
+    <item
+        android:id="@+id/action_dashboard"
+        android:orderInCategory="100"
+        android:title="Dashboard"
+        app:showAsAction="always"
+        app:actionLayout="@layout/layout_member_icon_action"/>
+
+</menu>

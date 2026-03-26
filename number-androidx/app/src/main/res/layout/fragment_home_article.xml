@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F5F5F5">
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh_home_article"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Featured Article -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/layout_featured_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/img_featured"
+                        android:layout_width="match_parent"
+                        android:layout_height="320dp"
+                        android:scaleType="centerCrop"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:src="@drawable/gold" />
+
+                    <LinearLayout
+                        android:id="@+id/card_featured"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="40dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="#E6FFFFFF"
+                        android:orientation="vertical"
+                        app:layout_constraintBottom_toBottomOf="@+id/img_featured"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent">
+
+                        <LinearLayout
+                            android:id="@+id/layout_featured_click"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="20dp"
+                            android:paddingVertical="6dp">
+
+                            <TextView
+                                android:id="@+id/txt_featured_category"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="-4dp"
+                                android:fontFamily="@font/kanit_light"
+                                android:text="นักออกแบบ"
+                                android:textColor="#E53935"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/txt_featured_title"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="-4dp"
+                                android:ellipsize="end"
+                                android:fontFamily="@font/kanit_light"
+                                android:maxLines="1"
+                                android:textColor="#212121"
+                                android:textSize="20sp"
+                                tools:text="ตามหาชื่อลูกด้วย Data Science" />
+
+                            <TextView
+                                android:id="@+id/txt_featured_desc"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="0dp"
+                                android:ellipsize="end"
+                                android:fontFamily="@font/sarabun_regular"
+                                android:maxLines="2"
+                                android:textColor="#757575"
+                                android:textSize="14sp"
+                                tools:text="ทำ search engine เพื่อค้นหาชื่อลูกแบบง่าย ๆ สามารถนำไปประยุกต์ต่อยอดใช้ค้นหาข้อมูล ข้อความ บทความ ลูกค้า ในองค์กรได้" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Grid Layout -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <!-- Column 1 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <!-- Item Grid 1 -->
+                        <FrameLayout
+                            android:id="@+id/layout_grid_1"
+                            android:layout_width="match_parent"
+                            android:layout_height="240dp"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/img_grid_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                tools:src="@drawable/gold" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:layout_gravity="bottom"
+                                android:background="@drawable/bg_article_shadow" />
+
+                            <TextView
+                                android:id="@+id/txt_grid_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="bottom"
+                                android:gravity="center"
+                                android:padding="16dp"
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
+                                android:fontFamily="@font/kanit_light"
+                                tools:text="ณเดชน์ คูกิมิยะ" />
+                        </FrameLayout>
+
+                        <!-- Item Grid 3 -->
+                        <FrameLayout
+                            android:id="@+id/layout_grid_3"
+                            android:layout_width="match_parent"
+                            android:layout_height="240dp"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/img_grid_3"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                tools:src="@drawable/gold" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:layout_gravity="bottom"
+                                android:background="@drawable/bg_article_shadow" />
+
+                            <TextView
+                                android:id="@+id/txt_grid_3"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="bottom"
+                                android:gravity="center"
+                                android:padding="16dp"
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
+                                android:fontFamily="@font/kanit_light"
+                                tools:text="เจมส์ จิรายุ" />
+                        </FrameLayout>
+
+                    </LinearLayout>
+
+                    <!-- Column 2 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <!-- Item Grid 2 -->
+                        <FrameLayout
+                            android:id="@+id/layout_grid_2"
+                            android:layout_width="match_parent"
+                            android:layout_height="240dp"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <ImageView
+                                android:id="@+id/img_grid_2"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="centerCrop"
+                                tools:src="@drawable/gold" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="100dp"
+                                android:layout_gravity="bottom"
+                                android:background="@drawable/bg_article_shadow" />
+
+                            <TextView
+                                android:id="@+id/txt_grid_2"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="bottom"
+                                android:gravity="center"
+                                android:padding="16dp"
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
+                                android:fontFamily="@font/kanit_light"
+                                tools:text="ปัญญา นิรันดร์กุล" />
+                        </FrameLayout>
+
+                        <!-- Purple Resource Block -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="240dp"
+                            android:background="@drawable/bg_home_resource"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:weightSum="4">
+
+                            <LinearLayout
+                                android:id="@+id/layout_list_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="8dp"
+                                    android:layout_height="8dp"
+                                    android:background="#FFD600" />
+
+                                <TextView
+                                    android:id="@+id/txt_list_1"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="12dp"
+                                    android:ellipsize="end"
+                                    android:maxLines="1"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="18sp"
+                                    android:fontFamily="@font/kanit_light"
+                                    tools:text="เสก โลโซ" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/layout_list_2"
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="8dp"
+                                    android:layout_height="8dp"
+                                    android:background="#FFD600" />
+
+                                <TextView
+                                    android:id="@+id/txt_list_2"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="12dp"
+                                    android:ellipsize="end"
+                                    android:maxLines="1"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="18sp"
+                                    android:fontFamily="@font/kanit_light"
+                                    tools:text="ใบเตย อาร์สยาม" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/layout_list_3"
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:orientation="horizontal">
+
+                                <View
+                                    android:layout_width="8dp"
+                                    android:layout_height="8dp"
+                                    android:background="#FFD600" />
+
+                                <TextView
+                                    android:id="@+id/txt_list_3"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="12dp"
+                                    android:ellipsize="end"
+                                    android:maxLines="1"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="18sp"
+                                    android:fontFamily="@font/kanit_light"
+                                    tools:text="อั้ม พัชราภา" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/btn_see_all"
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ดูบทความทั้งหมด"
+                                    android:textColor="#FFD600"
+                                    android:textSize="18sp"
+                                    android:fontFamily="@font/kanit_light" />
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginStart="12dp"
+                                    android:src="@drawable/f_vip"
+                                    app:tint="#FFD600" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Additional Spacing -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

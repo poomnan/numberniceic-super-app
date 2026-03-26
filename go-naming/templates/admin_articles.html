@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการบทความ - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Quill Editor -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background: var(--card);
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #B8860B;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin: 0;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-full {
+            grid-column: span 2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #94A3B8;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #FFFAF0;
+            color: white;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #EF4444;
+        }
+
+        .article-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .article-item {
+            background: var(--card);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .article-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #0F172A;
+        }
+
+        .article-info h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .article-meta {
+            font-size: 0.85rem;
+            color: #94A3B8;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+        }
+
+        .status-draft {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+        }
+
+        /* Custom Quill Styles - Dark Theme Fix */
+        .ql-toolbar.ql-snow {
+            background: #334155 !important;
+            border-color: #475569 !important;
+            border-radius: 8px 8px 0 0;
+        }
+
+        /* Make Icons White */
+        .ql-snow .ql-stroke {
+            stroke: #F8FAFC !important;
+        }
+
+        .ql-snow .ql-fill {
+            fill: #F8FAFC !important;
+        }
+
+        .ql-snow .ql-picker {
+            color: #F8FAFC !important;
+        }
+
+        /* Hover Effects */
+        .ql-snow.ql-toolbar button:hover .ql-stroke,
+        .ql-snow.ql-toolbar button.ql-active .ql-stroke {
+            stroke: var(--accent) !important;
+        }
+
+        .ql-snow.ql-toolbar button:hover .ql-fill,
+        .ql-snow.ql-toolbar button.ql-active .ql-fill {
+            fill: var(--accent) !important;
+        }
+
+        .ql-container.ql-snow {
+            background: #1e293b !important;
+            border-color: #475569 !important;
+            border-radius: 0 0 8px 8px;
+            font-family: 'Prompt', sans-serif;
+            height: 450px;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .ql-editor.ql-blank::before {
+            color: #94a3b8 !important;
+            font-style: normal;
+        }
+
+        /* Picker text styling */
+        .ql-snow .ql-picker-options {
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
+        }
+
+        .ql-snow .ql-picker-item:hover {
+            color: var(--accent) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: #94A3B8; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-newspaper"></i> จัดการบทความความรู้</h1>
+            <div style="display: flex; gap: 10px;">
+                <a href="/admin/media" target="_blank" class="btn" style="background: #4b5563;"><i
+                        class="fas fa-images"></i> คลังรูปภาพ</a>
+                <button class="btn" onclick="showNewForm()"><i class="fas fa-plus"></i> เพิ่มบทความใหม่</button>
+            </div>
+        </div>
+
+        <h3><i class="fas fa-list"></i> รายการบทความทั้งหมด</h3>
+        <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 40px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead style="background: #334155; color: #94A3B8; font-size: 0.85rem;">
+                    <tr>
+                        <th style="padding: 12px 16px;">รูป</th>
+                        <th style="padding: 12px 16px;">หัวข้อ</th>
+                        <th style="padding: 12px 16px;">หมวดหมู่</th>
+                        <th style="padding: 12px 16px;">สถานะ</th>
+                        <th style="padding: 12px 16px;">ปักหมุด</th>
+                        <th style="padding: 12px 16px;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="articleTableBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="articleFormSection" class="card" style="display: none; border: 2px solid var(--primary);">
+            <h3 id="formTitle">เขียนบทความใหม่</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>หัวข้อข่าว</label>
+                    <input type="text" id="title" placeholder="ระบุหัวข้อ">
+                </div>
+                <div class="form-group">
+                    <label>Slug (URL ภาษาอังกฤษ เช่น good-name-guide)</label>
+                    <input type="text" id="slug" placeholder="slug">
+                </div>
+                <div class="form-group">
+                    <label>หัวข้อแบบย่อ</label>
+                    <input type="text" id="title_short" placeholder="ระบุหัวข้อย่อ">
+                </div>
+                <div class="form-group">
+                    <label>หมวดหมู่</label>
+                    <select id="category">
+                        <option value="ความรู้">ความรู้</option>
+                        <option value="เคล็ดลับ">เคล็ดลับ</option>
+                        <option value="ประกาศ">ประกาศ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>รูปภาพหลัก (URL)</label>
+                    <input type="text" id="image_url" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>ลำดับปักหมุด (เลขมากอยู่บนสุด)</label>
+                    <input type="number" id="pin_order" value="0">
+                </div>
+                <div class="form-group form-full">
+                    <label>คำอธิบายย่อ (Excerpt)</label>
+                    <textarea id="excerpt" placeholder="สรุปสั้นๆ..."></textarea>
+                </div>
+                <div class="form-group form-full">
+                    <label>เนื้อหาบทความ (WYSIWYG Editor)</label>
+                    <div id="editor-container"></div>
+                    <input type="hidden" id="content">
+                </div>
+                <div class="form-group">
+                    <label>สถานะ</label>
+                    <select id="is_published">
+                        <option value="true">เผยแพร่</option>
+                        <option value="false">ฉบับร่าง (Draft)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; display: flex; gap: 10px;">
+                <button class="btn" onclick="saveArticle()"><i class="fas fa-save"></i> บันทึกบทความ</button>
+                <button class="btn btn-delete" id="btnCancel" onclick="resetForm(true)">ยกเลิก / ปิดเครื่องมือ</button>
+            </div>
+            <input type="hidden" id="edit_id">
+        </div>
+    </div>
+
+    <script>
+        // Initialize Quill
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadArticles);
+
+        function showNewForm() {
+            resetForm();
+            document.getElementById('articleFormSection').style.display = 'block';
+            document.getElementById('formTitle').innerText = 'เขียนบทความใหม่';
+            scrollToForm();
+        }
+
+        async function loadArticles() {
+            try {
+                const res = await fetch('/api/v1/admin/articles/list');
+                const data = await res.json();
+                const tbody = document.getElementById('articleTableBody');
+                tbody.innerHTML = '';
+
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderTop = '1px solid #334155';
+                    tr.innerHTML = `
+                        <td style="padding: 12px 16px;">
+                            <img src="${item.image_url || 'https://via.placeholder.com/50x50'}" style="width: 50px; height: 35px; border-radius: 4px; object-fit: cover; background: #000;">
+                        </td>
+                        <td style="padding: 12px 16px;">
+                            <div style="font-weight: 500; font-size: 0.95rem;">${item.title}</div>
+                            <small style="color: #94A3B8;">/${item.slug}</small>
+                        </td>
+                        <td style="padding: 12px 16px; font-size: 0.9rem;">${item.category}</td>
+                        <td style="padding: 12px 16px;">
+                            <span class="status-badge ${item.is_published ? 'status-active' : 'status-draft'}">
+                                ${item.is_published ? 'เผยแพร่' : 'ฉบับร่าง'}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 16px;">${item.pin_order}</td>
+                        <td style="padding: 12px 16px; display: flex; gap: 8px;">
+                            <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editArticle(${item.art_id})"><i class="fas fa-edit"></i> แก้ไข</button>
+                            <button class="btn btn-delete" style="padding: 6px 10px; font-size: 0.8rem;" onclick="deleteArticle(${item.art_id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {
+                console.error("Load failed", e);
+            }
+        }
+
+        async function editArticle(id) {
+            try {
+                const res = await fetch(`/api/v1/admin/articles/get?id=${id}`);
+                if (!res.ok) throw new Error("Failed to fetch article");
+                const item = await res.json();
+
+                // Show form and update title
+                document.getElementById('articleFormSection').style.display = 'block';
+                document.getElementById('formTitle').innerText = 'แก้ไขบทความ: ' + item.title;
+                document.getElementById('btnCancel').style.display = 'inline-block';
+
+                // Populate fields
+                document.getElementById('edit_id').value = item.art_id || '';
+                document.getElementById('title').value = item.title || '';
+                document.getElementById('slug').value = item.slug || '';
+                document.getElementById('title_short').value = item.title_short || '';
+                document.getElementById('category').value = item.category || 'ความรู้';
+                document.getElementById('image_url').value = item.image_url || '';
+                document.getElementById('pin_order').value = item.pin_order || 0;
+                document.getElementById('excerpt').value = item.excerpt || '';
+
+                // Set Quill content
+                quill.root.innerHTML = item.content || '';
+
+                document.getElementById('is_published').value = item.is_published.toString();
+
+                scrollToForm();
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
+            }
+        }
+
+        async function saveArticle() {
+            const title = document.getElementById('title').value;
+            if (!title) { alert("กรุณาระบุหัวข้อ"); return; }
+
+            // Get content from Quill
+            const contentHtml = quill.root.innerHTML;
+
+            const id = document.getElementById('edit_id').value;
+            const payload = {
+                title: title,
+                slug: document.getElementById('slug').value,
+                title_short: document.getElementById('title_short').value,
+                category: document.getElementById('category').value,
+                image_url: document.getElementById('image_url').value,
+                pin_order: parseInt(document.getElementById('pin_order').value || 0),
+                excerpt: document.getElementById('excerpt').value,
+                content: contentHtml,
+                is_published: document.getElementById('is_published').value === "true"
+            };
+
+            if (id) payload.art_id = parseInt(id);
+
+            const url = id ? '/api/v1/admin/articles/update' : '/api/v1/admin/articles/add';
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert(id ? 'อัปเดตบทความสำเร็จ' : 'เพิ่มบทความใหม่สำเร็จ');
+                    resetForm(true); // reset and hide
+                    loadArticles();
+                } else {
+                    const errMsg = await res.text();
+                    alert('บันทึกไม่สำเร็จ: ' + errMsg);
+                }
+            } catch (err) {
+                alert('เกิดข้อผิดพลาด: ' + err.message);
+            }
+        }
+
+        async function deleteArticle(id) {
+            if (!confirm('คุณต้องการลบสบทความนี้ใช่หรือไม่? ข้อมูลจะหายไปถาวร')) return;
+            try {
+                const res = await fetch('/api/v1/admin/articles/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                if (res.ok) {
+                    loadArticles();
+                } else {
+                    alert("ลบไม่สำเร็จ");
+                }
+            } catch (err) {
+                alert("เกิดข้อผิดพลาด");
+            }
+        }
+
+        function resetForm(shouldHide = false) {
+            document.getElementById('edit_id').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('slug').value = '';
+            document.getElementById('title_short').value = '';
+            document.getElementById('category').value = 'ความรู้';
+            document.getElementById('image_url').value = '';
+            document.getElementById('pin_order').value = '0';
+            document.getElementById('excerpt').value = '';
+            quill.setContents([]); // Clear Quill
+            document.getElementById('is_published').value = 'true';
+            document.getElementById('formTitle').innerText = 'เขียนบทความใหม่';
+
+            if (shouldHide) {
+                document.getElementById('articleFormSection').style.display = 'none';
+            }
+        }
+
+        function scrollToForm() {
+            const el = document.getElementById('articleFormSection');
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+
+</html>

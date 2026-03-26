@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Guest Address Test"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/btn_test_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="ทดสอบ Dialog กรอกที่อยู่"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/button_purple_rounded"
+        android:textColor="@color/white" />
+
+    <Button
+        android:id="@+id/btn_test_direct"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="ทดสอบ Direct API"
+        android:textSize="16sp"
+        android:background="@drawable/button_outline_gray"
+        android:textColor="@color/gray_600" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ตรวจสอบ Logcat สำหรับดูผลลัพธ์\nTag: GuestTest, GuestAddressDialog"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:layout_marginTop="32dp"
+        android:textColor="@color/gray_600" />
+
+</LinearLayout>

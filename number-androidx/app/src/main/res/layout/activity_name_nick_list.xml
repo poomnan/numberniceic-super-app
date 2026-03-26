@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout android:fitsSystemWindows="true" xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.namenick.NameNickListAct">
+
+    <com.google.android.material.appbar.AppBarLayout android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_namenick_list"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:gravity="center"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center">
+
+
+                <Spinner
+                    android:id="@+id/days_spinner_vip"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="อักษรนำ :"
+                    android:textColor="#FFF"
+                    android:textSize="22sp" />
+
+
+
+                <EditText
+                    android:id="@+id/edt_charx"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:background="#FFF"
+                    android:digits="กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮเแโไใ"
+                    android:gravity="center"
+                    android:imeOptions="actionDone"
+                    android:inputType="textFilter"
+                    android:maxLength="1"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="#F4511E"
+                    android:textSize="20sp"
+
+                    android:textStyle="bold"
+                    tools:text="อักษรนำ" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:text="เพศ : "
+                    android:textColor="#FFF"
+                    android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/btn_prefix"
+                android:layout_marginEnd="5dp"
+                android:layout_marginStart="1dp"
+                android:text="ชาย"
+                android:textSize="15sp"
+               android:textColor="#F4511E"
+                android:backgroundTint="#F1F1EF"
+                android:layout_width="100dp"
+                android:layout_height="51dp" />
+
+
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:id="@+id/namenick_container_vip"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

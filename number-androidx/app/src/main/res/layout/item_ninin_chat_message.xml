@@ -1,0 +1,572 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Ninin Message -->
+    <LinearLayout
+        android:id="@+id/containerNinin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/imgAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/circle_primary"
+            android:scaleType="centerCrop"
+            android:src="@drawable/admin_nin_avatar"
+            android:contentDescription="Ninin Avatar" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/txtNininName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="คุณนิน"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#FFD700"
+                android:fontFamily="@font/sarabun_semibold" />
+
+            <TextView
+                android:id="@+id/txtNininMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_bubble_incoming"
+                android:textColor="#333333"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:layout_marginTop="4dp"
+                android:text="สวัสดีค่ะ มีอะไรให้ช่วยไหมคะ?"
+                android:textSize="16sp"
+                android:fontFamily="@font/sarabun_regular" />
+
+            <!-- Dream Data Card (Optional) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardDreamData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#FFFFFF" 
+                app:cardElevation="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingBottom="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@drawable/bottom_border_gray">
+                        
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_vip02"
+                            app:tint="@color/colorAccent"
+                            android:layout_marginEnd="8dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ทำนายฝัน"
+                            android:textColor="@color/gray_text"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/sarabun_semibold" />
+                    </LinearLayout>
+                    
+                    <TextView
+                        android:id="@+id/txtDreamKeyword"
+                         android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                         android:text="คำค้นหา: X"
+                         android:textColor="#333333"
+                         android:textSize="16sp"
+                         android:layout_marginTop="4dp"
+                         android:fontFamily="@font/sarabun_regular"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_green_rounded"
+                        android:padding="12dp"
+                        android:layout_marginTop="12dp">
+                        
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="เลขนำโชค"
+                            android:textColor="@color/green_text"
+                            android:textSize="12sp"
+                            android:alpha="0.8"
+                            android:fontFamily="@font/sarabun_regular"/>
+
+                        <TextView
+                            android:id="@+id/txtLuckyNumbers"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="88, 99"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:fontFamily="@font/sarabun_semibold"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Name Suggestions Card (New) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardNameData"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardElevation="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="รายชื่อมงคลที่แนะนำ"
+                        android:textColor="@color/colorPrimary"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/sarabun_semibold" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutNameList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="8dp" />
+                    
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Consult Button (Optional) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConsultNinin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:backgroundTint="@null"
+                android:background="@drawable/bg_button_consult"
+                android:text="คุยกับคุณนิน"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_chat_bubble"
+                app:iconPadding="8dp"
+                app:iconTint="#FFFFFF"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:fontFamily="@font/sarabun_semibold"
+                android:visibility="gone"
+                app:cornerRadius="20dp" />
+
+            <LinearLayout
+                android:id="@+id/layoutDreamPackages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardDreamMonth"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <ImageView
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_vip02" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="รายเดือน"
+                                android:textColor="#111111"
+                                android:textSize="15sp"
+                                android:fontFamily="@font/sarabun_semibold"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ทำนายฝันได้ไม่จำกัด 1 เดือน"
+                                android:textColor="#888888"
+                                android:fontFamily="@font/sarabun_regular"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="39 บาท"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/sarabun_semibold"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBuyDreamMonth"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:minWidth="0dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="จ่ายเงิน"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/sarabun_semibold"
+                            app:cornerRadius="18dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#2C8A10" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardDreamYear"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <ImageView
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_vip02" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="รายปี"
+                                    android:textColor="#111111"
+                                    android:textSize="15sp"
+                                    android:fontFamily="@font/sarabun_semibold"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:background="@drawable/bg_blue_rounded"
+                                    android:paddingStart="6dp"
+                                    android:paddingEnd="6dp"
+                                    android:paddingTop="1dp"
+                                    android:paddingBottom="1dp"
+                                    android:text="แนะนำ"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="9sp"
+                                    android:fontFamily="@font/sarabun_semibold"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ทำนายฝันได้ไม่จำกัด 1 ปี"
+                                android:textColor="#888888"
+                                android:fontFamily="@font/sarabun_regular"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="299 บาท"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/sarabun_semibold"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBuyDreamYear"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:minWidth="0dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="จ่ายเงิน"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/sarabun_semibold"
+                            app:cornerRadius="18dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#2C8A10" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardDreamLife"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <ImageView
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_vip02" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ตลอดชีวิต"
+                                    android:textColor="#111111"
+                                    android:textSize="15sp"
+                                    android:fontFamily="@font/sarabun_semibold"
+                                    android:textStyle="bold" />
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:background="@drawable/bg_orange_rounded"
+                                    android:paddingStart="6dp"
+                                    android:paddingEnd="6dp"
+                                    android:paddingTop="1dp"
+                                    android:paddingBottom="1dp"
+                                    android:text="คุ้มที่สุด"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="9sp"
+                                    android:fontFamily="@font/sarabun_semibold"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ทำนายฝันไม่จำกัดตลอดชีวิต"
+                                android:textColor="#888888"
+                                android:fontFamily="@font/sarabun_regular"
+                                android:textSize="11sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="1,599 บาท"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="14sp"
+                                android:fontFamily="@font/sarabun_semibold"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBuyDreamLife"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:minWidth="0dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="จ่ายเงิน"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:fontFamily="@font/sarabun_semibold"
+                            app:cornerRadius="18dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="#2C8A10" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Secret Code Entry Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_ninin_secret_code_container"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+                    
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="กรอก VIP Code เพื่อปลดล๊อค"
+                        android:textColor="#555555"
+                        android:textSize="13sp"
+                        android:fontFamily="@font/sarabun_semibold"
+                        android:layout_marginBottom="8dp"/>
+                        
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        
+                        <EditText
+                            android:id="@+id/edtSecretCode"
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_ninin_secret_code_input"
+                            android:hint="แตะเพื่อกรอก VIP Code"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/sarabun_regular"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:inputType="text"
+                            android:maxLines="1"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:cursorVisible="false"
+                            android:clickable="true"/>
+                            
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSubmitSecretCode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="8dp"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:text="ปลดล็อก"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:fontFamily="@font/sarabun_semibold"
+                            app:cornerRadius="8dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            app:backgroundTint="@color/colorPrimary" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- User Message -->
+    <LinearLayout
+        android:id="@+id/containerUser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:visibility="gone"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/txtUserMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_bubble_outgoing"
+            android:textColor="@color/green_text"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:text="Hello World"
+            android:textSize="16sp"
+            android:fontFamily="@font/sarabun_regular" />
+
+    </LinearLayout>
+
+</LinearLayout>

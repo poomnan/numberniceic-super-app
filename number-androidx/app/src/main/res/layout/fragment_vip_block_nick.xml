@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#DCF1F1F0"
+    tools:context=".ui.auth.VipBlockNickF">
+
+
+    <RelativeLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="710dp"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+
+            app:cardBackgroundColor="#7CB342"
+            app:cardCornerRadius="20dp">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="28dp">
+
+                <TextView
+                    android:id="@+id/txt_title_upgrade"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ดีที่สุด คุ้มค่าที่สุด โปรดอัพเกรดเป็นวีไอพีของเรา"
+                    android:textColor="#FFF"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/txt_des"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="ถ้าท่านต้องการใช้สิทธิเลือกดูและตั้งชื่อเล่นให้ตัวเองและลูกหลานญาติมิตรตามวันเกิดและอักษรนำที่ดีถูกโฉลกตรงกับพื้นดวงชะตา (เราเจาะอักษรนำให้ฟรี 1 ท่าน1สิทธิ) โดยใช้ข้อมูล ชื่อเล่นไทย-Eng ซึ่งเราได้เก็บรวบรวมไว้ให้ พร้อมรับข่าวสารและสิทธิประโยชน์ VIP เพิ่มเติมจากเราได้ในอนาคตตลอดชีวิต"
+                    android:textSize="16sp"
+                    android:textColor="#fff" />
+
+
+                <TextView
+                    android:id="@+id/txt_des2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text=" ...กรณีนี้เหมาะสำหรับท่านที่ต้องการมีชื่อเล่น ชื่อจริง ให้เลือกเยอะๆ อยากเลือกเอง จ่ายครั้งเดียวแล้วอยากเลือกตั้งชื่อให้ญาติมิตรคนอื่นๆด้วย แถมไม่ต้องรอนานและประหยัดค่าครูในส่วนของการตั้งชื่อต่อครั้งต่อคนได้ด้วย ถ้าสนใจกรุณาดูรายละเอียด VIP Gold เพิ่มเติมได้ที่"
+
+                    android:textColor="#FFF"
+                    android:textSize="16sp"
+                    android:paddingEnd="20dp"/>
+                <Button
+                    android:id="@+id/btn_nickname_block_regis"
+                    android:layout_gravity="end"
+                    android:text="รายละเอียดการลงทะเบียน"
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content" />
+
+
+                <LinearLayout
+                    android:gravity="end"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+    </RelativeLayout>
+
+</FrameLayout>

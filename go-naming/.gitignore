@@ -1,0 +1,9 @@
+.go-build/
+.go-cache/
+go-naming-app
+go-naming-app-linux
+debug-compare
+debug-tool
+update-vectors
+update-vectors-linux
+db_status.txt

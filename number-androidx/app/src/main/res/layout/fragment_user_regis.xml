@@ -1,0 +1,825 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coor_user_register"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.auth.UserRegisF">
+
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#E2E4E2"
+            android:orientation="vertical">
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="2dp"
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="9dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="สิทธิพิเศษของท่านผู้เป็นสมาชิก"
+                        android:textColor="#FB8C00"
+                        android:textSize="20dp"
+                        android:textStyle="bold" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="3dp"
+                        android:layout_marginBottom="6dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginBottom="9dp"
+                        android:fontFamily="@font/browa_0"
+                        android:text="จุดประสงค์ในการลงทะเบียนสมาชิก เป็นการระบุตัวตนของท่าน เพื่อให้สามารถใช้งานแอพลิเคชั่นเพิ่มเติมในส่วนของการทำนาย ชื่อเล่น ชื่อจริงนามสกุล บ้านเลขที่ และเบอร์โทรศัพท์ได้ และสามารถใช้ได้ไม่จำกัดจำนวน และ...ถ้าในอนาคตหากท่านต้องการใช้งานในระดับที่สูงขึ้น (VIP) ทั้งการเลือกดูรายการชื่อเล่น ชื่อจริง ที่ดีทั้งเลขศาสตร์พลังเงา ซึ่งเราได้เก็บรวบรวมไว้ให้เลือกใช้นับพันรายการ ทั้งการทำนายทะเบียนรถ พร้อมใช้เพื่อยืนยันสิทธิประโยชน์ที่เราอาจมีให้ในอนาคต โดยระบบจะไม่มีการเก็บข้อมูลอื่นใดอีก และไม่จำเป็นต้องลงทะเบียนสมัครสมาชิกใหม่อีกครั้ง"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="2dp"
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="18dp"
+                    android:orientation="vertical">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="ชื่อจริง : "
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edt_realname"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="18dp"
+                            android:hint="ชื่อจริง"
+                            android:imeOptions="actionNext"
+                            android:inputType="text"
+                            android:maxLength="30"
+                            android:maxLines="1"
+                            android:textSize="18sp"
+                            android:nextFocusForward="@id/edt_surname" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="นามสกุล : "
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edt_surname"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="18dp"
+                            android:hint="นามสกุล"
+                            android:imeOptions="actionNext"
+                            android:inputType="text"
+                            android:maxLength="30"
+                            android:maxLines="1"
+                            android:textSize="18sp"
+                            android:nextFocusForward="@id/spin_day" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/txt_dmy"
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="ว/ด/ป เกิด : "
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/spin_day"
+                            android:layout_width="90dp"
+                            android:layout_height="wrap_content" />
+
+                        <Spinner
+
+                            android:id="@+id/spin_month"
+                            android:layout_width="90dp"
+                            android:layout_height="wrap_content" />
+
+                        <Spinner
+
+                            android:id="@+id/spin_year"
+                            android:layout_width="90dp"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/txt_timebirth"
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="เวลาเกิด : "
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+
+                        <Spinner
+                            android:id="@+id/spin_time_hour"
+                            android:layout_width="90dp"
+                            android:layout_height="wrap_content" />
+
+
+                        <Spinner
+                            android:id="@+id/spin_time_minute"
+                            android:layout_width="90dp"
+                            android:layout_height="wrap_content" />
+
+
+                    </LinearLayout>
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:gravity="end"
+                            android:text="จังหวัด เกิด : "
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <Spinner
+                            android:id="@+id/spin_province"
+                            android:layout_width="180dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical" />
+
+                    </LinearLayout>
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+
+                        android:background="@android:color/darker_gray" />
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <!-- Avatar Selection -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="9dp"
+                        android:layout_marginBottom="9dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="เลือกรูปประจำตัว :"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginStart="10dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_horizontal">
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/img_avatar_10"
+                                android:layout_width="55dp"
+                                android:layout_height="55dp"
+                                android:src="@drawable/ic_avatar_10"
+                                android:padding="6dp"
+                                android:layout_margin="2dp"
+                                android:scaleType="centerCrop"
+                                app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/img_avatar_11"
+                                android:layout_width="55dp"
+                                android:layout_height="55dp"
+                                android:src="@drawable/ic_avatar_11"
+                                android:padding="6dp"
+                                android:layout_margin="2dp"
+                                android:scaleType="centerCrop"
+                                app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/img_avatar_12"
+                                android:layout_width="55dp"
+                                android:layout_height="55dp"
+                                android:src="@drawable/ic_avatar_12"
+                                android:padding="6dp"
+                                android:layout_margin="2dp"
+                                android:scaleType="centerCrop"
+                                app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/img_avatar_13"
+                                android:layout_width="55dp"
+                                android:layout_height="55dp"
+                                android:src="@drawable/ic_avatar_13"
+                                android:padding="6dp"
+                                android:layout_margin="2dp"
+                                android:scaleType="centerCrop"
+                                app:shapeAppearanceOverlay="@style/CircleAvatar"
+                                android:clickable="true"
+                                android:focusable="true" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+
+                        android:background="@android:color/darker_gray" />
+
+
+                    <LinearLayout
+                        android:layout_marginTop="9dp"
+                        android:layout_marginBottom="9dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:gravity="end"
+                            android:text="เพศ เกิด : "
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <RadioGroup
+                            android:id="@+id/rad_gender_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <RadioButton
+                                android:textSize="18sp"
+                                android:id="@+id/radio_woman"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="false"
+                                android:text="หญิง" />
+
+                            <RadioButton
+                                android:textSize="18sp"
+                                android:layout_marginStart="5dp"
+                                android:id="@+id/radio_man"
+                                android:checked="false"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ชาย" />
+                        </RadioGroup>
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+
+                        android:background="@android:color/darker_gray" />
+
+                    <!-- Shipping Address Section (Optional) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:orientation="vertical"
+                        android:paddingStart="15dp"
+                        android:paddingEnd="15dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_toggle_address"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:icon="@android:drawable/ic_menu_edit"
+                            android:layout_marginEnd="15dp"
+                            android:textSize="18sp"
+                            android:text="เพิ่มข้อมูลที่อยู่จัดส่ง (ไม่บังคับ)" />
+
+                        <LinearLayout
+                            android:id="@+id/layout_address_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ที่อยู่จัดส่งสินค้า :"
+                                android:textStyle="bold"
+                                android:textSize="20sp"
+                                android:layout_marginTop="8dp" />
+
+                            <EditText
+                                android:id="@+id/edt_shipping_address"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="ระบุจังหวัด อำเภอ เขต รหัสไปรษณีย์..."
+                                android:inputType="textMultiLine"
+                                android:lines="3"
+                                android:gravity="top"
+                                android:background="@android:drawable/edit_text"
+                                android:padding="8dp"
+                                android:textSize="18sp"
+                                android:layout_marginTop="5dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+
+                        android:background="@android:color/darker_gray" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="15dp"
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="User Name : "
+                            android:textColor="#7CB342"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edt_username"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="15dp"
+                            android:hint="User Name"
+                            android:imeOptions="actionNext"
+                            android:inputType="text"
+                            android:maxLength="30"
+                            android:maxLines="1"
+                            android:textSize="18sp"
+                            android:nextFocusForward="@id/edt_password" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+
+                            android:text="Password : "
+                            android:textColor="#7CB342"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edt_password"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="15dp"
+                            android:imeOptions="actionNext"
+                            android:inputType="textPassword"
+                            android:maxLength="13"
+                            android:maxLines="1"
+                            android:textSize="18sp"
+                            android:nextFocusForward="@id/edt_passwordf" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <TextView
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:text="Re-Password : "
+                            android:textColor="#FFB300"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <EditText
+                            android:id="@+id/edt_passwordf"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="15dp"
+                            android:textSize="18sp"
+                            android:inputType="textPassword"
+                            android:maxLength="13"
+                            android:maxLines="1" />
+
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="9dp"
+                        android:gravity="end"
+                        android:orientation="horizontal">
+
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_user_register_full"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="15dp"
+                            android:text="ลงทะเบียนเป็นสมาชิก" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="16dp"
+
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="สิทธิ์ของผู้ใช้งานแอพพลิเคชั่น NUMBER"
+                        android:textColor="#039BE5"
+                        android:textSize="19dp"
+                        android:textStyle="bold" />
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_general"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="บุคคลทั่วไป"
+                            android:textColor="#FB8C00"
+                            android:textSize="17sp" />
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/txt_general"
+                            android:src="@drawable/icon_general" />
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="6dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="บุคคลทั่่วไปท่านสามารถใช้แอพพลิเคชั่นของเราทำนายเบอร์โทรศัพท์ บ้านเลขที่ ชื่อเล่น ชื่อนามสกุล และใช้ทำนายทะเบียนรถได้ แต่ไม่เกิน 3 ครั้ง"
+                        android:textSize="15sp" />
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_member"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="สมาชิก"
+                            android:textColor="#FB8C00"
+                            android:textSize="17sp" />
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/txt_member"
+                            android:src="@drawable/icon_member" />
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="6dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="สมาชิกสามารถใช้แอพพลิเคชั่นทำนายเบอร์โทรศัพท์ ชื่อเล่น ชื่อจริง บ้านเลขที่ได้ไม่จำกัด และสามารถใช้แอพพลิเคชั่นของเราทำนายทะเบียนรถได้ แต่ไม่เกิน 3 ครั้ง"
+                        android:textSize="15sp" />
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/vip_silver"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="VIP Silver (มีส่วนลด 5% ตลอดชีวิต)"
+                            android:textColor="#FB8C00"
+                            android:textSize="17sp" />
+
+                        <ImageView
+                            android:id="@+id/img_silver"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/vip_silver"
+                            android:src="@drawable/icon_vip_beauty" />
+
+
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="0dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_silver_h"
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+                        android:text="มีสิทธิ์เหมือนสมาชิกปรกติ แต่มีสิทธิพิเศษเพิ่มขึ้นดังนี้"
+                        android:textColor="#43A047"
+                        android:textSize="15sp" />
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="VIP Silver สามารถใช้แอพพลิเคชั่นของเราในการทำนายทะเบียนรถได้ไม่จำกัดจำนวนตลอดชีวิต อัพเกรดเพียง 3,659 บาท"
+                        android:textSize="15sp" />
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_vip_gold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="VIP Gold  (มีส่วนลด 10% ตลอดชีวิต)"
+                            android:textColor="#FB8C00"
+                            android:textSize="17sp" />
+
+                        <ImageView
+                            android:id="@+id/img_vip_gold"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/txt_vip_gold"
+                            android:src="@drawable/icon_gold01" />
+
+
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="0dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_gold"
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+
+                        android:text="สามารถทำได้ทุกอย่างเหมือนสมาชิกปรกติ แต่มีสิทธิพิเศษเพิ่มขึ้นดังนี้"
+                        android:textColor="#43A047"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="VIP Gold สามารถเลือกดูรายการชื่อเล่น และชื่อจริง ที่ได้เลขดีทั้งเลขศาสตร์พลังเงา เพื่อนำไปใช้ในการตั้งชื่อให้ตัวเองและครอบครัวได้ตลอดชีวิต โดยเราจะเปิดดวงเจาะเลขเพื่อหาอักษรนำหน้าชื่อเล่นชื่อสกุลที่ดีที่สุดเพื่อให้ท่านนำไปเลือกตั้งชื่อให้ฟรี 1 ครั้ง คือ เจ้าของสิทธิ์นี้เท่านั้น อัพเกรดเพียง 24,599 บาท " />
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_vip_daimond"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="VIP Diamond  (มีส่วนลด 14% ตลอดชีวิต)"
+                            android:textColor="#FB8C00"
+                            android:textSize="17sp" />
+
+                        <ImageView
+                            android:id="@+id/img_daimond"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/txt_vip_daimond"
+                            android:src="@drawable/diamond" />
+
+
+                    </RelativeLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="0dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <TextView
+                        android:id="@+id/txt_daimond"
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="0dp"
+
+                        android:text="สามารถทำได้ทุกอย่างเหมือนสมาชิกปรกติ แต่มีสิทธิพิเศษเพิ่มขึ้นดังนี้"
+                        android:textColor="#43A047"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="VIP Diamond สามารถดูรายการ ชื่อเล่น และชื่อจริงที่ดีทั้งเลขศาสตร์และพลังเงานับพันรายการ เพื่อนำไปใช้ในการตั้งชื่อของตัวเองและครอบครัว โดยเราจะเปิดดวงเจาะเลขเพื่อหาอักษรนำหน้าชื่อเล่นชื่อสกุลที่ดีที่สุดเพื่อให้ท่านนำไปเลือกตั้งชื่อให้ฟรี 2 ครั้ง คือ เจ้าของสิทธิ์นี้และคนที่เจ้าของสิทธิ์เลือกมาเท่านั้นและ ***ท่านยังสามารถใช้แอพพลิเคชั่นในการทำนายทะเบียนรถได้ไม่จำกัดจำนวนตลอดชีวิต อัพเกรดเพียง 26,599 บาท"
+                        android:textSize="15sp" />
+
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

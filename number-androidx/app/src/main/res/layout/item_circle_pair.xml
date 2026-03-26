@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="num"
+            type="String"/>
+    </data>
+
+    <RelativeLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="3dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="9dp"
+        app:cardBackgroundColor="#9C27B0"
+        app:cardCornerRadius="18dp">
+
+        <TextView
+            android:id="@+id/txtCirclePair"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:gravity="center"
+            android:text="@{num}"
+            tools:text="00"
+            android:textColor="@color/color_txt_circle_tabian"
+            android:textSize="@dimen/circurPair"
+            android:textStyle="bold" />
+    </androidx.cardview.widget.CardView>
+
+
+
+
+
+
+</RelativeLayout>
+
+</layout>

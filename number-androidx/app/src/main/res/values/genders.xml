@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="gender_array">
+        <item>เพศ</item>
+        <item>หญิง</item>
+        <item>ชาย</item>
+
+    </string-array>
+</resources>

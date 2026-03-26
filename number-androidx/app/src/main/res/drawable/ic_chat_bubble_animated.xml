@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <!-- Sweep sequence (approx 1 second) -->
+    <item android:drawable="@drawable/ic_chat_bubble_gold_2" android:duration="150" />
+    <item android:drawable="@drawable/ic_chat_bubble_gold_3" android:duration="150" />
+    <item android:drawable="@drawable/ic_chat_bubble_gold_4" android:duration="150" />
+    <item android:drawable="@drawable/ic_chat_bubble_gold_5" android:duration="150" />
+    <item android:drawable="@drawable/ic_chat_bubble_gold_6" android:duration="150" />
+    <!-- Pause sequence (approx 2 seconds) -->
+    <item android:drawable="@drawable/ic_chat_bubble_gold_1" android:duration="2000" />
+</animation-list>

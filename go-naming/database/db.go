@@ -1,0 +1,266 @@
+package database
+
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+)
+
+var DB *sql.DB
+var MySQLDB *sql.DB
+
+func GetMySQLDB() *sql.DB {
+	if MySQLDB == nil {
+		ConnectMySQL()
+	}
+	return MySQLDB
+}
+
+func ConnectMySQL() {
+	mysqlDSN := os.Getenv("MYSQL_DSN")
+	if mysqlDSN == "" {
+		mysqlDSN = "zoqlszwh_ananyadb:IntelliP24.X@tcp(127.0.0.1:3306)/zoqlszwh_ananyadb"
+	}
+
+	var err error
+	MySQLDB, err = sql.Open("mysql", mysqlDSN)
+	if err != nil {
+		log.Printf("Warning: MySQL connection failed: %v", err)
+		return
+	}
+
+	if err := MySQLDB.Ping(); err != nil {
+		log.Printf("Warning: MySQL ping failed: %v", err)
+		MySQLDB = nil
+		return
+	}
+
+	// Set pool settings to avoid connection leaks/starvation and protect the shared MySQL DB
+	MySQLDB.SetMaxOpenConns(15)
+	MySQLDB.SetMaxIdleConns(5)
+	MySQLDB.SetConnMaxLifetime(5 * 60 * 1000 * 1000 * 1000) // 5 minutes
+
+	fmt.Println("MySQL connection established")
+}
+
+func Connect() {
+	// Use localhost to avoid network loopback latency
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		connStr = "postgres://tayap:IntelliP24.X@43.228.85.200/tayap?sslmode=disable"
+	}
+
+	var err error
+	DB, err = sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatalf("Error opening database connection: %v", err)
+	}
+
+	// Set pool settings to avoid connection leaks/starvation
+	DB.SetMaxOpenConns(25)
+	DB.SetMaxIdleConns(5)
+	DB.SetConnMaxLifetime(5 * 60 * 1000 * 1000 * 1000) // 5 minutes
+
+	if err := DB.Ping(); err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+
+	// Initialize Chat Tables if not exist
+	initChatTables()
+	initProductTables()
+	initOrderTables()
+	initNamingExampleTables()
+	initUserSavedNamesTables()
+	initArticlesTable()
+
+	fmt.Println("Database connection established")
+}
+
+func initArticlesTable() {
+	query := `
+	CREATE TABLE IF NOT EXISTS articles (
+		art_id SERIAL PRIMARY KEY,
+		slug VARCHAR(255) UNIQUE NOT NULL,
+		title VARCHAR(255) NOT NULL,
+		excerpt VARCHAR(500) NOT NULL,
+		category VARCHAR(50) NOT NULL,
+		image_url VARCHAR(255) NOT NULL,
+		published_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		is_published BOOLEAN DEFAULT true,
+		content TEXT NOT NULL,
+		title_short VARCHAR(255),
+		pin_order INTEGER DEFAULT 0
+	);
+	`
+	_, err := DB.Exec(query)
+	if err != nil {
+		fmt.Printf("Warning: Articles table init failed: %v\n", err)
+	}
+}
+
+func initUserSavedNamesTables() {
+	query := `
+	CREATE TABLE IF NOT EXISTS user_saved_names (
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER DEFAULT 0,
+		name TEXT NOT NULL,
+		sat_sum INTEGER,
+		sha_sum INTEGER,
+		is_sat_good BOOLEAN,
+		is_sha_good BOOLEAN,
+		root_word TEXT,
+		meaning TEXT,
+		analysis TEXT,
+		device_id TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	CREATE INDEX IF NOT EXISTS idx_user_saved_names_user_id ON user_saved_names(user_id);
+	CREATE INDEX IF NOT EXISTS idx_user_saved_names_device_id ON user_saved_names(device_id);
+	`
+	_, err := DB.Exec(query)
+	if err != nil {
+		fmt.Printf("Warning: User saved names tables init failed: %v\n", err)
+	}
+	// Migration to add meaning column if it doesn't already exist
+	DB.Exec("ALTER TABLE user_saved_names ADD COLUMN IF NOT EXISTS meaning TEXT")
+}
+
+func initOrderTables() {
+	query := `
+	CREATE TABLE IF NOT EXISTS shop_orders (
+		id SERIAL PRIMARY KEY,
+		ref_no TEXT UNIQUE NOT NULL,
+		user_id INTEGER,
+		product_id INTEGER,
+		product_detail TEXT,
+		amount DECIMAL(10, 2) NOT NULL,
+		status TEXT DEFAULT 'pending', -- pending, paid, cancelled
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	`
+	_, err := DB.Exec(query)
+	if err != nil {
+		fmt.Printf("Warning: Order tables init failed: %v\n", err)
+	}
+
+	// Migration: Add guest_id and product_id if not exists
+	DB.Exec("ALTER TABLE shop_orders ADD COLUMN IF NOT EXISTS guest_id TEXT")
+	DB.Exec("ALTER TABLE shop_orders ADD COLUMN IF NOT EXISTS product_id INTEGER")
+	DB.Exec("ALTER TABLE shop_orders ADD COLUMN IF NOT EXISTS shipping_status TEXT DEFAULT 'none'")
+}
+
+func initProductTables() {
+	query := `
+	CREATE TABLE IF NOT EXISTS shop_product_categories (
+		id SERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		description TEXT,
+		image_url TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS shop_products (
+		id SERIAL PRIMARY KEY,
+		category_id INTEGER REFERENCES shop_product_categories(id),
+		name TEXT NOT NULL,
+		description TEXT,
+		price DECIMAL(10, 2) NOT NULL,
+		image_url TEXT,
+		stock_quantity INTEGER DEFAULT 0,
+		is_active BOOLEAN DEFAULT true,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	`
+	_, err := DB.Exec(query)
+	if err != nil {
+		fmt.Printf("Warning: Product tables init failed: %v\n", err)
+	}
+
+	// Ensure missing columns exist (migration workarounds)
+	DB.Exec("ALTER TABLE shop_products ADD COLUMN IF NOT EXISTS image_url TEXT")
+	DB.Exec("ALTER TABLE shop_products ADD COLUMN IF NOT EXISTS stock_quantity INTEGER DEFAULT 0")
+	DB.Exec("ALTER TABLE shop_products ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true")
+	DB.Exec("ALTER TABLE shop_products ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+	DB.Exec("ALTER TABLE shop_product_categories ADD COLUMN IF NOT EXISTS image_url TEXT")
+
+	// Verify column existence
+	var exists bool
+	err_check := DB.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='shop_products' AND column_name='category_id')").Scan(&exists)
+	fmt.Printf("DEBUG: shop_products.category_id exists: %v (err: %v)\n", exists, err_check)
+
+	// Insert default categories if empty
+	var count int
+	DB.QueryRow("SELECT COUNT(*) FROM shop_product_categories").Scan(&count)
+	if count == 0 {
+		// Use individual inserts to guarantee IDs 1, 2, 3, 4
+		DB.Exec("INSERT INTO shop_product_categories (id, name, description) VALUES ($1, $2, $3)", 1, "พลอยเพทาย", "หมวดหมู่สินค้าพลอยเพทาย")
+		DB.Exec("INSERT INTO shop_product_categories (id, name, description) VALUES ($1, $2, $3)", 2, "ทำนายฝัน", "หมวดหมู่สินค้าทำนายฝัน")
+		DB.Exec("INSERT INTO shop_product_categories (id, name, description) VALUES ($1, $2, $3)", 3, "เบอร์โทร", "หมวดหมู่สินค้าเบอร์โทรศัพท์")
+		DB.Exec("INSERT INTO shop_product_categories (id, name, description) VALUES ($1, $2, $3)", 4, "ทะเบียนรถ", "หมวดหมู่สินค้าทะเบียนรถ")
+
+		// Reset serial sequence if needed (PostgreSQL specific)
+		DB.Exec("SELECT setval('shop_product_categories_id_seq', (SELECT MAX(id) FROM shop_product_categories))")
+	}
+}
+
+func initChatTables() {
+	query := `
+	CREATE TABLE IF NOT EXISTS chat_sessions (
+		session_id TEXT PRIMARY KEY,
+		guest_name TEXT,
+		user_id INTEGER,
+		fcm_token TEXT,
+		device_id TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		last_message_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE IF NOT EXISTS chat_messages (
+		message_id SERIAL PRIMARY KEY,
+		session_id TEXT REFERENCES chat_sessions(session_id),
+		sender_type TEXT,
+		message_text TEXT NOT NULL,
+		image_url TEXT,
+		is_read BOOLEAN DEFAULT false,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+    -- Indexes for performance
+    CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id);
+    CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
+    CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id);
+    CREATE TABLE IF NOT EXISTS guest_usage (
+        guest_id TEXT PRIMARY KEY,
+        message_count INTEGER DEFAULT 0,
+        last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+	`
+	_, err := DB.Exec(query)
+	if err != nil {
+		fmt.Printf("Warning: Chat tables init failed: %v\n", err)
+	}
+}
+
+func initNamingExampleTables() {
+	query := `
+	CREATE TABLE IF NOT EXISTS naming_examples (
+		id SERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
+		avatar_url TEXT,
+		is_celebrity BOOLEAN DEFAULT true,
+		sort_order INTEGER DEFAULT 0,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	`
+	_, err := DB.Exec(query)
+	if err != nil {
+		fmt.Printf("Warning: Naming example tables init failed: %v\n", err)
+	}
+}

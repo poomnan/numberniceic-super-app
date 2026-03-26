@@ -1,0 +1,2573 @@
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../models/name_model.dart';
+import '../models/name_root_result.dart';
+import '../models/number_meaning_model.dart';
+import '../services/api_service.dart';
+import '../utils/colors.dart';
+import 'gold_effect.dart';
+
+class NameListItem extends StatefulWidget {
+  final MobileNameResult result;
+  final String? comparisonName; // Name used for matching
+  final NameAnalysisResult?
+  comparisonAnalysis; // Analysis for the matching name (for Kaki highlight)
+  final bool showMatching;
+  final VoidCallback? onTap;
+  final int rank; // Ranking position (1-based)
+  final bool isFilterSatActive;
+  final bool isFilterShaActive;
+  final bool isFilterKakiActive;
+
+  const NameListItem({
+    super.key,
+    required this.result,
+    this.comparisonName,
+    this.comparisonAnalysis,
+    this.showMatching = false,
+    this.onTap,
+    this.rank = 0,
+    this.isFilterSatActive = false,
+    this.isFilterShaActive = false,
+    this.isFilterKakiActive = false,
+  });
+
+  @override
+  State<NameListItem> createState() => _NameListItemState();
+}
+
+class _NameListItemState extends State<NameListItem>
+    with TickerProviderStateMixin {
+  bool _isSaving = false;
+  bool _isSaved = false;
+  bool _isFlipped = false;
+  String _flipType = 'score'; // 'score' or 'luck'
+  NameRootResult? _rootData;
+  final bool _isLoadingRoot = false;
+  late AnimationController _controller;
+  late AnimationController _flipController;
+  late Animation<double> _flipAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if name is already saved
+    _isSaved = ApiService.savedNamesCache.contains(widget.result.name);
+
+    // Entry animation controller
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _controller.forward();
+
+    // Flip animation controller — value goes 0 (front) to 1 (back)
+    _flipController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _flipAnimation = CurvedAnimation(
+      parent: _flipController,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _flipController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveName() async {
+    if (_isSaved) return;
+
+    setState(() => _isSaving = true);
+
+    try {
+      final deviceId = await ApiService().getDeviceId();
+      final rootData = await ApiService().getNameRoot(widget.result.name);
+
+      final payload = {
+        "name": widget.result.name,
+        "sat_sum": widget.result.satSum,
+        "sha_sum": widget.result.shaSum,
+        "is_sat_good": widget.result.isSatGood,
+        "is_sha_good": widget.result.isShaGood,
+        "root_word": rootData?.rootWord ?? "",
+        "analysis": rootData?.analysis ?? widget.result.meaning,
+        "device_id": deviceId,
+      };
+
+      final success = await ApiService().saveName(payload);
+      if (success) {
+        setState(() => _isSaved = true);
+        ApiService.savedNamesCache.add(widget.result.name);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("บันทึกชื่อ ${widget.result.name} แล้ว"),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Error
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _scale = 0.98);
+  }
+
+  void _onTapCancel() {
+    setState(() => _scale = 1.0);
+  }
+
+  void _toggleFlip([String type = 'score']) {
+    if (!_isFlipped) {
+      setState(() {
+        _isFlipped = true;
+        _flipType = type;
+      });
+    } else {
+      setState(() => _isFlipped = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Sync local state with cache to handle delayed loading or deletions
+    if (ApiService.savedNamesCache.contains(widget.result.name)) {
+      _isSaved = true;
+    } else {
+      _isSaved = false;
+    }
+
+    bool hasMatching =
+        widget.showMatching && (widget.result.totalSat != widget.result.satSum);
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.92, end: 1.0).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOut),
+            ),
+            child: child,
+          ),
+        );
+      },
+      child: _isFlipped ? _buildBackSide() : _buildFrontSide(hasMatching),
+    );
+  }
+
+  Widget _buildFrontSide(bool hasMatching) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: (_) => _onTapCancel(),
+      onTapCancel: _onTapCancel,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          decoration: BoxDecoration(
+            color: AppColors.bgDark, // Clean themed background
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.accent.withOpacity(0.3),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Ranking Badge at top-left
+              if (widget.rank > 0)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  child: _buildRankBadge(widget.rank),
+                ),
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      20,
+                      44,
+                      20,
+                      16,
+                    ), // Increased top padding to avoid overlap with badges
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ซ้าย: ข้อมูลชื่อทั้งหมด
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      if (widget.onTap != null) widget.onTap!();
+                                    },
+                                    child: _buildNameText(context),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              // Badges row
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: [
+                                  if (widget.result.kakiHighlight.isNotEmpty &&
+                                      !widget.result.kakiHighlight.any(
+                                        (h) => h.isKaki,
+                                      ))
+                                    _buildNoKakiBadge(),
+                                  if (widget.result.kakiHighlight.any(
+                                    (h) => h.isKaki,
+                                  ))
+                                    _buildKakiWarningBadge(),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.result.meaning,
+                                style: const TextStyle(
+                                  color: AppColors.textGray,
+                                  fontSize: 15,
+                                  height: 1.5,
+                                  fontFamily: 'Sarabun',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              // เปลี่ยนจาก Row เป็น Column เพื่อประหยัดพื้นที่แนวนอน
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Transform.scale(
+                                        scale: 0.9,
+                                        alignment: Alignment.centerLeft,
+                                        child: _buildRootWordButton(context),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _buildBookmarkButton(),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // ขวา: คะแนน (ย้ายมาไว้ด้านขวาเพื่อลดพื้นที่ว่าง)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            // Top score display
+                            _buildSmartScoreDisplay(
+                              widget.result.satSum,
+                              widget.result.isSatGood,
+                              "",
+                              isActive: widget.isFilterSatActive,
+                              labelOnLeft: true,
+                              pairType: widget.result.satPairType,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildSmartScoreDisplay(
+                              widget.result.shaSum,
+                              widget.result.isShaGood,
+                              "",
+                              isActive: widget.isFilterShaActive,
+                              labelOnLeft: true,
+                              pairType: widget.result.shaPairType,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (hasMatching)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.03),
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.white.withOpacity(0.08),
+                          ),
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(24),
+                          bottomRight: Radius.circular(24),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.subdirectory_arrow_right_rounded,
+                            color: Color(0xFF8B6B04),
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "วิเคราะห์ร่วมกับชื่อ",
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                _buildMatchingNameText(context),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _buildSmartScoreDisplay(
+                                widget.result.totalSat,
+                                widget.result.isTotalSatGood,
+                                "",
+                                isActive: widget.isFilterSatActive,
+                                size: 34,
+                                labelOnLeft: true,
+                                pairType: widget.result.totalSatPairType,
+                              ),
+                              const SizedBox(height: 4),
+                              _buildSmartScoreDisplay(
+                                widget.result.totalSha,
+                                widget.result.isTotalShaGood,
+                                "",
+                                isActive: widget.isFilterShaActive,
+                                size: 34,
+                                labelOnLeft: true,
+                                pairType: widget.result.totalShaPairType,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              // === ส่วนแสดงป้าย Double Lucky ที่มุมขวาล่าง (แก้ไขใหม่) ===
+              // === ส่วนแสดงป้าย Double Lucky ที่มุมขวาล่าง (แก้ไขใหม่) ===
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Builder(
+                  builder: (context) {
+                    // Logic fix: Only show Lucky Badge if at least one filter is ON
+                    bool isSatMatch = widget.result.isSatGood;
+                    bool isShaMatch = widget.result.isShaGood;
+                    bool noKaki = !widget.result.kakiHighlight.any(
+                      (h) => h.isKaki,
+                    );
+
+                    // A name satisfies filters if:
+                    // - filter is OFF OR (filter is ON AND it matches)
+                    bool satisfiesFilters =
+                        (!widget.isFilterSatActive || isSatMatch) &&
+                        (!widget.isFilterShaActive || isShaMatch) &&
+                        (!widget.isFilterKakiActive || noKaki);
+
+                    // A name is considered "Lucky" ONLY if BOTH numerology and shadow are good (Double Green).
+                    // If either one is not green, it will show "น่าเสียดาย".
+                    bool isLucky =
+                        satisfiesFilters && (isSatMatch && isShaMatch);
+
+                    bool hasMatchingGood =
+                        widget.showMatching &&
+                        (widget.result.totalSat != widget.result.satSum) &&
+                        widget.result.isTotalSatGood &&
+                        widget.result.isTotalShaGood;
+
+                    int multiplier = 0;
+                    if (isSatMatch) multiplier++;
+                    if (isShaMatch) multiplier++;
+                    if (widget.result.kakiHighlight.isNotEmpty && noKaki)
+                      multiplier++;
+                    if (hasMatchingGood) multiplier++;
+
+                    String luckText;
+                    List<Color> gradientColors;
+
+                    if (isLucky) {
+                      if (multiplier <= 1) {
+                        luckText = 'Lucky ✨';
+                      } else {
+                        String prefix = multiplier >= 4
+                            ? 'Super'
+                            : (multiplier == 3 ? 'Triple' : 'Double');
+                        luckText = '$prefix Lucky x$multiplier';
+                      }
+
+                      if (multiplier >= 4) {
+                        gradientColors = [
+                          const Color(0xFFDBB632),
+                          const Color(0xFFFF8C00),
+                          const Color(0xFFFF4FA3),
+                          const Color(0xFFB517FF),
+                        ];
+                      } else if (multiplier == 3) {
+                        gradientColors = [
+                          const Color(0xFFDBB632),
+                          const Color(0xFFFF8C00),
+                          const Color(0xFFFF4FA3),
+                        ];
+                      } else {
+                        gradientColors = [
+                          const Color(0xFFDBB632),
+                          const Color(0xFFFF8C00),
+                        ];
+                      }
+                    } else {
+                      // Only show 'น่าเสียดาย' if filters represent a search for good names
+                      // Otherwise just keep it gray/locked
+                      luckText = 'น่าเสียดาย';
+                      gradientColors = [
+                        const Color(0xFF71717A),
+                        const Color(0xFF3F3F46),
+                      ]; // Zinc/Gray shades
+                    }
+
+                    return TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.elasticOut,
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: _MagicLuckyBadge(
+                            isLucky: isLucky,
+                            text: luckText,
+                            gradientColors: gradientColors,
+                            onTap: () => _toggleFlip('luck'),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackSide() {
+    return GestureDetector(
+      key: const ValueKey('back_side'),
+      onTap: () => _toggleFlip(),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: _flipType == 'luck'
+                ? [const Color(0xFF2A1F0A), const Color(0xFF3D2E0F)]
+                : [const Color(0xFF0A1628), const Color(0xFF0D1F3C)],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: _flipType == 'luck'
+                ? const Color(0xFFDBB632).withOpacity(0.4)
+                : AppColors.accent.withOpacity(0.3),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  (_flipType == 'luck'
+                          ? const Color(0xFFDBB632)
+                          : AppColors.accent)
+                      .withOpacity(0.15),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Builder(
+                      builder: (context) {
+                        bool isLucky =
+                            widget.result.isSatGood &&
+                            widget.result.isShaGood &&
+                            (!widget.showMatching ||
+                                (widget.result.isTotalSatGood &&
+                                    widget.result.isTotalShaGood));
+
+                        String title;
+                        IconData icon;
+                        Color color;
+
+                        if (_flipType == 'luck') {
+                          if (isLucky) {
+                            title = 'ที่มาของโชค';
+                            icon = Icons.auto_awesome;
+                            color = const Color(0xFFDBB632);
+                          } else {
+                            title = 'ทำไมถึงน่าเสียดาย?';
+                            icon = Icons.info_outline_rounded;
+                            color = const Color(0xFF9CA3AF); // Gray
+                          }
+                        } else {
+                          title = 'ที่มาของอันดับ';
+                          icon = Icons.leaderboard_rounded;
+                          color = AppColors.accent;
+                        }
+
+                        return Row(
+                          children: [
+                            Icon(icon, color: color, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              title,
+                              style: GoogleFonts.prompt(
+                                color: color,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: () => _toggleFlip(),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white38,
+                    size: 18,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(color: Colors.white12, height: 16),
+
+            // Content based on flip type
+            if (_flipType == 'luck')
+              _buildLuckExplanation()
+            else
+              _buildScoreBreakdownContent(),
+
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                'แตะเพื่อปิด',
+                style: GoogleFonts.sarabun(color: Colors.white24, fontSize: 10),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLuckExplanation() {
+    final bool isSatGood = widget.result.isSatGood;
+    final bool isShaGood = widget.result.isShaGood;
+    final bool noKaki =
+        widget.result.kakiHighlight.isNotEmpty &&
+        !widget.result.kakiHighlight.any((h) => h.isKaki);
+    final bool hasMatching =
+        widget.showMatching &&
+        (widget.result.totalSat != widget.result.satSum) &&
+        widget.result.isTotalSatGood &&
+        widget.result.isTotalShaGood;
+
+    final bool isLucky =
+        isSatGood && isShaGood && (!widget.showMatching || hasMatching);
+
+    int multiplier =
+        2; // isLucky is true, so isSatGood and isShaGood are both true
+    if (widget.result.kakiHighlight.isNotEmpty && noKaki) multiplier++;
+    if (hasMatching) multiplier++;
+
+    final label = multiplier >= 4
+        ? 'Super'
+        : multiplier == 3
+        ? 'Triple'
+        : 'Double';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          isLucky
+              ? '$label Lucky x$multiplier ได้มาจาก:'
+              : 'วิเคราะห์ข้อบกพร่องของชื่อนี้:',
+          style: GoogleFonts.sarabun(
+            color: isLucky ? Colors.white70 : const Color(0xFFFCA5A5),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
+        _buildCriteriaRow(
+          Icons.looks_one_rounded,
+          'เลขศาสตร์ (ตัวเลขมงคล)',
+          isSatGood,
+          isSatGood
+              ? 'เลขรวม ${widget.result.satSum} — ดีมาก ✓'
+              : 'เลขรวม ${widget.result.satSum} — ไม่ผ่าน',
+        ),
+        const SizedBox(height: 8),
+        _buildCriteriaRow(
+          Icons.blur_on_rounded,
+          'พลังเงา (เลขเงา)',
+          isShaGood,
+          isShaGood
+              ? 'เลขเงา ${widget.result.shaSum} — ดีมาก ✓'
+              : 'เลขเงา ${widget.result.shaSum} — ไม่ผ่าน',
+        ),
+        if (widget.isFilterKakiActive) ...[
+          const SizedBox(height: 8),
+          _buildCriteriaRow(
+            Icons.shield_rounded,
+            'ปลอดกาลกิณี',
+            noKaki,
+            noKaki ? 'ไม่มีอักษรกาลกิณี ✓' : 'มีอักษรกาลกิณี',
+          ),
+        ],
+        if (widget.showMatching) ...[
+          const SizedBox(height: 8),
+          _buildCriteriaRow(
+            Icons.people_rounded,
+            'เลขศาสตร์รวมกับนามสกุล',
+            hasMatching,
+            hasMatching
+                ? 'รวม ${widget.result.totalSat}/${widget.result.totalSha} — ดีทั้งคู่ ✓'
+                : 'รวมแล้วยังไม่สมบูรณ์',
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCriteriaRow(
+    IconData icon,
+    String label,
+    bool passed,
+    String detail,
+  ) {
+    final color = passed
+        ? const Color(0xFF4ADE80)
+        : const Color(0xFFF87171); // Changed non-passed to red
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
+          color: color,
+          size: 16,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.sarabun(
+                  color: color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                detail,
+                style: GoogleFonts.sarabun(color: Colors.white38, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScoreBreakdownContent() {
+    final similarity = (100 * (1 - widget.result.distance))
+        .clamp(0.0, 100.0)
+        .toDouble();
+    final score = widget.result.calculateScore(
+      showMatching: widget.showMatching,
+    );
+    final reasons = widget.result.rankReasons;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'คะแนนอันดับ #${widget.rank} ($score คะแนน) จาก:',
+          style: GoogleFonts.sarabun(
+            color: Colors.white70,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
+        _buildScoreRow(
+          'ความคล้าย',
+          similarity.toStringAsFixed(0),
+          const Color(0xFF60A5FA),
+        ),
+        if (reasons.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          ...reasons
+              .take(5)
+              .map(
+                (reason) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    '• $reason',
+                    style: GoogleFonts.sarabun(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+        ],
+        const Divider(color: Colors.white12, height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'คะแนนรวม',
+              style: GoogleFonts.sarabun(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '$score คะแนน',
+              style: GoogleFonts.prompt(
+                color: AppColors.accent,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScoreRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.sarabun(color: Colors.white54, fontSize: 12),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.prompt(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRankBadge(int rank) {
+    final bool useTotal =
+        widget.showMatching && (widget.result.totalSat != widget.result.satSum);
+    final bool isSatGood = useTotal
+        ? widget.result.isTotalSatGood
+        : widget.result.isSatGood;
+    final bool isShaGood = useTotal
+        ? widget.result.isTotalShaGood
+        : widget.result.isShaGood;
+    final score = widget.result.calculateScore(showMatching: useTotal);
+
+    // Top 3 get special colors
+    Color textColor;
+    IconData? icon;
+
+    final bool isLucky = isSatGood && isShaGood;
+
+    if (rank == 1 && isLucky) {
+      textColor = AppColors.secondary; // Dark gold for light bg
+      icon = Icons.emoji_events;
+    } else if (rank == 2 && isLucky) {
+      textColor = const Color(0xFF64748B); // Slate Gray for Silver
+      icon = Icons.emoji_events;
+    } else if (rank == 3 && isLucky) {
+      textColor = const Color(0xFF8B4513); // Saddle Brown for Bronze
+      icon = Icons.emoji_events;
+    } else {
+      textColor = const Color(0xFF7C3AED); // Modern Purple
+      icon = null;
+    }
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          alignment: Alignment.topLeft,
+          child: GestureDetector(
+            onLongPress: () => _showScoreBreakdown(context, rank, score),
+            onTap: () => _toggleFlip('score'),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icon != null && rank <= 3) ...[
+                    Icon(icon, size: 16, color: textColor),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    'อันดับ #$rank',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showScoreBreakdown(BuildContext context, int rank, int totalScore) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Column(
+            children: [
+              if (rank <= 3)
+                Icon(
+                  Icons.emoji_events,
+                  size: 40,
+                  color: rank == 1
+                      ? const Color(0xFFFFD700)
+                      : rank == 2
+                      ? const Color(0xFFC0C0C0)
+                      : const Color(0xFFCD7F32),
+                ),
+              const SizedBox(height: 8),
+              Text(
+                widget.result.name,
+                style: GoogleFonts.sarabun(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+              Text(
+                'อันดับ #$rank • $totalScore คะแนน',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 8),
+
+              const SizedBox(height: 16),
+              Text(
+                'คะแนนรวมคำนวณจากความหมาย, เลขศาสตร์, พลังเงา และความยาวของชื่อ เพื่อให้ได้ชื่อที่ดีที่สุดสำหรับคุณ',
+                style: GoogleFonts.sarabun(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 8),
+              Text(
+                'ยิ่งคะแนนสูง ยิ่งเหมาะสมกับความต้องการ',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 11,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'ปิด',
+                style: TextStyle(color: AppColors.primary),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _scoreRow(String label, String value, bool isPositive) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 13,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          decoration: BoxDecoration(
+            color: isPositive
+                ? const Color(0xFF10B981).withOpacity(0.2)
+                : Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isPositive
+                  ? const Color(0xFF10B981).withOpacity(0.4)
+                  : Colors.white.withOpacity(0.1),
+            ),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              color: isPositive
+                  ? const Color(0xFF34D399)
+                  : Colors.white.withOpacity(0.4),
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSmartScoreDisplay(
+    dynamic score,
+    bool isGood,
+    String label, {
+    bool isActive = true,
+    double size = 44,
+    bool labelOnLeft = false,
+    String pairType = '',
+  }) {
+    int sVal = 0;
+    if (score is int) {
+      sVal = score;
+    } else if (score is String)
+      sVal = int.tryParse(score) ?? 0;
+
+    final circle = (sVal >= 100)
+        ? _buildTripleDigitScores(
+            sVal,
+            isGood,
+            size,
+            isActive: isActive,
+            pairType: pairType,
+          )
+        : _buildScoreCircle(
+            sVal,
+            isGood,
+            "",
+            size: size,
+            isActive: isActive,
+            pairType: pairType,
+          );
+
+    if (labelOnLeft && label.isNotEmpty) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: size * 11 / 44,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Prompt',
+            ),
+          ),
+          const SizedBox(width: 8),
+          circle,
+        ],
+      );
+    }
+
+    if (label.isNotEmpty) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          circle,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: AppColors.textGray,
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return circle;
+  }
+
+  Widget _buildTripleDigitScores(
+    int score,
+    bool isGood,
+    double size, {
+    bool isActive = true,
+    String pairType = '',
+  }) {
+    String s = score.toString();
+    String p1 = s.substring(0, 2);
+    String p2 = s.substring(1, 3);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildScoreCircle(
+          p1,
+          isGood,
+          "",
+          size: size,
+          isActive: isActive,
+          pairType: pairType,
+        ),
+        const SizedBox(width: 4),
+        _buildScoreCircle(
+          p2,
+          isGood,
+          "",
+          size: size,
+          isActive: isActive,
+          pairType: pairType,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScoreCircle(
+    dynamic score,
+    bool isGood,
+    String label, {
+    bool isActive = true,
+    double size = 44,
+    String pairType = '',
+  }) {
+    Color lightColor;
+    Color darkColor;
+
+    if (pairType.isNotEmpty) {
+      Color base = _pairTypeColor(pairType);
+      String p = pairType.toUpperCase();
+
+      if (p.startsWith('D')) {
+        if (p.contains('10')) {
+          // Vibrant Emerald Green (D10)
+          lightColor = const Color(0xFF10B981);
+          darkColor = const Color(0xFF059669);
+        } else if (p.contains('8')) {
+          // Medium Good Green (D8)
+          lightColor = const Color(0xFF34D399);
+          darkColor = const Color(0xFF10B981);
+        } else {
+          // Light Green
+          lightColor = const Color(0xFFBBF7D0);
+          darkColor = const Color(0xFF4ADE80);
+        }
+      } else if (p.startsWith('R')) {
+        if (p.contains('10')) {
+          // Very Dark Red
+          lightColor = const Color(0xFF991B1B);
+          darkColor = const Color(0xFF7F1D1D);
+        } else if (p.contains('7')) {
+          // Mid Red
+          lightColor = const Color(0xFFEF4444);
+          darkColor = const Color(0xFFB91C1C);
+        } else {
+          // Light Red
+          lightColor = const Color(0xFFFECACA);
+          darkColor = const Color(0xFFF87171);
+        }
+      } else {
+        lightColor = base.withOpacity(0.8);
+        darkColor = base;
+      }
+    } else {
+      lightColor = isGood ? const Color(0xFF4ADE80) : const Color(0xFFF87171);
+      darkColor = isGood ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+    }
+
+    return Builder(
+      builder: (context) => InkWell(
+        onTap: () {
+          _showNumberMeaningDialog(context, score.toString(), isGood);
+        },
+        borderRadius: BorderRadius.circular(50),
+        child: Column(
+          children: [
+            Container(
+              width: size,
+              height: size,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [lightColor, darkColor],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.2),
+                    blurRadius: 0,
+                    offset: const Offset(-1, -1),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.15),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                "$score",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: size * 18 / 44,
+                  shadows: const [
+                    Shadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (label.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRootWordButton(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        _showRootWordDialog(context);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.secondary,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.secondary.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: AppColors.primary.withOpacity(0.5),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.auto_stories_rounded,
+              size: 14,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              "ดูรากศัพท์",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookmarkButton() {
+    final Color savedColor = const Color(
+      0xFFD946EF,
+    ); // Purple-Pink (ม่วงอมชมพู)
+
+    return GestureDetector(
+      onTap: _isSaved ? null : _saveName,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: _isSaved
+              ? savedColor.withOpacity(0.08)
+              : Colors.black.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _isSaved
+                ? savedColor.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
+          ),
+        ),
+        child: _isSaving
+            ? const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              )
+            : Icon(
+                _isSaved ? Icons.favorite : Icons.favorite_border,
+                size: 20,
+                color: _isSaved ? savedColor : Colors.black.withOpacity(0.3),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildNoKakiBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(
+          0xFF10B981,
+        ).withOpacity(0.15), // Emerald-500 light bg
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            color: Color(0xFF34D399),
+            size: 12,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            "ไม่มีกาลกิณี",
+            style: GoogleFonts.prompt(
+              color: const Color(0xFF34D399), // Emerald-400
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNumerologyBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.calculate, color: Color(0xFF60A5FA), size: 12),
+          const SizedBox(width: 4),
+          Text(
+            "เลขศาสตร์ดี",
+            style: GoogleFonts.prompt(
+              color: const Color(0xFF60A5FA),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShadowBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF8B5CF6).withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.dark_mode, color: Color(0xFFA78BFA), size: 12),
+          const SizedBox(width: 4),
+          Text(
+            "พลังเงาดี",
+            style: GoogleFonts.prompt(
+              color: const Color(0xFFA78BFA),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKakiWarningBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Color(0xFFF87171),
+            size: 12,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            "มีกาลกิณี",
+            style: GoogleFonts.prompt(
+              color: const Color(0xFF94A3B8), // Muted Slate Gray (Avoid Red)
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatchingNameText(BuildContext context) {
+    final bool isGold =
+        widget.result.isTotalSatGood && widget.result.isTotalShaGood;
+    final bool hasKaki =
+        widget.comparisonAnalysis != null &&
+        widget.comparisonAnalysis!.characters.any((c) => c.isKaki);
+
+    final textStyle = TextStyle(
+      color: isGold ? AppColors.accent : AppColors.inputText,
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+    );
+
+    Widget textWidget;
+
+    if (widget.comparisonAnalysis != null && hasKaki) {
+      final tp = TextPainter(
+        text: TextSpan(text: widget.comparisonName ?? '', style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      textWidget = CustomPaint(
+        size: Size(tp.width, 32),
+        painter: _ThaiHighlightPainter(
+          highlights: widget.comparisonAnalysis!.characters,
+          baseStyle: textStyle,
+          isGold: isGold,
+        ),
+      );
+    } else {
+      textWidget = Text(widget.comparisonName ?? '', style: textStyle);
+    }
+
+    if (isGold && !hasKaki) {
+      return ShimmeringGoldText(child: textWidget);
+    }
+    return textWidget;
+  }
+
+  Widget _buildNameText(BuildContext context) {
+    final bool isGold = widget.result.isSatGood && widget.result.isShaGood;
+    final bool hasKaki = widget.result.kakiHighlight.any((h) => h.isKaki);
+
+    final textStyle = TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.w900,
+      fontFamily: 'Sarabun',
+      color: AppColors.textLight, // Themed text color
+    );
+
+    Widget nameWidget;
+    if (widget.result.kakiHighlight.isEmpty) {
+      nameWidget = Text(widget.result.name, style: textStyle);
+    } else {
+      // Calculate actual width to prevent fixed-size overflow
+      final tp = TextPainter(
+        text: TextSpan(text: widget.result.name, style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      nameWidget = CustomPaint(
+        size: Size(tp.width, 36),
+        painter: _ThaiHighlightPainter(
+          highlights: widget.result.kakiHighlight,
+          baseStyle: textStyle,
+          isGold: isGold,
+        ),
+      );
+    }
+
+    if (isGold && !hasKaki) {
+      return PremiumNameTextEffect(child: nameWidget);
+    }
+    return nameWidget;
+  }
+
+  NameRootResult? _cachedRootData;
+
+  void _showRootWordDialog(BuildContext context) {
+    // Create future once, outside the builder — prevents recreation on rebuild
+    final rootFuture = _cachedRootData != null
+        ? Future.value(_cachedRootData)
+        : ApiService().getNameRoot(widget.result.name);
+    bool didSave = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool dialogSaving = false;
+        bool dialogSaved = _isSaved;
+
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return FutureBuilder<NameRootResult?>(
+              future: rootFuture,
+              builder: (context, snapshot) {
+                Widget content;
+                NameRootResult? rootData;
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  content = const SizedBox(
+                    height: 100,
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.blueGrey),
+                    ),
+                  );
+                } else if (snapshot.hasError || snapshot.data == null) {
+                  content = const Text(
+                    "ไม่สามารถดึงข้อมูลรากศัพท์ได้",
+                    style: TextStyle(color: Colors.black54),
+                  );
+                } else {
+                  rootData = snapshot.data!;
+                  _cachedRootData = rootData; // Cache the result
+                  content = ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.6,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            rootData.analysis,
+                            style: GoogleFonts.sarabun(
+                              color: const Color(0xFF334155),
+                              height: 1.8,
+                              fontSize: 16,
+                              letterSpacing: 0.1,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                          const SizedBox(height: 24),
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 2,
+                              color: Colors.black12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return AlertDialog(
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  shadowColor: Colors.black.withOpacity(0.3),
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 10,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: Colors.black.withOpacity(0.05)),
+                  ),
+                  title: Column(
+                    children: [
+                      const Icon(
+                        Icons.article_rounded,
+                        color: Color(0xFF1E3A8A),
+                        size: 40,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "การวิเคราะห์รากศัพท์",
+                        style: GoogleFonts.sarabun(
+                          color: Colors.black45,
+                          fontSize: 12,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.result.name,
+                        style: GoogleFonts.sarabun(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                        ),
+                      ),
+                      const Divider(
+                        color: Colors.black12,
+                        height: 32,
+                        thickness: 1,
+                      ),
+                    ],
+                  ),
+                  content: content,
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text(
+                        "ปิด",
+                        style: TextStyle(
+                          color: Colors.black45,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (rootData != null && !dialogSaved)
+                      ElevatedButton.icon(
+                        onPressed: dialogSaving
+                            ? null
+                            : () async {
+                                setDialogState(() => dialogSaving = true);
+                                try {
+                                  final deviceId = await ApiService()
+                                      .getDeviceId();
+                                  final payload = {
+                                    "name": widget.result.name,
+                                    "sat_sum": widget.result.satSum,
+                                    "sha_sum": widget.result.shaSum,
+                                    "is_sat_good": widget.result.isSatGood,
+                                    "is_sha_good": widget.result.isShaGood,
+                                    "root_word": rootData!.rootWord,
+                                    "analysis": rootData.analysis,
+                                    "device_id": deviceId,
+                                  };
+                                  final success = await ApiService().saveName(
+                                    payload,
+                                  );
+                                  if (success) {
+                                    didSave = true;
+                                    setDialogState(() {
+                                      dialogSaved = true;
+                                      dialogSaving = false;
+                                    });
+                                    // Auto-close dialog after 1 second
+                                    Future.delayed(
+                                      const Duration(milliseconds: 1000),
+                                      () {
+                                        if (Navigator.canPop(dialogContext)) {
+                                          Navigator.pop(dialogContext);
+                                        }
+                                      },
+                                    );
+                                    return; // skip finally
+                                  }
+                                } catch (e) {
+                                  // Error
+                                }
+                                setDialogState(() => dialogSaving = false);
+                              },
+                        icon: dialogSaving
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.favorite_rounded, size: 18),
+                        label: const Text("บันทึกชื่อนี้"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E3A8A),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    if (dialogSaved)
+                      ElevatedButton.icon(
+                        onPressed: null,
+                        icon: const Icon(
+                          Icons.check_circle,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          "บันทึกสำเร็จ",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.success,
+                          disabledBackgroundColor: AppColors.success,
+                          disabledForegroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    ).then((_) {
+      // Update parent state and show toast only after dialog is closed
+      if (didSave && mounted) {
+        setState(() => _isSaved = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("บันทึกชื่อ ${widget.result.name} แล้ว"),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    });
+  }
+
+  // สีตามระดับ pairType
+  static Color _pairTypeColor(String pairType) {
+    switch (pairType.toUpperCase().trim()) {
+      // ดี (เขียวอ่อน → เขียวเข้ม)
+      case 'D5':
+        return const Color(0xFF86EFAC); // เขียวอ่อน — ดี
+      case 'D8':
+        return const Color(0xFF10B981); // Emerald 500 — ดีมาก
+      case 'D10':
+        return const Color(
+          0xFF059669,
+        ); // Emerald 600 — ดีเยี่ยม (เขียวเข้มแต่สดใส)
+      // ร้าย (แดงอ่อน → แดงเข้ม)
+      case 'R5':
+        return const Color(0xFFFCA5A5); // แดงอ่อน — ร้าย
+      case 'R7':
+        return const Color(0xFFEF4444); // แดงกลาง — ร้ายมาก
+      case 'R10':
+        return const Color(0xFF991B1B); // แดงเข้ม — ร้ายมากๆ
+      default:
+        return const Color(0xFF64748B); // สีเทาเมื่อไม่รู้ประเภท
+    }
+  }
+
+  static String _pairTypeLabel(String pairType) {
+    switch (pairType.toUpperCase().trim()) {
+      case 'D5':
+        return 'ดี';
+      case 'D8':
+        return 'ดีมาก';
+      case 'D10':
+        return 'ดีเยี่ยม';
+      case 'R5':
+        return 'ร้าย';
+      case 'R7':
+        return 'ร้ายมาก';
+      case 'R10':
+        return 'ร้ายมากๆ';
+      default:
+        return '';
+    }
+  }
+
+  void _showNumberMeaningDialog(
+    BuildContext context,
+    String number,
+    bool isGood,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return FutureBuilder<NumberMeaningResult?>(
+          future: ApiService().getNumberMeaning(number),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const AlertDialog(
+                backgroundColor: Color(0xFF1E293B),
+                content: SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              );
+            }
+
+            if (snapshot.hasError || snapshot.data == null) {
+              return AlertDialog(
+                backgroundColor: const Color(0xFF1E293B),
+                title: const Text(
+                  "ข้อผิดพลาด",
+                  style: TextStyle(color: Colors.white),
+                ),
+                content: const Text(
+                  "ไม่สามารถดึงข้อมูลคำทำนายได้",
+                  style: TextStyle(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "ปิด",
+                      style: TextStyle(color: Colors.white54),
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            final data = snapshot.data!;
+            final pairType = data.pairType;
+            final color = _pairTypeColor(pairType);
+            final label = _pairTypeLabel(pairType);
+
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E293B),
+              shadowColor: Colors.black.withOpacity(0.5),
+              surfaceTintColor: Colors.transparent,
+              elevation: 20,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: BorderSide(color: Colors.white.withOpacity(0.1)),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      number,
+                      style: TextStyle(
+                        color: isGood ? const Color(0xFF052E16) : Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "เลขศาสตร์ $number",
+                              style: GoogleFonts.prompt(
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: 12,
+                              ),
+                            ),
+                            if (label.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: color.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: color.withOpacity(0.5),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  label,
+                                  style: GoogleFonts.prompt(
+                                    color: color,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          data.description,
+                          style: GoogleFonts.prompt(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.5,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const Divider(color: Colors.white12, height: 24),
+                      Text(
+                        data.detail.replaceAll("\\n", "\n"),
+                        style: GoogleFonts.sarabun(
+                          color: Colors.white.withOpacity(0.8),
+                          height: 1.7,
+                          fontSize: 15,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "ปิด",
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ThaiHighlightPainter extends CustomPainter {
+  final List<CharHighlight> highlights;
+  final TextStyle baseStyle;
+  final bool isGold;
+
+  _ThaiHighlightPainter({
+    required this.highlights,
+    required this.baseStyle,
+    this.isGold = false,
+  });
+
+  // Thai Combining Marks (0-width) that trigger dotted circles if painted alone.
+  static final Set<int> _thaiCombiningMarks = {
+    0x0E31, // Mai Han-Akat
+    0x0E34, 0x0E35, 0x0E36, 0x0E37, 0x0E38, 0x0E39, 0x0E3A, // Vowels up/down
+    0x0E47,
+    0x0E48,
+    0x0E49,
+    0x0E4A,
+    0x0E4B,
+    0x0E4C,
+    0x0E4D,
+    0x0E4E, // Tones/Marks
+  };
+
+  bool _isCombining(String char) {
+    if (char.isEmpty) return false;
+    int code = char.runes.first;
+    return _thaiCombiningMarks.contains(code);
+  }
+
+  void _draw(Canvas canvas, String text, Color color, double x, double y) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: baseStyle.copyWith(color: color),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(x, y));
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final red = const Color(0xFFF87171);
+    final defaultColor =
+        baseStyle.color ?? (isGold ? const Color(0xFFFFD700) : Colors.white);
+
+    // 1. Group into Thai Grapheme Clusters to avoid shaping breaks (dotted circles)
+    final clusters = <List<CharHighlight>>[];
+    for (var h in highlights) {
+      if (clusters.isEmpty || !_isCombining(h.char)) {
+        clusters.add([h]);
+      } else {
+        clusters.last.add(h);
+      }
+    }
+
+    double x = 0;
+    // Calculate a common baseline for the entire text to ensure vertical alignment
+    // We use a sample "tall" character to determine the line height/baseline
+    final sampleTp = TextPainter(
+      text: TextSpan(text: "ที่", style: baseStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final commonBaseline = sampleTp.computeDistanceToActualBaseline(
+      TextBaseline.alphabetic,
+    );
+
+    // Center vertically within the available height
+    final verticalOffset = (size.height - sampleTp.height) / 2;
+
+    for (var cluster in clusters) {
+      final clusterText = cluster.map((e) => e.char).join();
+      final base = cluster[0];
+      final baseColor = base.isKaki ? red : defaultColor;
+
+      // Measure the full cluster to find its specific baseline
+      final clusterTp = TextPainter(
+        text: TextSpan(text: clusterText, style: baseStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final clusterBaseline = clusterTp.computeDistanceToActualBaseline(
+        TextBaseline.alphabetic,
+      );
+
+      // We align this cluster's baseline to the common baseline (or just paint relative to its own)
+      // Actually, standard text rendering aligns baselines.
+      // If we simply want to align "layers", we should measure the LARGEST layer in this cluster
+      // and align smaller layers to IT.
+
+      // Let's rely on aligning to the cluster's own baseline.
+      // We paint the cluster such that its baseline is at `verticalOffset + commonBaseline`.
+      // y = (targetBaseline) - (thisTextBaseline)
+
+      final targetBaselineY = verticalOffset + commonBaseline;
+
+      // 2. Logic to paint parts of cluster with different colors
+      bool hasMixedColors = cluster.any((e) => e.isKaki != base.isKaki);
+
+      if (base.isKaki) {
+        _draw(canvas, clusterText, red, x, targetBaselineY - clusterBaseline);
+      } else if (!hasMixedColors) {
+        _draw(
+          canvas,
+          clusterText,
+          baseColor,
+          x,
+          targetBaselineY - clusterBaseline,
+        );
+      } else {
+        // Mixed Case (e.g. White Base + Red Vowel)
+        // Draw layers from full cluster down to base to ensure proper stacking
+        // The "Full Cluster" (i=length) determines the baseline for this position.
+
+        // We use the full cluster's metrics for the "Base" of alignment.
+        final fullClusterBaseline = clusterBaseline;
+
+        for (int i = cluster.length; i >= 1; i--) {
+          final subCluster = cluster.sublist(0, i);
+          final subText = subCluster.map((e) => e.char).join();
+          final lastChar = subCluster.last;
+          final color = lastChar.isKaki ? red : defaultColor;
+
+          // Measure subText
+          final subTp = TextPainter(
+            text: TextSpan(text: subText, style: baseStyle),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          final subBaseline = subTp.computeDistanceToActualBaseline(
+            TextBaseline.alphabetic,
+          );
+
+          // Align subText's baseline to targetBaselineY
+          _draw(canvas, subText, color, x, targetBaselineY - subBaseline);
+        }
+      }
+
+      x += clusterTp.width;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ThaiHighlightPainter oldDelegate) => true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// _MagicLuckyBadge: ป้าย Double Lucky พร้อมลูกเล่น Animation ดาว และ Shimmer
+// ─────────────────────────────────────────────────────────────────────────────
+class _MagicLuckyBadge extends StatefulWidget {
+  final String text;
+  final List<Color> gradientColors;
+  final bool isLucky;
+  final VoidCallback onTap;
+
+  const _MagicLuckyBadge({
+    required this.text,
+    required this.gradientColors,
+    required this.isLucky,
+    required this.onTap,
+  });
+
+  @override
+  State<_MagicLuckyBadge> createState() => _MagicLuckyBadgeState();
+}
+
+class _MagicLuckyBadgeState extends State<_MagicLuckyBadge>
+    with TickerProviderStateMixin {
+  late AnimationController _glowController;
+  late AnimationController _shimmerController;
+  late AnimationController _particleController;
+  late Animation<double> _glowAnim;
+  late Animation<double> _shimmerAnim;
+  late List<_LuckyParticle> _particles;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 1. Pulsing glow on border
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+    _glowAnim = CurvedAnimation(
+      parent: _glowController,
+      curve: Curves.easeInOut,
+    );
+
+    // 2. Shimmer sweep
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat();
+    _shimmerAnim = _shimmerController;
+
+    // 3. Floating particles (Stars)
+    _particleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat();
+
+    final rng = math.Random();
+    _particles = List.generate(
+      6,
+      (i) => _LuckyParticle(
+        x: rng.nextDouble(),
+        y: rng.nextDouble(),
+        size: 1.5 + rng.nextDouble() * 2.0,
+        speed: 0.2 + rng.nextDouble() * 0.5,
+        phase: rng.nextDouble(),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _glowController.dispose();
+    _shimmerController.dispose();
+    _particleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.isLucky) {
+      // Return simple non-lucky version
+      return GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: widget.gradientColors),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(8),
+              topRight: Radius.circular(24),
+            ),
+            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.info_outline_rounded,
+                color: Colors.white,
+                size: 14,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                widget.text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final color =
+        widget.gradientColors.last; // Use the most vibrant color for effects
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        _glowAnim,
+        _shimmerAnim,
+        _particleController,
+      ]),
+      builder: (context, _) {
+        final glow = _glowAnim.value;
+        return GestureDetector(
+          onTap: widget.onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(8),
+                topRight: Radius.circular(24),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.1 + glow * 0.2),
+                  blurRadius: 10 + glow * 12,
+                  spreadRadius: glow * 2,
+                ),
+                BoxShadow(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.05 + glow * 0.1),
+                  blurRadius: 15 + glow * 10,
+                  spreadRadius: glow * 1,
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Shimmer sweep overlay
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      topRight: Radius.circular(24),
+                    ),
+                    child: CustomPaint(
+                      painter: _LuckyShimmerPainter(
+                        progress: _shimmerAnim.value,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                // Floating sparkle particles
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      topRight: Radius.circular(24),
+                    ),
+                    child: CustomPaint(
+                      painter: _LuckyParticlePainter(
+                        particles: _particles,
+                        progress: _particleController.value,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                // Main content
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: widget.gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(8),
+                      topRight: Radius.circular(24),
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3 + glow * 0.4),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Shimmering Icon
+                      ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [
+                            Colors.white,
+                            const Color(0xFF8B5CF6),
+                            Colors.white,
+                          ],
+                          stops: [
+                            (_shimmerAnim.value - 0.2).clamp(0.0, 1.0),
+                            _shimmerAnim.value.clamp(0.0, 1.0),
+                            (_shimmerAnim.value + 0.2).clamp(0.0, 1.0),
+                          ],
+                        ).createShader(bounds),
+                        child: const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // Animated text with shimmer sweep
+                      ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [
+                            Colors.white,
+                            const Color(0xFFFDE68A),
+                            Colors.white,
+                          ],
+                          stops: [
+                            (_shimmerAnim.value - 0.1).clamp(0.0, 1.0),
+                            _shimmerAnim.value.clamp(0.0, 1.0),
+                            (_shimmerAnim.value + 0.1).clamp(0.0, 1.0),
+                          ],
+                        ).createShader(bounds),
+                        child: Text(
+                          widget.text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black12,
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LuckyParticle {
+  final double x, y, size, speed, phase;
+  _LuckyParticle({
+    required this.x,
+    required this.y,
+    required this.size,
+    required this.speed,
+    required this.phase,
+  });
+}
+
+class PremiumNameTextEffect extends StatefulWidget {
+  final Widget child;
+
+  const PremiumNameTextEffect({super.key, required this.child});
+
+  @override
+  State<PremiumNameTextEffect> createState() => _PremiumNameTextEffectState();
+}
+
+class _PremiumNameTextEffectState extends State<PremiumNameTextEffect>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _sweep;
+  late final Animation<double> _glow;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3800),
+    )..repeat();
+    _sweep = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _glow = Tween<double>(begin: 0.35, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        ShaderMask buildGradientText() {
+          return ShaderMask(
+            blendMode: BlendMode.srcIn,
+            shaderCallback: (bounds) {
+              return LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: const [
+                  Color(0xFFB517FF),
+                  Color(0xFFFF4FA3),
+                  Color(0xFFE879F9),
+                  Color(0xFFB517FF),
+                ],
+                stops: [
+                  (_sweep.value - 0.45).clamp(0.0, 1.0),
+                  (_sweep.value - 0.15).clamp(0.0, 1.0),
+                  (_sweep.value + 0.15).clamp(0.0, 1.0),
+                  (_sweep.value + 0.45).clamp(0.0, 1.0),
+                ],
+              ).createShader(bounds);
+            },
+            child: widget.child,
+          );
+        }
+
+        return Stack(
+          alignment: Alignment.centerLeft,
+          clipBehavior: Clip.none,
+          children: [
+            Transform.translate(
+              offset: const Offset(0, 1.0),
+              child: Opacity(
+                opacity: 0.42 * _glow.value,
+                child: buildGradientText(),
+              ),
+            ),
+            buildGradientText(),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _LuckyShimmerPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  _LuckyShimmerPainter({required this.progress, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final sweepX = -size.width + progress * size.width * 2.5;
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          Colors.transparent,
+          color.withOpacity(0.05),
+          Colors.white.withOpacity(0.12),
+          color.withOpacity(0.05),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        transform: const GradientRotation(math.pi / 4),
+      ).createShader(Rect.fromLTWH(sweepX, 0, size.width * 0.6, size.height));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(_LuckyShimmerPainter old) => old.progress != progress;
+}
+
+class _LuckyParticlePainter extends CustomPainter {
+  final List<_LuckyParticle> particles;
+  final double progress;
+  final Color color;
+  _LuckyParticlePainter({
+    required this.particles,
+    required this.progress,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in particles) {
+      final t = (progress * p.speed + p.phase) % 1.0;
+      final px =
+          (p.x * size.width + math.sin(t * math.pi * 2 + p.phase * 5) * 6) %
+          size.width;
+      final py = (size.height - (t * (size.height + 10))) % size.height;
+      final opacity = math.sin(t * math.pi).clamp(0.0, 1.0);
+
+      final paint = Paint()
+        ..color = color.withOpacity(opacity * 0.8)
+        ..style = PaintingStyle.fill;
+
+      _drawStar(canvas, Offset(px, py), p.size * opacity, paint);
+    }
+  }
+
+  void _drawStar(Canvas canvas, Offset center, double size, Paint paint) {
+    final path = Path();
+    for (int i = 0; i < 4; i++) {
+      final angle = i * math.pi / 2;
+      final tip = Offset(
+        center.dx + math.cos(angle) * size * 2.2,
+        center.dy + math.sin(angle) * size * 2.2,
+      );
+      final left = Offset(
+        center.dx + math.cos(angle + math.pi / 2) * size * 0.4,
+        center.dy + math.sin(angle + math.pi / 2) * size * 0.4,
+      );
+      final right = Offset(
+        center.dx + math.cos(angle - math.pi / 2) * size * 0.4,
+        center.dy + math.sin(angle - math.pi / 2) * size * 0.4,
+      );
+      if (i == 0) path.moveTo(left.dx, left.dy);
+      path.lineTo(tip.dx, tip.dy);
+      path.lineTo(right.dx, right.dy);
+      path.lineTo(center.dx, center.dy);
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_LuckyParticlePainter old) => old.progress != progress;
+}

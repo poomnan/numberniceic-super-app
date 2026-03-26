@@ -1,0 +1,25 @@
+#!/usr/bin/expect
+
+set timeout 60
+set password "IntelliP24.X"
+set host "43.228.85.200"
+set user "tayap"
+set remote_dir "/home/tayap/ananya-php"
+
+puts "🚀 Deploying Spell API files via Expect..."
+
+# Deploy SpellAPIController.php
+spawn scp -o StrictHostKeyChecking=no app/Managers/SpellAPIController.php $user@$host:$remote_dir/app/Managers/SpellAPIController.php
+expect {
+    "password:" { send "$password\r"; exp_continue }
+    eof
+}
+
+# Deploy routes.php
+spawn scp -o StrictHostKeyChecking=no app/routes.php $user@$host:$remote_dir/app/routes.php
+expect {
+    "password:" { send "$password\r"; exp_continue }
+    eof
+}
+
+puts "✅ Spell API files deployment complete!"

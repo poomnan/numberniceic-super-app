@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ananya Naming & Dream Interpretation - เปลี่ยนชีวิตด้วยพลังตัวเลข</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --text-light: #f8fafc;
+            --text-gray: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --card-hover: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Header & Nav --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-light);
+        }
+
+        .cta-btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #0f172a 100%);
+            z-index: -2;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 10s infinite ease-in-out;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .blob-1 {
+            top: 20%;
+            left: 20%;
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+        }
+
+        .blob-2 {
+            bottom: 20%;
+            right: 20%;
+            width: 500px;
+            height: 500px;
+            background: var(--secondary);
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -30px); }
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-gray);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* --- Services Section --- */
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            background: var(--card-hover);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background: var(--bg-darker);
+            border-top: 1px solid var(--glass-border);
+            padding: 4rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+        }
+
+        .footer-col h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-col ul li a {
+            color: var(--text-gray);
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .footer-col ul li a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 3rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .nav-links {
+                display: none; /* Add valid mobile menu later */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/" class="logo">
+            <i class="fa-solid fa-infinity"></i> Ananya
+        </a>
+        <div class="nav-links">
+            <a href="#home">หน้าแรก</a>
+            <a href="#services">บริการของเรา</a>
+            <a href="#about">เกี่ยวกับเรา</a>
+            <a href="#contact">ติดต่อ</a>
+        </div>
+        <a href="https://play.google.com/store/apps/details?id=com.numberniceic" target="_blank" class="cta-btn">
+            ดาวน์โหลดแอป <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+
+        <div class="hero-content">
+            <h1>ไขความลับแห่งตัวเลข<br><span>ทำนายฝันแม่นยำ</span></h1>
+            <p>
+                เปลี่ยนชีวิตด้วยศาสตร์แห่งตัวเลขและคำทำนายฝันที่แม่นยำที่สุด 
+                พร้อมวิเคราะห์ชื่อมงคลด้วย AI อัจฉริยะ โหลดเลยตอนนี้
+            </p>
+            <div class="hero-buttons">
+                <a href="https://play.google.com/store/apps/details?id=com.numberniceic" target="_blank" class="cta-btn">
+                    <i class="fa-brands fa-google-play"></i> ดาวน์โหลดฟรี
+                </a>
+                <a href="#services" class="btn-glass">
+                    ดูฟีเจอร์ <i class="fa-solid fa-angle-down"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="section" id="services">
+        <div class="section-header">
+            <h2 class="section-title">บริการที่เปลี่ยนชีวิตคุณ</h2>
+            <p class="section-subtitle">ครบจบในที่เดียว ทั้งการตั้งชื่อ เลขมงคล และทำนายฝัน</p>
+        </div>
+
+        <div class="grid">
+            <!-- Naming Service -->
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-signature"></i>
+                </div>
+                <h3>ตั้งชื่อมงคล</h3>
+                <p>
+                    วิเคราะห์ชื่อ-นามสกุลของคุณตามหลักทักษาและเลขศาสตร์ 
+                    พร้อมแนะนำชื่อใหม่ที่ส่งเสริมดวงชะตา การงาน การเงิน และความรัก
+                </p>
+            </div>
+
+            <!-- Dream Interpretation -->
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+                <h3>ทำนายฝัน</h3>
+                <p>
+                    ฝันเห็นสิ่งนี้หมายถึงอะไร? ไขคำทำนายฝันแม่นยำ 
+                    พร้อมเลขนำโชคจากความฝันที่จะพาคุณไปสู่ความโชคดี
+                </p>
+            </div>
+
+            <!-- Lucky Numbers -->
+            <div class="card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <h3>เบอร์มงคล</h3>
+                <p>
+                    เลือกเบอร์โทรศัพท์ที่ใช่สำหรับคุณ 
+                    ช่วยเสริมพลังด้านบวก ดึงดูดความสำเร็จและโอกาสดีๆ เข้ามาในชีวิต
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About / Trust Section -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">ทำไมต้อง Ananya?</h2>
+        </div>
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); text-align: center;">
+            <div>
+                <h3 style="font-size: 2.5rem; color: var(--accent); margin-bottom: 0.5rem;">50K+</h3>
+                <p style="color: var(--text-gray);">ผู้ใช้งานที่ไว้วางใจ</p>
+            </div>
+            <div>
+                <h3 style="font-size: 2.5rem; color: var(--secondary); margin-bottom: 0.5rem;">AI</h3>
+                <p style="color: var(--text-gray);">เทคโนโลยีวิเคราะห์แม่นยำ</p>
+            </div>
+            <div>
+                <h3 style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;">4.8</h3>
+                <p style="color: var(--text-gray);">คะแนนรีวิวเฉลี่ย</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col" style="max-width: 300px;">
+                <a href="#" class="logo" style="margin-bottom: 1rem; display: inline-block;">
+                    <i class="fa-solid fa-infinity"></i> Ananya
+                </a>
+                <p style="color: var(--text-gray); font-size: 0.9rem; line-height: 1.6;">
+                    Ananya Naming & Dream Interpretation - ผู้นำด้านศาสตร์ตัวเลขและคำทำนายยุคใหม่ ผสานภูมิปัญญาโบราณเข้ากับเทคโนโลยี AI
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h4>เมนูหลัก</h4>
+                <ul>
+                    <li><a href="#home">หน้าแรก</a></li>
+                    <li><a href="#services">บริการ</a></li>
+                    <li><a href="#about">เกี่ยวกับ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>ช่วยเหลือ</h4>
+                <ul>
+                    <li><a href="#">ศูนย์ช่วยเหลือ</a></li>
+                    <li><a href="#">นโยบายความเป็นส่วนตัว</a></li>
+                    <li><a href="#">ข้อกำหนดการใช้งาน</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>สำหรับนักพัฒนา</h4>
+                <ul>
+                    <li><a href="/api-doc" target="_blank"><i class="fa-solid fa-code"></i> API Documentation</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Ananya Naming. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

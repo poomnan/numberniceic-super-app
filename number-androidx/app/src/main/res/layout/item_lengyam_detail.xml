@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_marginStart="9dp"
+    android:layout_marginEnd="9dp"
+    android:layout_marginTop="9dp"
+    android:layout_marginBottom="0dp"
+    android:id="@+id/linear_parent_lengyam"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+
+        <TextView
+            android:textSize="22sp"
+            android:id="@+id/txt_lengyam_desc"
+            android:fontFamily="@font/browa_0"
+            tools:text="วันนี้เป็น วันอธิบดี วันธงชัย เป็นวันดีใช้เพื่อทำให้เกิดความเจริญก้าวหน้า เข้ารับตำแหน่ง แต่งงาน วางศิลาฤกษ์ ลงเสาเข็ม ลงเสาเอก ยกศาลพระภูมิ ปลูกบ้านเรือน หรือเปลี่ยนชื่อเปลี่ยนนามสกุล และวันธงชัยเป็นวันที่ดีที่สุด ยามที่ดีที่สุด เหมาะแก่การทำมงคล ที่จะให้ผลสำเร็จสูงสุด มีชัยชนะเป็นมิ่งขวัญของหมู่คณะ มีโชคชัย ใช้สำหรับการยกทัพเคลื่อนย้ายกำลัง หรือขึ้นบ้านใหม่ หรือย้ายที่นั่งที่นอนและทำงานใหม่ "
+            android:textColor="#000000"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_marginTop="15dp"
+        android:textSize="22sp"
+        android:id="@+id/txt_lengyam_detail"
+        android:fontFamily="@font/browa_0"
+        tools:text="แต่เนื่องจากวันนี้เป็นกระทิงวัน* และเป็นอัคนิโรธบ้าน* ถ้าเลือกได้ ไม่ควรทำการมงคลใดๆโดยเฉพาะที่เกี่ยวกับบ้านเรือน เพราะจะทำให้วุ่นวายและอาจมีอุบัติเหตุเภทภัยแลเกิดเรื่องปัญหาทุกข์ร้อนใจกายเกิดในวันนั้นและหรือในภายภาคหน้าได้ ที่สำคัญ วันนี้แม้จะดีเพียงใดห้ามโดยเฉพาะคนเกิดวันอาทิตย์ใช้เด็ดขาด  และห้ามคนเกิดวันเสาร์บางท่านใช้  แต่คนเกิดวันเสาร์บางท่านก็ใช้ได้ก็มี"
+        android:textColor="#000000"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

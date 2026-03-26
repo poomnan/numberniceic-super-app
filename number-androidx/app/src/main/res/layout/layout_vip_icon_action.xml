@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_vip_action"
+    android:layout_width="54dp"
+    android:layout_height="match_parent"
+    android:background="?attr/selectableItemBackgroundBorderless">
+
+    <!-- ไอคอนปกติสำหรับ VIP / MVP -->
+    <ImageView
+        android:id="@+id/img_vip_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_vip02"
+        android:visibility="visible"
+        android:contentDescription="VIP Icon" />
+
+    <!-- VVIP Badge แบบ Legacy (ซ่อนไว้ ไม่ใช้งานแล้ว) -->
+    <FrameLayout
+        android:id="@+id/layout_vvip_legacy"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/bg_vvip_gold_circle_legacy">
+
+        <TextView
+            android:id="@+id/txt_vvip_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="VVIP"
+            android:textColor="#FFD700"
+            android:textStyle="bold"
+            android:textSize="11sp"
+            android:shadowColor="#80000000"
+            android:shadowDx="0"
+            android:shadowDy="1"
+            android:shadowRadius="2" />
+
+        <View
+            android:id="@+id/vvip_shimmer_overlay"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:alpha="0.4"
+            android:rotation="45"
+            android:translationX="-60dp"
+            android:background="@drawable/bg_shimmer_line" />
+
+    </FrameLayout>
+    
+
+</FrameLayout>

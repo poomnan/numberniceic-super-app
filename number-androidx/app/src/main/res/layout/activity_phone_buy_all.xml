@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <androidx.coordinatorlayout.widget.CoordinatorLayout android:fitsSystemWindows="true"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.phone.PhoneBuyAllAct">
+
+        <com.google.android.material.appbar.AppBarLayout android:fitsSystemWindows="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar_phone_buy_all"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:popupTheme="@style/AppTheme.PopupOverlay"/>
+
+
+
+                   <!--<com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_layout_phone_buy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/PhonenumTabLayout"
+                    app:tabSelectedTextColor="#FAC776"
+                    app:tabTextColor="#FFFFFF"
+                    app:layout_scrollFlags="scroll|enterAlwaysCollapsed"
+                    app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>-->
+
+
+            </com.google.android.material.appbar.AppBarLayout>
+
+
+
+        <FrameLayout
+            android:id="@+id/container_phone_buy_allf"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>

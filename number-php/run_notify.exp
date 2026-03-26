@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn scp force_wanpra_notify.php tayap@43.228.85.200:/home/tayap/ananya-php/
+expect {
+    "password:" { send "IntelliP24.X\r" }
+    "yes/no" { send "yes\r"; exp_continue }
+}
+expect eof
+
+spawn ssh tayap@43.228.85.200 "cd /home/tayap/ananya-php && php force_wanpra_notify.php"
+expect {
+    "password:" { send "IntelliP24.X\r" }
+    "yes/no" { send "yes\r"; exp_continue }
+}
+expect eof

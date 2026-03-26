@@ -1,0 +1,14 @@
+[2026-02-07 14:20:56] Target: dIGViB60Sp... | Status: 404 | Res: {
+  "error": {
+    "code": 404,
+    "message": "Requested entity was not found.",
+    "status": "NOT_FOUND",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.firebase.fcm.v1.FcmError",
+        "errorCode": "UNREGISTERED"
+      }
+    ]
+  }
+}
+ | CurlErr: 

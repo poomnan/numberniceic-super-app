@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/reSpinnerProvince"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#bfffb2">
+    <TextView
+        android:layout_marginStart="9dp"
+        android:layout_centerVertical="true"
+        android:id="@+id/txtDay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="aDAY"
+        android:textColor="#ff6a13"
+        android:textSize="16sp"
+        android:textStyle="normal" />
+
+
+</RelativeLayout>

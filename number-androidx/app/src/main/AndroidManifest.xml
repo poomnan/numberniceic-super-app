@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".MainApplication"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".ui.admin.AdminArticlesAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.AdminChatActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+<activity android:name=".ui.admin.AdminChatRoomActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.ChatComposeActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.CartComposeActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.admin.AdminMonitorActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.admin.AdminDashboardActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.TopicAct"></activity>
+        <activity android:name=".ui.admin.BagPaletteAct" />
+        <activity android:name=".ui.admin.BagColorAct" />
+        <activity android:name=".ui.admin.ApiColorMappingAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.BuddhaAssignAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.SacredTempleAssignAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.MeritAssignAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.MeritAssignPickerAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.ChangeNumAssignAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.ChangeNumAssignPickerAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.SpellAssignAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.SpellAssignPickerAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.AdminTabianActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.AdminDreamActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.admin.AdminUserActivity" android:screenOrientation="portrait" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.admin.InauspiciousAssignAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.InauspiciousFormAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.AuspiciousAssignAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.AuspiciousFormAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.merit.MeritWebViewAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.BuddhaPangPickerAct" android:screenOrientation="portrait" />
+        <activity android:name=".ui.admin.SacredTemplePickerAct" android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.admin.LuckyNumberAct"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.news.NewsAllAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.renkyam.RengYam"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.news.NewsAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.tambon.TambolAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.admin.SecretCodeAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.apersonnews.BirthDayAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.auth.UserLogoutAct"
+            android:label="@string/title_activity_user_logout"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.admin.PersonalMessageAct"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.admin.PersonalMessageComposeAct"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.admin.TestGuestAddressActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.admin.GuestAddressManagementActivity2"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.auth.UserLoginAct"
+            android:label="@string/title_activity_user_login"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.auth.UserRegisAct"
+            android:label="@string/title_activity_user_regis"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.namenick.NameNickListAct"
+            android:label="@string/title_activity_name_nick_list"
+            android:screenOrientation="sensorLandscape"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".ui.namesur.NameSurCalAct"
+            android:label="@string/title_activity_name_sur_cal"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.namenick.NameNiceCalAct"
+            android:label="@string/title_activity_name_nice_cal"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.home.HomeCalAct"
+            android:label="@string/title_activity_home"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.SplashActivity"
+            android:noHistory="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/SplashTheme"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.tabian.TabianBuyAllAct"
+            android:label="@string/title_activity_tabian_buy_all"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.tabian.TabianCalActivity"
+            android:label="@string/title_activity_tabian_cal"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ui.phone.PhoneCalAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.phone.PhoneBuyAllAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.phone.PhoneBuyActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.auth.AuthAct"
+            android:label="@string/title_activity_auth"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.namesur.NameSurMiraAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.namenick.NameNickMiraAct"
+            android:label="@string/title_activity_name_mira"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.home.HomeMiraActivity"
+            android:label="@string/title_activity_home_mira"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.tabian.TabianMiraActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.phone.PhoneMiraActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.AppActivity"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".ui.admin.AdminProductActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.admin.AdminCategoryActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.admin.AdminDreamOrdersActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.apersonnews.DashboardActivity"
+            android:label="หน้าหลัก"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.chat.ChatActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.bag.BagColorDemoActivity"
+            android:label="สีกระเป๋ามงคล"
+            android:screenOrientation="portrait"
+            android:exported="true" />
+        <activity
+            android:name=".ui.ninin.NininChatActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ui.naming.NamingChatActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <service
+            android:name=".services.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" />
+    </application>
+
+</manifest>

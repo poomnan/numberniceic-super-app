@@ -1,0 +1,160 @@
+package handlers
+
+import (
+	"encoding/json"
+	"fmt"
+	"go-naming/services"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+// InitChatHandler starts a new chat session
+func InitChatHandler(w http.ResponseWriter, r *http.Request) {
+	var body map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		jsonResponse(w, http.StatusBadRequest, map[string]string{"error": "invalid json"})
+		return
+	}
+
+	name, _ := body["name"].(string)
+	if name == "" {
+		name = "Guest"
+	}
+
+	var userID int
+	if val, ok := body["user_id"]; ok {
+		switch v := val.(type) {
+		case float64:
+			userID = int(v)
+		case string:
+			userID, _ = strconv.Atoi(v)
+		}
+	}
+
+	fmt.Printf("DEBUG: InitChat Final - Name: %s, UserID: %d\n", name, userID)
+
+	sessionID, err := services.InitSession(name, userID)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, map[string]string{"session_id": sessionID})
+}
+
+// SendMessageHandler handles sending a message
+func SendMessageHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		SessionID string `json:"session_id"`
+		Sender    string `json:"sender"` // customer or admin
+		Message   string `json:"message"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.SessionID == "" || req.Message == "" {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	msg, err := services.SendMessage(req.SessionID, req.Sender, req.Message)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, msg)
+}
+
+// PollMessageHandler implements the long polling endpoint for customers
+func PollMessageHandler(w http.ResponseWriter, r *http.Request) {
+	sessionID := r.URL.Query().Get("session_id")
+	if sessionID == "" {
+		http.Error(w, "session_id required", http.StatusBadRequest)
+		return
+	}
+
+	msgs, err := services.SubscribeCustomer(sessionID, 25*time.Second)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, msgs)
+}
+
+// AdminPollHandler implements the long polling endpoint for admin
+func AdminPollHandler(w http.ResponseWriter, r *http.Request) {
+	// In real app, check if user is admin here
+	msgs, err := services.SubscribeAdmin(25 * time.Second)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, msgs)
+}
+
+// GetHistoryHandler returns previous messages
+func GetHistoryHandler(w http.ResponseWriter, r *http.Request) {
+	sessionID := r.URL.Query().Get("session_id")
+	limitStr := r.URL.Query().Get("limit")
+	limit := 50
+	if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+		limit = l
+	}
+
+	msgs, err := services.GetChatHistory(sessionID, limit)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, msgs)
+}
+
+// GetRecentAdminMessagesHandler returns global chat history for admin console initialization
+func GetRecentAdminMessagesHandler(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit := 20
+	if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+		limit = l
+	}
+
+	offset := 0
+	if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
+		offset = o
+	}
+
+	msgs, err := services.GetRecentGlobalMessages(limit, offset)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	jsonResponse(w, http.StatusOK, msgs)
+}
+
+// DeleteMessageHandler deletes a specific message
+func DeleteMessageHandler(w http.ResponseWriter, r *http.Request) {
+	// In real app, check admin authentication header here!
+
+	msgIDStr := r.URL.Query().Get("message_id")
+	if msgIDStr == "" {
+		http.Error(w, "message_id required", http.StatusBadRequest)
+		return
+	}
+
+	msgID, err := strconv.Atoi(msgIDStr)
+	if err != nil {
+		http.Error(w, "invalid message_id", http.StatusBadRequest)
+		return
+	}
+
+	err = services.DeleteMessage(msgID)
+	if err != nil {
+		jsonResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, map[string]string{"status": "deleted", "message_id": msgIDStr})
+}

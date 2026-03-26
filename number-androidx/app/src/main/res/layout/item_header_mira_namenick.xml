@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#F1F1F1"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="3dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#000000">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="สรุบผลทำนายชื่อ : "
+            android:textColor="#FAF19F"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/name_sat"
+            android:textColor="#FDD835"
+            android:text="อณัญญา"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_marginStart="9dp"
+            android:src="@drawable/icon_sun"
+            android:layout_width="45dp"
+            android:layout_height="45dp" />
+        <TextView
+
+            android:textColor="#000000"
+
+            android:padding="5dp"
+            android:text="เลขศาสตร์ : "
+            android:textStyle="bold"
+            android:textSize="19sp"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:id="@+id/sumnumsat_all"
+            android:textColor="#000000"
+            android:textStyle="bold"
+
+            android:text="99"
+            android:textSize="19sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:background="#F7F6F4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_marginTop="5dp"
+            android:layout_marginStart="9dp"
+            android:src="@drawable/icon_horse"
+            android:layout_width="35dp"
+            android:layout_height="35dp" />
+        <TextView
+
+            android:textColor="#644909"
+            android:layout_marginStart="10dp"
+            android:padding="5dp"
+            android:text="พลังเงาได้ : "
+            android:textStyle="bold"
+            android:textSize="19sp"
+            android:layout_width="120dp"
+            android:gravity="center_vertical"
+            android:layout_height="match_parent" />
+
+
+        <TextView
+            android:id="@+id/sumall_sha"
+            android:textColor="#7CB342"
+            android:text="99"
+            android:textStyle="bold"
+            android:textSize="19sp"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+
+
+    </LinearLayout>
+
+    <View
+        android:layout_marginTop="9dp"
+        android:background="#DADDD6"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"/>
+
+</LinearLayout>

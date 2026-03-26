@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#EEEEEE">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- 1. Hot News Section (Type 0) -->
+                <FrameLayout
+                    android:id="@+id/header_hot_news"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFD600"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="12dp"
+                            android:src="@drawable/newspaper" />
+                        <TextView
+                            android:id="@+id/tv_header_hot_news"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="ข่าวและบทความที่น่าสนใจ"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+                <include
+                    android:id="@+id/layout_hot_news"
+                    layout="@layout/layout_news" />
+
+                <!-- 2. Reviews/Feedback (Type 1) -->
+                <FrameLayout
+                    android:id="@+id/header_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFD600"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="12dp"
+                            android:src="@drawable/newspaper" />
+                        <TextView
+                            android:id="@+id/tv_header_reviews"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="รีวิว และ Feedback จากลูกค้า"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+                <include
+                    android:id="@+id/layout_reviews"
+                    layout="@layout/layout_news_reviews" />
+
+                <!-- 3. Phone Number (Type 2) -->
+                <FrameLayout
+                    android:id="@+id/header_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFD600"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="12dp"
+                            android:src="@drawable/newspaper" />
+                        <TextView
+                            android:id="@+id/tv_header_phone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="บทความเบอร์โทรศัพท์มงคล"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+                <include
+                    android:id="@+id/layout_phone"
+                    layout="@layout/layout_news_phonenum" />
+
+                <!-- 4. Name Surname (Type 3) -->
+                <FrameLayout
+                    android:id="@+id/header_namesur"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFD600"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="12dp"
+                            android:src="@drawable/newspaper" />
+                        <TextView
+                            android:id="@+id/tv_header_namesur"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="บทความชื่อ-นามสกุลมงคล"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+                <include
+                    android:id="@+id/layout_namesur"
+                    layout="@layout/layout_news_namesur" />
+
+                <!-- 5. Tabian (Type 4) -->
+                <FrameLayout
+                    android:id="@+id/header_tabian"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFD600"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="12dp"
+                            android:src="@drawable/newspaper" />
+                        <TextView
+                            android:id="@+id/tv_header_tabian"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="บทความทะเบียนรถมงคล"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+                <include
+                    android:id="@+id/layout_tabian"
+                    layout="@layout/layout_news_tabian" />
+
+                <!-- 6. Home Num (Type 5) -->
+                <FrameLayout
+                    android:id="@+id/header_homenum"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFD600"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="12dp"
+                            android:src="@drawable/newspaper" />
+                        <TextView
+                            android:id="@+id/tv_header_homenum"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="บทความบ้านเลขที่มงคล"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+                <include
+                    android:id="@+id/layout_homenum"
+                    layout="@layout/layout_news_homenum" />
+
+                <!-- 7. Concept (Type 6) -->
+                <FrameLayout
+                    android:id="@+id/header_concept"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFD600"
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginStart="12dp"
+                            android:src="@drawable/newspaper" />
+                        <TextView
+                            android:id="@+id/tv_header_concept"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="หลักการใช้เลขมงคล"
+                            android:textStyle="bold"
+                            android:textColor="#212121"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                </FrameLayout>
+                <include
+                    android:id="@+id/layout_concept"
+                    layout="@layout/layout_news_numberconcept" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

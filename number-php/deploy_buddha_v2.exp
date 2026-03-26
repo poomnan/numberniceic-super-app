@@ -1,0 +1,36 @@
+#!/usr/bin/expect -f
+set timeout 300
+set user "tayap"
+set host "43.228.85.200"
+set pass "IntelliP24.X"
+set remote_dir "/home/tayap/ananya-php"
+
+# Try to do everything in one session if possible? No, SCP is separate.
+# Let's try to just do the critical ones first.
+
+spawn ssh "$user@$host" "mkdir -p $remote_dir/app/Managers $remote_dir/views $remote_dir/public/uploads/buddha"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$pass\r" }
+}
+expect eof
+
+spawn scp "app/Managers/BuddhaPangController.php" "$user@$host:$remote_dir/app/Managers/"
+expect "password:" { send "$pass\r" }
+expect eof
+
+spawn scp "views/admin_buddha_list.php" "views/admin_buddha_form.php" "$user@$host:$remote_dir/views/"
+expect "password:" { send "$pass\r" }
+expect eof
+
+spawn scp "app/routes.php" "$user@$host:$remote_dir/app/"
+expect "password:" { send "$pass\r" }
+expect eof
+
+spawn scp "migrate_buddha.php" "$user@$host:$remote_dir/"
+expect "password:" { send "$pass\r" }
+expect eof
+
+spawn ssh "$user@$host" "cd $remote_dir && php migrate_buddha.php"
+expect "password:" { send "$pass\r" }
+expect eof

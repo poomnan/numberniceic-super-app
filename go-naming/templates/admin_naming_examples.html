@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการชื่อตัวอย่างและ Avatar - Naming Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background: var(--card);
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #B8860B;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #94A3B8;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #FFFAF0;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #EF4444;
+        }
+
+        .example-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .example-item {
+            background: #1E293B;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #334155;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .item-meta {
+            font-size: 12px;
+            color: #94A3B8;
+        }
+
+        .upload-area {
+            border: 2px dashed #334155;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+
+        #imagePreview {
+            max-width: 100px;
+            margin-top: 10px;
+            border-radius: 50%;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: #94A3B8; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1><i class="fas fa-users-gear"></i> จัดการชื่อตัวอย่าง / ดารา</h1>
+
+        <div class="card">
+            <h3>เพิ่ม / แก้ไข ชื่อ</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>ชื่อ (เช่น ณเดชน์)</label>
+                    <input type="text" id="name" placeholder="ระบุชื่อ">
+                </div>
+                <div class="form-group">
+                    <label>ลำดับการแสดงผล</label>
+                    <input type="number" id="sort_order" value="0">
+                </div>
+            </div>
+
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                <p>คลิกเพื่ออัปโหลดรูป Avatar</p>
+                <input type="file" id="fileInput" hidden accept="image/*" onchange="uploadImage(this)">
+                <img id="imagePreview" src="" alt="Preview">
+                <input type="hidden" id="avatar_url">
+            </div>
+
+            <button class="btn" onclick="saveExample()"><i class="fas fa-save"></i> บันทึกข้อมูล</button>
+            <button class="btn btn-delete" style="display:none;" id="btnCancel" onclick="resetForm()">ยกเลิก</button>
+            <input type="hidden" id="edit_id">
+        </div>
+
+        <h3>รายการที่มีอยู่</h3>
+        <div id="exampleList" class="example-list">
+            <!-- Items loaded via JS -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadExamples);
+
+        async function loadExamples() {
+            const res = await fetch('/api/v1/naming-examples');
+            const data = await res.json();
+            const list = document.getElementById('exampleList');
+            list.innerHTML = '';
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'example-item';
+                div.innerHTML = `
+                    <img src="${item.avatar_url || 'https://via.placeholder.com/60'}" class="avatar-preview">
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-meta">ลำดับ: ${item.sort_order}</div>
+                    </div>
+                    <div>
+                        <button class="btn" style="padding: 5px 10px;" onclick="editItem(${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-delete" style="padding: 5px 10px;" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function uploadImage(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+
+            try {
+                const res = await fetch('/api/v1/admin/naming-examples/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.url) {
+                    document.getElementById('avatar_url').value = data.url;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = data.url;
+                    preview.style.display = 'inline-block';
+                }
+            } catch (err) {
+                alert('อัปโหลดรูปภาพไม่สำเร็จ');
+            }
+        }
+
+        async function saveExample() {
+            const id = document.getElementById('edit_id').value;
+            const payload = {
+                name: document.getElementById('name').value,
+                avatar_url: document.getElementById('avatar_url').value,
+                sort_order: parseInt(document.getElementById('sort_order').value),
+                is_celebrity: true
+            };
+
+            if (id) payload.id = parseInt(id);
+
+            const url = id
+                ? '/api/v1/admin/naming-examples/update'
+                : '/api/v1/admin/naming-examples/add';
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('บันทึกสำเร็จ');
+                resetForm();
+                loadExamples();
+            } else {
+                alert('บันทึกไม่สำเร็จ');
+            }
+        }
+
+        function editItem(item) {
+            document.getElementById('edit_id').value = item.id;
+            document.getElementById('name').value = item.name;
+            document.getElementById('sort_order').value = item.sort_order;
+            document.getElementById('avatar_url').value = item.avatar_url;
+
+            const preview = document.getElementById('imagePreview');
+            if (item.avatar_url) {
+                preview.src = item.avatar_url;
+                preview.style.display = 'inline-block';
+            } else {
+                preview.style.display = 'none';
+            }
+
+            document.getElementById('btnCancel').style.display = 'inline-block';
+        }
+
+        async function deleteItem(id) {
+            if (!confirm('ยืนยันการลบ?')) return;
+            const res = await fetch('/api/v1/admin/naming-examples/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            if (res.ok) {
+                loadExamples();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('edit_id').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('sort_order').value = '0';
+            document.getElementById('avatar_url').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('btnCancel').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>

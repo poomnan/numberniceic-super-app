@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:background="#FFF"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:layout_margin="1dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#4a8f15"
+                android:gravity="center_horizontal"
+                android:text="คะแนนดี"
+                android:textColor="#FFF"
+                android:textSize="@dimen/titlebox" />
+
+            <TextView
+                android:id="@+id/txtTotalHomeScoreD"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#3bd100"
+                android:freezesText="true"
+                android:gravity="center_horizontal"
+                android:padding="9dp"
+                android:text="0"
+                tools:text="0"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/headbox"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_margin="1dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#a4165f"
+                android:gravity="center_horizontal"
+                android:text="คะแนนร้าย"
+                android:textColor="#FFF"
+                android:textSize="@dimen/titlebox" />
+
+            <TextView
+                android:id="@+id/txtTotalHomeScoreR"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#696969"
+                android:gravity="center_horizontal"
+                android:padding="9dp"
+                android:text="0"
+                tools:text="0"
+                android:textColor="#FFFF0004"
+                android:textSize="@dimen/headbox"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

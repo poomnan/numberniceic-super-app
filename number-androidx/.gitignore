@@ -1,0 +1,44 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+
+# Local Gradle caches
+.gradle_home/
+local_gradle_home
+local_gradle_meta
+local_gradle_meta_91
+project_gradle_home
+
+# Release artifacts
+app/release/
+app/release/baselineProfiles/
+
+# Local caches/logs
+.gradle_local/
+.kotlin/
+.gradle_home_local/
+jdks/
+
+# Build logs / temporary outputs
+build_debug.log
+build_error.log
+build_error_v3.log
+crash.log
+crash_dumpsys.txt
+logcat_after_fix.txt
+logcat_dump.txt
+logcat_errors.txt
+logcat_reproduce.txt
+logcat_reproduce_all.txt
+response.txt
+response2.txt

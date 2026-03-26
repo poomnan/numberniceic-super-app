@@ -1,0 +1,1 @@
+SELECT 'SELECT setval(pg_get_serial_sequence(''' || table_name || ''', ''' || column_name || '''), (SELECT MAX(' || column_name || ') FROM ' || table_name || ') + 1);' FROM information_schema.columns WHERE is_identity = 'YES';

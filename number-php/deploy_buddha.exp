@@ -1,0 +1,46 @@
+#!/usr/bin/expect -f
+set timeout 120
+set user "tayap"
+set host "43.228.85.200"
+set pass "IntelliP24.X"
+set remote_dir "/home/tayap/ananya-php"
+
+# Upload Controller
+spawn scp "app/Managers/BuddhaPangController.php" "$user@$host:$remote_dir/app/Managers/"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$pass\r" }
+}
+expect eof
+
+# Upload Views
+spawn scp "views/admin_buddha_list.php" "views/admin_buddha_form.php" "$user@$host:$remote_dir/views/"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$pass\r" }
+}
+expect eof
+
+# Upload Routes
+spawn scp "app/routes.php" "$user@$host:$remote_dir/app/"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$pass\r" }
+}
+expect eof
+
+# Upload Migration
+spawn scp "migrate_buddha.php" "$user@$host:$remote_dir/"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$pass\r" }
+}
+expect eof
+
+# Run Migration
+spawn ssh "$user@$host" "cd $remote_dir && php migrate_buddha.php"
+expect {
+    "yes/no" { send "yes\r"; exp_continue }
+    "password:" { send "$pass\r" }
+}
+expect eof

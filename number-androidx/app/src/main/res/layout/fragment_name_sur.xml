@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="nameSurObs"
+            type="com.numberniceic.ui.namesur.NameSurObs" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/coordinator_namesur"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#EEEEEE"
+            tools:context=".ui.namesur.NameSurF">
+
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nestScView"
+
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+
+                    <LinearLayout
+                        android:layout_marginTop="0.5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="#FFB300"
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:fontFamily="@font/browa_0"
+                                android:textStyle="bold"
+                                android:gravity="end|center_vertical"
+                                android:text="เลือกวันเกิด "
+                                android:textColor="#ffffff"
+                                android:textSize="28sp"
+                                />
+
+
+                            <Spinner
+                                android:layout_margin="1dp"
+                                android:id="@+id/days_spinner"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                />
+
+                        </LinearLayout>
+
+
+                        <LinearLayout
+                            android:background="#Ffffff"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_marginStart="20dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:text="ชื่อจริง  :"
+                                android:textStyle="bold"
+                                android:textSize="28sp" />
+
+
+                            <AutoCompleteTextView
+                                android:id="@+id/edtName"
+                                android:layout_width="240dp"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="9dp"
+                                android:hint="ชื่อ"
+                                android:imeOptions="actionDone"
+                                android:inputType="text"
+                                android:maxLength="20"
+                                android:maxLines="1"
+
+                                android:textSize="24sp"
+                                android:textStyle="bold" />
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:background="#FFF"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_marginStart="20dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical"
+                                android:text="นามสกุล :"
+                                android:textSize="24sp" />
+
+
+                            <AutoCompleteTextView
+                                android:id="@+id/edtSurName"
+                                android:layout_width="240dp"
+                                android:layout_height="wrap_content"
+                                android:paddingStart="9dp"
+                                android:hint="สกุล"
+                                android:layout_marginStart="4dp"
+                                android:imeOptions="actionDone"
+                                android:inputType="text"
+                                android:maxLength="20"
+                                android:maxLines="1"
+
+                                android:textSize="24sp"
+                                android:textStyle="bold" />
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#6CBD15"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:orientation="horizontal">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnNameSurClear"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ล้าง"
+                                    app:backgroundTint="#6CBD15"
+                                    app:cornerRadius="9dp"
+                                    app:icon="@drawable/ic_stop_48"
+                                    app:iconSize="24dp" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnNameSurMiracle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ผลทำนาย"
+                                    app:backgroundTint="#6CBD15"
+                                    android:layout_marginStart="9dp"
+                                    app:cornerRadius="9dp"
+                                    app:icon="@drawable/ic_eye_48"
+                                    app:iconSize="24dp" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnNameSurCal"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="9dp"
+                                    android:text="ถอดรหัส"
+                                    app:backgroundTint="#6CBD15"
+                                    app:cornerRadius="9dp"
+                                    app:icon="@drawable/ic_clover"
+                                    app:iconSize="24dp" />
+
+                            </LinearLayout>
+                        </LinearLayout>
+
+
+
+
+                    </LinearLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/fragment_ad_container_namesur"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+
+                        <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginTop="0dp"
+                        android:layout_marginEnd="6dp"
+                        app:cardBackgroundColor="#efebe9"
+                        app:cardCornerRadius="6dp">
+
+
+
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#404040"
+                                android:padding="4dp"
+                                android:text="คำนวณเลขศาสตร์"
+                                android:textColor="#FDD835"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+
+                            <LinearLayout
+                                android:background="#FFFfff"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เลขเรียงชื่อ : "
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/txtSatName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{nameSurObs.satName}"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    tools:text="n" />
+
+
+                            </LinearLayout>
+
+                            <View
+
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:background="@android:color/darker_gray" />
+
+                            <LinearLayout
+
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เลขเรียงสกุล : "
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/txtSatSurName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{nameSurObs.satSurName}"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    tools:text="n" />
+
+
+                            </LinearLayout>
+
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:background="@android:color/darker_gray" />
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:layout_marginBottom="6dp"
+
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="กาลกิณี : "
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:textColor="#FB8C00"
+                                    android:id="@+id/txtKName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@{nameSurObs.kName}"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold"
+                                    tools:text="n" />
+
+
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+
+
+
+
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:layout_marginStart="3dp"
+                                    android:layout_marginEnd="3dp"
+                                    android:background="@android:color/darker_gray" />
+
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="#E4E3E2"
+                                    android:orientation="horizontal"
+                                    android:padding="4dp">
+
+                                    <TextView
+                                        android:layout_marginStart="5dp"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="สรุป : "
+                                        android:textColor="#3C3434"
+                                        android:textSize="25sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:id="@+id/txtName"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="n"
+                                        android:textColor="#3C3434"
+                                        android:textSize="25sp"
+                                        android:textStyle="bold"
+                                        tools:text="@{nameSurObs.pairSumSatNameSurname}" />
+
+                                </LinearLayout>
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:layout_marginStart="3dp"
+                                    android:layout_marginEnd="3dp"
+                                    android:layout_marginBottom="1dp"
+                                    android:background="@android:color/darker_gray" />
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:layout_marginStart="3dp"
+                                    android:layout_marginEnd="3dp"
+                                    android:layout_marginBottom="6dp"
+                                    android:background="@android:color/darker_gray" />
+
+
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#404040"
+                                android:padding="4dp"
+                                android:text="คำนวณพลังเงา"
+                                android:textColor="#FDD835"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/txtTitleSortShaName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_marginTop="6dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:padding="6dp"
+                                    android:text="เงาชื่อ :"
+                                    android:textSize="@dimen/sizefontsat"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/txtSortShaName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:layout_toEndOf="@id/txtTitleSortShaName"
+                                    android:fontFamily="@font/browa_0"
+                                    android:padding="6dp"
+                                    android:text="-"
+                                    android:textSize="@dimen/sizefontsat"
+                                    android:textStyle="bold" />
+
+
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/txtTitleSortShaSurName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:padding="6dp"
+                                    android:text="เงานามสกุล : "
+                                    android:textSize="@dimen/sizefontsat"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/txtSortShaSurName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_toEndOf="@id/txtTitleSortShaSurName"
+                                    android:fontFamily="@font/browa_0"
+                                    android:padding="6dp"
+                                    android:text="-"
+                                    android:textSize="@dimen/sizefontsat"
+                                    android:textStyle="bold" />
+
+
+                            </RelativeLayout>
+
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/txtTitleSortShaNickName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:padding="6dp"
+                                    android:text="เงาชื่อเล่น : "
+                                    android:textSize="@dimen/sizefontsat"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/txtSortShaSurNickName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_toEndOf="@id/txtTitleSortShaNickName"
+                                    android:fontFamily="@font/browa_0"
+                                    android:padding="6dp"
+                                    android:text="-"
+                                    android:textSize="@dimen/sizefontsat"
+                                    android:textStyle="bold" />
+
+
+                            </RelativeLayout>
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="9dp"
+                                android:layout_marginTop="3dp"
+                                android:orientation="horizontal">
+
+                                <TextView
+
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="ชื่อ : "
+                                    android:textSize="25sp" />
+
+                                <TextView
+                                    android:id="@+id/txtShaName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="@{nameSurObs.pairSumShaName}"
+                                    android:textSize="25sp"
+                                    android:textStyle="bold"
+                                    tools:text="ชื่อ" />
+
+
+                                <FrameLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:layout_gravity="end"
+                                    android:layout_marginEnd="9dp"
+                                    android:id="@+id/txtAyuntananame"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="@{nameSurObs.ayantanaName}"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    tools:text="อายตนะ" />
+
+                                </FrameLayout>
+                            </LinearLayout>
+
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+
+                                android:background="@android:color/darker_gray" />
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="9dp"
+                                android:layout_marginTop="3dp"
+                                android:orientation="horizontal">
+
+                                <TextView
+
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="สกุล : "
+                                    android:textSize="25sp" />
+
+
+                                <TextView
+                                    android:id="@+id/txtShaSurName"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="@{nameSurObs.pairSumShaSurname}"
+                                    android:textSize="25sp"
+                                    android:textStyle="bold"
+                                    tools:text="สกุล" />
+
+                                <FrameLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+
+                                    <TextView
+                                        android:layout_gravity="end"
+                                        android:layout_marginEnd="9dp"
+                                        android:id="@+id/txtAyuntanaSurname"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@{nameSurObs.ayantanaSurName}"
+                                        android:textSize="24sp"
+                                        android:textStyle="bold"
+                                        tools:text="อายตนะ" />
+
+                                </FrameLayout>
+
+
+                            </LinearLayout>
+
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+
+                                android:background="@android:color/darker_gray" />
+
+
+                            <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#E4E3E2">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+
+
+
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="9dp"
+                                    android:layout_marginTop="3dp"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:textStyle="bold"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="2dp"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="สรุป : "
+                                        android:textColor="#3C3434"
+                                        android:textSize="25sp" />
+
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal">
+
+
+                                        <TextView
+                                            android:id="@+id/txtSumShaNameSurName"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginBottom="2dp"
+                                            android:fontFamily="@font/browa_0"
+                                            android:text="@{nameSurObs.pairSumShaNameSurname}"
+                                            android:textColor="#3C3434"
+                                            android:textSize="25sp"
+                                            android:textStyle="bold"
+                                            tools:text="pairSumShaSurname" />
+
+
+                                        <FrameLayout
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content">
+
+                                            <TextView
+                                                android:layout_gravity="end"
+                                                android:layout_marginEnd="9dp"
+                                                android:id="@+id/txtAyuntanaNameSurname"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:fontFamily="@font/browa_0"
+                                                android:text="@{nameSurObs.ayantanaNameSurname}"
+                                                android:textSize="24sp"
+                                                android:textStyle="bold"
+                                                tools:text="อายตนะ" />
+
+                                        </FrameLayout>
+
+                                    </LinearLayout>
+                                </LinearLayout>
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="1dp"
+                                        android:layout_marginStart="3dp"
+                                        android:layout_marginEnd="3dp"
+
+                                        android:background="@android:color/darker_gray" />
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="1dp"
+                                        android:layout_marginStart="3dp"
+                                        android:layout_marginTop="1dp"
+                                        android:layout_marginEnd="3dp"
+                                        android:layout_marginBottom="9dp"
+                                        android:background="@android:color/darker_gray" />
+                                </LinearLayout>
+                            </FrameLayout>
+
+
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:id="@+id/linBtnBottom"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+
+
+                    </LinearLayout>
+
+
+                        </LinearLayout>
+
+                    </RelativeLayout>
+                    <FrameLayout
+                        android:id="@+id/fragment_ad_container_namesur_re"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+
+                </LinearLayout>
+
+
+
+
+
+
+
+                </RelativeLayout>
+            </androidx.core.widget.NestedScrollView>
+
+
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
+                <ProgressBar
+                    android:id="@+id/progressbar_namesur"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal" />
+            </FrameLayout>
+
+
+        </FrameLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ระบบจัดการชื่อดี</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --primary-light: #E6C35C;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
+            --text-muted: #5D4037;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--card);
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .welcome-section {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-section h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: linear-gradient(135deg, #FFF, var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-section p {
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .dashboard-card {
+            background: var(--card);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #334155;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: #334155;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: var(--primary-light);
+            z-index: 1;
+        }
+
+        .card-content {
+            z-index: 1;
+        }
+
+        .card-content h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-content p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid #334155;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h1>Backend Control Panel</h1>
+            <p>ยินดีต้อนรับสู่ระบบจัดการข้อมูลแอปพลิเคชัน "ชื่อดี"</p>
+        </div>
+
+        <div class="grid">
+            <!-- Naming Examples -->
+            <a href="/admin/naming-examples" class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="card-content">
+                    <h3>ชื่อตัวอย่างและดารา</h3>
+                    <p>จัดการรายชื่อตัวอย่าง รูปภาพดารา และลำดับการแสดงผลในหน้าแรกของแอป</p>
+                </div>
+            </a>
+
+            <!-- Articles Management -->
+            <a href="/admin/articles" class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <div class="card-content">
+                    <h3>จัดการบทความความรู้</h3>
+                    <p>เขียนบทความใหม่ แก้ไขเนื้อหา และจัดการลำดับการแสดงผลบทความความรู้</p>
+                </div>
+            </a>
+
+            <!-- Media Library -->
+            <a href="/admin/media" class="dashboard-card">
+                <div class="card-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+                <div class="card-content">
+                    <h3>คลังรูปภาพ (Library)</h3>
+                    <p>อัปโหลด จัดการ และคัดลอกลิงก์รูปภาพเพื่อนำไปใช้ในบทความ</p>
+                </div>
+            </a>
+        </div>
+
+        <footer class="footer">
+            &copy; 2026 Chuedee Admin Dashboard. Powered by Go Naming Service.
+        </footer>
+    </div>
+</body>
+
+</html>

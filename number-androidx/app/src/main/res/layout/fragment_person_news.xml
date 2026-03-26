@@ -1,0 +1,2501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.apersonnews.PersonNewsF">
+
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:id="@+id/coordinator_personnewf"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bgr">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFF"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0.5dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginBottom="0.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <FrameLayout
+                            android:id="@+id/frame_name_user"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="0dp">
+
+                            <LinearLayout
+                                android:id="@+id/card_name_user"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#F2DF5E"
+                                android:foreground="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="4dp">
+
+
+                                <ImageView
+                                            android:layout_width="22dp"
+                                            android:layout_height="22dp"
+                                            android:layout_marginStart="2dp"
+                                            android:src="@drawable/valentines_day" />
+
+                                        <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:text="สวัสดี"
+                                    android:textColor="#000000"
+                                    android:textStyle="bold"
+                                    android:textSize="18sp" />
+
+                                <TextView
+                                    android:id="@+id/txt_name_user"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    tools:text="คุณน้ำหอม"
+                                    android:textColor="#0091EA"
+                                    android:textStyle="bold"
+                                    android:textSize="18sp" />
+
+
+
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="คุณเกิด"
+                                    android:textColor="#000000"
+                                    android:textStyle="bold"
+                                    android:textSize="18sp" />
+
+                                <TextView
+                                    android:id="@+id/txt_day_birth"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    tools:text="วันอาทิตย์"
+                                    android:textColor="#0091EA"
+                                    android:textStyle="bold"
+                                    android:textSize="18sp" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_day_birth"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="3dp"
+                                    android:text="ใส่วันเกิด"
+                                    android:visibility="gone" />
+
+                                <ImageView
+                                    android:id="@+id/img_birth_light"
+                                    android:layout_width="35dp"
+                                    android:layout_height="35dp"
+                                    android:layout_marginStart="14dp"
+                                    android:src="@drawable/moon" />
+
+                                <ImageView
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:layout_marginStart="14dp"
+                                    android:src="@drawable/tambon"
+                                    android:visibility="gone" />
+
+
+                            </LinearLayout>
+
+                        </FrameLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:background="@android:color/darker_gray" />
+
+                    </RelativeLayout>
+
+                    <LinearLayout
+                        android:id="@+id/card_bag_color"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ripple_recycler"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="vertical">
+
+                        <!-- Bag Data View -->
+                        <LinearLayout
+                            android:id="@+id/linear_color_bag"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:visibility="gone"
+                            android:orientation="horizontal">
+
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                    <ImageView
+                                        android:id="@+id/img_bag_color"
+                                        android:layout_width="189dp"
+                                        android:layout_height="130dp"
+                                        android:layout_marginStart="6dp"
+                                        android:src="@drawable/hermate" />
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="12dp"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/txt_title_luckynumber"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="9dp"
+                                        android:textColor="#64DD17"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold"
+                                        tools:text="เลขนำโชค:" />
+
+
+                                    <TextView
+                                        android:id="@+id/txt_lucky_number"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="5dp"
+                                        android:textColor="#FF6D00"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold"
+                                        tools:text="11, 19, 59, 15, 29, 26" />
+
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <LinearLayout
+
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="5dp">
+
+                                <!-- Zodiac Display (Moved here) -->
+                                <LinearLayout
+                                    android:id="@+id/card_zodiac_display"
+                                    android:visibility="gone"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:paddingBottom="4dp"
+                                    android:gravity="center_vertical">
+                                     
+   
+                                    
+                                    <TextView
+                                        android:id="@+id/txt_zodiac_name"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="ลัคนาราศีของคุณคือ ..." 
+                                        android:textColor="#F57F17"
+                                        android:fontFamily="@font/browa_0"
+                                        android:textSize="21sp"
+                                        android:textStyle="bold" />
+
+                                </LinearLayout>
+
+                                <TextView
+                                    android:id="@+id/txt_age_yang"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:textColor="#6F6C6A"
+                                    android:textSize="21sp"
+                                    android:textStyle="bold"
+                                    tools:text="อายุย่าง 36 ปี" />
+
+                                <TextView
+                                    android:id="@+id/txt_bag_desc"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:textColor="#6F6C6A"
+                                    android:textSize="21sp"
+                                    tools:text="สีกระเป๋าเงินและกระเป๋าสะพายเสริมดวงชะตาของคุณประจำปีนี้ เรียงตามลำดับ คือ" />
+
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="9dp"
+                                    android:layout_marginBottom="1dp"
+                                    app:cardCornerRadius="15dp">
+
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_gravity="center"
+                                        android:background="#E4E4E2"
+                                        android:orientation="horizontal"
+                                        android:padding="5dp">
+
+                                            <androidx.cardview.widget.CardView
+                                                android:id="@+id/bagcolor01"
+                                                android:layout_width="20dp"
+                                                android:layout_height="20dp"
+                                                android:layout_gravity="center"
+                                                app:cardBackgroundColor="#D8D6D6"
+                                                app:cardCornerRadius="10dp"
+                                                app:cardElevation="0dp" />
+
+                                            <androidx.cardview.widget.CardView
+                                                android:id="@+id/bagcolor02"
+                                                android:layout_width="20dp"
+                                                android:layout_height="20dp"
+                                                android:layout_gravity="center"
+                                                android:layout_marginStart="3dp"
+                                                app:cardBackgroundColor="#D8D6D6"
+                                                app:cardCornerRadius="10dp"
+                                                app:cardElevation="0dp" />
+
+                                            <androidx.cardview.widget.CardView
+                                                android:id="@+id/bagcolor03"
+                                                android:layout_width="20dp"
+                                                android:layout_height="20dp"
+                                                android:layout_gravity="center"
+                                                android:layout_marginStart="3dp"
+                                                app:cardBackgroundColor="#D8D6D6"
+                                                app:cardCornerRadius="10dp"
+                                                app:cardElevation="0dp" />
+
+                                            <androidx.cardview.widget.CardView
+                                                android:id="@+id/bagcolor04"
+                                                android:layout_width="20dp"
+                                                android:layout_height="20dp"
+                                                android:layout_gravity="center"
+                                                android:layout_marginStart="3dp"
+                                                app:cardBackgroundColor="#D8D6D6"
+                                                app:cardCornerRadius="10dp"
+                                                app:cardElevation="0dp" />
+
+                                            <androidx.cardview.widget.CardView
+                                                android:id="@+id/bagcolor05"
+                                                android:layout_width="20dp"
+                                                android:layout_height="20dp"
+                                                android:layout_gravity="center"
+                                                android:layout_marginStart="3dp"
+                                                app:cardBackgroundColor="#D8D6D6"
+                                                app:cardCornerRadius="10dp"
+                                                app:cardElevation="0dp" />
+
+                                            <androidx.cardview.widget.CardView
+                                                android:id="@+id/bagcolor06"
+                                                android:layout_width="20dp"
+                                                android:layout_height="20dp"
+                                                android:layout_gravity="center"
+                                                android:layout_marginStart="3dp"
+                                                app:cardBackgroundColor="#D8D6D6"
+                                                app:cardCornerRadius="10dp"
+                                                app:cardElevation="0dp" />
+
+                                    </LinearLayout>
+                            </androidx.cardview.widget.CardView>
+
+
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                        <!-- Bag Placeholder View -->
+                        <LinearLayout
+                            android:id="@+id/default_bag_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:padding="10dp"
+                            android:visibility="gone">
+                            <ImageView
+                                android:layout_width="160dp"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/hermate"
+                                android:scaleType="fitStart"
+                                android:adjustViewBounds="true"
+                                android:layout_marginEnd="15dp" />
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+                                <TextView
+                                    android:id="@+id/txt_bag_default"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="ติดต่อเปิดดวงเพื่อดูสีกระเป๋าของคุณในปีนี้"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="1dp"
+                                    app:cardCornerRadius="10dp">
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="#E4E4E2"
+                                        android:orientation="horizontal"
+                                        android:padding="5dp">
+                                        <androidx.cardview.widget.CardView android:layout_width="15dp" android:layout_height="15dp" app:cardBackgroundColor="#D8D6D6" app:cardCornerRadius="7.5dp" app:cardElevation="0dp" />
+                                        <androidx.cardview.widget.CardView android:layout_width="15dp" android:layout_height="15dp" android:layout_marginStart="3dp" app:cardBackgroundColor="#D8D6D6" app:cardCornerRadius="7.5dp" app:cardElevation="0dp" />
+                                        <androidx.cardview.widget.CardView android:layout_width="15dp" android:layout_height="15dp" android:layout_marginStart="3dp" app:cardBackgroundColor="#D8D6D6" app:cardCornerRadius="7.5dp" app:cardElevation="0dp" />
+                                        <androidx.cardview.widget.CardView android:layout_width="15dp" android:layout_height="15dp" android:layout_marginStart="3dp" app:cardBackgroundColor="#D8D6D6" app:cardCornerRadius="7.5dp" app:cardElevation="0dp" />
+                                        <androidx.cardview.widget.CardView android:layout_width="15dp" android:layout_height="15dp" android:layout_marginStart="3dp" app:cardBackgroundColor="#D8D6D6" app:cardCornerRadius="7.5dp" app:cardElevation="0dp" />
+                                        <androidx.cardview.widget.CardView android:layout_width="15dp" android:layout_height="15dp" android:layout_marginStart="3dp" app:cardBackgroundColor="#D8D6D6" app:cardCornerRadius="7.5dp" app:cardElevation="0dp" />
+                                    </LinearLayout>
+                                </androidx.cardview.widget.CardView>
+
+
+                            </LinearLayout>
+                        </LinearLayout>
+
+                </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:background="@android:color/darker_gray" />
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#FFF"
+                        android:orientation="vertical">
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <LinearLayout
+                                    android:id="@+id/linear_rengyam"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="#F2DF5E"
+                                    android:foreground="?attr/selectableItemBackground"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:orientation="vertical"
+                                    android:padding="8dp">
+
+                                    <!-- Row 1: Responsive Header with Flexbox -->
+                                    <com.google.android.flexbox.FlexboxLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        app:flexDirection="row"
+                                        app:alignItems="center"
+                                        app:flexWrap="wrap"
+                                        app:justifyContent="flex_start">
+                                        
+                                        <ImageView
+                                            android:layout_width="22dp"
+                                            android:layout_height="22dp"
+                                            android:layout_marginStart="2dp"
+                                            android:src="@drawable/valentines_day" />
+
+                                        <TextView
+                                            android:id="@+id/txt_greeting_fixed"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="วันนี้"
+                                            android:textColor="#000000"
+                                            android:textSize="18sp"
+                                            android:textStyle="bold" />
+
+                                        <TextView
+                                            android:id="@+id/txt_current_day2"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:textColor="#000000"
+                                            android:textSize="14sp"
+                                            tools:text="วันศุกร์" />
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:text="ที่"
+                                            android:textColor="#000000"
+                                            android:textSize="14sp" />
+
+                                        <TextView
+                                            android:id="@+id/txt_current_daynum2"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:textColor="#000000"
+                                            android:textSize="14sp"
+                                            tools:text="11" />
+
+                                        <TextView
+                                            android:id="@+id/txt_current_mount2"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:textColor="#000000"
+                                            android:textSize="14sp"
+                                            tools:text="มกราคม" />
+
+                                        <TextView
+                                            android:id="@+id/txt_current_year2"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="4dp"
+                                            android:textColor="#000000"
+                                            android:textSize="14sp"
+                                            tools:text="2562" />
+
+                                        <ImageView
+                                            android:layout_width="24dp"
+                                            android:layout_height="24dp"
+                                            android:layout_marginStart="8dp"
+                                            android:layout_marginEnd="4dp"
+                                            android:src="@drawable/calendar2" />
+
+                                        <!-- Restored Wanpra Alert area (Balanced Size) -->
+                                        <LinearLayout
+                                            android:id="@+id/linear_wanpra_tomorro"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:orientation="horizontal"
+                                            android:layout_marginEnd="4dp"
+                                            android:background="@android:color/transparent"
+                                            android:gravity="center"
+                                            android:visibility="gone"
+                                            tools:visibility="visible">
+
+                                            <TextView
+                                                android:id="@+id/txt_wanpra_tomorro"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:textColor="#EF6C00"
+                                                android:textSize="16sp"
+                                                android:textStyle="bold"
+                                                android:fontFamily="@font/browa_0"
+                                                tools:text="วันนี้วันพระ" />
+                                        </LinearLayout>
+
+                                        <!-- New Symbolic Badge Area (Beside Calendar/Wanpra) -->
+                                        <com.google.android.flexbox.FlexboxLayout
+                                            android:id="@+id/flex_auspicious_symbols"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginEnd="4dp"
+                                            app:flexDirection="row"
+                                            app:justifyContent="flex_start" />
+                                            
+                                    </com.google.android.flexbox.FlexboxLayout>
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+
+
+                        <LinearLayout
+                            android:background="#FFF"
+                            android:id="@+id/linear_do_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+                                android:background="@android:color/darker_gray" />
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/closet" />
+
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="3dp"
+                                    android:text="สีเสื้อผ้าอาภรณ์ที่คุณควรสวมใส่ คือ"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:id="@+id/layout_color_seemongkol_d"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#FFF"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingBottom="6dp"
+                                android:paddingTop="6dp">
+
+
+                                <ImageView
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="10dp"
+                                    android:src="@drawable/approval" />
+
+
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="1dp"
+                                    app:cardCornerRadius="15dp">
+
+                                    <LinearLayout
+                                        android:id="@+id/chip_container_good_today"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="#E4E4E2"
+                                        android:orientation="horizontal"
+                                        android:padding="9dp">
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color1"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color2"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color3"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color4"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color5"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color6"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color7"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color8"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color9"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                    </LinearLayout>
+
+                                </androidx.cardview.widget.CardView>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="9dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เป็นสีมงคลเสริมดวงวันนี้"
+                                    android:textColor="#489B15"
+                                    android:textSize="21sp" />
+
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginTop="0dp"
+                                android:layout_marginEnd="3dp"
+                                android:layout_marginBottom="5dp"
+                                android:background="@android:color/darker_gray" />
+
+                            <LinearLayout
+                                android:id="@+id/layout_color_seemongkol_r"
+                                android:background="#FFF"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="5dp">
+
+
+                                <ImageView
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="10dp"
+                                    android:src="@drawable/delete" />
+
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginBottom="1dp"
+                                    app:cardCornerRadius="15dp">
+
+                                    <LinearLayout
+                                        android:id="@+id/chip_container_bad_today"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="#F0F0ED"
+                                        android:orientation="horizontal"
+                                        android:padding="9dp">
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti1"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti2"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti3"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti4"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti5"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti6"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti7"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti8"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_anti9"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp" />
+
+                                    </LinearLayout>
+
+                                </androidx.cardview.widget.CardView>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="9dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เป็นสีอัปมงคลวันนี้"
+                                    android:textColor="#F80303"
+                                    android:textSize="21sp" />
+
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/layout_outfit_api_verify"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone"
+                                android:paddingStart="12dp"
+                                android:paddingEnd="12dp"
+                                android:paddingBottom="8dp"
+                                android:background="#FFF176">
+
+                                <TextView
+                                    android:id="@+id/txt_outfit_api_mongkol"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="#2E7D32"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    tools:text="API มงคล: ชุดสีตามวันปัจจุบัน (ศรี 3 อังคาร) = สีชมพู, สีชมพูอ่อน, สีชมพูเข้ม" />
+
+                                <TextView
+                                    android:id="@+id/txt_outfit_api_apmongkol"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="#C62828"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    tools:text="API อัปมงคล: ชุดสีตามวันปัจจุบัน (กาลี 8 พุธ กลางคืน) = สีเทา, สีเทาอ่อน, สีเทาอ่อนไล่ตามเฉด" />
+
+                                <TextView
+                                    android:id="@+id/txt_outfit_api_source"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="6dp"
+                                    android:textColor="#5D4037"
+                                    android:textSize="12sp"
+                                    tools:text="อ้างอิง: /Users/tayap/project-naming/outfit-miracle/SKILL.md" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/layout_warning_wed"
+                                android:orientation="horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="5dp"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="@string/warning_wed"
+                                    android:textColor="#F80303"
+                                    android:textSize="18sp" />
+
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:layout_gravity="center"
+                                    app:cardCornerRadius="15dp"
+                                    app:cardElevation="0dp">
+
+                                    <LinearLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="#F0F0ED"
+                                        android:orientation="horizontal"
+                                        android:padding="6dp">
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_wed_anti1"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp"
+                                            android:visibility="gone" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_wed_anti2"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp"
+                                            android:visibility="gone" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_wed_anti3"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp"
+                                            android:visibility="gone" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_wed_anti4"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp"
+                                            android:visibility="gone" />
+
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_wed_anti5"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp"
+                                            android:visibility="gone" />
+                                            
+                                        <androidx.cardview.widget.CardView
+                                            android:id="@+id/chip_color_wed_anti6"
+                                            android:layout_width="15dp"
+                                            android:layout_height="15dp"
+                                            android:layout_gravity="center"
+                                            android:layout_marginStart="3dp"
+                                            app:cardBackgroundColor="#FFFFFF"
+                                            app:cardCornerRadius="7.5dp"
+                                            app:cardElevation="0dp"
+                                            android:visibility="gone" />
+
+                                    </LinearLayout>
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+
+                                android:background="@android:color/darker_gray" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/icon_clover" />
+
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="3dp"
+                                    android:text="เพื่อความเป็นสิริมงคลของชีวิตคุณ"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="3dp">
+
+                                <ImageView
+                                    android:id="@+id/img_sapom"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="10dp"
+                                    android:src="@drawable/delete" />
+
+                                <TextView
+                                    android:id="@+id/txt_sapom"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:textColor="#F80303"
+                                    android:textSize="21sp"
+                                    tools:text="คุณ &quot;ห้ามสระผม&quot; ในวันนี้ ไม่ดี" />
+
+                                <ImageView
+                                    android:id="@+id/img_do_sapom"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="3dp"
+                                    android:src="@drawable/hair_washing" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_readmore_sapom"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="15dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เพราะ..."
+                                    android:textSize="17sp"
+                                    app:chipMinHeight="28dp"
+                                    app:ensureMinTouchTargetSize="false"
+                                    app:chipBackgroundColor="#EAEBE9" />
+
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:layout_marginBottom="1dp"
+                                android:background="@android:color/darker_gray" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="3dp">
+
+                                <ImageView
+                                    android:id="@+id/img_cut_nail"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="10dp"
+                                    android:src="@drawable/delete" />
+
+                                <TextView
+                                    android:id="@+id/txt_cut_nail"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:textColor="#F80303"
+                                    android:textSize="21sp"
+                                    tools:text="คุณ &quot;ห้ามตัดเล็บ&quot; ในวันนี้ ไม่ดี" />
+
+                                <ImageView
+                                    android:id="@+id/img_do_nail"
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="3dp"
+                                    android:src="@drawable/nail" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_readmore_cutnail"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="15dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เพราะ..."
+                                    android:textSize="17sp"
+                                    app:chipMinHeight="28dp"
+                                    app:ensureMinTouchTargetSize="false"
+                                    app:chipBackgroundColor="#EAEBE9" />
+
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:layout_marginBottom="1dp"
+                                android:background="@android:color/darker_gray" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="3dp">
+
+                                <ImageView
+                                    android:id="@+id/img_cuthair"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="10dp"
+                                    android:src="@drawable/delete" />
+
+                                <TextView
+                                    android:id="@+id/txt_cuthair"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:textColor="#F80303"
+                                    android:textSize="21sp"
+                                    tools:text="คุณ &quot;ห้ามตัดผม&quot; ในวันนี้ ไม่ดี" />
+
+                                <ImageView
+                                    android:id="@+id/img_do_haircut"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="3dp"
+                                    android:src="@drawable/hair_cut" />
+
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_readmore_cuthair"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="15dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เพราะ..."
+                                    android:textSize="17sp"
+                                    app:chipMinHeight="28dp"
+                                    app:ensureMinTouchTargetSize="false"
+                                    app:chipBackgroundColor="#EFF0ED" />
+
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:layout_marginBottom="1dp"
+                                android:background="@android:color/darker_gray" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="3dp">
+
+                                <ImageView
+                                    android:id="@+id/img_parmai"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="10dp"
+                                    android:src="@drawable/delete" />
+
+                                <TextView
+                                    android:id="@+id/txt_parmai"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:textColor="#F80303"
+                                    android:textSize="21sp"
+                                    tools:text="คุณ &quot;ห้ามใส่ผ้าใหม่&quot; ในวันนี้ ไม่ดี" />
+
+                                <ImageView
+                                    android:id="@+id/img_do_parmai"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="3dp"
+                                    android:src="@drawable/shirt" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_readmore_parmai"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="15dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เพราะ..."
+                                    android:textSize="17sp"
+                                    app:chipMinHeight="28dp"
+                                    app:ensureMinTouchTargetSize="false"
+                                    app:chipBackgroundColor="#EFF0ED" />
+
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:layout_marginBottom="1dp"
+                                android:background="@android:color/darker_gray" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="1dp"
+                                android:layout_marginEnd="1dp"
+                                android:layout_marginBottom="2dp"
+                                android:gravity="center"
+                                android:orientation="horizontal"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="3dp">
+
+                                <ImageView
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="10dp"
+                                    android:src="@drawable/ic_evil00" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="&quot;ห้ามตัดเล็บตัดผม&quot; ตอนกลางคืน"
+                                    android:textColor="#F80303"
+                                    android:textSize="21sp" />
+
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_readmore_night"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="15dp"
+                                    android:fontFamily="@font/browa_0"
+                                    android:text="เพราะ..."
+                                    android:textSize="17sp"
+                                    app:chipMinHeight="28dp"
+                                    app:ensureMinTouchTargetSize="false"
+                                    app:chipBackgroundColor="#EAEBE9" />
+
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0.5dp"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginEnd="3dp"
+                                android:layout_marginBottom="3dp"
+                                android:background="@android:color/darker_gray" />
+
+                            <!-- Annual Buddha Section -->
+                            <LinearLayout
+                                android:id="@+id/header_buddha_annual"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:src="@drawable/buddha" />
+                                <TextView
+                                    android:id="@+id/txt_header_buddha_annual"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_marginStart="3dp"
+                                    android:maxLines="2"
+                                    android:ellipsize="end"
+                                    android:text="พระพุทธรูปที่ต้องถวายประจำปีนี้"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <!-- Combined Buddha Placeholder (Grouped) -->
+                            <LinearLayout
+                                android:id="@+id/combined_buddha_placeholder"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="10dp"
+                                android:background="#FFF"
+                                android:visibility="gone">
+                                <ImageView
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/pra_preang"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginEnd="15dp" />
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:text="โปรดติดต่อคุณนินเพื่อรับคำแนะนำพระประจำปีและพระประจำตัวตลอดชีพ"
+                                        android:textSize="20sp"
+                                        android:textColor="#FF0000"
+                                        android:gravity="start"
+                                        android:fontFamily="@font/browa_0" />
+                                    
+                                    <androidx.cardview.widget.CardView
+                                        android:id="@+id/btn_contact_nin_buddha_combined"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="40dp"
+                                        android:layout_marginTop="12dp"
+                                        android:visibility="gone"
+                                        app:cardBackgroundColor="#06C755"
+                                        app:cardCornerRadius="20dp"
+                                        app:cardElevation="2dp">
+                                        <LinearLayout
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_gravity="center"
+                                            android:gravity="center"
+                                            android:paddingStart="15dp"
+                                            android:paddingEnd="15dp"
+                                            android:orientation="horizontal">
+                                            <androidx.compose.ui.platform.ComposeView
+                                                android:id="@+id/compose_chat_icon_buddha_combined"
+                                                android:layout_width="24dp"
+                                                android:layout_height="24dp"
+                                                android:layout_marginEnd="8dp" />
+                                            <TextView
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="คุยกับคุณนิน"
+                                                android:textColor="#FFFFFF"
+                                                android:textSize="14sp"
+                                                android:textStyle="bold" />
+                                        </LinearLayout>
+                                    </androidx.cardview.widget.CardView>
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Annual Buddha Data view -->
+
+                            <!-- Annual Buddha Placeholder -->
+                            <LinearLayout
+                                android:id="@+id/default_buddha_annual_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="gone">
+                                <ImageView
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/pra_preang"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ติดต่อคุณนินเพื่อเปิดดวงประจำปี เพื่อทราบถึงพระพุทธรูปที่ต้องถวายประจำปีนี้"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_buddha_annual"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_annual_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone"
+                                android:background="#FFF"/>
+
+
+
+                            <!-- Lifetime Buddha Section -->
+                            <LinearLayout
+                                android:id="@+id/header_buddha_lifetime"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/buddha" />
+                                <TextView
+                                    android:id="@+id/txt_header_buddha_life"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_marginStart="3dp"
+                                    android:maxLines="1"
+                                    android:ellipsize="end"
+                                    android:text="พระพุทธรูปที่ต้องถวายตลอดชีวิต"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <!-- Lifetime Buddha Data view -->
+
+                            <!-- Lifetime Buddha Placeholder -->
+                            <LinearLayout
+                                android:id="@+id/default_buddha_lifetime_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="gone">
+                                <ImageView
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/pra_preang"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ติดต่อเปิดดวงชะตาเพื่อให้ทราบถึงพระพุทธรูปที่ต้องถวายตลอดชีวิต"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_buddha_life"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_lifetime_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone"
+                                android:background="#FFF"/>
+
+
+
+                            <!-- Spells & Warnings Section -->
+                            <LinearLayout
+                                android:id="@+id/header_spells"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp"
+                                android:visibility="gone">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/approval" />
+
+                                <TextView
+                                    android:id="@+id/txt_header_spells"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="3dp"
+                                    android:text="คาถาและคำเตือนพิเศษ"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/default_spells_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="gone">
+                                <ImageView
+                                    android:id="@+id/img_spells_default"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/lotus_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:id="@+id/txt_spells_default"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ติดต่อคุณนินเพื่อเปิดดวงประจำปี เพื่อรับคาถาและคำเตือนพิเศษ"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_spell"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_spells_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone"
+                                android:background="#FFF"/>
+                            
+
+
+                            <!-- Merit Method Section (Dynamic) -->
+                            <LinearLayout
+                                android:id="@+id/header_merit_method"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:padding="4dp"
+                                android:visibility="gone">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:src="@drawable/ic_lotus_gold" />
+
+                                <TextView
+                                    android:id="@+id/txt_header_merit_method"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_marginStart="3dp"
+                                    android:maxLines="2"
+                                    android:ellipsize="end"
+                                    android:text="วิธีทำบุญเพื่อแก้ไขคุ้มครองดวงประจำปีนี้"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_merit_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/default_merit_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="visible">
+                                <ImageView
+                                    android:id="@+id/img_merit_default"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/lotus_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:id="@+id/txt_merit_default"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ติดต่อคุณนินเพื่อเปิดดวงประจำปี เพื่อรับวิธีทำบุญที่เหมาะกับดวงชะตา"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_merit"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+
+
+                            <!-- Change Steps Section (Dynamic) -->
+                            <LinearLayout
+                                android:id="@+id/header_change_steps"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp"
+                                android:visibility="gone">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/approval" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="3dp"
+                                    android:text="ขั้นตอนการเปลี่ยนแปลง"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_change_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/default_change_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="visible">
+                                <ImageView
+                                    android:id="@+id/img_change_default"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/approval"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:id="@+id/txt_change_default"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ติดต่อคุณนินเพื่อเปิดดวงประจำปี เพื่อรับคำแนะนำการเปลี่ยนแปลงที่เหมาะสม"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_change"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+
+
+
+
+                            <!-- Auspicious Year Section -->
+                            <LinearLayout
+                                android:id="@+id/header_auspicious_year"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#DCEDC8"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:src="@drawable/ic_clover" />
+
+                                <TextView
+                                    android:id="@+id/txt_header_auspicious_year"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_marginStart="3dp"
+                                    android:text="วันมงคล เดือนมงคล และทิศมงคลในปีนี้"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_auspicious_year_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/default_auspicious_year_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="visible">
+                                <ImageView
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/lotus_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ยังไม่มีข้อมูลวันมงคลประจำปี โปรดรอการอัปเดตจากระบบ"
+                                    android:textSize="20sp"
+                                    android:textColor="#388E3C"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_auspicious_year"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+                            <!-- Auspicious Life Section -->
+                            <LinearLayout
+                                android:id="@+id/header_auspicious_life"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#DCEDC8"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/ic_clover" />
+
+                                <TextView
+                                    android:id="@+id/txt_header_auspicious_life"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_marginStart="3dp"
+                                    android:text="วันมงคล เดือนมงคล และทิศมงคลตลอดชีวิต"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_auspicious_life_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/default_auspicious_life_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="visible">
+                                <ImageView
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/lotus_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ยังไม่มีข้อมูลวันมงคลตลอดชีวิต โปรดรอการอัปเดตจากระบบ"
+                                    android:textSize="20sp"
+                                    android:textColor="#388E3C"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_auspicious_life"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+                            <!-- Inauspicious Year Section -->
+                            <LinearLayout
+                                android:id="@+id/header_inauspicious_year"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:src="@drawable/ic_evil00" />
+
+                                <TextView
+                                    android:id="@+id/txt_header_inauspicious_year"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_marginStart="3dp"
+                                    android:maxLines="2"
+                                    android:ellipsize="end"
+                                    android:text="วันอัปมงคล เดือนอัปมงคล และ ทิศอัปมงคลในปีนี้"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <!-- Combined Inauspicious Placeholder (Grouped) -->
+                            <LinearLayout
+                                android:id="@+id/combined_inauspicious_placeholder"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="10dp"
+                                android:background="#FFF"
+                                android:visibility="gone">
+                                <ImageView
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/lotus_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginEnd="15dp" />
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:text="ติดต่อเปิดดวงเพื่อรับคำแนะนำเรื่องวัน เดือน และทิศอัปมงคลประจำปีและตลอดชีวิต"
+                                        android:textSize="20sp"
+                                        android:textColor="#FF0000"
+                                        android:gravity="start"
+                                        android:fontFamily="@font/browa_0" />
+                                    
+                                    <androidx.cardview.widget.CardView
+                                        android:id="@+id/btn_contact_nin_inauspicious_combined"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="40dp"
+                                        android:layout_marginTop="12dp"
+                                        android:visibility="gone"
+                                        app:cardBackgroundColor="#06C755"
+                                        app:cardCornerRadius="20dp"
+                                        app:cardElevation="2dp">
+                                        <LinearLayout
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_gravity="center"
+                                            android:gravity="center"
+                                            android:paddingStart="15dp"
+                                            android:paddingEnd="15dp"
+                                            android:orientation="horizontal">
+                                            <androidx.compose.ui.platform.ComposeView
+                                                android:id="@+id/compose_chat_icon_inauspicious_combined"
+                                                android:layout_width="24dp"
+                                                android:layout_height="24dp"
+                                                android:layout_marginEnd="8dp" />
+                                            <TextView
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="คุยกับคุณนิน"
+                                                android:textColor="#FFFFFF"
+                                                android:textSize="14sp"
+                                                android:textStyle="bold" />
+                                        </LinearLayout>
+                                    </androidx.cardview.widget.CardView>
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_inauspicious_year_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/default_inauspicious_year_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="gone">
+                                <ImageView
+                                    android:id="@+id/img_inauspicious_year_default"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/lotus_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:id="@+id/txt_inauspicious_year_default"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ติดต่อคุณนินเพื่อเปิดดวงประจำปี เพื่อเช็กวันอัปมงคล เดือนอัปมงคล และทิศอัปมงคลในปีนี้"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_inauspicious_year"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+
+
+                            <!-- Inauspicious Life Section -->
+                            <LinearLayout
+                                android:id="@+id/header_inauspicious_life"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/ic_evil00" />
+
+                                <TextView
+                                    android:id="@+id/txt_header_inauspicious_life"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_marginStart="3dp"
+                                    android:maxLines="1"
+                                    android:ellipsize="end"
+                                    android:text="วันอัปมงคล เดือนอัปมงคล และ ทิศอัปมงคลตลอดชีวิต"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_inauspicious_life_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/default_inauspicious_life_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="gone">
+                                <ImageView
+                                    android:id="@+id/img_inauspicious_life_default"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/lotus_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:id="@+id/txt_inauspicious_life_default"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ติดต่อเปิดดวงเพื่อแสดงวันอัปมงคล เดือนอัปมงคล และทิศอัปมงคลที่ควรหลีกเลี่ยงสำหรับดวงชะตาของคุณตลอดชีวิต"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_inauspicious_life"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+                            <!-- Sacred Temple Section (Moved here) -->
+                            <LinearLayout
+                                android:id="@+id/header_sacred_temple"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#EBE8D5"
+                                android:orientation="horizontal"
+                                android:padding="4dp">
+
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/ic_temple_gold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="3dp"
+                                    android:text="วัดเก่าวัดศักดิ์สิทธิ์ที่ควรไปสักการะ"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/container_temple_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                android:visibility="gone" />
+
+                            <LinearLayout
+                                android:id="@+id/default_temple_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="0dp"
+                                android:background="?attr/selectableItemBackground"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:visibility="visible">
+                                <ImageView
+                                    android:id="@+id/img_temple_default"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:src="@drawable/thai_temple_placeholder"
+                                    android:scaleType="fitStart"
+                                    android:adjustViewBounds="true"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="15dp" />
+                                <TextView
+                                    android:id="@+id/txt_temple_default"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="ยังไม่มีข้อมูลวัดที่แนะนำ โปรดรอการอัปเดตจากระบบ"
+                                    android:textSize="20sp"
+                                    android:textColor="#FF0000"
+                                    android:gravity="start|center_vertical"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginTop="10dp"
+                                    android:layout_marginBottom="10dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:fontFamily="@font/browa_0" />
+                                
+                                <androidx.cardview.widget.CardView
+                                    android:id="@+id/btn_contact_nin_temple"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:visibility="visible"
+                                    app:cardBackgroundColor="#E0E0E0"
+                                    app:cardCornerRadius="0dp"
+                                    app:cardElevation="0dp">
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:text=">>"
+                                        android:gravity="center"
+                                        android:textColor="#000000"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </androidx.cardview.widget.CardView>
+                            </LinearLayout>
+
+                            <!-- Shared Footer Contact Button -->
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/btn_contact_nin_inauspicious_footer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="20dp"
+                                android:layout_marginBottom="40dp"
+                                android:layout_marginStart="15dp"
+                                android:layout_marginEnd="15dp"
+                                android:visibility="visible"
+                                app:cardCornerRadius="15dp"
+                                app:cardElevation="4dp"
+                                app:cardBackgroundColor="#FFFFFF"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?android:attr/selectableItemBackground">
+                    
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:padding="15dp">
+                    
+                                    <ImageView
+                                        android:layout_width="40dp"
+                                        android:layout_height="40dp"
+                                        android:src="@drawable/icon_clover"
+                                        android:layout_marginEnd="15dp"/>
+                    
+                                    <TextView
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="ตั้งชื่อสกุล หรือ เปิดดวงชะตา"
+                                        android:textColor="#00AA00"
+                                        android:textSize="22sp"
+                                        android:fontFamily="@font/browa_0"
+                                        android:textStyle="bold"
+                                        android:maxLines="1"
+                                        android:ellipsize="end"/>
+                    
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="CLICK"
+                                        android:textColor="#FFFFFF"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold"
+                                        android:background="@drawable/bg_green_pill"
+                                        android:paddingStart="20dp"
+                                        android:paddingEnd="20dp"
+                                        android:paddingTop="8dp"
+                                        android:paddingBottom="8dp"
+                                        android:layout_marginStart="10dp"/>
+                    
+                                </LinearLayout>
+                            </androidx.cardview.widget.CardView>
+
+                        </LinearLayout>
+                        <!-- linear do -->
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+
+            </RelativeLayout>
+
+
+
+
+
+
+        <!-- Footer Contact Section -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_contact_footer"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="40dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            app:cardCornerRadius="15dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="15dp">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/icon_clover"
+                    android:layout_marginEnd="15dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="ตั้งชื่อสกุล หรือ เปิดดวงชะตา"
+                    android:textColor="#00AA00"
+                    android:textSize="23sp"
+                    android:fontFamily="@font/browa_0"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CLICK"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_green_pill"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:layout_marginStart="10dp"/>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+</layout>

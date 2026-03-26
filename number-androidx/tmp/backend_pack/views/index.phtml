@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Number เลขศาสตร์ พลังเงา - Decode Your Destiny</title>
+
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;600&display=swap"
+    rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary: #198754;
+      --secondary: #20c997;
+      --accent: #ffc107;
+      --bg-light: #f0fdf4;
+      --text-dark: #064e3b;
+      --text-muted: #166534;
+      --glass: rgba(255, 255, 255, 0.8);
+      --glass-border: rgba(25, 135, 84, 0.2);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Outfit', 'Prompt', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      background-image:
+        radial-gradient(at 0% 0%, #dcfce7 0, transparent 50%),
+        radial-gradient(at 100% 0%, #bbf7d0 0, transparent 50%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 5rem 0 3rem;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #198754, #20c997);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      letter-spacing: -0.05em;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 3rem;
+    }
+
+    /* API Menu Grid */
+    .api-menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .menu-item {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      padding: 1.5rem;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .menu-item:hover,
+    .menu-item.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--primary);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-item i {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--secondary);
+    }
+
+    .menu-item h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Playground Section */
+    .playground {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+
+    .playground.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .input-section h2 {
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      color: #1e293b;
+      font-family: inherit;
+      transition: border-color 0.3s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    button.btn-test {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.3s;
+      margin-top: 1rem;
+    }
+
+    button.btn-test:hover {
+      opacity: 0.9;
+    }
+
+    /* Response Viewer */
+    .response-section {
+      background: #0d1117;
+      border-radius: 12px;
+      padding: 1rem;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      max-height: 500px;
+    }
+
+    .response-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    pre {
+      overflow: auto;
+      color: #e6edf3;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9rem;
+      flex: 1;
+    }
+
+    /* JSON Color Syntax */
+    .string {
+      color: #a5d6ff;
+    }
+
+    .number {
+      color: #d2a8ff;
+    }
+
+    .boolean {
+      color: #79c0ff;
+    }
+
+    .null {
+      color: #ff7b72;
+    }
+
+    .key {
+      color: #7ee787;
+    }
+
+    @media (max-width: 768px) {
+      .playground {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Navbar */
+    /* Local Navbar CSS removed in favor of web_menu.php styles */
+
+    /* Updated App Promo Section */
+    .app-promo {
+      margin-top: 3rem;
+      background: white;
+      padding: 3rem 2rem;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .promo-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .promo-text {
+      flex: 1;
+      min-width: 300px;
+      text-align: left;
+    }
+
+    .promo-text h2 {
+      color: #198754;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .promo-text p {
+      color: #334155;
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .promo-features {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .promo-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #475569;
+    }
+
+    .promo-features li i {
+      color: var(--secondary);
+    }
+
+    .btn-promo {
+      background: linear-gradient(to right, #558B2F, #33691E);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-promo:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Screenshot Gallery */
+    .screenshots-container {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(85, 139, 47, 0.3);
+    }
+
+    .screenshots-title {
+      color: var(--text-dim);
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .screenshots-scroll {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 1.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--secondary) rgba(0, 0, 0, 0.2);
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+    }
+
+    .screenshots-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .screenshots-scroll::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .screenshots-scroll::-webkit-scrollbar-thumb {
+      background: var(--secondary);
+      border-radius: 4px;
+    }
+
+    .screenshot-item {
+      flex: 0 0 auto;
+      width: 250px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid rgba(85, 139, 47, 0.3);
+      scroll-snap-align: start;
+      transition: transform 0.3s;
+      aspect-ratio: 9/16;
+      background: #000;
+      cursor: pointer;
+    }
+
+    .screenshot-item:hover {
+      transform: scale(1.02);
+      border-color: var(--accent);
+    }
+
+    .screenshot-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Services Section */
+    .services-highlight {
+      margin: 4rem 0;
+      padding: 3rem;
+      background: white;
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .services-highlight::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+    }
+
+    .services-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .services-header h2 {
+      font-size: 2rem;
+      color: #166534;
+      margin-bottom: 1rem;
+    }
+
+    .services-header p.lead {
+      font-size: 1.2rem;
+      color: var(--secondary);
+      max-width: 900px;
+      margin: 0 auto;
+      line-height: 1.8;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 2rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: transform 0.3s, background 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--primary);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-card h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+    }
+
+    .feature-card p {
+      color: #64748b;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <?php include 'web_menu.php'; ?>
+
+  <div class="container">
+    <header class="hero">
+      <h1>Number เลขศาสตร์ พลังเงา</h1>
+      <p>ศาสตร์แห่งตัวเลขและการวิเคราะห์ดวงชะตาสมัยใหม่</p>
+
+      <div class="app-promo">
+        <div class="promo-content">
+          <div class="promo-text">
+            <h2><i class="fa-brands fa-android"></i> ดาวน์โหลดได้แล้วบน Android</h2>
+            <p>ไขรหัสชีวิต เจาะลึกพื้นดวงและศาสตร์แห่งตัวเลข
+              สัมผัสประสบการณ์การวิเคราะห์ดวงชะตาที่ครอบคลุมที่สุดได้ทุกที่ทุกเวลาบนมือถือของคุณ</p>
+
+            <ul class="promo-features">
+              <li><i class="fa-solid fa-check-circle"></i> วิเคราะห์เบอร์โทรศัพท์</li>
+              <li><i class="fa-solid fa-check-circle"></i> วิเคราะห์ทะเบียนรถ</li>
+              <li><i class="fa-solid fa-check-circle"></i> วิเคราะห์ชื่อ-นามสกุล และชื่อเล่น</li>
+              <li><i class="fa-solid fa-check-circle"></i> วิเคราะห์เลขที่บ้าน</li>
+            </ul>
+
+            <a href="https://play.google.com/store/apps/details?id=com.numberniceic" target="_blank" class="btn-promo">
+              <i class="fa-brands fa-google-play" style="font-size: 1.5rem;"></i>
+              <div>
+                <span style="display: block; font-size: 0.8rem; font-weight: normal;">GET IT ON</span>
+                <span style="font-size: 1.2rem;">Google Play</span>
+              </div>
+            </a>
+          </div>
+          <div style="font-size: 8rem; color: var(--primary); opacity: 0.2;">
+            <i class="fa-solid fa-mobile-screen"></i>
+          </div>
+        </div>
+
+        <div class="screenshots-container">
+          <h4 class="screenshots-title">ตัวอย่างแอปพลิเคชัน</h4>
+          <div class="screenshots-scroll">
+            <div class="screenshot-item"><img
+                src="https://play-lh.googleusercontent.com/UG_lPrKiwEIgsmbP8ixOvm0iVVGrRDp0V1a-0u6QlkVp7fIEHJggAMqvF8W1zbz3git5BBMUx1upl1vqHs1ynA=w1052-h592-rw"
+                alt="Screenshot 1"></div>
+            <div class="screenshot-item"><img
+                src="https://play-lh.googleusercontent.com/ZMu30k6mgO3vdSneMM71mNXt4b6keurWCPONV8rBtWFcU8TUNHBkDrCxLJ5014c6Ab2ImACm8q5K9cQJfP2d=w1052-h592-rw"
+                alt="Screenshot 2"></div>
+            <div class="screenshot-item"><img
+                src="https://play-lh.googleusercontent.com/hygSqXPTp7SupKIYhSJ3Aom0rW2E7W4s3dNN8T0uXxuCgWMn9EXdE_5UnGz3uNJmkZEPsYsct-9uHVJGf-8k2QA=w1052-h592-rw"
+                alt="Screenshot 3"></div>
+            <div class="screenshot-item"><img
+                src="https://play-lh.googleusercontent.com/e0m8tzxuzcLRNAe7gkKejskRFab1L74WiLpjl3zkd1WyNXOEHjcL-h9lQchpMJSwvMNOgRM8xBxujx3-gaxG5iQ=w1052-h592-rw"
+                alt="Screenshot 4"></div>
+            <div class="screenshot-item"><img
+                src="https://play-lh.googleusercontent.com/guG2mfzkBc_J46VnzfGrZNsRGQpOxsLwyupgfb6kcqAbMdtox9onZBa1KaYPIZ8lz489WAFPNPX75XGEaKgmNlU=w1052-h592-rw"
+                alt="Screenshot 5"></div>
+            <div class="screenshot-item"><img
+                src="https://play-lh.googleusercontent.com/Yg_2fQEuo385emuQGkHICXdZ9FPF0QU5CkngffSdx8oMuBHhTB4RdVqfy11kwwJisPal2Uew2Aqoh28lry9s=w1052-h592-rw"
+                alt="Screenshot 6"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="services-highlight">
+      <div class="services-header">
+        <h2><i class="fa-solid fa-star-of-david"></i> บริการวางระหัสขีวิต เปลี่ยนดวงชะตา</h2>
+        <p class="lead">"รับเปิดดวงชะตาดูดวงประจำปี เพื่อให้รู้ดีรู้ร้ายล่วงหน้า เตรียมป้องกัน แก้ไข
+          และเปลี่ยนแปลงดวงชะตาตามวาระที่คู่ควร"</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <i class="fa-solid fa-magnifying-glass-chart feature-icon"></i>
+          <h3>วิเคราะห์พื้นดวง</h3>
+          <p>เจาะพื้นดวงและเจาะเลข วิเคราะห์ดวงชะตา วางแผนชีวิตล่วงหน้าเพื่อให้คุณพร้อมรับมือกับทุกสถานการณ์</p>
+        </div>
+
+        <div class="feature-card">
+          <i class="fa-solid fa-sim-card feature-icon"></i>
+          <h3>วางเลขมงคล</h3>
+          <p>วางเบอร์โทรศัพท์ ทะเบียนรถ และบ้านเลขที่มงคล ตรงตามโฉลกและพื้นดวงชะตา เพื่อเสริมพลังชีวิตให้ดียิ่งขึ้น</p>
+        </div>
+
+        <div class="feature-card">
+          <i class="fa-solid fa-signature feature-icon"></i>
+          <h3>ตั้งชื่อมงคล</h3>
+          <p>บริการตั้งชื่อจริง ชื่อเล่น และนามสกุลมงคล สำหรับทั้งเด็กและผู้ใหญ่ ให้ถูกต้องตามหลักเลขศาสตร์และโฉลกดวง
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <i class="fa-solid fa-certificate feature-icon"></i>
+          <h3>การันตีคุณภาพ</h3>
+          <p>เบอร์และทะเบียนทุกหมายเลขมีจริง ถูกต้องตามกฎหมายกรมขนส่ง
+            สามารถใช้ได้จริงทั้งรถใหม่ป้ายแดงและรถที่มีทะเบียนเดิม</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-menu">
+      <div class="menu-item active" onclick="selectApi('phone')">
+        <i class="fa-solid fa-mobile-screen-button"></i>
+        <h3>เบอร์โทรศัพท์</h3>
+      </div>
+      <div class="menu-item" onclick="selectApi('tabian')">
+        <i class="fa-solid fa-car-side"></i>
+        <h3>ทะเบียนรถ</h3>
+      </div>
+      <div class="menu-item" onclick="selectApi('name')">
+        <i class="fa-solid fa-user-astronaut"></i>
+        <h3>วิเคราะห์ชื่อ</h3>
+      </div>
+      <div class="menu-item" onclick="selectApi('nickname')">
+        <i class="fa-regular fa-id-card"></i>
+        <h3>วิเคราะห์ชื่อเล่น</h3>
+      </div>
+      <div class="menu-item" onclick="selectApi('house')">
+        <i class="fa-solid fa-house-chimney"></i>
+        <h3>ทะเบียนบ้าน</h3>
+      </div>
+    </div>
+
+    <!-- Phone Form -->
+    <div id="form-phone" class="playground visible">
+      <div class="input-section">
+        <h2><i class="fa-solid fa-terminal"></i> ทดสอบวิเคราะห์เบอร์โทร</h2>
+        <div class="form-group">
+          <label>เบอร์โทรศัพท์ (เช่น 0812345678)</label>
+          <input type="text" id="phone_input" class="form-control" placeholder="08xxxxxxxx">
+        </div>
+        <button class="btn-test" onclick="testPhone()">ส่งข้อมูล</button>
+        <button class="btn-test" style="background: transparent; border: 1px solid var(--primary); margin-top: 0.5rem;"
+          onclick="getAllPhones()">ดูเบอร์มงคลทั้งหมด</button>
+      </div>
+      <div class="response-section">
+        <div class="response-header">ผลลัพธ์ (JSON)</div>
+        <pre id="res-phone">เลือก API และส่งข้อมูลเพื่อดูผลลัพธ์...</pre>
+      </div>
+    </div>
+
+    <!-- Car Form -->
+    <div id="form-tabian" class="playground hidden">
+      <div class="input-section">
+        <h2><i class="fa-solid fa-terminal"></i> ทดสอบวิเคราะห์ทะเบียนรถ</h2>
+        <div class="form-group">
+          <label>เลขทะเบียนรถ (เช่น 1กก9999)</label>
+          <input type="text" id="tabian_input" class="form-control" placeholder="พิมพ์รูปแบบทั่วไป">
+        </div>
+        <button class="btn-test" onclick="testTabian()">ส่งข้อมูล</button>
+      </div>
+      <div class="response-section">
+        <div class="response-header">ผลลัพธ์ (JSON)</div>
+        <pre id="res-tabian">รอผลลัพธ์...</pre>
+      </div>
+    </div>
+
+    <!-- Name Form -->
+    <div id="form-name" class="playground hidden">
+      <div class="input-section">
+        <h2><i class="fa-solid fa-terminal"></i> ทดสอบวิเคราะห์ชื่อ-นามสกุล</h2>
+        <div class="form-group">
+          <label>ชื่อจริง (ภาษาไทย)</label>
+          <input type="text" id="name_first" class="form-control" placeholder="ชื่อจริง">
+        </div>
+        <div class="form-group">
+          <label>นามสกุล (ภาษาไทย)</label>
+          <input type="text" id="name_sur" class="form-control" placeholder="นามสกุล">
+        </div>
+        <div class="form-group">
+          <label>วันเกิด</label>
+          <select id="name_dob" class="form-control">
+            <option value="sunday">วันอาทิตย์</option>
+            <option value="monday">วันจันทร์</option>
+            <option value="tuesday">วันอังคาร</option>
+            <option value="wednesday1">พุธกลางวัน</option>
+            <option value="wednesday2">พุธกลางคืน</option>
+            <option value="thursday">วันพฤหัสบดี</option>
+            <option value="friday">วันศุกร์</option>
+            <option value="saturday">วันเสาร์</option>
+          </select>
+        </div>
+        <button class="btn-test" onclick="testName()">ส่งข้อมูล</button>
+      </div>
+      <div class="response-section">
+        <div class="response-header">ผลลัพธ์ (JSON)</div>
+        <pre id="res-name">รอผลลัพธ์...</pre>
+      </div>
+    </div>
+
+    <!-- Nickname Form -->
+    <div id="form-nickname" class="playground hidden">
+      <div class="input-section">
+        <h2><i class="fa-solid fa-terminal"></i> ทดสอบวิเคราะห์ชื่อเล่น</h2>
+        <div class="form-group">
+          <label>ชื่อเล่น (ภาษาไทย)</label>
+          <input type="text" id="nick_input" class="form-control" placeholder="ชื่อเล่น">
+        </div>
+        <div class="form-group">
+          <label>วันเกิด</label>
+          <select id="nick_dob" class="form-control">
+            <option value="sunday">วันอาทิตย์</option>
+            <option value="monday">วันจันทร์</option>
+            <option value="tuesday">วันอังคาร</option>
+            <option value="wednesday1">พุธกลางวัน</option>
+            <option value="wednesday2">พุธกลางคืน</option>
+            <option value="thursday">วันพฤหัสบดี</option>
+            <option value="friday">วันศุกร์</option>
+            <option value="saturday">วันเสาร์</option>
+          </select>
+        </div>
+        <button class="btn-test" onclick="testNickname()">ส่งข้อมูล</button>
+      </div>
+      <div class="response-section">
+        <div class="response-header">ผลลัพธ์ (JSON)</div>
+        <pre id="res-nickname">รอผลลัพธ์...</pre>
+      </div>
+    </div>
+
+    <!-- House Form -->
+    <div id="form-house" class="playground hidden">
+      <div class="input-section">
+        <h2><i class="fa-solid fa-terminal"></i> ทดสอบวิเคราะห์เลขที่บ้าน</h2>
+        <div class="form-group">
+          <label>บ้านเลขที่ (เช่น 123/45)</label>
+          <input type="text" id="house_input" class="form-control" placeholder="123/45">
+        </div>
+        <button class="btn-test" onclick="testHouse()">ส่งข้อมูล</button>
+      </div>
+      <div class="response-section">
+        <div class="response-header">ผลลัพธ์ (JSON)</div>
+        <pre id="res-house">รอผลลัพธ์...</pre>
+      </div>
+    </div>
+
+  </div>
+
+  <footer style="text-align: center; padding: 4rem 2rem; color: var(--text-dim); opacity: 0.8;">
+    <p>&copy; <?php echo date('Y'); ?> Number เลขศาสตร์ พลังเงา. สงวนลิขสิทธิ์.</p>
+    <p style="font-size: 0.9em; margin-top: 0.5rem; color: var(--secondary);">พัฒนาโดย numberniceic</p>
+    <p style="margin-top: 1rem;">
+      <a href="/privacy-policy"
+        style="color: var(--secondary); text-decoration: none; border-bottom: 1px dashed var(--secondary);">นโยบายความเป็นส่วนตัว
+        (Privacy Policy)</a>
+      <span style="margin: 0 0.5rem; color: var(--glass-border);">|</span>
+      <a href="/delete-account"
+        style="color: var(--secondary); text-decoration: none; border-bottom: 1px dashed var(--secondary);">แจ้งขอลบข้อมูลบัญชี
+        (Request Account Deletion)</a>
+    </p>
+  </footer>
+
+  <script>
+    function selectApi(type) {
+      // Update menu active state
+      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+      document.querySelector(`.menu-item[onclick="selectApi('${type}')"]`).classList.add('active');
+
+      // Hide all forms
+      document.querySelectorAll('.playground').forEach(el => {
+        el.classList.remove('visible');
+        setTimeout(() => {
+          if (!el.classList.contains('visible')) el.classList.add('hidden');
+        }, 300);
+      });
+
+      // Show selected form
+      const target = document.getElementById(`form-${type}`);
+      target.classList.remove('hidden');
+      // Slight delay to allow display:block to apply before opacity transition
+      setTimeout(() => {
+        target.classList.add('visible');
+      }, 10);
+    }
+
+    async function fetchData(url, outputId) {
+      const outputBtn = document.getElementById(outputId);
+      outputBtn.innerHTML = '<span style="color:var(--text-dim)">Loading...</span>';
+
+      try {
+        const res = await fetch(url);
+        let data = await res.json();
+
+        // Format JSON
+        outputBtn.innerHTML = syntaxHighlight(JSON.stringify(data, undefined, 2));
+      } catch (e) {
+        outputBtn.innerHTML = `<span style="color:var(--accent)">Error: ${e.message}</span>`;
+      }
+    }
+
+    function syntaxHighlight(json) {
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'key';
+          } else {
+            cls = 'string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'boolean';
+        } else if (/null/.test(match)) {
+          cls = 'null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    function testPhone() {
+      const val = document.getElementById('phone_input').value;
+      if (!val) return alert('Please enter input');
+      fetchData(`/phone/${val}`, 'res-phone');
+    }
+
+    function getAllPhones() {
+      fetchData('/phone/main/sell/all', 'res-phone');
+    }
+
+    function testTabian() {
+      const val = document.getElementById('tabian_input').value;
+      if (!val) return alert('Please enter input');
+      fetchData(`/tabian/main/${val}`, 'res-tabian');
+    }
+
+    function testName() {
+      const name = document.getElementById('name_first').value;
+      const sum = document.getElementById('name_sur').value;
+      const dob = document.getElementById('name_dob').value;
+      if (!name || !sum) return alert('Please enter input');
+      fetchData(`/name/main/${name}/${sum}/${dob}`, 'res-name');
+    }
+
+    function testNickname() {
+      const name = document.getElementById('nick_input').value;
+      const dob = document.getElementById('nick_dob').value;
+      if (!name) return alert('Please enter input');
+      fetchData(`/nickname/main/${name}/${dob}`, 'res-nickname');
+    }
+
+    function testHouse() {
+      let val = document.getElementById('house_input').value;
+      if (!val) return alert('Please enter input');
+      // Encode slash if present, although simple URI param usually handles it, sometimes slash breaks route.
+      // Usually framework handles it if properly defined. But let's check input.
+      // For Slime/PHP, slashes in params can be tricky. However, the route is /home/main/{homeid}
+      // If homeid is 123/45, it might be seen as /home/main/123/45.
+      // Let's replace slash with a safe character or encodeURIComponent. 
+      // Note: encodeURIComponent('/') is %2F. Slim might decode it before matching?
+      // Wait, HouseController usually splits by standard slash.
+      // If the route definition is `main/{homeid}`, then `123/45` will fail matching if not greedy.
+      // But usually these old apps might handle `123-45` or assume users replace slash.
+      // Looking at HomeController: `private function setHomeId($request) { $this->homeId = trim($request->getAttribute('homeid')); }`
+      // It doesn't seem to do special processing to rejoin params.
+      // If I send `123/45`, Slim might route it as two params or fail?
+      // Let's try sending as is. If it fails, I might need to double encode or change logic.
+      // Actually, for now let's just send it. If it fails, the user will see error.
+      val = encodeURIComponent(val);
+      fetchData(`/home/main/${val}`, 'res-house');
+    }
+
+  </script>
+
+</body>
+
+</html>

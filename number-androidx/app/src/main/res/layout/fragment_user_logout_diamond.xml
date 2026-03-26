@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coor_user_register"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.auth.UserLogoutF">
+
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#E2E4E2"
+            android:paddingBottom="100dp"
+            android:orientation="vertical">
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="9dp"
+
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:textColor="#43A047"
+                        android:layout_marginStart="16dp"
+                        android:textSize="15sp"
+                        android:text="คุณคือ VIP สูงสุด ขอให้มีความสุขในการใช้งานแอพพลิเคชั่นของเรา"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"/>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:orientation="horizontal">
+
+
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+
+
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="16dp"
+
+                app:cardBackgroundColor="#FFF"
+                app:cardCornerRadius="18dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="15dp"
+                    android:orientation="vertical">
+
+
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:id="@+id/txt_general"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="19sp"
+                            android:text="สวัสดีคุณ"
+                            android:textColor="#1E88E5" />
+                        <TextView
+                            android:id="@+id/txt_member_name_diamond"
+                            android:layout_marginStart="5dp"
+                            android:layout_marginEnd="5dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="17sp"
+                            tools:text="(ชื่อเมมเบอร์)"
+                            android:textColor="#43A047" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="19sp"
+                            android:text="คุณคือ"
+                            android:textColor="#1E88E5" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layout_member_header_diamond"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/txt_member_type_diamond"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/img_member_diamond"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_marginStart="16dp"
+                            android:padding="2dp"
+                            app:strokeWidth="2dp"
+                            app:strokeColor="#B9F2FF"
+                            app:shapeAppearanceOverlay="@style/CircleAvatar"
+                            tools:src="@drawable/ic_avatar_13" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_status_explanation_diamond"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:textSize="17sp"
+                        android:textColor="#388E3C"
+                        android:textStyle="bold"
+                        android:gravity="center"
+                        tools:text="ระดับสมาชิก: VIP" />
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="6dp"
+                        android:background="@android:color/darker_gray" />
+
+
+                    <LinearLayout
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:textColor="#039BE5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="สิทธิ์ในการใช้งานแอพพลิเคชั่นของคุณ"
+                        android:textSize="17dp"
+                        android:textStyle="bold" />
+
+
+
+</LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_user_edit_profile"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:text="แก้ไขข้อมูล"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:elevation="4dp"
+                            android:fontFamily="sans-serif-medium"
+                            app:backgroundTint="#FF9800"
+                            app:cornerRadius="28dp"
+                            app:rippleColor="#80FFE0B2"
+                            app:strokeWidth="0dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_user_logout_diamond"
+                            android:layout_width="0dp"
+                            android:layout_height="56dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="ออกจากระบบ"
+                            android:textColor="#FFFFFF"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:elevation="4dp"
+                            android:fontFamily="sans-serif-medium"
+                            app:backgroundTint="#D32F2F"
+                            app:cornerRadius="28dp"
+                            app:rippleColor="#FFFF8A80"
+                            app:strokeWidth="0dp" />
+                    </LinearLayout>
+
+                    <View
+
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+
+                        android:layout_marginBottom="6dp"
+                        android:background="@android:color/darker_gray" />
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/txt_vip_daimond"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textSize="16sp"
+                            android:text="VIP Diamond  (มีส่วนลด 14% )"
+                            android:textColor="#FB8C00" />
+
+                        <ImageView
+                            android:id="@+id/img_daimond"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="5dp"
+                            android:layout_toEndOf="@id/txt_vip_daimond"
+                            android:src="@drawable/diamond" />
+
+
+                    </RelativeLayout>
+                    <TextView
+                        android:id="@+id/txt_vip_diamond_benefits_intro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:layout_marginTop="2dp"
+                        android:text="ท่านสามารถใช้งานแอพลิเคชั่นในส่วนของการทำนาย ชื่อเล่น ชื่อจริงนามสกุล บ้านเลขที่ และเบอร์โทรศัพท์ได้ไม่จำกัดจำนวน โดยเราจะเปิดดวงเจาะเลขเพื่อหาอักษรนำหน้าชื่อเล่นชื่อสกุลที่ดีที่สุดเพื่อให้ท่านนำไปเลือกตั้งชื่อให้ฟรี 2 ครั้ง คือ เจ้าของสิทธิ์นี้และคนที่เจ้าของสิทธิเลือกมาเท่านั้น"/>
+
+
+
+
+
+                    <TextView
+                        android:id="@+id/txt_vip_diamond_details"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:textColor="#1E88E5"
+                        android:layout_marginTop="2dp"
+                        android:text="ท่านสามารถใช้แอพพลิเคชั่นตามสิทธิ์ VIP Diamond เลือกดูรายการชื่อเล่น และชื่อจริง ซึ่งเป็นชื่อที่ได้เลขดีทั้งเลขศาสตร์พลังเงา โดยเราได้เก็บรวบรวมไว้ให้ท่านเลือกใช้ และท่านสามารถใช้แอพพลิเคชั่นของเราทำนายทะเบียนรถได้ไม่จำกัดจำนวน พร้อมรับสิทธิประโยชน์ที่เรามีให้ในฐานะ VIP ทั้งในปัจจุบันและอนาคต ขอบคุณๆและขอบคุณ"/>
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+
+
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+
+
+                </LinearLayout>
+
+
+
+
+            </androidx.cardview.widget.CardView>
+
+
+
+
+
+
+        </LinearLayout>
+
+
+
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

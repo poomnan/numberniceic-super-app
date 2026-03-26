@@ -1,0 +1,73 @@
+# Node.js
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+# Build outputs
+dist/
+build/
+out/
+coverage/
+coverage_html_report/
+*.log
+*.tmp
+*.cache
+*.tsbuildinfo
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+generated_plugin_registrant.dart
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+macos/Flutter/ephemeral/
+macos/Runner/GeneratedPluginRegistrant.*
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+# Android / Java / Kotlin
+.gradle/
+/local.properties
+**/build/
+**/captures/
+*.apk
+*.aab
+*.keystore
+*.class
+# iOS
+DerivedData/
+*.xcworkspace
+*.xcuserdata/
+*.xcuserstate
+*.xcodeproj/project.xcworkspace
+# Go
+vendor/
+*.exe
+*.test
+**/build_cache/
+# PHP
+vendor/
+.env
+# IDEs
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+# Misc
+.DS_Store
+Thumbs.db
+desktop.ini
+*.zip
+*.tar.gz
+*.tgz
+*.7z
+*.rar

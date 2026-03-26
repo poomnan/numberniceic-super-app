@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#FFFFFF"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fitsSystemWindows="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+        android:background="#05581E"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <RelativeLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom">
+
+        <ImageView
+
+            android:src="@drawable/logo_app_header"
+            android:adjustViewBounds="true"
+            android:layout_marginStart="65dp"
+            android:layout_marginEnd="65dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:visibility="gone"
+            android:src="@drawable/logo_circle2"
+            android:adjustViewBounds="true"
+            android:layout_marginStart="65dp"
+            android:layout_marginEnd="65dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+
+    </RelativeLayout>
+
+        <LinearLayout
+            android:background="#154215"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_marginStart="2dp"
+                android:id="@+id/btn_user_register_beside"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:textSize="11sp"
+                android:layout_weight="2"
+                android:backgroundTint="#056409"
+                android:text="ลงทะเบียน" />
+
+            <TextView
+                android:id="@+id/txt_slogan"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:paddingStart="9dp"
+                android:text="v3.24 เพราะชีวิตมีค่า จงเลือกให้ดีที่สุด"
+                android:textColor="#FDD835" />
+
+
+
+        </LinearLayout>
+
+
+
+
+        <LinearLayout
+            android:background="#7CB342"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+            android:paddingStart="9dp"
+            android:background="#7CB342"
+            android:paddingEnd="9dp"
+
+            android:textColor="#ffffff"
+            android:text="ทำนายเบอร์โทรศัพท์"
+            android:textSize="18sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:paddingStart="9dp"
+            android:layout_marginEnd="0dp"
+            android:textColor="#000000"
+            android:background="#ffffff"
+            android:text="การต่อรองทางธุรกิจ ครอบครัว ความรัก คุณมักใช้โทรศัพท์เบอร์นี้ในการสื่อสารใช่หรือไม่? เจ้าเบอร์นี้แหละ มันติดตัวคุณเป็นเงา ที่สนิทยิ่งกว่าแฟน"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+            <TextView
+            android:padding="9dp"
+            android:textColor="#000000"
+                android:background="#ffffff"
+            android:text="ยิ่งใช้ ยิ่งใกล้ชิด ยิ่งสนิท ยิ่งมีอิทธิพล จะดีหรือร้าย ลองพิสูจน์คำทำนายและแก้ไขด้วยตัวคุณเอง"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:background="#C0CA33"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:paddingStart="9dp"
+                android:paddingEnd="9dp"
+
+                android:textColor="#ffffff"
+                android:text="ทำนายชื่อเล่น ชื่อสกุล"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:paddingStart="9dp"
+                android:textColor="#000000"
+                android:background="#ffffff"
+                android:text="ชื่อเล่นมันบ่งบอกว่าเป็นคุณ ตัวบุคคลและและการทำธุรกรรมต่างๆต้องมีชื่อเรียกขานต้องลงนามด้วยชื่อสกุล ท่านทราบไหมว่า ทุกการใช้ทุกการเรียกขาน มันหมายถึงการเรียกเลขกรรมเลขบุญประจำตัวของคุณให้แสดงผลเสมอซ้ำๆ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:padding="9dp"
+                android:textColor="#000000"
+                android:background="#ffffff"
+                android:text="ลองพิสูจน์คำทำนายด้วยตัวคุณเอง จากพลังเลขศาสตร์ พลังเงา และเลขเรียง จากชื่อของคุณ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:background="#AD039BE5"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:paddingStart="9dp"
+                android:paddingEnd="9dp"
+
+                android:textColor="#ffffff"
+                android:text="ทำนายทะเบียนรถ"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:paddingStart="9dp"
+
+                android:textColor="#000000"
+                android:background="#ffffff"
+                android:text="มีเงินซื้อรถราคาเป็นล้าน ประมูลทะเบียนรถราคาเป็นแสนเป็นล้าน แล้วท่านจะซื้อชีวิตและครอบครัวราคาเท่าไหร่ดี ? ชีวิตไม่มีขาย แต่คุณเลือกได้"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:padding="9dp"
+                android:textColor="#000000"
+                android:background="#ffffff"
+                android:text="เลขทะเบียนรถที่โชว์เด่นหราเปรียบเหมือนบัตรประชาชนของรถทุกคัน เขาพาครอบครัวคุณผจญไปทุกที่บนถนน คุณเชื่อใจเขาได้แค่ไหน ??"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:background="#C8FB8C00"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:paddingStart="9dp"
+
+                android:textColor="#ffffff"
+                android:text="ทำนายบ้านเลขที่"
+                android:background="#DB81F3"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:paddingStart="9dp"
+                android:textColor="#000000"
+                android:background="#ffffff"
+                android:text="บ้านเลขที่ที่ใครมาหา หรือผ่านไปมาต่างก็มองเห็นแม้มันจะเป็นเพียงแค่ตัวเลขธรรมดา แต่ถ้ามันมีอิทธิพลต่อชีวิตของคุณละ ถ้ามันมีส่วนกำหนดชะตาชีวิตคุณให้ดีหรือร้าย และมันอาจเป็นภัยที่บ่อนทำลายชีวิตคุณและครอบคร้วได้ทั้งอนาคตและปัจจุบันละ"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:padding="9dp"
+                android:textColor="#000000"
+                android:background="#ffffff"
+                android:text="ีืหลายคนลงทุนซื้อบ้านซื้อคอนโดราคาหลายล้าน ตกแต่งอีกเป็นหมื่นเป็นแสน บ้านที่คุณต้องกลับและหลับนอนทุกวัน ครึ่งนึงของชีวิตทุกคนคือบ้าน จงเลือกสิ่งที่ดีที่สุดที่คุณเลือกได้ "
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+        </LinearLayout>
+
+
+
+
+    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</FrameLayout>

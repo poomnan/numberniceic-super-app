@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการสีกระเป๋ามงคล - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background: var(--card);
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #B8860B;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #334155;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #FFFAF0;
+            color: white;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #334155;
+            cursor: pointer;
+        }
+
+        .user-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .color-input {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .color-circle {
+            width: 100%;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid #334155;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: #94A3B8; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-wallet"></i> จัดการสีกระเป๋า VIP</h1>
+        </div>
+
+        <!-- User Search Section -->
+        <div class="card">
+            <h3>1. ค้นหาสมาชิก</h3>
+            <div class="input-group">
+                <input type="text" id="userSearch" placeholder="ระบุ Username หรือ Member ID...">
+                <button class="btn" onclick="searchUsers()">ค้นหา</button>
+            </div>
+            <div id="userList"></div>
+        </div>
+
+        <!-- Color Assignment Section (Hidden until user selected) -->
+        <div id="colorSection" class="card" style="display:none;">
+            <h3>2. ระบุสีกระเป๋ามงคลให้คุณ <span id="targetUser">...</span></h3>
+            <p style="color:#94A3B8; font-size: 0.9rem;">ระบุรหัสสี (Hex Code) สำหรับกระเป๋าใบที่ 1 และ 2</p>
+
+            <div class="color-grid">
+                <!-- Color Inputs -->
+                <div class="color-input">
+                    <label>สีที่ 1</label>
+                    <input type="color" id="c1" value="#FFFFFF">
+                </div>
+                <div class="color-input">
+                    <label>สีที่ 2</label>
+                    <input type="color" id="c2" value="#FFFFFF">
+                </div>
+                <div class="color-input">
+                    <label>สีที่ 3</label>
+                    <input type="color" id="c3" value="#FFFFFF">
+                </div>
+                <div class="color-input">
+                    <label>สีที่ 4</label>
+                    <input type="color" id="c4" value="#FFFFFF">
+                </div>
+                <div class="color-input">
+                    <label>สีที่ 5</label>
+                    <input type="color" id="c5" value="#FFFFFF">
+                </div>
+                <div class="color-input">
+                    <label>สีที่ 6</label>
+                    <input type="color" id="c6" value="#FFFFFF">
+                </div>
+            </div>
+
+            <div style="margin-top:20px; text-align: right;">
+                <button class="btn" onclick="saveColors()" id="saveBtn">บันทึกและส่งแจ้งเตือน</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+
+        async function searchUsers() {
+            const query = document.getElementById('userSearch').value;
+            const res = await fetch(`/admin/finduser/bagcolor/${query}`);
+            const data = await res.json();
+            const list = document.getElementById('userList');
+            list.innerHTML = '';
+
+            data.result_userz.forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'user-item';
+                div.innerHTML = `
+                    <div>
+                        <b>${user.username}</b> <small>(${user.member_id})</small><br>
+                        <small>${user.realname} ${user.surname}</small>
+                    </div>
+                    <button class="btn" style="padding:5px 10px;" onclick="selectUser('${user.member_id}', '${user.username}')">เลือก</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        async function selectUser(id, name) {
+            currentUserId = id;
+            document.getElementById('targetUser').innerText = name;
+            document.getElementById('colorSection').style.display = 'block';
+
+            // Load existing colors if any
+            const res = await fetch(`/admin/bagcolor/${id}`);
+            const data = await res.json();
+            if (data.color_six_a) {
+                const c = data.color_six_a;
+                if (c.bag_color1) document.getElementById('c1').value = c.bag_color1;
+                if (c.bag_color2) document.getElementById('c2').value = c.bag_color2;
+                if (c.bag_color3) document.getElementById('c3').value = c.bag_color3;
+                if (c.bag_color4) document.getElementById('c4').value = c.bag_color4;
+                if (c.bag_color5) document.getElementById('c5').value = c.bag_color5;
+                if (c.bag_color6) document.getElementById('c6').value = c.bag_color6;
+            }
+        }
+
+        async function saveColors() {
+            const payload = {
+                memberid: currentUserId,
+                age: "0", // Default or current age logic
+                bag_color1a: document.getElementById('c1').value,
+                bag_color2a: document.getElementById('c2').value,
+                bag_color3a: document.getElementById('c3').value,
+                bag_color4a: document.getElementById('c4').value,
+                bag_color5a: document.getElementById('c5').value,
+                bag_color6a: document.getElementById('c6').value
+            };
+
+            const res = await fetch('/admin/bagcolor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert('บันทึกสำเร็จ! กำลังส่งพื้นหลังแจ้งเตือน...');
+                await fetch(`/admin/notifications/send-bag-colors?memberid=${currentUserId}`);
+                alert('ส่งแจ้งเตือนเรียบร้อย');
+            }
+        }
+    </script>
+</body>
+
+</html>

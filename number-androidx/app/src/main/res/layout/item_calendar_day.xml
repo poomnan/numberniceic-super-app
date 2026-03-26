@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_calendar_day_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_calendar_grid_line">
+
+    <!-- ✨ Step 1: Running Magic Sparkle Border (Bottom-most for thin edge light) -->
+    <FrameLayout
+        android:id="@+id/layout_border_marquee"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <View
+            android:id="@+id/view_border_marquee"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="-10dp"
+            android:background="@drawable/bg_calendar_border_marquee" />
+    </FrameLayout>
+
+    <!-- 🪄 Step 2: Background Mask (Defines the strictly thin 1px grid line) -->
+    <View
+        android:id="@+id/view_marquee_mask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="0.5dp"
+        android:background="@drawable/bg_calendar_cell" />
+
+    <!-- 🪄 Step 3: Border Aura: Pulsed glow for highlights (Restricted to thin edge) -->
+    <View
+        android:id="@+id/view_border_aura"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="0.5dp"
+        android:visibility="gone"
+        android:background="@drawable/bg_calendar_cell_highlight" />
+
+    <!-- 📄 Content Layer -->
+    <LinearLayout
+        android:id="@+id/card_calendar_day"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:minHeight="100dp"
+        android:orientation="vertical"
+        android:background="@android:color/transparent"
+        android:padding="2dp">
+
+        <!-- Row 1: Day Number -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/icon_pra"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_alignParentStart="true"
+                android:src="@drawable/buddha"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/icon_sia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/icon_pra"
+                android:text="X"
+                android:textColor="#C62828"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/txt_day_num"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:fontFamily="@font/sarabun_semibold"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="๑๕" />
+        </RelativeLayout>
+
+        <!-- Row 2: Lunar Info -->
+        <TextView
+            android:id="@+id/txt_lunar_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:fontFamily="@font/sarabun_regular"
+            android:textColor="#444444"
+            android:textSize="8sp"
+            android:maxLines="2"
+            tools:text="ขึ้น ๑๕ ค่ำ\nเดือน ๕" />
+
+        <LinearLayout
+            android:id="@+id/flex_badges"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:orientation="vertical"
+            android:gravity="start" />
+
+        <!-- Support IDs -->
+        <TextView android:id="@+id/icon_red_dot" android:layout_width="wrap_content" android:layout_height="wrap_content" android:visibility="gone" />
+        <TextView android:id="@+id/txt_special_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone" />
+        <TextView android:id="@+id/txt_event_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone" />
+        <LinearLayout android:id="@+id/layout_stars" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>

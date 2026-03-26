@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/coor_tabian_home"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.tabian.TabianHomeF">
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#515151">
+
+
+            <LinearLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:background="#FFF"
+                android:orientation="vertical">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#AAA8A8"
+                    android:orientation="vertical">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginEnd="3dp"
+                        android:layout_marginTop="3dp"
+                        app:cardBackgroundColor="#000000"
+                        app:cardCornerRadius="5dp">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="99dp"
+                            android:layout_margin="5dp"
+                            app:cardCornerRadius="5dp">
+
+                            <EditText
+                                android:id="@+id/edt_tabain_home_num"
+                                android:layout_width="match_parent"
+                                android:layout_marginStart="65dp"
+                                android:layout_marginEnd="65dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:fontFamily="@font/sarun"
+                                android:gravity="center"
+                                android:imeOptions="actionDone"
+                                android:digits="abcdefghijklmnopurstuvwxyzABCDEFGHIJKLMNOPURSTUVWXYZกขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ1234567890/"
+                                android:inputType="textFilter"
+                                android:singleLine="true"
+                                android:maxLines="1"
+                                android:maxLength="7"
+
+                                android:textSize="54sp" />
+
+                        </androidx.cardview.widget.CardView>
+                    </androidx.cardview.widget.CardView>
+
+                    <FrameLayout
+                        android:layout_marginTop="3dp"
+                        android:background="#3CA7E6"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/linBottom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="0dp"
+                        android:layout_marginBottom="0dp"
+                        android:orientation="horizontal">
+
+
+                        <com.google.android.material.button.MaterialButton
+                            android:visibility="gone"
+                            android:id="@+id/btn_tabian_home_clear"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ล้าง"
+                            app:backgroundTint="#3CA7E6"
+                            app:cornerRadius="9dp"
+                            app:icon="@drawable/ic_stop_48"
+                            app:iconSize="24dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_tabain_clear"
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="9dp"
+                            android:text="ล้าง"
+                            app:backgroundTint="#3CA7E6"
+                            app:cornerRadius="9dp"
+                            app:icon="@drawable/ic_stop_48"
+                            app:iconSize="18dp" />
+
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_tabian_home_miracle"
+
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="9dp"
+                            android:text="ผลทำนาย"
+                            app:backgroundTint="#3CA7E6"
+                            app:cornerRadius="9dp"
+                            app:icon="@drawable/ic_eye_48"
+                            app:iconSize="18dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_marginStart="9dp"
+                            android:id="@+id/btn_tabian_cal_home"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ถอดรหัส"
+                            app:backgroundTint="#3CA7E6"
+                            app:cornerRadius="9dp"
+                            app:icon="@drawable/ic_clover"
+                            app:iconSize="18dp" />
+
+
+                    </LinearLayout>
+                    </FrameLayout>
+
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFFFFF"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="9dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="9dp"
+                        android:layout_marginTop="4dp"
+                        android:src="@drawable/ic_clover" />
+
+                    <TextView
+                        android:id="@+id/txt_percent_d"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="9dp"
+                        android:text="ติดต่อซื้อทะเบียนรถ หรือ เปิดดวงชะตา"
+                        android:textColor="#04B40B"
+                        android:textSize="14sp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        tools:text="ติดต่อซื้อทะเบียนรถ หรือ เปิดดวงชะตา" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_tabain_add_line"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:text="CLICK"
+                        android:textSize="11sp"
+                        android:textColor="#FFF"
+                        app:backgroundTint="#00b106"
+                        app:chipBackgroundColor="#00b106"
+                        app:chipStrokeColor="#FFF"
+                        app:chipStrokeWidth="2dp"
+                        app:chipStartPadding="20dp"
+                        app:chipEndPadding="20dp"
+                        app:chipMinHeight="44dp" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:background="#f1efef"
+                        android:orientation="vertical">
+
+                        <RelativeLayout
+                            android:padding="4dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#000000">
+
+                            <TextView
+
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
+                                android:padding="3dp"
+                                android:text="เลือกซื้อทะเบียนรถมงคล"
+                                android:textColor="#FAF19F"
+                                android:textSize="18sp" />
+
+
+
+                        </RelativeLayout>
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="2dp"
+                            android:background="#FFFFFF"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="15dp"
+                                android:layout_height="30dp"
+                                android:layout_marginStart="2dp"
+                                android:layout_weight="1"
+                                android:src="@drawable/ic_vip02"
+                                tools:src="@drawable/ic_vip02" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="3dp"
+                                android:layout_weight="8"
+                                android:textStyle="bold"
+                                android:text="ทะเบียนรถมงคล VIP"
+                                android:textColor="#3fa33f"
+                                android:textSize="16sp"
+                                tools:text="ทะเบียนรถมงคล VIP" />
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="2dp"
+                            android:background="#ffffff"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+
+                                <LinearLayout
+                                    android:orientation="vertical"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="horizontal">
+
+                                    <com.google.android.material.card.MaterialCardView
+                                        android:id="@+id/cv_tabian_top1"
+                                        android:layout_width="140dp"
+                                        android:layout_height="65dp"
+                                        android:layout_margin="5dp"
+                                        app:cardBackgroundColor="#FFFFFF"
+                                        app:cardCornerRadius="4dp"
+                                        app:cardElevation="2dp"
+                                        app:strokeColor="#000000"
+                                        app:strokeWidth="2dp">
+
+                                        <LinearLayout
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:gravity="center"
+                                            android:orientation="vertical">
+
+                                            <TextView
+                                                android:id="@+id/tv_plate_top1"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="4กธ 4245"
+                                                android:fontFamily="@font/sarun"
+                                                android:textColor="#000000"
+                                                android:textSize="26sp"
+                                                android:textStyle="bold" />
+
+                                            <TextView
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="กรุงเทพมหานคร"
+                                                android:textColor="#000000"
+                                                android:textSize="12sp"
+                                                android:layout_marginTop="-5dp"/>
+                                        </LinearLayout>
+                                    </com.google.android.material.card.MaterialCardView>
+
+                                    <com.google.android.material.card.MaterialCardView
+                                        android:id="@+id/cv_tabian_top1_2"
+                                        android:layout_width="140dp"
+                                        android:layout_height="65dp"
+                                        android:layout_margin="5dp"
+                                        app:cardBackgroundColor="#FFFFFF"
+                                        app:cardCornerRadius="4dp"
+                                        app:cardElevation="2dp"
+                                        app:strokeColor="#000000"
+                                        app:strokeWidth="2dp">
+
+                                        <LinearLayout
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:gravity="center"
+                                            android:orientation="vertical">
+
+                                            <TextView
+                                                android:id="@+id/tv_plate_top1_2"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="4กฮ 4145"
+                                                android:fontFamily="@font/sarun"
+                                                android:textColor="#000000"
+                                                android:textSize="26sp"
+                                                android:textStyle="bold" />
+
+                                            <TextView
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="กรุงเทพมหานคร"
+                                                android:textColor="#000000"
+                                                android:textSize="12sp"
+                                                android:layout_marginTop="-5dp"/>
+                                        </LinearLayout>
+                                    </com.google.android.material.card.MaterialCardView>
+
+                                </LinearLayout>
+
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_marginTop="5dp"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="horizontal">
+
+                                    <com.google.android.material.card.MaterialCardView
+                                        android:id="@+id/cv_tabian_top2"
+                                        android:layout_width="140dp"
+                                        android:layout_height="65dp"
+                                        android:layout_margin="5dp"
+                                        app:cardBackgroundColor="#FFFFFF"
+                                        app:cardCornerRadius="4dp"
+                                        app:cardElevation="2dp"
+                                        app:strokeColor="#000000"
+                                        app:strokeWidth="2dp">
+
+                                        <LinearLayout
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:gravity="center"
+                                            android:orientation="vertical">
+
+                                            <TextView
+                                                android:id="@+id/tv_plate_top2"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="4กค 4542"
+                                                android:fontFamily="@font/sarun"
+                                                android:textColor="#000000"
+                                                android:textSize="26sp"
+                                                android:textStyle="bold" />
+
+                                            <TextView
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="กรุงเทพมหานคร"
+                                                android:textColor="#000000"
+                                                android:textSize="12sp"
+                                                android:layout_marginTop="-5dp"/>
+                                        </LinearLayout>
+                                    </com.google.android.material.card.MaterialCardView>
+
+                                    <com.google.android.material.card.MaterialCardView
+                                        android:id="@+id/cv_tabian_top2_2"
+                                        android:layout_width="140dp"
+                                        android:layout_height="65dp"
+                                        android:layout_margin="5dp"
+                                        app:cardBackgroundColor="#FFFFFF"
+                                        app:cardCornerRadius="4dp"
+                                        app:cardElevation="2dp"
+                                        app:strokeColor="#000000"
+                                        app:strokeWidth="2dp">
+
+                                        <LinearLayout
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:gravity="center"
+                                            android:orientation="vertical">
+
+                                            <TextView
+                                                android:id="@+id/tv_plate_top2_2"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="4กธ 4542"
+                                                android:fontFamily="@font/sarun"
+                                                android:textColor="#000000"
+                                                android:textSize="26sp"
+                                                android:textStyle="bold" />
+
+                                            <TextView
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:text="กรุงเทพมหานคร"
+                                                android:textColor="#000000"
+                                                android:textSize="12sp"
+                                                android:layout_marginTop="-5dp"/>
+                                        </LinearLayout>
+                                    </com.google.android.material.card.MaterialCardView>
+
+                                </LinearLayout>
+
+
+
+                                <RelativeLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_tabain_all"
+                                        app:chipIcon="@drawable/icon_luckycat"
+                                        android:text="เลือกดูทะเบียนทั้งหมด"
+
+                                        android:textStyle="bold"
+                                        android:layout_marginStart="1dp"
+                                        app:chipBackgroundColor="#F8F7F7"
+                                        app:chipIconSize="36dp"
+                                        android:textColor="#FA801B"
+
+                                        android:layout_width="200dp"
+                                        android:layout_height="45dp" />
+                                </RelativeLayout>
+
+
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1">
+
+
+                            </RelativeLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardRe"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        app:cardElevation="10dp">
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:id="@+id/linHeader"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="#2d2d2d"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/txtHeadTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="#2d2d2d"
+                                    android:paddingStart="10dp"
+                                    android:paddingTop="5dp"
+                                    android:paddingEnd="10dp"
+                                    android:paddingBottom="5dp"
+                                    android:text="@string/tabain_vision"
+                                    android:textColor="#FFF"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/linDesc"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#5c5c5c"
+                                android:orientation="vertical"
+                                android:paddingLeft="16dp"
+                                android:paddingRight="16dp"
+                                android:paddingBottom="16dp">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="1. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@string/tabian_recument01"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="2. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@string/tabian_recoment02"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="3. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@string/tabian_recoment03"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="4. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@string/tabian_recomment04"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="5. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@string/tabian_recoment05"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="6. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@string/tabian_recomment06"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="7. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="@string/tabian_recoment07"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+
+                    <include layout="@layout/item_footer" />
+
+                </LinearLayout>
+
+
+
+
+
+            </LinearLayout>
+
+
+        </androidx.core.widget.NestedScrollView>
+
+
+
+    </FrameLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

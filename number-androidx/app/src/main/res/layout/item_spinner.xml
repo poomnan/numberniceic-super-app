@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:id="@+id/llSpinner"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#bfffb2"
+    >
+
+
+    <ImageView
+        android:id="@+id/imgSpinner"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:layout_marginStart="6dp"
+
+        android:src="@drawable/ic_clover"
+        android:layout_width="30dp"
+        android:layout_height="30dp" />
+
+    <TextView
+        android:layout_marginStart="9dp"
+        android:gravity="center_vertical"
+        android:layout_weight="1"
+        android:id="@+id/txtDay"
+        android:textStyle="bold"
+        android:textColor="#ff6a13"
+        android:text="aDAY"
+        android:textSize="20sp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</LinearLayout>

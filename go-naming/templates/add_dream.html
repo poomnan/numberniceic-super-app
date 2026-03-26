@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เพิ่มความฝัน - OpenClaw Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background: #1E293B;
+            border-bottom: 1px solid #334155;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #A78BFA;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .dream-list {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .dream-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .dream-keyword {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .dream-meta {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo" style="color: #A78BFA; text-decoration: none;">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div class="nav-right" style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: #94A3B8; text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>🌙 เพิ่มความฝัน</h1>
+        <p class="subtitle">ระบบจัดการข้อมูลการทำนายฝัน OpenClaw (แบบง่าย)</p>
+
+        <div id="message" class="message"></div>
+
+        <form id="dreamForm">
+            <div class="form-group">
+                <label>ชื่อฝัน <span class="required">*</span></label>
+                <input type="text" id="dreamKeyword" required placeholder="เช่น: กระต่าย, กระจก, งู">
+                <div class="helper-text">ชื่อฝันที่ใช้ในการค้นหา (ห้ามซ้ำ)</div>
+            </div>
+
+            <div class="form-group">
+                <label>คำทำนาย <span class="required">*</span></label>
+                <textarea id="dreamInterpretation" required placeholder="คำทำนายโดยละเอียด..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>เลขนำโชค</label>
+                <input type="text" id="luckyNumbers" placeholder="เช่น: 14, 34, 334, 034">
+                <div class="helper-text">คั่นด้วยเครื่องหมายจุลภาค (,)</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">💾 บันทึกความฝัน</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.reload()">🔄 ล้างฟอร์ม</button>
+            <a href="/" class="btn btn-secondary"
+                style="display: block; text-decoration: none; text-align: center; margin-top: 10px;">🏠 กลับหน้าแรก</a>
+        </form>
+
+        <div class="dream-list" id="dreamList">
+            <h2>รายการความฝันทั้งหมด</h2>
+            <div id="dreamsContainer">กำลังโหลด...</div>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            msg.style.display = 'block';
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 5000);
+        }
+
+        async function loadDreams() {
+            try {
+                const response = await fetch('/get-all-dreams');
+                const dreams = await response.json();
+
+                const container = document.getElementById('dreamsContainer');
+                if (dreams.length === 0) {
+                    container.innerHTML = '<p style="color: #999;">ยังไม่มีข้อมูลความฝัน</p>';
+                    return;
+                }
+
+                container.innerHTML = dreams.map(dream => `
+                    <div class="dream-item">
+                        <div class="dream-keyword">${dream.dream_keyword}</div>
+                        <div style="font-size: 14px; margin: 5px 0; color: #555;">${dream.dream_interpretation}</div>
+                        <div class="dream-meta">
+                            เลขนำโชค: ${dream.lucky_numbers || '-'} | 
+                            ดู: ${dream.view_count} ครั้ง |
+                            <span style="color: ${dream.has_vector ? '#27ae60' : '#c0392b'}; font-weight: bold;">
+                                ${dream.has_vector ? '✅ Vector พร้อม' : '❌ API Error'}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('dreamsContainer').innerHTML = '<p style="color: #e74c3c;">เกิดข้อผิดพลาด</p>';
+            }
+        }
+
+        document.getElementById('dreamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                dream_keyword: document.getElementById('dreamKeyword').value.trim(),
+                dream_interpretation: document.getElementById('dreamInterpretation').value.trim(),
+                lucky_numbers: document.getElementById('luckyNumbers').value.trim()
+            };
+
+            try {
+                const response = await fetch('/add-dream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage('✅ บันทึกความฝันสำเร็จ! ID: ' + result.dream_id, 'success');
+                    document.getElementById('dreamForm').reset();
+                    loadDreams();
+                } else {
+                    const error = await response.text();
+                    showMessage('❌ เกิดข้อผิดพลาด: ' + error, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์', 'error');
+            }
+        });
+
+        // Load dreams on page load
+        loadDreams();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout android:background="@color/bg_mainact"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.namenick.NameNickIndexF"
+    android:id="@+id/coordinator_nickname"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <FrameLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:context=".ui.namenick.NameNickF">
+
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nestScView"
+
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#FFFFFF"
+                    android:orientation="vertical">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_margin="6dp"
+                        app:cardBackgroundColor="#8FFFFFFF"
+                        app:cardCornerRadius="6dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#ffb042"
+                                android:orientation="horizontal">
+
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="2"
+
+                                    android:fontFamily="@font/browa_0"
+                                    android:layout_marginStart="10dp"
+                                    android:textStyle="bold"
+                                    android:gravity="start|center_vertical"
+                                    android:text="เลือกวันเกิด "
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="28sp" />
+
+
+                                <Spinner
+                                    android:id="@+id/days_spinner_index_nickname"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_weight="1" />
+
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:orientation="horizontal"
+
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:layout_marginStart="9dp"
+                                    android:text="พิมพ์ชื่อเล่น : "
+                                    android:textSize="24sp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/edt_nickname_index"
+                                    android:layout_width="160dp"
+                                    android:layout_height="wrap_content"
+
+                                    android:fontFamily="@font/browa_0"
+
+                                    android:hint="ชื่อเล่น"
+
+                                    android:imeOptions="actionDone"
+
+                                    android:inputType="text"
+                                    android:maxLength="10"
+                                    android:maxLines="1"
+                                    android:textSize="36sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:background="#FDD835"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/input_layout_surname"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+
+                                </com.google.android.material.textfield.TextInputLayout>
+
+
+                                <LinearLayout
+                                    android:id="@+id/linBottom"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_horizontal"
+                                    android:layout_marginTop="0dp"
+                                    android:layout_marginBottom="0dp"
+                                    android:orientation="horizontal">
+
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_nickname_clear_index"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="ล้างข้อมูล"
+                                        app:backgroundTint="#FDD835"
+                                        app:cornerRadius="9dp"
+                                        app:icon="@drawable/ic_stop_48"
+                                        app:iconSize="24dp" />
+
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btn_nickname_cal_index"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="9dp"
+                                        android:text="ถอดรหัส"
+                                        app:backgroundTint="#FDD835"
+                                        app:cornerRadius="9dp"
+                                        app:icon="@drawable/ic_clover"
+                                        app:iconSize="24dp" />
+
+
+                                </LinearLayout>
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="bottom"
+                                    android:background="#ffb042"
+
+                                    android:textColor="#FFF"
+                                    android:textSize="11sp" />
+
+
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#FAF9F6"
+                            android:orientation="horizontal"
+                            android:padding="5dp">
+
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="9dp"
+                                android:layout_marginTop="4dp"
+                                android:src="@drawable/ic_clover" />
+
+                            <TextView
+
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_horizontal"
+
+                                android:padding="9dp"
+                                android:text="ติดต่อเพื่อตั้งชื่อสกุล หรือ เปิดดวงชะตา"
+                                android:textColor="#04B40B"
+
+                                android:textSize="@dimen/titlebox"
+                                tools:text="ติดต่อเพื่อตั้งชื่อสกุล หรือ เปิดดวงชะตา"
+
+                                />
+
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_nickname_add_line"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="CLICK"
+                                android:textColor="#FFF"
+                                app:chipBackgroundColor="#00b106"
+                                app:chipStrokeColor="#FFF"
+                                app:chipStrokeWidth="2dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardRe"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="3dp"
+                        app:cardElevation="10dp">
+
+
+                        <com.battleent.ribbonviews.RibbonLayout
+                            android:id="@+id/ribbonLayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            app:bottom_height="100"
+                            app:bottom_padding="11"
+                            app:bottom_ribbonColor="@color/pale_magenta_90"
+                            app:bottom_text="Updated today"
+                            app:bottom_textColor="@android:color/white"
+                            app:bottom_textSize="18"
+                            app:header_padding="9"
+
+                            app:header_ribbonColor="#3a9900"
+                            app:header_ribbonRadius="6"
+
+                            app:header_text="หลักการเบื้องต้นในการตั้งชื่อเล่น"
+                            app:header_textColor="@android:color/white"
+                            app:header_textSize="16"
+                            app:show_bottom="false"
+                            app:show_header="false">
+
+                            <LinearLayout
+                                android:id="@+id/linHeader"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="#2d2d2d"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="#3a9900"
+                                    android:fontFamily="@font/browa_0"
+                                    android:paddingStart="10dp"
+                                    android:paddingTop="5dp"
+                                    android:paddingEnd="10dp"
+                                    android:paddingBottom="5dp"
+                                    android:text="หลักการเบื้องต้นในการตั้งชื่อเล่น"
+                                    android:textColor="#FFF"
+                                    android:textSize="20sp" />
+
+                                <TextView
+                                    android:id="@+id/txtHeadTitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:visibility="gone"
+                                    android:text="สิ่งที่ต้องคำนึงถึง"
+                                    android:textColor="#FFF"
+                                    android:textSize="16sp" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/linDesc"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_below="@+id/linHeader"
+                                android:background="#5c5c5c"
+                                android:orientation="vertical"
+                                android:paddingLeft="16dp"
+                                android:paddingRight="16dp"
+                                android:paddingBottom="16dp"
+                                android:visibility="visible">
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="1. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="สำคัญมาก บ้านเลขที่ต้องถูกโฉลกกับเจ้าชะตา โดยต้องดูจากวันเดือนปีเกิด เวลาเกิด จังหวัดที่เกิดของเจ้าชะตาเท่านั้น และที่สำคัญห้ามลืม ต้องไม่ใช่เลขกรรม หรือเลขร้ายอันตรายตรงกับเลขอื่นๆ ที่ติดตามในชีวิตตนอยู่แล้ว เช่น ในเบอร์โทรศัพท์ ในชื่อเล่น ในชื่อจริงนามสกุล ดังนั้น บ้านเลขที่ที่จะใช้ ต้องไม่มีเลขร้าย เพิ่มขึ้นมาอีกซ้ำเติมดวงเด็ดขาด เพราะจะทำให้เจ้าชะตา ต้องเจอกับเรื่องร้ายๆที่มีความหมายตรงตามเลขร้ายง่ายขึ้น บ่อยขึ้น เร็วขึ้น แรงขึ้น เป็นต้น"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="2. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="สำคัญมากเลขเรียงต้องดี ไม่มีเลขคู่อันตราย จับคู่สลับหน้าสลับหลังแล้วต้องดี โดยเฉพาะถ้าเป็นเลขร้ายหรือมีความหมายที่ไปตรงกับเลขร้ายๆ ที่มีอยู่แล้วในเบอร์โทรศัพท์ ชื่อเล่น ชื่อจริงนามสกุล บ้านเลขที่เดิม เพราะถ้าเป็นเช่นนั้นความรุนแรงของเลขจะเพิ่มขึ้น แม้มีเลขดีอยู่บ้างพอสมควร ความดีความเฮงก็จะลดทอนลงเพราะมีเลขร้ายมาดึงหน่วงเพิ่มเติม และชีวิตของเขาก็จะต้องเจอทั้งเรื่องดีและร้ายตรงเลขทั้งดีและร้ายแน่นอน"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="3. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="สำคัญผลรวมเลขต้องดี ไม่ใช่เลขร้ายอันตราย และต้องไม่ใช่เลขกรรมที่ตามติด....ระวัง!! ก่อนทำการเปลี่ยนป้ายบ้านเลขที่ เจ้าของบ้านควรใช้ฤกษ์ดีตรงโฉลกในการถอดป้ายเก่า และติดป้ายใหม่จึงจะดีที่สุด"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="4. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="เลขตัวแรกกับเลขตัวสุดท้ายของบ้านเลขที่เมื่อจับคู่กัน และนำมาบวกกันแล้ว ต้องได้เลขดี เช่น 42/45 เลขตัวแรกคือ 4 เลขตัวสุดท้าย คือ 5 เมื่อจับคู่กันได้ 45 และเมื่อบวกกันยังได้ 9 ซึ่งเป็นเลขศุภเคราะห์อีกนี่ดีมาก"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="5. "
+                                        android:textColor="#F7E337"
+                                        android:textSize="20sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+
+                                        android:fontFamily="@font/browa_0"
+                                        android:text="ที่ดีที่สุด ปลอดภัยที่สุด บ้านเลขที่ต้องเน้นความปลอดภัยและคุ้มครองดวงเป็นหลัก
+และบ้านเลขที่ที่ดีที่สุดควรส่งเสริมหนุนนำเจ้าของให้ได้ดีมีสุขครบทุกด้าน คือ เงินงาน ความรัก ความสุข และต้องมีเลขคุ้มครองชะตา ช่วยยืดอายุ ต่อเวลา เสริมสุขภาพและช่วยให้แคล้วคลาดไว้ด้วยโดยต้องมีคู่หนึ่งคู่ใดเป็นเลขคุ้มครอง(ไม่ซวยหนักดวงถึงฆาตหนักจริงๆจะรอดได้) สรุปแล้วบ้านเลขที่ที่ดีที่สุด เป็นเลขดี 100% ไม่มีเสนียดติด ต้องมีคุณสมบัติต้องได้เลขดีครบทั้งหมดทุกข้อจากที่กล่าวมาบวกด้วย"
+                                        android:textColor="#FFF"
+                                        android:textSize="20sp" />
+                                </LinearLayout>
+
+
+                            </LinearLayout>
+
+                        </com.battleent.ribbonviews.RibbonLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+                    <include layout="@layout/item_footer" />
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+        </FrameLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>

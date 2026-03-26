@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เลขมงคลประจำวัน - ananya.in.th</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Prompt:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #198754;
+            --secondary: #20c997;
+            --bg-light: #f0fdf4;
+            --text-dark: #064e3b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Outfit', 'Prompt', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            background-image:
+                radial-gradient(at 0% 0%, #dcfce7 0, transparent 50%),
+                radial-gradient(at 100% 0%, #bbf7d0 0, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .lucky-card {
+            background: white;
+            border-radius: 32px;
+            padding: 4rem 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(25, 135, 84, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lucky-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary), var(--text-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+        }
+
+        .lucky-numbers {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .number-box {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            box-shadow: 0 10px 20px rgba(25, 135, 84, 0.2);
+            transition: transform 0.3s;
+            animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+        }
+
+        .number-box:hover {
+            transform: translateY(-10px) rotate(5deg);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .disclaimer {
+            margin-top: 3rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        @media (max-width: 600px) {
+            .number-box {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+                gap: 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <?php include 'web_menu.php'; ?>
+    <div class="container">
+        <div class="lucky-card">
+            <h1>เลขมงคลประจำวัน</h1>
+            <p class="subtitle">ศาสตร์แห่งตัวเลขเพื่อเสริมดวงชะตาและโชคลาภ</p>
+
+            <div class="lucky-numbers">
+                <?php
+                $numArr = explode(' ', $numbers);
+                foreach ($numArr as $index => $num): ?>
+                    <div class="number-box" style="animation-delay: <?= $index * 0.1 ?>s">
+                        <?= $num ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="disclaimer">
+                <i class="fas fa-info-circle"></i> ข้อมูลนี้เป็นความเชื่อส่วนบุคคล โปรดใช้วิจารณญาณในการรับชม
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

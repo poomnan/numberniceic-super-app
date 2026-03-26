@@ -1,0 +1,1137 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bgr">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFF"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="0.5dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginBottom="0.5dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RelativeLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <FrameLayout
+                        android:id="@+id/frame_name_user"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#DDD8C0"
+                        android:padding="0dp">
+
+                        <LinearLayout
+                            android:id="@+id/card_name_user"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/ripple_recycler"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:orientation="horizontal"
+                            android:padding="4dp">
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:text="สวัสดี"
+                                android:textColor="#2F3A10"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:id="@+id/txt_name_user"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:text="คุณน้ำหอม"
+                                android:textColor="#0091EA"
+                                android:textSize="20sp" />
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:text="คุณเกิด"
+                                android:textColor="#373D26"
+                                android:textSize="18sp" />
+
+                            <TextView
+                                android:id="@+id/txt_day_birth"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:text="วันอาทิตย์"
+                                android:textColor="#0091EA"
+                                android:textSize="20sp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_day_birth"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
+                                android:text="ใส่วันเกิด"
+                                android:visibility="gone" />
+
+                            <ImageView
+                                android:id="@+id/img_birth_light"
+                                android:layout_width="35dp"
+                                android:layout_height="35dp"
+                                android:layout_marginStart="14dp"
+                                android:src="@drawable/moon" />
+
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_marginStart="14dp"
+                                android:src="@drawable/tambon"
+                                android:visibility="gone" />
+
+
+                        </LinearLayout>
+
+                    </FrameLayout>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/card_bag_color"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ripple_recycler"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <LinearLayout
+                        android:id="@+id/linear_color_bag"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="start"
+                        android:orientation="horizontal">
+
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <com.numberniceic.ui.bag.BagColorView
+                                android:id="@+id/view_bag_color"
+                                android:layout_width="190dp"
+                                android:layout_height="190dp"
+                                android:layout_marginStart="6dp" />
+
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/txt_title_luckynumber"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="9dp"
+                                    android:textColor="#64DD17"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    tools:text="เลขนำโชค:" />
+
+
+                                <TextView
+                                    android:id="@+id/txt_lucky_number"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:textColor="#FF6D00"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    tools:text="11, 19, 59, 15, 29, 26" />
+
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="5dp">
+
+                            <TextView
+                                android:id="@+id/txt_age_yang"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/browa_0"
+                                android:textColor="#6F6C6A"
+                                android:textSize="21sp"
+                                android:textStyle="bold"
+                                tools:text="อายุย่าง 36 ปี" />
+
+                            <TextView
+                                android:id="@+id/txt_bag_desc"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/browa_0"
+                                android:textColor="#6F6C6A"
+                                android:textSize="21sp"
+                                tools:text="สีกระเป๋าเงินและกระเป๋าสะพายเสริมดวงชะตาของคุณประจำปีนี้ เรียงตามลำดับ คือ" />
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="0dp"
+                                android:layout_marginBottom="1dp"
+                                app:cardCornerRadius="15dp">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:background="#E4E4E2"
+                                    android:orientation="horizontal"
+                                    android:padding="5dp">
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/bagcolor01"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_gravity="center"
+                                        app:chipBackgroundColor="#D8D6D6" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/bagcolor02"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#D8D6D6" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/bagcolor03"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#D8D6D6" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/bagcolor04"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#D8D6D6" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/bagcolor05"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#D8D6D6" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/bagcolor06"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#D8D6D6" />
+
+                                </LinearLayout>
+                            </androidx.cardview.widget.CardView>
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="0.5dp"
+                    android:background="@android:color/darker_gray" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFF"
+                    android:orientation="vertical">
+
+
+                    <LinearLayout
+
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#DDD8C0">
+
+
+                            <LinearLayout
+                                android:id="@+id/linear_rengyam"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/ripple_recycler"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:padding="2dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_marginStart="2dp"
+                                    android:src="@drawable/valentines_day" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="2dp"
+                                    android:text="วันนี้"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+                                 <TextView
+                                    android:id="@+id/txt_current_day2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="2dp"
+                                    android:text="วันศุกร์"
+                                    android:textColor="#000000"
+                                    android:textSize="16sp" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="2dp"
+                                    android:text="ที่"
+                                    android:textColor="#000000"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:id="@+id/txt_current_daynum2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="2dp"
+                                    android:text="11"
+                                    android:textColor="#000000"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:id="@+id/txt_current_mount2"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="2dp"
+                                    android:text="มกราคม"
+                                    android:textColor="#000000"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:id="@+id/txt_current_year2"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="2dp"
+                                    android:layout_weight="1"
+                                    android:textColor="#000000"
+                                    android:textSize="14sp"
+                                    tools:text="2562" />
+
+
+
+
+
+                                </LinearLayout>
+    
+                        </FrameLayout>
+    
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/linear_do_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:background="@android:color/darker_gray" />
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#EBE8D5"
+                            android:orientation="horizontal"
+                            android:padding="4dp">
+
+                            <ImageView
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+                                android:layout_marginStart="6dp"
+                                android:src="@drawable/closet" />
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
+                                android:text="สีเสื้อผ้าอาภรณ์ที่คุณควรสวมใส่ คือ"
+                                android:textColor="#000000"
+                                android:textSize="16sp" />
+
+                        </LinearLayout>
+
+
+                        <LinearLayout
+                            android:id="@+id/layout_color_seemongkol_d"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/ripple_recycler"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingBottom="3dp"
+                            android:paddingTop="3dp">
+
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/approval" />
+
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="1dp"
+                                app:cardCornerRadius="15dp">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="#E4E4E2"
+                                    android:orientation="horizontal"
+                                    android:padding="9dp">
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color1"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color2"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color3"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color4"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color5"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color6"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color7"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                </LinearLayout>
+
+                            </androidx.cardview.widget.CardView>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="9dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="เป็นสีมงคลเสริมดวงคุณในวันนี้"
+                                android:textColor="#489B15"
+                                android:textSize="21sp" />
+
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="3dp"
+                            android:layout_marginTop="0dp"
+                            android:layout_marginEnd="3dp"
+                            android:layout_marginBottom="0dp"
+                            android:background="@android:color/darker_gray" />
+
+                        <LinearLayout
+                            android:id="@+id/layout_color_seemongkol_r"
+                            android:background="@drawable/ripple_recycler"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="5dp">
+
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/delete" />
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="1dp"
+                                app:cardCornerRadius="15dp">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="#F0F0ED"
+                                    android:orientation="horizontal"
+                                    android:padding="9dp">
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color_anti1"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color_anti2"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color_anti3"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color_anti4"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color_anti5"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color_anti6"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                    <com.google.android.material.chip.Chip
+                                        android:id="@+id/chip_color_anti7"
+                                        android:layout_width="15dp"
+                                        android:layout_height="15dp"
+                                        android:layout_gravity="center"
+                                        android:layout_marginStart="3dp"
+                                        app:chipBackgroundColor="#FFFFFF" />
+
+                                </LinearLayout>
+
+                            </androidx.cardview.widget.CardView>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="9dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="เป็นสีอัปมงคลของคุณในวันนี้"
+                                android:textColor="#F80303"
+                                android:textSize="21sp" />
+
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+
+                            android:background="@android:color/darker_gray" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#EBE8D5"
+                            android:orientation="horizontal"
+                            android:padding="4dp">
+
+                            <ImageView
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+                                android:layout_marginStart="6dp"
+                                android:src="@drawable/icon_clover" />
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="3dp"
+                                android:text="เพื่อความเป็นสิริมงคลของชีวิตคุณ"
+                                android:textColor="#000000"
+                                android:textSize="16sp" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="horizontal"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <ImageView
+                                android:id="@+id/img_sapom"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/delete" />
+
+                            <TextView
+                                android:id="@+id/txt_sapom"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/browa_0"
+                                android:textColor="#F80303"
+                                android:textSize="21sp"
+                                tools:text="คุณ &quot;ห้ามสระผม&quot; ในวันนี้ ไม่ดี" />
+
+                            <ImageView
+                                android:id="@+id/img_do_sapom"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="3dp"
+                                android:src="@drawable/hair_washing" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_readmore_sapom"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="15dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="เพราะ..."
+                                android:textSize="17sp"
+                                app:chipMinHeight="28dp"
+                                app:ensureMinTouchTargetSize="false"
+                                app:chipBackgroundColor="#EAEBE9" />
+
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="3dp"
+                            android:layout_marginEnd="3dp"
+                            android:layout_marginBottom="3dp"
+                            android:background="@android:color/darker_gray" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="horizontal"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <ImageView
+                                android:id="@+id/img_cut_nail"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/delete" />
+
+                            <TextView
+                                android:id="@+id/txt_cut_nail"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/browa_0"
+                                android:textColor="#F80303"
+                                android:textSize="21sp"
+                                tools:text="คุณ &quot;ห้ามตัดเล็บ&quot; ในวันนี้ ไม่ดี" />
+
+                            <ImageView
+                                android:id="@+id/img_do_nail"
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+                                android:layout_marginStart="3dp"
+                                android:src="@drawable/nail" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_readmore_cutnail"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="15dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="เพราะ..."
+                                android:textSize="17sp"
+                                app:chipMinHeight="28dp"
+                                app:ensureMinTouchTargetSize="false"
+                                app:chipBackgroundColor="#EAEBE9" />
+
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="3dp"
+                            android:layout_marginEnd="3dp"
+                            android:layout_marginBottom="3dp"
+                            android:background="@android:color/darker_gray" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="horizontal"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <ImageView
+                                android:id="@+id/img_cuthair"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/delete" />
+
+                            <TextView
+                                android:id="@+id/txt_cuthair"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/browa_0"
+                                android:textColor="#F80303"
+                                android:textSize="21sp"
+                                tools:text="คุณ &quot;ห้ามตัดผม&quot; ในวันนี้ ไม่ดี" />
+
+                            <ImageView
+                                android:id="@+id/img_do_haircut"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="3dp"
+                                android:src="@drawable/hair_cut" />
+
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_readmore_cuthair"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="15dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="เพราะ..."
+                                android:textSize="17sp"
+                                app:chipMinHeight="28dp"
+                                app:ensureMinTouchTargetSize="false"
+                                app:chipBackgroundColor="#EFF0ED" />
+
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="3dp"
+                            android:layout_marginEnd="3dp"
+                            android:layout_marginBottom="3dp"
+                            android:background="@android:color/darker_gray" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="horizontal"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <ImageView
+                                android:id="@+id/img_parmai"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/delete" />
+
+                            <TextView
+                                android:id="@+id/txt_parmai"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/browa_0"
+                                android:textColor="#F80303"
+                                android:textSize="21sp"
+                                tools:text="คุณ &quot;ห้ามใส่ผ้าใหม่&quot; ในวันนี้ ไม่ดี" />
+
+                            <ImageView
+                                android:id="@+id/img_do_parmai"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="3dp"
+                                android:src="@drawable/shirt" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_readmore_parmai"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="15dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="เพราะ..."
+                                android:textSize="17sp"
+                                app:chipMinHeight="28dp"
+                                app:ensureMinTouchTargetSize="false"
+                                app:chipBackgroundColor="#EFF0ED" />
+
+
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.5dp"
+                            android:layout_marginStart="3dp"
+                            android:layout_marginEnd="3dp"
+                            android:layout_marginBottom="3dp"
+                            android:background="@android:color/darker_gray" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="1dp"
+                            android:layout_marginEnd="1dp"
+                            android:layout_marginBottom="9dp"
+                            android:gravity="center"
+                            android:orientation="horizontal"
+                            android:paddingTop="3dp"
+                            android:paddingBottom="3dp">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/ic_evil00" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="&quot;ห้ามตัดเล็บตัดผม&quot; ตอนกลางคืน"
+                                android:textColor="#F80303"
+                                android:textSize="21sp" />
+
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_readmore_night"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="15dp"
+                                android:fontFamily="@font/browa_0"
+                                android:text="เพราะ..."
+                                android:textSize="17sp"
+                                app:chipMinHeight="28dp"
+                                app:ensureMinTouchTargetSize="false"
+                                app:chipBackgroundColor="#EAEBE9" />
+
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+                    <!-- linear do -->
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/frame_news"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFD600"
+            android:padding="2dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="4dp">
+
+                <ImageView
+                    android:id="@+id/img_news"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="14dp"
+                    android:src="@drawable/newspaper" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="ข่าวและบทความที่น่าสนใจ"
+                    android:textColor="#2F3A10"
+                    android:textSize="18sp" />
+
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+
+        <include layout="@layout/layout_news" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#59C514"
+            android:orientation="horizontal"
+            android:padding="9dp">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/newspaper" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Reviews และ Feedback จากลูกค้าของเรา"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+
+
+        </LinearLayout>
+
+        <include layout="@layout/layout_news_reviews" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#AE46C7"
+            android:orientation="horizontal"
+            android:padding="9dp">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/newspaper" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="บทความที่น่าสนใจเกี่ยวกับเบอร์โทรศัพท์"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+
+
+        </LinearLayout>
+
+        <include layout="@layout/layout_news_phonenum" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFAB00"
+            android:orientation="horizontal"
+            android:padding="9dp">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/newspaper" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="บทความที่น่าสนใจเกี่ยวกับชื่อเล่น ชื่อสกุล"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+
+
+        </LinearLayout>
+
+        <include layout="@layout/layout_news_namesur" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#0091EA"
+            android:orientation="horizontal"
+            android:padding="9dp">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/newspaper" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="บทความที่น่าสนใจเกี่ยวกับทะเบียนรถ"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <include layout="@layout/layout_news_tabian" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#DF51EE"
+            android:orientation="horizontal"
+            android:padding="9dp">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/newspaper" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="บทความที่น่าสนใจเกี่ยวกับบ้านเลขที่"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <include layout="@layout/layout_news_homenum" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#479C0F"
+            android:orientation="horizontal"
+            android:padding="9dp">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/newspaper" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="หลักการและวิธีเลือกเลขมงคลให้ถูกโฉลก"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <include layout="@layout/layout_news_numberconcept" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

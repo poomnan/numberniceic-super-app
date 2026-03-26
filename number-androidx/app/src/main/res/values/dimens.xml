@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="drawer_screen_width">240dp</dimen>
+
+    <dimen name="titlebox">16sp</dimen>
+    <dimen name="headbox">18sp</dimen>
+    <dimen name="circurPair">16sp</dimen>
+    <dimen name="xbonuscon">16sp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="sizefontsat">18sp</dimen>
+
+    <dimen name="nav_header_text_margin_left">16dp</dimen>
+    <dimen name="nav_header_height">192dp</dimen>
+    <dimen name="grade_end_margin">9dp</dimen>
+    <dimen name="txt_report_sum">16sp</dimen>
+
+    <dimen name="border_report_box">0.5dp</dimen>
+    <dimen name="txt_size_nick_vip_list">16sp</dimen>
+</resources>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Standard Meta -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <!-- Site Properties -->
+    <title>ananya.in.th</title>
+
+    <link rel="stylesheet" type="text/css" href="/views/semantic/semantic.min.css">
+    <script src="/views/semantic/semantic.min.js"></script>
+
+
+</head>
+
+<body>
+
+
+
+    <img class="ui fluid image" src="<?= $data['news_pic_header'] ?>">
+
+
+
+
+
+    <div class="ui attached segment">
+        <h3 class="ui dividing header orange"><?= $data['news_headline'] ?></h3>
+        <p><?= $data['news_detail'] ?></p>
+
+        <a class="ui label">
+            <img class="ui right spaced avatar image" src="https://numberniceic.online/views/assets/images/nin2.jpg">
+            เขียนโดย <?= $data['auth'] ?> วันที่: <?= $data['news_date'] ?>
+        </a>
+
+    </div>
+
+</body>
+
+</html>

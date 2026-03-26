@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.apersonnews.Clothcolor3df">
+    <data>
+        <variable
+            name="clothColor3dObs"
+            type="com.numberniceic.ui.apersonnews.ClothColor3dObs"/>
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        android:layout_margin="8dp">
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/container_all_cloth"
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="16dp">
+
+                    <!-- Title Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#F0F0F0"
+                        android:padding="16dp"
+                        android:gravity="center">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/closet" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="สีเสื้อผ้า 3 วันล่วงหน้า"
+                            android:textColor="#333333"
+                            android:textStyle="bold"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+
+                    <!-- Day 1 (Tomorrow) -->
+                    <include layout="@layout/item_cloth_day_section"
+                        app:title="@{clothColor3dObs.clothColorTitle}"
+                        android:id="@+id/day1_section" />
+
+                    <!-- Day 2 (Day After) -->
+                    <include layout="@layout/item_cloth_day_section"
+                        app:title="@{clothColor3dObs.clothColorTitleX1}"
+                        android:id="@+id/day2_section" />
+
+                    <!-- Day 3 (Two Days After) -->
+                    <include layout="@layout/item_cloth_day_section"
+                        app:title="@{clothColor3dObs.clothColorTitleX2}"
+                        android:id="@+id/day3_section" />
+
+
+
+                </LinearLayout>
+
+                <!-- Close Button -->
+                <ImageView
+                    android:id="@+id/btn_close"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:padding="8dp"
+                    android:src="@drawable/cancel"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Close" />
+
+            </RelativeLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.cardview.widget.CardView>
+</layout>

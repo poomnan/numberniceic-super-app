@@ -1,0 +1,132 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+
+
+android {
+    namespace 'com.numberniceic'
+    compileSdk rootProject.compile_sdk
+    defaultConfig {
+        applicationId "com.numberniceic"
+        minSdk rootProject.min_sdk
+        targetSdk rootProject.target_sdk
+        versionCode 55
+        versionName "5.9 vc9"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("/Users/tayap/KeyStoreNumberniceIc.jks")
+            storePassword "IntelliP24.X"
+            keyAlias "key0"
+            keyPassword "IntelliP24.X"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    buildFeatures {
+        dataBinding true
+        viewBinding true
+        compose true
+        buildConfig true
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "NumberNice_v${variant.versionName}_vc${variant.versionCode}.apk"
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    // Compose Dependencies
+    def composeBom = platform('androidx.compose:compose-bom:2024.09.00')
+    implementation composeBom
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    implementation 'androidx.activity:activity-compose:1.9.2'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5'
+    implementation 'androidx.compose.runtime:runtime-livedata' // For observing LiveData
+    implementation 'androidx.navigation:navigation-compose:2.8.2'
+    implementation 'io.coil-kt:coil-compose:2.7.0' // Modern image loading for Compose
+    implementation 'io.coil-kt:coil-gif:2.7.0' // Support for Animated GIF/WebP
+
+    implementation 'androidx.emoji2:emoji2:1.5.0'
+    implementation 'androidx.emoji2:emoji2-bundled:1.5.0'
+
+    implementation 'net.danlew:android.joda:2.10.1.1'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
+    
+
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+    // Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
+
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    kapt 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'com.github.bumptech.glide:compose:1.0.0-beta01' // Glide for Compose
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.16.0'
+    
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-common:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+
+    implementation 'androidx.core:core-ktx:1.15.0'
+
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.github.skydoves:colorpickerview:2.3.0'
+    
+    // Rich Text Editor
+    implementation 'jp.wasabeef:richeditor-android:2.0.0'
+
+    // WorkManager for background tasks
+    implementation "androidx.work:work-runtime-ktx:2.9.1"
+
+    // Flexbox
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
+}
+
+apply plugin: 'com.google.gms.google-services'

@@ -1,0 +1,269 @@
+/* Monochrome Gold Theme for ชื่อดี.com - Matching Flutter App */
+:root {
+    /* Gold Monochrome Color Palette */
+    --primary-gold: #D4AF37;
+    --dark-gold: #B8860B;
+    --bright-gold: #FFD700;
+    --light-gold: #FFED85;
+    --pale-gold: #FFF3C4;
+    
+    /* Background Colors */
+    --bg-cream: #FFF8E1;
+    --bg-darker-cream: #FFF3C4;
+    --bg-light-cream: #FFFAF0;
+    
+    /* Text Colors */
+    --text-dark: #2C1810;
+    --text-gray: #5D4037;
+    --text-light: #7D5E3C;
+    --text-on-gold: #1A0D07;
+    
+    /* Utility Colors */
+    --success: #388E3C;
+    --error: #D32F2F;
+    --warning: #F57C00;
+    --info: #1976D2;
+    
+    /* Glass Effects */
+    --glass-gold: rgba(212, 175, 55, 0.15);
+    --glass-border: rgba(212, 175, 55, 0.3);
+    
+    /* Gradients */
+    --gold-gradient: linear-gradient(135deg, var(--dark-gold), var(--primary-gold), var(--bright-gold));
+    --light-gradient: linear-gradient(135deg, var(--bg-cream), var(--bg-light-cream));
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(44, 24, 16, 0.1);
+    --shadow-md: 0 4px 16px rgba(44, 24, 16, 0.15);
+    --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.2);
+    --gold-glow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Prompt', 'Sarabun', sans-serif;
+    background: var(--bg-cream);
+    color: var(--text-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+p {
+    margin-bottom: 1rem;
+    color: var(--text-gray);
+}
+
+/* Navigation */
+.navbar {
+    background: var(--bg-light-cream);
+    border-bottom: 2px solid var(--pale-gold);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 2rem;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-links a {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--primary-gold);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: var(--gold-gradient);
+    color: var(--text-on-gold);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--gold-glow);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--primary-gold);
+    border: 2px solid var(--primary-gold);
+}
+
+.btn-secondary:hover {
+    background: var(--primary-gold);
+    color: var(--text-on-gold);
+}
+
+/* Cards */
+.card {
+    background: var(--bg-light-cream);
+    border: 1px solid var(--pale-gold);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-gold);
+}
+
+.card-gold {
+    background: var(--gold-gradient);
+    color: var(--text-on-gold);
+    border: none;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--pale-gold);
+    border-radius: 8px;
+    background: var(--bg-light-cream);
+    color: var(--text-dark);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-gold);
+    box-shadow: 0 0 0 3px var(--glass-gold);
+}
+
+/* Glass Effects */
+.glass {
+    background: var(--glass-gold);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+}
+
+/* Utility Classes */
+.text-gold { color: var(--primary-gold); }
+.bg-gold { background: var(--primary-gold); }
+.bg-cream { background: var(--bg-cream); }
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 16px;
+    }
+    
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    
+    .nav-links {
+        display: none;
+    }
+    
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 1.5rem;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.namesur.NamesurAdF">
+
+
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <FrameLayout
+            android:background="#FFF"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="15dp">
+
+            <Button
+
+                android:id="@+id/btn_admin_add_realname"
+                android:layout_width="wrap_content"
+                android:layout_height="65dp"
+                android:layout_gravity="center_horizontal"
+                android:backgroundTint="#039BE5"
+                android:text="ADD REALNAME BY ADMIN" />
+
+
+            <ProgressBar
+                android:id="@+id/process_admin_realname"
+                android:layout_gravity="end"
+                android:layout_width="50dp"
+                android:layout_height="50dp" />
+
+        </FrameLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="9dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="4dp"
+                android:src="@drawable/ic_clover" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="9dp"
+                android:text="ติดต่อตั้งชื่อสกุล หรือ เปิดดวงชะตา"
+                android:textColor="#04B40B"
+                android:textSize="@dimen/titlebox"
+                tools:text="ติดต่อเพื่อตั้งชื่อสกุล หรือ เปิดดวงชะตา" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btn_surname_add_line"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CLICK"
+                android:textColor="#FFF"
+                app:backgroundTint="#00b106"
+                app:chipBackgroundColor="#00b106"
+                app:chipStrokeColor="#FFF"
+                app:chipStrokeWidth="2dp" />
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:orientation="vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_select_namereallist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:minHeight="0dp"
+                android:includeFontPadding="false"
+                android:gravity="start|center_vertical"
+                app:strokeWidth="0dp"
+                app:elevation="0dp"
+                android:stateListAnimator="@null"
+                android:text="เลือกชื่อไทย - ENG ตามวันเกิด UPGRADE !"
+                android:textSize="18sp"
+                android:textColor="#ffffff"
+                android:textStyle="bold"
+                android:fontFamily="@font/browa_0"
+                app:backgroundTint="#EA80F1"
+                app:cornerRadius="9dp"
+                app:icon="@drawable/ic_eye_48"
+                app:iconSize="24dp"
+                app:iconPadding="10dp"
+                app:iconGravity="start"
+                app:iconTint="#FFFFFF" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+
+            android:id="@+id/cardRe"
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="0dp">
+
+
+            <com.battleent.ribbonviews.RibbonLayout
+                android:id="@+id/ribbonLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:bottom_height="100"
+                app:bottom_padding="11"
+                app:bottom_ribbonColor="@color/pale_magenta_90"
+                app:bottom_text="Updated today"
+                app:bottom_textColor="@android:color/white"
+                app:bottom_textSize="18"
+                app:header_padding="9"
+
+                app:header_ribbonColor="#3a9900"
+                app:header_ribbonRadius="6"
+
+                app:header_text="หลักการเบื้องต้นในการตั้งชื่อจริงนามสกุล ต้องคำนึงถึง "
+                app:header_textColor="@android:color/white"
+                app:header_textSize="16"
+                app:show_bottom="false"
+                app:show_header="false">
+
+                <LinearLayout
+                    android:id="@+id/linHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#2d2d2d"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="#3a9900"
+                        android:fontFamily="@font/browa_0"
+                        android:paddingStart="10dp"
+                        android:paddingTop="5dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="5dp"
+                        android:text="หลักการเบื้องต้นในการตั้งชื่อจริงนามสกุล ต้องคำนึงถึง "
+                        android:textColor="#FFF"
+                        android:textSize="20sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/linHeader"
+                    android:background="#5c5c5c"
+                    android:orientation="vertical"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:paddingBottom="16dp"
+                    android:visibility="visible">
+
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/browa_0"
+                            android:text="1. "
+                            android:textColor="#F7E337"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/browa_0"
+                            android:text="@string/namesur_recoment01"
+                            android:textColor="#FFF"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/browa_0"
+                            android:text="2. "
+                            android:textColor="#F7E337"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:fontFamily="@font/browa_0"
+                            android:text="@string/namesur_recoment02"
+                            android:textColor="#FFF"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/browa_0"
+                            android:text="3. "
+                            android:textColor="#F7E337"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:fontFamily="@font/browa_0"
+                            android:text="@string/namesur_recoment03"
+                            android:textColor="#FFF"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/browa_0"
+                            android:text="4. "
+                            android:textColor="#F7E337"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:fontFamily="@font/browa_0"
+                            android:text="@string/namesur_recoment04"
+                            android:textColor="#FFF"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/browa_0"
+                            android:text="5. "
+                            android:textColor="#F7E337"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/browa_0"
+                            android:text="@string/namesur_recoment05"
+                            android:textColor="#FFF"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+            </com.battleent.ribbonviews.RibbonLayout>
+
+
+        </RelativeLayout>
+
+
+        <include layout="@layout/item_footer" />
+
+    </LinearLayout>
+
+</FrameLayout>
