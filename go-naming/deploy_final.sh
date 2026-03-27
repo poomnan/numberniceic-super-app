@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-HOST="43.228.85.200"
+HOST="numberniceic.online"
 USER="root"
 PASS="Lydh@58LTG"
 BINARY="dist/go-naming-linux-amd64"

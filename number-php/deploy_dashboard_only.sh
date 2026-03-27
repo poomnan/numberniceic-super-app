@@ -1,8 +1,8 @@
 #!/bin/bash
-HOST="43.228.85.200"
+HOST="numberniceic.online"
 USER="tayap"
 PASS="IntelliP24.X"
-REMOTE_DIR="/home/tayap/ananya-php/views/"
+REMOTE_DIR="/var/www/html/views/"
 
 echo "Uploading web_dashboard.php..."
 expect <<EOF

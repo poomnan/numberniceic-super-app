@@ -1,8 +1,8 @@
 #!/bin/bash
-HOST="43.228.85.200"
+HOST="numberniceic.online"
 USER="tayap"
 export SSHPASS="IntelliP24.X"
-REMOTE_DIR="/home/tayap/ananya-php"
+REMOTE_DIR="/var/www/html"
 
 # Upload SQL and PHP script
 sshpass -e scp -o StrictHostKeyChecking=no restore_news.sql "$USER@$HOST:$REMOTE_DIR/"

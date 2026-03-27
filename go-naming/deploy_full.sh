@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REMOTE_HOST="43.228.85.200"
+REMOTE_HOST="numberniceic.online"
 REMOTE_USER="root"
 REMOTE_PASS='Lydh@58LTG'
 REMOTE_DIR="/home/tayap/go-naming"

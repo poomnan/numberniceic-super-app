@@ -6,7 +6,7 @@
 set -e
 
 PASS="Lydh@58LTG"
-SERVER="root@43.228.85.200"
+SERVER="root@numberniceic.online"
 LOCAL_DIR="/Users/tayap/project-naming/go-naming"
 
 echo "🚀 Starting automated deployment..."

@@ -10,7 +10,7 @@ echo "===================================="
 
 # Configuration (adjust these)
 SERVER_USER="your_username"
-SERVER_HOST="ananya.in.th"
+SERVER_HOST="numberniceic.online"
 SERVER_PATH="/path/to/number-php"
 DB_NAME="your_db_name"
 DB_USER="your_db_user"

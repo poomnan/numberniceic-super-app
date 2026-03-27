@@ -1,8 +1,8 @@
 #!/bin/bash
-HOST="43.228.85.200"
+HOST="numberniceic.online"
 USER="tayap"
 PASS="IntelliP24.X"
-REMOTE_TEMP_DIR="/home/tayap/ananya-php"
+REMOTE_TEMP_DIR="/var/www/html"
 REMOTE_PROD_DIR="/var/www/html"
 
 echo "1. Uploading modified files to temp directory..."
@@ -27,6 +27,6 @@ echo "$PASS" | sudo -S chown www-data:www-data $REMOTE_PROD_DIR/app/routes.php
 EOF
 
 echo "3. Clearing OPCache..."
-curl -s "http://43.228.85.200:81/api/opcache/clear"
+curl -s "https://numberniceic.online/api/opcache/clear"
 
 echo "✅ Production Deployment Complete!"

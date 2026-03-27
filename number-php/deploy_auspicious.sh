@@ -1,7 +1,7 @@
 #!/bin/bash
-# ⚠️ CORRECT DEPLOY SCRIPT — Uses root@43.228.85.200:/var/www/html
-# ❌ ananya.in.th คือ domain เก่า ห้ามใช้
-HOST="43.228.85.200"
+# ⚠️ CORRECT DEPLOY SCRIPT — Uses root@numberniceic.online:/var/www/html
+# ❌ numberniceic.online คือ domain เก่า ห้ามใช้
+HOST="numberniceic.online"
 USER="root"
 PASS="Lydh@58LTG"
 REMOTE_DIR="/var/www/html"

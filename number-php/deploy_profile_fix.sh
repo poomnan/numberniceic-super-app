@@ -1,8 +1,8 @@
 #!/bin/bash
-HOST="43.228.85.200"
+HOST="numberniceic.online"
 USER="tayap"
 PASS="IntelliP24.X"
-REMOTE_DIR="/home/tayap/ananya-php"
+REMOTE_DIR="/var/www/html"
 
 echo "🚀 Deploying User Profile Update Fix..."
 

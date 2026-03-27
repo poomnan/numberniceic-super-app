@@ -1,5 +1,5 @@
 # Configuration
-SERVER_IP="43.228.85.200"
+SERVER_IP="numberniceic.online"
 USER="tayap"
 REMOTE_DIR="/home/tayap/go-naming" # Updated to correct service path
 

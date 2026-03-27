@@ -1,7 +1,7 @@
 #!/bin/bash
-HOST="43.228.85.200"
+HOST="numberniceic.online"
 USER="tayap"
-REMOTE_DIR="/home/tayap/ananya-php"
+REMOTE_DIR="/var/www/html"
 
 echo "🚀 Deploying Spell API..."
 

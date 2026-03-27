@@ -1,6 +1,7 @@
 package com.numberniceic.utils
 
 import android.net.Uri
+import com.numberniceic.https.BackendHosts
 import com.numberniceic.https.NetworkConfig
 import java.net.URLEncoder
 
@@ -29,7 +30,7 @@ object ImageUrlResolver {
         }
         // 1. Determine which server it belongs to (Go vs PHP)
         val isGoBackend = (value.contains("/uploads/") && !value.contains("/public/")) || value.contains("/chat/")
-        val namingBase = "http://43.228.85.200:8095" // Run Go directly to avoid Nginx proxy issues
+        val namingBase = BackendHosts.NAMING_BASE
         val phpBase = NetworkConfig.BASE_URL // PHP Backend (:81)
 
         // 2. Clean up the URL (Preserve /public/ for PHP backend as it's required for correct Nginx routing)
@@ -56,7 +57,7 @@ object ImageUrlResolver {
         val raw = rawUrl?.trim().orEmpty()
         if (raw.isEmpty()) return ""
         
-        val namingBase = "http://43.228.85.200:8095" 
+        val namingBase = BackendHosts.NAMING_BASE
         
         // 1. If it's already a full http URL, handle it safely
         if (raw.startsWith("http")) {

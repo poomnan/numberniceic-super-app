@@ -106,13 +106,13 @@ interface ApiService {
     fun saveGuestOrder(@Body body: JsonObject): Call<JsonObject>
 
     // --- Admin Guest Address Management ---
-    @GET("http://43.228.85.200:8095/admin/guest-addresses")
+    @GET(BackendHosts.NAMING_BASE + "/admin/guest-addresses")
     fun getGuestAddresses(): Call<JsonObject>
 
-    @POST("http://43.228.85.200:8095/admin/guest-addresses/toggle-shipping")
+    @POST(BackendHosts.NAMING_BASE + "/admin/guest-addresses/toggle-shipping")
     fun toggleShippingStatus(@Body body: JsonObject): Call<JsonObject>
 
-    @POST("http://43.228.85.200:8095/admin/guest-addresses/update-address")
+    @POST(BackendHosts.NAMING_BASE + "/admin/guest-addresses/update-address")
     fun updateOrderAddress(@Body body: JsonObject): Call<JsonObject>
 
     @GET("admin/guest-addresses/{guestId}")
@@ -192,26 +192,26 @@ interface ApiService {
     @GET("member/lengyam")
     fun getLengYam(): Call<LengYamDao>
 
-    @GET("http://43.228.85.200:8095/api/kalagni")
+    @GET(BackendHosts.NAMING_BASE + "/api/kalagni")
     fun getKalagniDay(@Query("birth_day") birthDay: String): Call<com.google.gson.JsonObject>
     
-    @GET("http://43.228.85.200:8095/api/kalagni/age")
+    @GET(BackendHosts.NAMING_BASE + "/api/kalagni/age")
     fun getKalagniAge(@Query("birth_day") birthDay: String, @Query("age") age: Int): Call<com.google.gson.JsonObject>
 
-    @GET("http://43.228.85.200:8095/api/foo-days")
+    @GET(BackendHosts.NAMING_BASE + "/api/foo-days")
     fun getFooDays(@Query("year") year: Int? = null): Call<com.google.gson.JsonObject>
 
-    @GET("http://43.228.85.200:8095/api/sitti-chok")
+    @GET(BackendHosts.NAMING_BASE + "/api/sitti-chok")
     fun getSittiChok(@Query("year") year: Int? = null): Call<com.google.gson.JsonObject>
 
-    @GET("http://43.228.85.200:8095/api/ubath")
+    @GET(BackendHosts.NAMING_BASE + "/api/ubath")
     fun getUbathDays(@Query("year") year: Int? = null): Call<com.google.gson.JsonObject>
 
-    @GET("http://43.228.85.200:8095/api/lokawinat")
+    @GET(BackendHosts.NAMING_BASE + "/api/lokawinat")
     fun getLokawinatDays(@Query("year") year: Int? = null): Call<com.google.gson.JsonObject>
 
     // --- Wanpra API ---
-    @POST("http://43.228.85.200:8095/api/v1/wanpra/calculate")
+    @POST(BackendHosts.NAMING_BASE + "/api/v1/wanpra/calculate")
     fun calculateWanpra(@Body body: com.google.gson.JsonObject): Call<com.google.gson.JsonObject>
 
     // --- News ---
@@ -501,16 +501,16 @@ interface ApiService {
     fun deleteCategory(@Query("id") id: Int): Call<JsonObject>
 
     // --- Admin User Management (Go Backend) ---
-    @GET("http://43.228.85.200:8095/admin/users/list")
+    @GET(BackendHosts.NAMING_BASE + "/admin/users/list")
     fun listUsers(@Query("search") search: String?): Call<com.google.gson.JsonObject>
 
-    @POST("http://43.228.85.200:8095/admin/member/update-status")
+    @POST(BackendHosts.NAMING_BASE + "/admin/member/update-status")
     fun updateUserStatus(@Body body: com.google.gson.JsonObject): Call<com.google.gson.JsonObject>
 
-    @POST("http://43.228.85.200:8095/admin/member/edit")
+    @POST(BackendHosts.NAMING_BASE + "/admin/member/edit")
     fun editMember(@Body body: com.google.gson.JsonObject): Call<com.google.gson.JsonObject>
 
-    @POST("http://43.228.85.200:8095/admin/member/delete")
+    @POST(BackendHosts.NAMING_BASE + "/admin/member/delete")
     fun deleteMember(@Body body: com.google.gson.JsonObject): Call<com.google.gson.JsonObject>
 
     // --- Payment APIs (PaySolutions) ---

@@ -1,5 +1,5 @@
 #!/bin/bash
-HOST="43.228.85.200"
+HOST="numberniceic.online"
 USER="root"
 PASS="Lydh@58LTG"
 REMOTE_DIR="/var/www/html"

@@ -4,7 +4,7 @@
 
 set -e
 
-SERVER_IP="43.228.85.200"
+SERVER_IP="numberniceic.online"
 USER="root"
 PASS="Lydh@58LTG"
 REMOTE_DIR="/home/tayap/go-naming"

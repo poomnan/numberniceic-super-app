@@ -1,7 +1,7 @@
 #!/bin/bash
 # Configuration
 REMOTE_USER="root"
-REMOTE_HOST="43.228.85.200"
+REMOTE_HOST="numberniceic.online"
 REMOTE_PASS="Lydh@58LTG"
 REMOTE_PATH="/var/www/html"
 
