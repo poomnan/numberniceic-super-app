@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.numberniceic.R
 import com.numberniceic.adapters.LegendData
@@ -303,27 +304,14 @@ class RengYamF : Fragment() {
             ) {
                 if (response.isSuccessful && response.body() != null) {
                     val serverVip = response.body()!!
-                    val vipType = serverVip.viplevel?.lowercase(Locale.ROOT)?.trim().orEmpty()
-                    if (serverVip.message == "success" && (vipType == "rengyam_vip" || vipType == "rengyam_yearly")) {
-                        if (vipType == "rengyam_yearly") {
-                            val cal = Calendar.getInstance()
-                            cal.add(Calendar.YEAR, 1)
-                            persistRengyamAccessForUser(userId, cal.timeInMillis)
-                        } else if (vipType == "rengyam_vip") {
-                            val cal = Calendar.getInstance()
-                            cal.add(Calendar.YEAR, 50)
-                            persistRengyamAccessForUser(userId, cal.timeInMillis)
-                        }
-
-                        hasRengyamAccess = true
-                        (rengYamBinding.recyclerviewWanpra.adapter as? WanpraAdapter)?.setRengyamAccess(true)
-                        Toast.makeText(requireContext(), "ปลดล็อกดูฤกษ์ยามสำเร็จ", Toast.LENGTH_LONG).show()
-                        onCategorySelectedAfterUnlock(categoryKey)
-                    } else {
+                    if (!handleUnlockSuccess(serverVip.message, serverVip.viplevel, userId, categoryKey)) {
                         Toast.makeText(requireContext(), "โค้ดนี้ไม่ใช่สิทธิ์ดูฤกษ์ยาม", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    Toast.makeText(requireContext(), "ตรวจสอบโค้ดไม่สำเร็จ (${response.code()})", Toast.LENGTH_SHORT).show()
+                    val errorBody = response.errorBody()?.string()
+                    if (!handleUnlockSuccessFromErrorBody(errorBody, userId, categoryKey)) {
+                        Toast.makeText(requireContext(), "ตรวจสอบโค้ดไม่สำเร็จ (${response.code()})", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
@@ -331,6 +319,48 @@ class RengYamF : Fragment() {
                 Toast.makeText(requireContext(), "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun handleUnlockSuccess(message: String?, vipLevel: String?, userId: String, categoryKey: String): Boolean {
+        val normalizedMessage = message?.lowercase(Locale.ROOT)?.trim().orEmpty()
+        val vipType = vipLevel?.lowercase(Locale.ROOT)?.trim().orEmpty()
+        if (normalizedMessage != "success" || (vipType != "rengyam_vip" && vipType != "rengyam_yearly")) {
+            return false
+        }
+
+        if (vipType == "rengyam_yearly") {
+            val cal = Calendar.getInstance()
+            cal.add(Calendar.YEAR, 1)
+            persistRengyamAccessForUser(userId, cal.timeInMillis)
+        } else if (vipType == "rengyam_vip") {
+            val cal = Calendar.getInstance()
+            cal.add(Calendar.YEAR, 50)
+            persistRengyamAccessForUser(userId, cal.timeInMillis)
+        }
+
+        hasRengyamAccess = true
+        (rengYamBinding.recyclerviewWanpra.adapter as? WanpraAdapter)?.setRengyamAccess(true)
+        Toast.makeText(requireContext(), "ปลดล็อกดูฤกษ์ยามสำเร็จ", Toast.LENGTH_LONG).show()
+        onCategorySelectedAfterUnlock(categoryKey)
+        return true
+    }
+
+    private fun handleUnlockSuccessFromErrorBody(errorBody: String?, userId: String, categoryKey: String): Boolean {
+        if (errorBody.isNullOrBlank()) return false
+        return try {
+            val jsonPart = if (errorBody.contains("<!doctype", ignoreCase = true)) {
+                errorBody.substringBefore("<!doctype", "").trim()
+            } else {
+                errorBody
+            }
+            if (jsonPart.isBlank()) return false
+            val json = JsonParser.parseString(jsonPart).asJsonObject
+            val message = json.get("message")?.asString
+            val vipLevel = json.get("viplevel")?.asString
+            handleUnlockSuccess(message, vipLevel, userId, categoryKey)
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun onCategorySelectedAfterUnlock(categoryKey: String) {
