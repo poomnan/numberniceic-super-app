@@ -41,10 +41,7 @@ import java.util.Locale
 class NininChatActivity : AppCompatActivity() {
 
     companion object {
-        private const val MAX_DREAM_CHAT_COUNT = 30
         private const val DREAM_USAGE_PREFS = "ninin_usage_prefs"
-        private const val DREAM_USAGE_KEY_GUEST = "dream_chat_count_guest"
-        private const val DREAM_USAGE_KEY_MEMBER = "dream_chat_count_member"
         private const val DREAM_ACCESS_EXPIRE_AT_KEY = "dream_access_expire_at"
     }
 
@@ -185,7 +182,6 @@ class NininChatActivity : AppCompatActivity() {
                 
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
-                    val isMember = com.numberniceic.utils.UserContextManager.userX(this@NininChatActivity) != null
                     val formattedReply = formatDreamReply(body.reply)
                     val replyMsg = ChatMessage(
                         text = formattedReply,
@@ -195,21 +191,6 @@ class NininChatActivity : AppCompatActivity() {
                         showDreamPackages = body.showPackages
                     )
                     adapter.addMessage(replyMsg)
-                    
-                    if (body.usageCount != null) {
-                        saveServerUsageCount(isMember, body.usageCount)
-                    } else {
-                        incrementDreamChatUsage()
-                    }
-
-                    if (!body.showPackages && body.freeRemaining != null && body.freeLimit != null) {
-                        adapter.addMessage(
-                            ChatMessage(
-                                "สิทธิ์ใช้ฟรีคงเหลือ ${body.freeRemaining}/${body.freeLimit} ครั้ง",
-                                false
-                            )
-                        )
-                    }
 
                     if (!canSendDreamChat()) {
                         showDreamPackageMessage()
@@ -247,28 +228,6 @@ class NininChatActivity : AppCompatActivity() {
         // Backend is the source of truth for access/expiry.
         // Always allow sending so server can decide free-limit vs paid entitlement.
         return true
-    }
-
-    private fun getDreamChatUsageCount(isMember: Boolean): Int {
-        val prefs = getSharedPreferences(DREAM_USAGE_PREFS, MODE_PRIVATE)
-        val key = if (isMember) DREAM_USAGE_KEY_MEMBER else DREAM_USAGE_KEY_GUEST
-        return prefs.getInt(key, 0)
-    }
-
-    private fun incrementDreamChatUsage() {
-        val userx = com.numberniceic.utils.UserContextManager.userX(this)
-        val isMember = userx != null && !userx.userId.isNullOrEmpty()
-        
-        val prefs = getSharedPreferences(DREAM_USAGE_PREFS, MODE_PRIVATE)
-        val key = if (isMember) DREAM_USAGE_KEY_MEMBER else DREAM_USAGE_KEY_GUEST
-        val current = prefs.getInt(key, 0)
-        prefs.edit().putInt(key, current + 1).apply()
-    }
-
-    private fun saveServerUsageCount(isMember: Boolean, count: Int) {
-        val prefs = getSharedPreferences(DREAM_USAGE_PREFS, MODE_PRIVATE)
-        val key = if (isMember) DREAM_USAGE_KEY_MEMBER else DREAM_USAGE_KEY_GUEST
-        prefs.edit().putInt(key, count).apply()
     }
 
     private fun showDreamPackageMessage() {
@@ -466,6 +425,9 @@ class NininChatActivity : AppCompatActivity() {
         cleaned = cleaned.replace(" ทายว่า จะ", " หมายความว่าจะ")
         cleaned = cleaned.replace(" ทายว่าจะ", " หมายความว่าจะ")
         cleaned = cleaned.replace(" ทายว่า ", " หมายความว่า ")
+        cleaned = cleaned.replace(Regex("(?m)^\\s*จำนวนครั้งที่ใช้งานสะสม\\s*:\\s*\\d+\\s*ครั้ง\\s*$"), "")
+        cleaned = cleaned.replace(Regex("(?m)^\\s*สิทธิ์ใช้ฟรีคงเหลือ\\s*\\d+\\s*/\\s*\\d+\\s*ครั้ง\\s*$"), "")
+        cleaned = cleaned.replace(Regex("\\n{3,}"), "\n\n").trim()
         return cleaned
     }
 }

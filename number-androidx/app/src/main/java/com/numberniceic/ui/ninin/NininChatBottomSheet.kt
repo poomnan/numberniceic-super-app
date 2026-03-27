@@ -40,9 +40,7 @@ import java.util.Locale
 class NininChatBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
-        private const val MAX_DREAM_CHAT_COUNT = 30
         private const val DREAM_USAGE_PREFS = "ninin_usage_prefs"
-        private const val DREAM_USAGE_KEY = "dream_chat_count"
         private const val DREAM_ACCESS_EXPIRE_AT_KEY = "dream_access_expire_at"
     }
 
@@ -137,10 +135,9 @@ class NininChatBottomSheet : BottomSheetDialogFragment() {
                 
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
-                    val isMember = com.numberniceic.utils.UserContextManager.userX(requireContext()) != null
                     // Add Ninin Response
                     val replyMsg = ChatMessage(
-                        body.reply, 
+                        sanitizeDreamReply(body.reply),
                         false, 
                         body.dreamData, 
                         body.nameFound,
@@ -149,20 +146,6 @@ class NininChatBottomSheet : BottomSheetDialogFragment() {
                         body.showPackages
                     )
                     adapter.addMessage(replyMsg)
-                    
-                    if (body.usageCount != null) {
-                        saveServerUsageCount(isMember, body.usageCount)
-                    } else {
-                        incrementDreamChatUsage()
-                    }
-                    if (!body.showPackages && body.freeRemaining != null && body.freeLimit != null) {
-                        adapter.addMessage(
-                            ChatMessage(
-                                "สิทธิ์ใช้ฟรีคงเหลือ ${body.freeRemaining}/${body.freeLimit} ครั้ง",
-                                false
-                            )
-                        )
-                    }
                     if (!canSendDreamChat()) {
                         showDreamPackageMessage()
                     }
@@ -191,22 +174,6 @@ class NininChatBottomSheet : BottomSheetDialogFragment() {
     private fun canSendDreamChat(): Boolean {
         // Backend is authoritative for package entitlement and expiry.
         return true
-    }
-
-    private fun getDreamChatUsageCount(): Int {
-        val prefs = requireContext().getSharedPreferences(DREAM_USAGE_PREFS, Context.MODE_PRIVATE)
-        return prefs.getInt(DREAM_USAGE_KEY, 0)
-    }
-
-    private fun incrementDreamChatUsage() {
-        val prefs = requireContext().getSharedPreferences(DREAM_USAGE_PREFS, Context.MODE_PRIVATE)
-        val current = prefs.getInt(DREAM_USAGE_KEY, 0)
-        prefs.edit().putInt(DREAM_USAGE_KEY, current + 1).apply()
-    }
-
-    private fun saveServerUsageCount(isMember: Boolean, count: Int) {
-        val prefs = requireContext().getSharedPreferences(DREAM_USAGE_PREFS, Context.MODE_PRIVATE)
-        prefs.edit().putInt(DREAM_USAGE_KEY, count).apply()
     }
 
     private fun showDreamPackageMessage() {
@@ -401,6 +368,17 @@ class NininChatBottomSheet : BottomSheetDialogFragment() {
         forceShowPackagesOnNextSend = true
         adapter.clearDreamPackageMessages()
         Toast.makeText(ctx, "ทำให้หมดสิทธิ์แล้ว: ส่งข้อความครั้งถัดไปจะแสดงแพ็กเกจทันที", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun sanitizeDreamReply(text: String?): String {
+        if (text.isNullOrBlank()) {
+            return "คำนี้ยังไม่มีในระบบโปรดใช้คำใกล้เคียง"
+        }
+        var cleaned = text.trim()
+        cleaned = cleaned.replace(Regex("(?m)^\\s*จำนวนครั้งที่ใช้งานสะสม\\s*:\\s*\\d+\\s*ครั้ง\\s*$"), "")
+        cleaned = cleaned.replace(Regex("(?m)^\\s*สิทธิ์ใช้ฟรีคงเหลือ\\s*\\d+\\s*/\\s*\\d+\\s*ครั้ง\\s*$"), "")
+        cleaned = cleaned.replace(Regex("\\n{3,}"), "\n\n").trim()
+        return cleaned
     }
     
     override fun getTheme(): Int {
