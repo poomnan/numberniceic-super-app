@@ -3,11 +3,19 @@ package com.numberniceic.adapters
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.ReplacementSpan
 import android.graphics.Color
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RadialGradient
+import android.graphics.Shader
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -102,6 +110,7 @@ class WanpraAdapter(
     private val isLoggedInUser: Boolean = false,
     private var hasRengyamAccess: Boolean = false,
     private val onMonthNav: ((Int) -> Unit)? = null,
+    private val onYearSelected: ((Int) -> Unit)? = null,
     private val onCategorySelected: ((String?) -> Unit)? = null,
     private val onLockedCategoryClick: ((String) -> Unit)? = null,
     var isGridLayout: Boolean = true,
@@ -164,6 +173,7 @@ class WanpraAdapter(
                 isLoggedInUser,
                 hasRengyamAccess,
                 onMonthNav,
+                onYearSelected,
                 onCategorySelected,
                 onLockedCategoryClick,
                 showInauspiciousInfo
@@ -203,6 +213,7 @@ class WanpraAdapter(
         private val isLoggedInUser: Boolean = false,
         private var hasRengyamAccess: Boolean = false,
         private val onMonthNav: ((Int) -> Unit)? = null,
+        private val onYearSelected: ((Int) -> Unit)? = null,
         private val onCategorySelected: ((String?) -> Unit)? = null,
         private val onLockedCategoryClick: ((String) -> Unit)? = null,
         private val showInauspiciousInfo: Boolean = true
@@ -220,6 +231,10 @@ class WanpraAdapter(
             txtCurrentYear?.text = toThaiNum(data.yearStr)
             btnPrev?.setOnClickListener { onMonthNav?.invoke(-1) }
             btnNext?.setOnClickListener { onMonthNav?.invoke(1) }
+            txtCurrentYear?.setOnClickListener { anchor ->
+                val yearCe = data.yearStr.toIntOrNull() ?: return@setOnClickListener
+                showYearDropdown(anchor, yearCe)
+            }
             val btnChat = itemView.findViewById<View>(R.id.btn_chat_ninin)
             btnChat?.visibility = if (isLoggedInUser) View.GONE else View.VISIBLE
             
@@ -241,13 +256,9 @@ class WanpraAdapter(
 
             btnChat?.setOnClickListener {
                 (itemView.context as? android.app.Activity)?.let { activity ->
-                    try {
-                        val intent = android.content.Intent().apply {
-                            setClassName(activity.packageName, "com.numberniceic.ui.chat.ChatActivity")
-                        }
-                        activity.startActivity(intent)
-                    } catch (e: Exception) {
-                        android.widget.Toast.makeText(activity, "ทักคุณนินเพื่อรับคำปรึกษา", android.widget.Toast.LENGTH_SHORT).show()
+                    if (!isLoggedInUser) {
+                        showGuestVipBottomSheet(activity)
+                        return@let
                     }
                 }
             }
@@ -261,7 +272,8 @@ class WanpraAdapter(
                 val badAgeDay = data.kalagniAgeDualText ?: data.kalagniAge ?: "-"
                 val ageLabel = data.userAge ?: 0
                 val userDisplayName = data.userName?.trim().orEmpty()
-                val userPrefix = if (userDisplayName.isNotEmpty()) "คุณ$userDisplayName " else "คุณ... "
+                val greetingText = if (userDisplayName.isNotEmpty()) "สวัสดีคุณ$userDisplayName" else "สวัสดีคุณ..."
+                val userPrefix = "●$greetingText "
                 
                 fun colorize(text: String, parts: Map<String, Int>): CharSequence {
                     val builder = SpannableStringBuilder(text)
@@ -278,27 +290,42 @@ class WanpraAdapter(
                     return builder
                 }
 
+                fun styleLeadingMagicDot(text: CharSequence): CharSequence {
+                    val builder = SpannableStringBuilder(text)
+                    if (builder.isNotEmpty() && builder[0] == '●') {
+                        builder.setSpan(
+                            MagicDotSpan(itemView.resources.displayMetrics.density),
+                            0,
+                            1,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    return builder
+                }
+
                 val colorBlue = Color.parseColor("#03A9F4")
                 val colorGreen = Color.parseColor("#2E7D32")
                 val colorOrange = Color.parseColor("#E65100")
 
                 if (birthDay.isNotEmpty()) {
                     val fullText = "${userPrefix}อายุย่าง $ageLabel เกิดวัน$birthDay\nห้ามใช้ฤกษ์วัน$badAgeDay $badBirthDay"
-                    badgeBirth?.text = colorize(fullText, mapOf(
-                        userPrefix.trim() to colorBlue,
+                    badgeBirth?.text = styleLeadingMagicDot(colorize(fullText, mapOf(
+                        greetingText to colorBlue,
                         "อายุย่าง $ageLabel" to colorGreen,
                         "วัน$birthDay" to colorBlue,
                         "วัน$badAgeDay" to colorOrange,
                         badBirthDay to colorOrange
-                    ))
+                    )))
+                    badgeBirth?.let { applyMagicDotBadge(it) }
                 } else {
                     val fullText = "${userPrefix}อายุย่าง $ageLabel\nห้ามใช้ฤกษ์วัน$badAgeDay $badBirthDay"
-                    badgeBirth?.text = colorize(fullText, mapOf(
-                        userPrefix.trim() to colorBlue,
+                    badgeBirth?.text = styleLeadingMagicDot(colorize(fullText, mapOf(
+                        greetingText to colorBlue,
                         "อายุย่าง $ageLabel" to colorGreen,
                         "วัน$badAgeDay" to colorOrange,
                         badBirthDay to colorOrange
-                    ))
+                    )))
+                    badgeBirth?.let { applyMagicDotBadge(it) }
                 }
 
                 badgeAge?.isVisible = false
@@ -458,6 +485,123 @@ class WanpraAdapter(
                 txtGreetingMsg?.text = spannable
             }
         }
+
+        private fun showYearDropdown(anchor: View, currentYearCe: Int) {
+            val popup = PopupMenu(anchor.context, anchor)
+            val currentYearBe = currentYearCe
+            val startYearBe = currentYearBe
+            val endYearBe = currentYearBe + 10
+            for (yearBe in startYearBe..endYearBe) {
+                val yearCe = yearBe - 543
+                popup.menu.add(0, yearCe, 0, "พ.ศ. ${toThaiNum(yearBe.toString())}")
+            }
+            popup.setOnMenuItemClickListener { item ->
+                onYearSelected?.invoke(item.itemId)
+                true
+            }
+            popup.show()
+        }
+
+        private fun showGuestVipBottomSheet(activity: android.app.Activity) {
+            val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(activity, R.style.CustomBottomSheetDialogTheme)
+            val view = LayoutInflater.from(activity).inflate(R.layout.bottom_sheet_guest_vip_required, null, false)
+            view.findViewById<View>(R.id.btn_guest_login)?.setOnClickListener {
+                dialog.dismiss()
+                activity.startActivity(android.content.Intent(activity, com.numberniceic.ui.auth.UserLoginAct::class.java))
+            }
+            view.findViewById<View>(R.id.btn_guest_register)?.setOnClickListener {
+                dialog.dismiss()
+                activity.startActivity(android.content.Intent(activity, com.numberniceic.ui.auth.UserRegisAct::class.java))
+            }
+            dialog.setContentView(view)
+            val behavior = dialog.behavior
+            behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+            behavior.skipCollapsed = true
+            dialog.show()
+        }
+
+        private fun applyMagicDotBadge(target: TextView) {
+            val oldPulse = target.getTag(R.id.tag_magic_dot_pulse_runnable) as? Runnable
+            if (oldPulse != null) {
+                target.removeCallbacks(oldPulse)
+            }
+            val pulse = object : Runnable {
+                override fun run() {
+                    if (!target.isAttachedToWindow) return
+                    target.invalidate()
+                    target.postDelayed(this, 16L)
+                }
+            }
+            target.setTag(R.id.tag_magic_dot_pulse_runnable, pulse)
+            target.post(pulse)
+        }
+    }
+
+    private class MagicDotSpan(private val density: Float) : ReplacementSpan() {
+        private val baseDotPx = 14f * density
+        private val spacingPx = 4f * density
+
+        override fun getSize(
+            paint: Paint,
+            text: CharSequence,
+            start: Int,
+            end: Int,
+            fm: Paint.FontMetricsInt?
+        ): Int {
+            return (baseDotPx + spacingPx).toInt()
+        }
+
+        override fun draw(
+            canvas: Canvas,
+            text: CharSequence,
+            start: Int,
+            end: Int,
+            x: Float,
+            top: Int,
+            y: Int,
+            bottom: Int,
+            paint: Paint
+        ) {
+            val t = ((SystemClock.uptimeMillis() % 1400L).toFloat() / 1400f)
+            val wave = kotlin.math.sin((t * Math.PI * 2.0)).toFloat()
+            val pulse = 0.94f + (0.06f * wave)
+            val radius = (baseDotPx / 2f) * pulse
+            val cx = x + radius
+            val cy = (top + bottom) / 2f
+
+            val glowRadius = radius * 1.65f
+            val oldShader = paint.shader
+            val oldStyle = paint.style
+            val oldAlpha = paint.alpha
+
+            paint.style = Paint.Style.FILL
+            paint.shader = RadialGradient(
+                cx,
+                cy,
+                glowRadius,
+                intArrayOf(
+                    Color.argb((48f * pulse).toInt().coerceAtLeast(24), 255, 224, 130),
+                    Color.argb(0, 255, 224, 130)
+                ),
+                floatArrayOf(0.2f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            canvas.drawCircle(cx, cy, glowRadius, paint)
+
+            paint.shader = RadialGradient(
+                cx - radius * 0.25f,
+                cy - radius * 0.25f,
+                radius,
+                intArrayOf(Color.parseColor("#FFFDE7"), Color.parseColor("#FFD54F")),
+                floatArrayOf(0.25f, 1f),
+                Shader.TileMode.CLAMP
+            )
+            canvas.drawCircle(cx, cy, radius, paint)
+
+            paint.shader = oldShader
+            paint.style = oldStyle
+            paint.alpha = oldAlpha
+        }
     }
 
     class LegendHolder(itemView: View) : RecyclerView.ViewHolder(itemView) { fun bind(data: LegendData) {} }
@@ -592,8 +736,13 @@ class WanpraAdapter(
             if (dt != null) {
                 txtDayNum?.text = toThaiNum(dt.dayOfMonth.toString())
                 txtDayNum?.visibility = View.VISIBLE
-                txtLunar?.text = "${wp.lunarPhase ?: ""}\nเดือน ${wp.lunarMonth ?: ""}"
-                txtLunar?.visibility = if (wp.lunarPhase.isNullOrEmpty()) View.GONE else View.VISIBLE
+                val isLockedCell = wp.lunarPhase == "ล็อก" || wp.lunarMonth == "กรุณาปลดล็อก"
+                txtLunar?.text = if (isLockedCell) {
+                    "เฉพาะสมาชิก VIP"
+                } else {
+                    "${wp.lunarPhase ?: ""}\nเดือน ${wp.lunarMonth ?: ""}"
+                }
+                txtLunar?.visibility = if (txtLunar?.text.isNullOrBlank()) View.GONE else View.VISIBLE
             } else {
                 txtDayNum?.visibility = View.GONE
                 txtLunar?.visibility = View.GONE
