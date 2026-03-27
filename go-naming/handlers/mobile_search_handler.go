@@ -37,29 +37,42 @@ type CharHighlight struct {
 
 // MobileNameResult represents a single name result for mobile
 type MobileNameResult struct {
-	Name             string          `json:"name"`
-	Meaning          string          `json:"meaning"`
-	Gender           string          `json:"gender"`
-	SatSum           int             `json:"sat_sum"`
-	ShaSum           int             `json:"sha_sum"`
-	TotalSat         int             `json:"total_sat"`
-	TotalSha         int             `json:"total_sha"`
-	Distance         float64         `json:"distance"`
-	RootScore        float64         `json:"root_score"`
-	SemanticScore    float64         `json:"semantic_score"`
-	HybridScore      float64         `json:"hybrid_score"`
-	BonusCalculated  float64         `json:"bonus_calculated"`
-	IsSatGood        bool            `json:"is_sat_good"`
-	IsShaGood        bool            `json:"is_sha_good"`
-	IsTotalSatGood   bool            `json:"is_total_sat_good"`
-	IsTotalShaGood   bool            `json:"is_total_sha_good"`
-	SatPairType      string          `json:"sat_pair_type"`
-	ShaPairType      string          `json:"sha_pair_type"`
-	TotalSatPairType string          `json:"total_sat_pair_type"`
-	TotalShaPairType string          `json:"total_sha_pair_type"`
-	KakiHighlight    []CharHighlight `json:"kaki_highlight"`
-	FinalRankScore   int             `json:"final_rank_score"`
-	RankReasons      []string        `json:"rank_reasons"`
+	Name              string          `json:"name"`
+	Meaning           string          `json:"meaning"`
+	Gender            string          `json:"gender"`
+	SatSum            int             `json:"sat_sum"`
+	ShaSum            int             `json:"sha_sum"`
+	TotalSat          int             `json:"total_sat"`
+	TotalSha          int             `json:"total_sha"`
+	Distance          float64         `json:"distance"`
+	RootScore         float64         `json:"root_score"`
+	SemanticScore     float64         `json:"semantic_score"`
+	HybridScore       float64         `json:"hybrid_score"`
+	BonusCalculated   float64         `json:"bonus_calculated"`
+	IsSatGood         bool            `json:"is_sat_good"`
+	IsShaGood         bool            `json:"is_sha_good"`
+	IsTotalSatGood    bool            `json:"is_total_sat_good"`
+	IsTotalShaGood    bool            `json:"is_total_sha_good"`
+	SatPairType       string          `json:"sat_pair_type"`
+	ShaPairType       string          `json:"sha_pair_type"`
+	TotalSatPairType  string          `json:"total_sat_pair_type"`
+	TotalShaPairType  string          `json:"total_sha_pair_type"`
+	SatPairPoint      int             `json:"sat_pair_point"`
+	ShaPairPoint      int             `json:"sha_pair_point"`
+	TotalSatPairPoint int             `json:"total_sat_pair_point"`
+	TotalShaPairPoint int             `json:"total_sha_pair_point"`
+	KakiHighlight     []CharHighlight `json:"kaki_highlight"`
+	FinalRankScore    int             `json:"final_rank_score"`
+	SemanticRankScore int             `json:"semantic_rank_score"`
+	NumerologyScore   int             `json:"numerology_rank_score"`
+	PairTypeBonus     int             `json:"pair_type_bonus"`
+	PairPointBonus    int             `json:"pair_point_bonus"`
+	LengthBonus       int             `json:"length_bonus"`
+	KakiBonus         int             `json:"kaki_bonus"`
+	SatBonus          int             `json:"sat_bonus"`
+	ShaBonus          int             `json:"sha_bonus"`
+	DoubleBonus       int             `json:"double_bonus"`
+	RankReasons       []string        `json:"rank_reasons"`
 }
 
 // ... unchanged ...
@@ -139,7 +152,7 @@ func calculateBonus(name string, isSatGood, isShaGood, isTotalSatGood, isTotalSh
 	return bonus
 }
 
-func calculateFinalRankScoreAndReasons(r MobileNameResult, showMatching bool) (int, []string) {
+func calculateFinalRankScoreAndReasons(r *MobileNameResult, showMatching bool) (int, []string) {
 	similarity := (100 * (1 - r.Distance))
 	if similarity < 0 {
 		similarity = 0
@@ -150,9 +163,17 @@ func calculateFinalRankScoreAndReasons(r MobileNameResult, showMatching bool) (i
 
 	satPass := r.IsSatGood
 	shaPass := r.IsShaGood
+	satPairType := r.SatPairType
+	shaPairType := r.ShaPairType
+	satPairPoint := r.SatPairPoint
+	shaPairPoint := r.ShaPairPoint
 	if showMatching {
 		satPass = r.IsTotalSatGood
 		shaPass = r.IsTotalShaGood
+		satPairType = r.TotalSatPairType
+		shaPairType = r.TotalShaPairType
+		satPairPoint = r.TotalSatPairPoint
+		shaPairPoint = r.TotalShaPairPoint
 	}
 
 	satBonus := 0
@@ -167,6 +188,8 @@ func calculateFinalRankScoreAndReasons(r MobileNameResult, showMatching bool) (i
 	if satPass && shaPass {
 		doubleBonus = 50
 	}
+	pairTypeBonus := pairTypeTierBonus(satPairType) + pairTypeTierBonus(shaPairType)
+	pairPointBonus := pairPointRankBonus(satPairPoint) + pairPointRankBonus(shaPairPoint)
 
 	kakiBonus := 0
 	if len(r.KakiHighlight) > 0 {
@@ -194,14 +217,24 @@ func calculateFinalRankScoreAndReasons(r MobileNameResult, showMatching bool) (i
 		lengthBonus = -5
 	}
 
-	rawScore := similarity + float64(satBonus+shaBonus+doubleBonus+kakiBonus+lengthBonus)
-	finalScore := int((rawScore * 100.0) / 215.0)
+	rawScore := similarity + float64(satBonus+shaBonus+doubleBonus+kakiBonus+lengthBonus+pairTypeBonus+pairPointBonus)
+	finalScore := int((rawScore * 100.0) / 283.0)
 	if finalScore < 0 {
 		finalScore = 0
 	}
 	if finalScore > 100 {
 		finalScore = 100
 	}
+
+	r.SemanticRankScore = int(similarity + 0.5)
+	r.NumerologyScore = satBonus + shaBonus + doubleBonus + kakiBonus + lengthBonus + pairTypeBonus + pairPointBonus
+	r.PairTypeBonus = pairTypeBonus
+	r.PairPointBonus = pairPointBonus
+	r.LengthBonus = lengthBonus
+	r.KakiBonus = kakiBonus
+	r.SatBonus = satBonus
+	r.ShaBonus = shaBonus
+	r.DoubleBonus = doubleBonus
 
 	reasons := []string{
 		fmt.Sprintf("ความใกล้เคียงความหมาย %.0f/100", similarity),
@@ -215,6 +248,12 @@ func calculateFinalRankScoreAndReasons(r MobileNameResult, showMatching bool) (i
 	if doubleBonus > 0 {
 		reasons = append(reasons, fmt.Sprintf("ผ่านทั้งเลขศาสตร์และพลังเงา +%d", doubleBonus))
 	}
+	if pairTypeBonus > 0 {
+		reasons = append(reasons, fmt.Sprintf("ระดับคู่เลข/คู่เงา %+d", pairTypeBonus))
+	}
+	if pairPointBonus != 0 {
+		reasons = append(reasons, fmt.Sprintf("คะแนนละเอียด pairpoint %+d", pairPointBonus))
+	}
 	if kakiBonus > 0 {
 		reasons = append(reasons, fmt.Sprintf("ปลอดกาลกิณี +%d", kakiBonus))
 	}
@@ -225,9 +264,72 @@ func calculateFinalRankScoreAndReasons(r MobileNameResult, showMatching bool) (i
 	return finalScore, reasons
 }
 
+func normalizedMeaningKey(meaning string) string {
+	meaning = strings.TrimSpace(strings.ToLower(meaning))
+	replacer := strings.NewReplacer(
+		"\n", " ",
+		"\r", " ",
+		"\t", " ",
+		"  ", " ",
+	)
+	for {
+		next := replacer.Replace(meaning)
+		if next == meaning {
+			break
+		}
+		meaning = next
+	}
+	return meaning
+}
+
+func pairTypeTierBonus(pairType string) int {
+	switch strings.ToUpper(strings.TrimSpace(pairType)) {
+	case "D10":
+		return 14
+	case "D8":
+		return 8
+	case "D5":
+		return 3
+	default:
+		return 0
+	}
+}
+
+func pairPointRankBonus(pairPoint int) int {
+	switch {
+	case pairPoint >= 80:
+		return 20
+	case pairPoint >= 65:
+		return 14
+	case pairPoint >= 50:
+		return 9
+	case pairPoint >= 30:
+		return 5
+	case pairPoint >= 10:
+		return 2
+	case pairPoint <= -20:
+		return -8
+	case pairPoint < 0:
+		return -4
+	default:
+		return 0
+	}
+}
+
 // MobileSearchHandler handles POST /api/v1/name-search
 func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	setMobileCORSHeaders(w)
+	defer func() {
+		if rec := recover(); rec != nil {
+			log.Printf("MobileSearchHandler panic recovered: %v", rec)
+			jsonResponse(w, http.StatusInternalServerError, MobileSearchResponse{
+				Success: false,
+				Error:   map[string]any{"message": "เกิดข้อผิดพลาดชั่วคราว กรุณาลองใหม่อีกครั้ง"},
+				Results: []MobileNameResult{},
+				Total:   0,
+			})
+		}
+	}()
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusNoContent)
 		return
@@ -304,8 +406,9 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		goodSumMap[sum] = true
 	}
 
-	// 2.5 Get All Pair Types for granular coloring
+	// 2.5 Get pair metadata for granular coloring and ranking
 	pairTypeMap, _ := services.GetPairTypesMap()
+	pairPointMap, _ := services.GetPairPointsMap()
 
 	targetSatSums := []int{}
 	targetShaSums := []int{}
@@ -381,7 +484,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("OpenAI embedding failed: %v", err)
 		embedding = make([]float64, 1536)
 	}
-	log.Printf("MeaningContext: '%s', Embedding[0:5]: %v", meaningContext, embedding[:5])
+	log.Printf("MeaningContext: '%s', EmbeddingPreview: %v", meaningContext, previewEmbedding(embedding, 5))
 
 	buildQuery := func(relaxFilters bool) (string, []interface{}) {
 		isBroadSearch := req.Keyword == ""
@@ -508,11 +611,19 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 					r.TotalSatPairType = pairTypeMap[fmt.Sprintf("%d", r.TotalSat)]
 					r.TotalShaPairType = pairTypeMap[fmt.Sprintf("%d", r.TotalSha)]
 				}
+				if pairPointMap != nil {
+					r.TotalSatPairPoint = pairPointMap[fmt.Sprintf("%d", r.TotalSat)]
+					r.TotalShaPairPoint = pairPointMap[fmt.Sprintf("%d", r.TotalSha)]
+				}
 			}
 
 			if pairTypeMap != nil {
 				r.SatPairType = pairTypeMap[fmt.Sprintf("%d", r.SatSum)]
 				r.ShaPairType = pairTypeMap[fmt.Sprintf("%d", r.ShaSum)]
+			}
+			if pairPointMap != nil {
+				r.SatPairPoint = pairPointMap[fmt.Sprintf("%d", r.SatSum)]
+				r.ShaPairPoint = pairPointMap[fmt.Sprintf("%d", r.ShaSum)]
 			}
 
 			// Highlight Kaki: Individual codepoints (runes).
@@ -529,7 +640,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 
 			// Calculate bonus score based on frontend logic
 			r.BonusCalculated = calculateBonus(r.Name, r.IsSatGood, r.IsShaGood, r.IsTotalSatGood, r.IsTotalShaGood, r.KakiHighlight)
-			r.FinalRankScore, r.RankReasons = calculateFinalRankScoreAndReasons(r, req.SimilarMode && req.Lastname != "")
+			r.FinalRankScore, r.RankReasons = calculateFinalRankScoreAndReasons(&r, req.SimilarMode && req.Lastname != "")
 
 			out = append(out, r)
 		}
@@ -585,11 +696,19 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 					r.TotalSatPairType = pairTypeMap[fmt.Sprintf("%d", r.TotalSat)]
 					r.TotalShaPairType = pairTypeMap[fmt.Sprintf("%d", r.TotalSha)]
 				}
+				if pairPointMap != nil {
+					r.TotalSatPairPoint = pairPointMap[fmt.Sprintf("%d", r.TotalSat)]
+					r.TotalShaPairPoint = pairPointMap[fmt.Sprintf("%d", r.TotalSha)]
+				}
 			}
 
 			if pairTypeMap != nil {
 				r.SatPairType = pairTypeMap[fmt.Sprintf("%d", r.SatSum)]
 				r.ShaPairType = pairTypeMap[fmt.Sprintf("%d", r.ShaSum)]
+			}
+			if pairPointMap != nil {
+				r.SatPairPoint = pairPointMap[fmt.Sprintf("%d", r.SatSum)]
+				r.ShaPairPoint = pairPointMap[fmt.Sprintf("%d", r.ShaSum)]
 			}
 
 			// Highlight Kaki: Individual codepoints (runes).
@@ -605,7 +724,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 
 			// Calculate bonus score based on frontend logic
 			r.BonusCalculated = calculateBonus(r.Name, r.IsSatGood, r.IsShaGood, r.IsTotalSatGood, r.IsTotalShaGood, r.KakiHighlight)
-			r.FinalRankScore, r.RankReasons = calculateFinalRankScoreAndReasons(r, req.SimilarMode && req.Lastname != "")
+			r.FinalRankScore, r.RankReasons = calculateFinalRankScoreAndReasons(&r, req.SimilarMode && req.Lastname != "")
 
 			out = append(out, r)
 		}
@@ -630,8 +749,16 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.SliceStable(results, func(i, j int) bool {
+		mi := normalizedMeaningKey(results[i].Meaning)
+		mj := normalizedMeaningKey(results[j].Meaning)
+		if mi != "" && mi == mj && results[i].NumerologyScore != results[j].NumerologyScore {
+			return results[i].NumerologyScore > results[j].NumerologyScore
+		}
 		if results[i].FinalRankScore != results[j].FinalRankScore {
 			return results[i].FinalRankScore > results[j].FinalRankScore
+		}
+		if results[i].NumerologyScore != results[j].NumerologyScore {
+			return results[i].NumerologyScore > results[j].NumerologyScore
 		}
 		if results[i].SemanticScore != results[j].SemanticScore {
 			return results[i].SemanticScore > results[j].SemanticScore
@@ -670,4 +797,14 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, http.StatusOK, resp)
+}
+
+func previewEmbedding(embedding []float64, size int) []float64 {
+	if len(embedding) == 0 || size <= 0 {
+		return []float64{}
+	}
+	if len(embedding) < size {
+		size = len(embedding)
+	}
+	return embedding[:size]
 }

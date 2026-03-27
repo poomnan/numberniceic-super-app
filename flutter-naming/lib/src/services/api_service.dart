@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/name_model.dart';
@@ -62,16 +63,17 @@ class ApiService {
     };
 
     try {
-      final response = await http
-          .post(
-            url,
-            headers: {"Content-Type": "application/json"},
-            body: jsonEncode(body),
-          )
-          .timeout(_timeout);
+      final response = await _postJsonWithRetry(
+        url,
+        body,
+        retryOnEmptyBody: true,
+      );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'เซิร์ฟเวอร์ตอบกลับไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง',
+        );
         return MobileSearchResponse.fromJson(data);
       } else {
         throw ApiException(
@@ -86,28 +88,34 @@ class ApiService {
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException(
-        'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่\nError: $e',
+        'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
       );
     }
   }
 
-  Future<NameSuggestionsResponse?> getNameSuggestions(String query, {String? meaning}) async {
+  Future<NameSuggestionsResponse?> getNameSuggestions(
+    String query, {
+    String? meaning,
+  }) async {
     if (query.isEmpty) return null;
 
     final queryParams = {'q': query};
     if (meaning != null && meaning.isNotEmpty) {
       queryParams['meaning'] = meaning;
     }
-    
-    final url = Uri.parse('$baseUrl/api/v1/name-suggestions').replace(
-      queryParameters: queryParams,
-    );
+
+    final url = Uri.parse(
+      '$baseUrl/api/v1/name-suggestions',
+    ).replace(queryParameters: queryParams);
 
     try {
       final response = await http.get(url).timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+        final Map<String, dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถอ่านข้อมูลคำแนะนำชื่อได้ในขณะนี้',
+        );
         return NameSuggestionsResponse.fromJson(data);
       } else {
         return null;
@@ -127,7 +135,10 @@ class ApiService {
     try {
       final response = await http.get(url).timeout(_timeout);
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถอ่านความหมายชื่อได้ในขณะนี้',
+        );
         if (data is Map<String, dynamic>) {
           final meaning = data['meaning'];
           if (meaning is String) {
@@ -157,7 +168,10 @@ class ApiService {
       final response = await http.get(url).timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+        final Map<String, dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถถอดรหัสชื่อได้ในขณะนี้',
+        );
         return NameAnalysisResult.fromJson(data);
       } else {
         return null;
@@ -183,7 +197,10 @@ class ApiService {
       final response = await http.get(url).timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+        final Map<String, dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถวิเคราะห์รากศัพท์ได้ในขณะนี้',
+        );
         return NameRootResult.fromJson(data);
       } else {
         return null;
@@ -204,7 +221,10 @@ class ApiService {
       final response = await http.get(url).timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
+        final Map<String, dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถอ่านความหมายตัวเลขได้ในขณะนี้',
+        );
         return NumberMeaningResult.fromJson(data);
       } else {
         return null;
@@ -218,23 +238,30 @@ class ApiService {
     final url = Uri.parse('$baseUrl/api/v1/naming-examples');
 
     try {
-      final response = await http.get(
-        url,
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          "Accept": "application/json,text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        },
-      ).timeout(_timeout);
+      final response = await http
+          .get(
+            url,
+            headers: {
+              "User-Agent":
+                  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+              "Accept":
+                  "application/json,text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            },
+          )
+          .timeout(_timeout);
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถอ่านข้อมูลตัวอย่างชื่อได้ในขณะนี้',
+        );
         return data.map((e) => Map<String, dynamic>.from(e)).toList();
       } else {
-        print("API Error: Status Code ${response.statusCode} for $url");
+        debugPrint("API Error: Status Code ${response.statusCode} for $url");
         return [];
       }
     } catch (e) {
-      print("API Error: Exception caught for $url: $e");
+      debugPrint("API Error: Exception caught for $url: $e");
       return [];
     }
   }
@@ -263,14 +290,18 @@ class ApiService {
     String query = "";
     if (userId != null) {
       query = "user_id=$userId";
-    } else if (deviceId != null)
+    } else if (deviceId != null) {
       query = "device_id=$deviceId";
+    }
 
     final url = Uri.parse('$baseUrl/api/v1/saved-names/list?$query');
     try {
       final response = await http.get(url).timeout(_timeout);
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถอ่านรายชื่อที่บันทึกไว้ได้ในขณะนี้',
+        );
         return data.map((e) => UserSavedName.fromJson(e)).toList();
       }
       return [];
@@ -303,5 +334,50 @@ class ApiService {
     final list = await listSavedNames(deviceId: did);
     savedNamesCache.clear();
     savedNamesCache.addAll(list.map((e) => e.name));
+  }
+
+  static T _decodeJsonBody<T>(
+    http.Response response, {
+    required String fallbackMessage,
+  }) {
+    final body = response.body.trim();
+    if (body.isEmpty) {
+      throw ApiException(fallbackMessage, statusCode: response.statusCode);
+    }
+
+    try {
+      return jsonDecode(body) as T;
+    } on FormatException {
+      throw ApiException(fallbackMessage, statusCode: response.statusCode);
+    }
+  }
+
+  Future<http.Response> _postJsonWithRetry(
+    Uri url,
+    Map<String, dynamic> body, {
+    bool retryOnEmptyBody = false,
+  }) async {
+    http.Response response = await http
+        .post(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(body),
+        )
+        .timeout(_timeout);
+
+    if (retryOnEmptyBody &&
+        response.statusCode == 200 &&
+        response.body.trim().isEmpty) {
+      await Future.delayed(const Duration(milliseconds: 350));
+      response = await http
+          .post(
+            url,
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(body),
+          )
+          .timeout(_timeout);
+    }
+
+    return response;
   }
 }

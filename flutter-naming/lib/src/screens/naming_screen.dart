@@ -30,6 +30,9 @@ enum SearchMode { meaning, name }
 
 class _NamingScreenState extends State<NamingScreen>
     with TickerProviderStateMixin {
+  // Release default: keep premium-ranked names locked for non-VIP users.
+  static const bool _temporaryShowAllRankedNames = false;
+
   final ApiService _apiService = ApiService();
   final TextEditingController _keywordController = TextEditingController();
   String? _selectedNameMeaningName;
@@ -56,6 +59,7 @@ class _NamingScreenState extends State<NamingScreen>
   bool _hasSearched = false;
   bool _isRelaxedSearch =
       false; // New state to track if we show fallback results
+  int _searchRequestId = 0;
   final FocusNode _searchFocusNode = FocusNode();
   final ScrollController _celebsScrollController = ScrollController();
   Timer? _celebsAutoScrollTimer;
@@ -118,8 +122,10 @@ class _NamingScreenState extends State<NamingScreen>
   Future<void> _search({
     bool scrollToResults = false,
     bool showInputSnack = true,
+    bool reloadSelectedName = true,
     String? overrideKeyword,
   }) async {
+    final int requestId = ++_searchRequestId;
     FocusScope.of(context).unfocus();
     final keyword = (overrideKeyword ?? _keywordController.text).trim();
     if (keyword.isEmpty) {
@@ -166,15 +172,14 @@ class _NamingScreenState extends State<NamingScreen>
       _isLoading = true;
       _errorMessage = null;
       _hasSearched = true;
-      _results = []; // Reset results immediately when a new search starts
     });
 
     String finalKeyword = keyword;
 
     // Always attempt to load numerology/meaning for the search query if it's not a long example phrase
-    if (_selectedExampleIndex == null) {
+    if (reloadSelectedName && _selectedExampleIndex == null) {
       await loadSelectedNameMeaning(finalKeyword);
-    } else {
+    } else if (reloadSelectedName) {
       setState(() {
         _selectedNameAnalysis = null;
         _selectedNameMeaningName = null;
@@ -240,8 +245,16 @@ class _NamingScreenState extends State<NamingScreen>
           if (englishRegex.hasMatch(name)) return false;
           if (name.runes.length <= 1) return false;
 
-          final bool isSatGood = useTotal ? r.isTotalSatGood : r.isSatGood;
-          final bool isShaGood = useTotal ? r.isTotalShaGood : r.isShaGood;
+          // In combine mode, users still see the base-name scores on the card.
+          // If a "good numerology/shadow" chip is active, require both the
+          // combined result and the visible base score to pass so no red score
+          // slips into ranked results.
+          final bool passesSatFilter = useTotal
+              ? (r.isSatGood && r.isTotalSatGood)
+              : r.isSatGood;
+          final bool passesShaFilter = useTotal
+              ? (r.isShaGood && r.isTotalShaGood)
+              : r.isShaGood;
 
           // 🛡️ VIP Exclusive Gate:
           // ป้องกันชื่อที่ "ดีเยี่ยมด้วยตัวเอง" (เขียวคู่แบบเดี่ยว) หลุดมา
@@ -252,14 +265,17 @@ class _NamingScreenState extends State<NamingScreen>
           // Non‑VIP restriction is handled by UI blur/lock overlay, not by skipping rows.
 
           // 🎯 Standard Inclusive Filters:
-          if (_filterSat && !isSatGood) return false;
-          if (_filterSha && !isShaGood) return false;
+          if (_filterSat && !passesSatFilter) return false;
+          if (_filterSha && !passesShaFilter) return false;
 
           return true;
         }).toList();
       }
 
       var results = filterAndClean(response.results);
+
+      // Ignore stale responses so old searches cannot override scroll/state.
+      if (!mounted || requestId != _searchRequestId) return;
 
       setState(() {
         _isRelaxedSearch = false; // Reset state
@@ -292,10 +308,12 @@ class _NamingScreenState extends State<NamingScreen>
 
       if (_results.isNotEmpty && scrollToResults) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || requestId != _searchRequestId) return;
           scrollToResults0();
         });
       }
     } catch (e) {
+      if (!mounted || requestId != _searchRequestId) return;
       if (mounted) {
         setState(() {
           _errorMessage = e is ApiException
@@ -310,22 +328,22 @@ class _NamingScreenState extends State<NamingScreen>
 
   Map<String, dynamic> computeStatistics() {
     final bool useTotal = _similarMode && _keywordController.text.isNotEmpty;
+    bool satPassesCurrentMode(MobileNameResult r) =>
+        useTotal ? (r.isSatGood && r.isTotalSatGood) : r.isSatGood;
+    bool shaPassesCurrentMode(MobileNameResult r) =>
+        useTotal ? (r.isShaGood && r.isTotalShaGood) : r.isShaGood;
     int totalNames = _results.length;
 
     // Logic updated: Always count the actual good names in the current results
     int excellentNames = _results.where((r) {
-      final satPass = useTotal ? r.isTotalSatGood : r.isSatGood;
-      final shaPass = useTotal ? r.isTotalShaGood : r.isShaGood;
+      final satPass = satPassesCurrentMode(r);
+      final shaPass = shaPassesCurrentMode(r);
       return satPass && shaPass;
     }).length;
 
-    int numerologyGood = _results
-        .where((r) => useTotal ? r.isTotalSatGood : r.isSatGood)
-        .length;
+    int numerologyGood = _results.where((r) => satPassesCurrentMode(r)).length;
 
-    int shadowGood = _results
-        .where((r) => useTotal ? r.isTotalShaGood : r.isShaGood)
-        .length;
+    int shadowGood = _results.where((r) => shaPassesCurrentMode(r)).length;
 
     String? recommendedDays;
     return {
@@ -506,11 +524,8 @@ class _NamingScreenState extends State<NamingScreen>
             if (mounted && _celebsScrollController.hasClients) {
               final double max =
                   _celebsScrollController.position.maxScrollExtent;
-              final double viewport =
-                  _celebsScrollController.position.viewportDimension;
               if (max > 10) {
-                final double unitWidth = (max + viewport) / 3.0;
-                _celebsScrollController.jumpTo(unitWidth);
+                _celebsScrollController.jumpTo(max * 0.5);
               }
             }
             startCelebsAutoScroll();
@@ -564,35 +579,35 @@ class _NamingScreenState extends State<NamingScreen>
     if (dt <= 0) return;
 
     final double max = _celebsScrollController.position.maxScrollExtent;
-    final double viewport = _celebsScrollController.position.viewportDimension;
+    if (max <= 100) return;
 
-    // Total width of the entire horizontal row (A + B + C)
-    final double totalWidth = max + viewport;
-    if (totalWidth <= 100) return;
-
-    // Dynamic speed calculation based on number of items
     final int itemCount = _celebrities.length;
     final double baseSpeed = 25.0;
     final double speedMultiplier = itemCount > 20 ? 1.5 : 1.0;
     final double dynamicSpeed = baseSpeed * speedMultiplier;
 
-    final double unitWidth = totalWidth / 3.0;
-    double current = _celebsScrollController.offset;
-
-    // Movement: dynamic speed based on item count
+    final double current = _celebsScrollController.offset;
     double next = current + (dynamicSpeed * dt);
 
-    // Infinite Loop: Keep current offset within the central 'B' section
-    // Section A: [0, unitWidth)
-    // Section B: [unitWidth, 2*unitWidth)
-    // Section C: [2*unitWidth, 3*unitWidth]
-    if (next >= unitWidth * 2.0) {
-      next -= unitWidth;
-    } else if (next < unitWidth) {
-      next += unitWidth;
+    if (next >= max - 2) {
+      next = max * 0.5;
+    } else if (next <= 2) {
+      next = max * 0.5;
     }
 
     _celebsScrollController.jumpTo(next);
+  }
+
+  void _normalizeCelebsOffsetIfNeeded() {
+    if (!mounted || !_celebsScrollController.hasClients) return;
+    if (_celebrities.isEmpty) return;
+
+    final double max = _celebsScrollController.position.maxScrollExtent;
+    if (max <= 100) return;
+    final double current = _celebsScrollController.offset;
+    if (current <= 2 || current >= max - 2) {
+      _celebsScrollController.jumpTo(max * 0.5);
+    }
   }
 
   void stopMarqueeTicker() {
@@ -615,7 +630,8 @@ class _NamingScreenState extends State<NamingScreen>
         _resultsKey.currentContext!,
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOut,
-        alignment: 0.1, // Show a bit of the area above the header
+        alignment:
+            0.0, // Keep results summary at top for clearer post-filter context
       );
     }
   }
@@ -674,12 +690,33 @@ class _NamingScreenState extends State<NamingScreen>
       if (suggestions != null) {
         // Filter out English names and single characters from suggestions
         final englishRegex = RegExp(r'[a-zA-Z]');
-        final filteredNames = suggestions.names.where((item) {
-          final name = item.name.trim();
-          if (englishRegex.hasMatch(name)) return false;
-          if (name.runes.length <= 1) return false;
-          return true;
-        }).toList();
+        final normalizedQuery = query.trim();
+        final seenMeanings = <String>{};
+        final filteredNames =
+            suggestions.names.where((item) {
+                final name = item.name.trim();
+                if (englishRegex.hasMatch(name)) return false;
+                if (name.runes.length <= 1) return false;
+                return true;
+              }).toList()
+              ..sort((a, b) {
+                final aExact = a.name.trim() == normalizedQuery;
+                final bExact = b.name.trim() == normalizedQuery;
+                if (aExact == bExact) return 0;
+                return aExact ? -1 : 1;
+              })
+              ..retainWhere((item) {
+                final isExactMatch = item.name.trim() == normalizedQuery;
+                final normalizedMeaning = item.meaning.trim().replaceAll(
+                  RegExp(r'\s+'),
+                  ' ',
+                );
+                if (isExactMatch) return true;
+                if (normalizedMeaning.isEmpty) return true;
+                if (seenMeanings.contains(normalizedMeaning)) return false;
+                seenMeanings.add(normalizedMeaning);
+                return true;
+              });
 
         // Create a new response object with filtered names since the field is final
         suggestions = NameSuggestionsResponse(
@@ -732,10 +769,7 @@ class _NamingScreenState extends State<NamingScreen>
                 mini: true,
                 backgroundColor: AppColors.primary.withOpacity(0.9),
                 elevation: 4,
-                child: const Icon(
-                  Icons.arrow_upward,
-                  color: AppColors.textLight,
-                ),
+                child: const Icon(Icons.arrow_upward, color: Colors.white),
               )
             : const SizedBox.shrink(key: ValueKey('no_back_to_top')),
       ),
@@ -817,13 +851,15 @@ class _NamingScreenState extends State<NamingScreen>
                     child: buildErrorState(_errorMessage!),
                   ),
                 ),
-              if (_isLoading)
+              if (_isLoading && _results.isEmpty)
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
                     child: Center(
                       child: MagicLoadingView(
                         message: "กำลังจัดลำดับชื่อที่ดีที่สุด...",
+                        subtitle:
+                            "กำลังอ่านความหมาย พลังชื่อ และคัดลำดับที่เหมาะกับคุณมากที่สุด",
                         textColor:
                             AppColors.textLight, // Use high-contrast brown text
                       ),
@@ -890,7 +926,9 @@ class _NamingScreenState extends State<NamingScreen>
                         : (item.isSatGood && item.isShaGood);
                     // Release behavior: lock premium names for non-VIP users.
                     final bool isLockedForNonVip =
-                        isDoubleGreen && !PremiumManager().isPremium;
+                        isDoubleGreen &&
+                        !PremiumManager().isPremium &&
+                        !_temporaryShowAllRankedNames;
 
                     final card = NameListItem(
                       key: ValueKey(
@@ -1048,11 +1086,11 @@ class _NamingScreenState extends State<NamingScreen>
               ),
               const SizedBox(height: 2),
               Text(
-                "จัดอันดับชื่อดีที่สุดที่ออกแบบมาเพื่อคุณ",
+                "ค้นหาความหมายเพื่อเลือกชื่อที่เหมาะกับคุณ",
                 style: GoogleFonts.sarabun(
-                  color: AppColors.textGray, // Medium brown for good contrast
+                  color: AppColors.textGray,
                   fontSize: 14,
-                  fontWeight: FontWeight.w600, // Slightly bolder
+                  fontWeight: FontWeight.w600,
                   height: 1.2,
                 ),
               ),
@@ -1570,7 +1608,6 @@ class _NamingScreenState extends State<NamingScreen>
 
   Widget buildSearchForm() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(
           0.05,
@@ -1581,204 +1618,144 @@ class _NamingScreenState extends State<NamingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ===== STEP 1: ค้นหาชื่อจากความหมาย (PRIMARY) =====
-          Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.secondary],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  '1',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  "ค้นหาชื่อตามความหมายที่ต้องการ...",
-                  style: GoogleFonts.prompt(
-                    color: AppColors.textLight,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Store original idea section in the suggestion box, but restore avatars here
-          if (_celebrities.isNotEmpty) ...[
-            Row(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 24, 12, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 4,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Padding(
-                  padding: EdgeInsets.only(top: 15, bottom: 0),
-                  child: Text(
-                    'สแกนชื่อคนที่ประสบความสำเร็จ',
-                    style: TextStyle(
-                      fontFamily: 'Prompt',
-                      color: AppColors.textLight,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      height: 1.5,
-                    ),
-                    overflow: TextOverflow.visible,
-                    maxLines: 1,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            buildCelebritiesRow(),
-            const SizedBox(height: 16),
-          ],
-
-          buildExamples(),
-          const SizedBox(height: 20),
-          buildSearchField(),
-
-          const SizedBox(height: 24),
-
-          // ===== STEP 2: ตั้งค่าเพิ่มเติม (SECONDARY) =====
-          buildMagicRankingHeader(),
-          const SizedBox(height: 18), // Increased from 12
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(child: buildDropdown()),
-              const SizedBox(width: 8),
-              FilterChipWidget(
-                label: "กาลกิณี (คัดออก)",
-                icon: Icons.warning,
-                isActive: _selectedDay != null && _filterKaki,
-                onTap: () {
-                  if (_selectedDay == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          "ระบุวันเกิด เพื่อคัดอักษรกาลกิณีตามตำราโบราณนะคะ",
+                // ===== STEP 1: ค้นหาชื่อจากความหมาย (PRIMARY) =====
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0F9D7A), Color(0xFF13B38A)],
                         ),
-                        backgroundColor: Colors.orange,
-                        duration: Duration(seconds: 2),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0F9D7A).withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    );
-                    return;
-                  }
-                  setState(() => _filterKaki = !_filterKaki);
-                  scrollToStep2();
-                  _search(scrollToResults: true);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 24,
-          ), // Increased from 16 to give VIP Badge space
-          buildFilterChipsSection(),
-          const SizedBox(height: 20), // Increased from 16
-          // Matching Section Removed per User Request
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 60,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => _search(scrollToResults: true),
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF7C3AED), // Purple
-                        Color(0xFFD946EF), // Pink-violet
-                        Color(0xFF9333EA), // Purple-magenta
-                      ],
-                      stops: [0.0, 0.5, 1.0],
+                      child: const Text(
+                        '1',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFD946EF).withOpacity(0.45),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 4),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "ค้นหาชื่อตามความหมายที่ต้องการ...",
+                        style: GoogleFonts.prompt(
+                          color: AppColors.textLight,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                      BoxShadow(
-                        color: const Color(0xFF9333EA).withOpacity(0.35),
-                        blurRadius: 40,
-                        spreadRadius: 4,
-                        offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (_celebrities.isNotEmpty)
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 15, bottom: 0),
+                        child: Text(
+                          'สแกนชื่อคนที่ประสบความสำเร็จ',
+                          style: TextStyle(
+                            fontFamily: 'Prompt',
+                            color: AppColors.textLight,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            height: 1.5,
+                          ),
+                          overflow: TextOverflow.visible,
+                          maxLines: 1,
+                        ),
                       ),
                     ],
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.35),
-                        width: 1.5,
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.white.withOpacity(0.25),
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.1),
-                        ],
-                        stops: const [0.0, 0.4, 1.0],
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.auto_awesome, color: Colors.white, size: 22),
-                        const SizedBox(width: 10),
-                        Text(
-                          "จัดอันดับชื่อที่ดีที่สุด",
-                          style: GoogleFonts.prompt(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.3,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
+              ],
+            ),
+          ),
+          if (_celebrities.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            MediaQuery.removePadding(
+              context: context,
+              removeLeft: true,
+              removeRight: true,
+              child: buildCelebritiesRow(),
+            ),
+            const SizedBox(height: 6),
+          ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildExamples(),
+                const SizedBox(height: 20),
+                buildSearchField(),
+                const SizedBox(height: 24),
+
+                // ===== STEP 2: ตั้งค่าเพิ่มเติม (SECONDARY) =====
+                buildMagicRankingHeader(),
+                const SizedBox(height: 18), // Increased from 12
+
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(child: buildDropdown()),
+                    const SizedBox(width: 8),
+                    FilterChipWidget(
+                      label: "กาลกิณี (คัดออก)",
+                      icon: Icons.warning,
+                      isActive: _selectedDay != null && _filterKaki,
+                      onTap: () {
+                        if (_selectedDay == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "ระบุวันเกิด เพื่อคัดอักษรกาลกิณีตามตำราโบราณนะคะ",
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
+                              backgroundColor: Colors.orange,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          return;
+                        }
+                        setState(() => _filterKaki = !_filterKaki);
+                        _refreshResultsKeepingStep2Anchor();
+                      },
                     ),
-                  ),
+                  ],
                 ),
-              ),
+                const SizedBox(
+                  height: 24,
+                ), // Increased from 16 to give VIP Badge space
+                buildFilterChipsSection(),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ],
@@ -1793,7 +1770,7 @@ class _NamingScreenState extends State<NamingScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Row(
             children: [
               Container(
@@ -1928,135 +1905,126 @@ class _NamingScreenState extends State<NamingScreen>
   Widget buildCelebritiesRow() {
     if (_celebrities.isEmpty) return const SizedBox.shrink();
 
-    // For large screens, we need more items to fill the width before doubling/tripling
-    final List<Map<String, dynamic>> displayList;
-    if (_celebrities.length < 10) {
-      // If few items, multiply enough to fill tablet width and allow smooth infinite scroll
-      displayList = [
-        ..._celebrities,
-        ..._celebrities,
-        ..._celebrities,
-        ..._celebrities,
-      ];
-    } else {
-      displayList = [..._celebrities, ..._celebrities, ..._celebrities];
-    }
+    const double celebItemWidth = 70;
+    const double celebStride = celebItemWidth;
+    final int totalCount = _celebrities.length * 400;
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
-        // Only stop if the scroll is initiated by actual user dragging
         if (notification is UserScrollNotification) {
           if (notification.direction != ScrollDirection.idle) {
             _isCelebsAutoScrolling = false;
           } else {
-            // User stopped dragging
+            _normalizeCelebsOffsetIfNeeded();
             resumeCelebsAutoScrollAfterDelay();
           }
+        } else if (notification is ScrollEndNotification) {
+          _normalizeCelebsOffsetIfNeeded();
         }
         return false;
       },
       child: SizedBox(
-        height: 120, // Increased from 110 to avoid clipping on tablets
-        child: SingleChildScrollView(
+        height: 98,
+        child: ListView.builder(
           controller: _celebsScrollController,
           scrollDirection: Axis.horizontal,
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          child: Row(
-            children: displayList.asMap().entries.map((entry) {
-              final int tripledIndex = entry.key;
-              final int modIndex = tripledIndex % _celebrities.length;
-              final Map<String, dynamic> c = entry.value;
-              final String name = c['name'] ?? '';
-              final String initial = c['initial'] ?? '';
-              final String avatarUrl = c['avatar_url'] ?? '';
+          padding: EdgeInsets.zero,
+          primary: false,
+          physics: const ClampingScrollPhysics(),
+          itemCount: totalCount,
+          itemBuilder: (context, virtualIndex) {
+            final int modIndex = virtualIndex % _celebrities.length;
+            final Map<String, dynamic> c = _celebrities[modIndex];
+            final String name = c['name'] ?? '';
+            final String initial = c['initial'] ?? '';
+            final String avatarUrl = c['avatar_url'] ?? '';
 
-              Color bgColor = AppColors
-                  .avatarBorders[modIndex % AppColors.avatarBorders.length];
-              if (c['color'] != null) {
-                try {
-                  String hex = c['color'].replaceAll('#', '');
-                  if (hex.length == 6) hex = 'FF$hex';
-                  bgColor = Color(int.parse(hex, radix: 16));
-                } catch (_) {}
-              }
+            Color bgColor = AppColors
+                .avatarBorders[modIndex % AppColors.avatarBorders.length];
+            if (c['color'] != null) {
+              try {
+                String hex = c['color'].replaceAll('#', '');
+                if (hex.length == 6) hex = 'FF$hex';
+                bgColor = Color(int.parse(hex, radix: 16));
+              } catch (_) {}
+            }
 
-              final bool isSelected = _selectedCelebrityIndex == tripledIndex;
+            final bool isSelected = _selectedCelebrityIndex == virtualIndex;
 
-              return Padding(
-                padding: const EdgeInsets.only(right: 12, top: 4, bottom: 4),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapDown: (_) {
-                    // Stop marquee immediately on touch down
-                    stopMarqueeTicker();
-                    _celebsAutoScrollTimer?.cancel();
+            return Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (_) {
+                  // Stop marquee immediately on touch down
+                  stopMarqueeTicker();
+                  _celebsAutoScrollTimer?.cancel();
 
-                    if (_celebsScrollController.hasClients) {
-                      _celebsScrollController.jumpTo(
-                        _celebsScrollController.offset,
-                      );
+                  if (_celebsScrollController.hasClients) {
+                    _celebsScrollController.jumpTo(
+                      _celebsScrollController.offset,
+                    );
+                  }
+                },
+                onTapCancel: () {
+                  // Resume auto-scroll if it was a drag gesture
+                  resumeCelebsAutoScrollAfterDelay();
+                },
+                onTap: () {
+                  // Execute selection logic ONLY on actual tap
+                  setState(() {
+                    _keywordController.text = name;
+                    _similarMode = false;
+                    _selectedCelebrityIndex = virtualIndex;
+                    _selectedExampleIndex = null;
+                  });
+
+                  // Trigger Analysis immediately
+                  loadSelectedNameMeaning(name);
+                  fetchNameSuggestionsDebounced(name);
+
+                  // Centering with animation
+                  if (context.mounted) {
+                    final double screenWidth = MediaQuery.of(
+                      context,
+                    ).size.width;
+                    final double avatarCenterInList =
+                        (virtualIndex * celebStride) + (celebItemWidth / 2.0);
+                    final double targetOffset =
+                        avatarCenterInList - (screenWidth / 2.0);
+
+                    _celebsScrollController
+                        .animateTo(
+                          targetOffset.clamp(
+                            0.0,
+                            _celebsScrollController.position.maxScrollExtent,
+                          ),
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.easeOutCubic,
+                        )
+                        .then((_) {
+                          _celebsAutoScrollTimer?.cancel();
+                          _celebsAutoScrollTimer = Timer(
+                            const Duration(seconds: 7),
+                            () {
+                              if (mounted) {
+                                startCelebsAutoScroll();
+                              }
+                            },
+                          );
+                        });
+                  }
+
+                  // Execute search results
+                  Future.delayed(const Duration(milliseconds: 600), () {
+                    if (mounted) {
+                      _search(scrollToResults: false);
+                      scrollToSearchField();
                     }
-                  },
-                  onTapCancel: () {
-                    // Resume auto-scroll if it was a drag gesture
-                    resumeCelebsAutoScrollAfterDelay();
-                  },
-                  onTap: () {
-                    // Execute selection logic ONLY on actual tap
-                    setState(() {
-                      _keywordController.text = name;
-                      _similarMode = false;
-                      _selectedCelebrityIndex = tripledIndex;
-                      _selectedExampleIndex = null;
-                    });
-
-                    // Trigger Analysis immediately
-                    loadSelectedNameMeaning(name);
-                    fetchNameSuggestionsDebounced(name);
-
-                    // Centering with animation
-                    if (context.mounted) {
-                      const double itemWidth = 70.0;
-                      final double screenWidth = MediaQuery.of(
-                        context,
-                      ).size.width;
-                      final double avatarCenterInList =
-                          (tripledIndex * itemWidth) + (58 / 2.0);
-                      final double targetOffset =
-                          avatarCenterInList - (screenWidth / 2.0);
-
-                      _celebsScrollController
-                          .animateTo(
-                            targetOffset.clamp(
-                              0.0,
-                              _celebsScrollController.position.maxScrollExtent,
-                            ),
-                            duration: const Duration(milliseconds: 800),
-                            curve: Curves.easeOutCubic,
-                          )
-                          .then((_) {
-                            _celebsAutoScrollTimer?.cancel();
-                            _celebsAutoScrollTimer = Timer(
-                              const Duration(seconds: 7),
-                              () {
-                                if (mounted) {
-                                  startCelebsAutoScroll();
-                                }
-                              },
-                            );
-                          });
-                    }
-
-                    // Execute search results
-                    Future.delayed(const Duration(milliseconds: 600), () {
-                      if (mounted) {
-                        _search(scrollToResults: false);
-                        scrollToSearchField();
-                      }
-                    });
-                  },
+                  });
+                },
+                child: SizedBox(
+                  width: celebItemWidth,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -2155,39 +2123,27 @@ class _NamingScreenState extends State<NamingScreen>
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.textLight.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
+                      SizedBox(
+                        width: celebItemWidth,
                         child: Text(
                           name,
-                          style: GoogleFonts.prompt(
-                            color: AppColors.bgDark,
-                            fontSize: 12,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.sarabun(
+                            color: const Color(0xFF4F8FE8),
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
-                            height: 1.1,
+                            height: 1.15,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -2336,65 +2292,9 @@ class _NamingScreenState extends State<NamingScreen>
         Builder(
           builder: (context) {
             final isTyping = _keywordController.text.isNotEmpty;
-            final hasIdeas = _nameSuggestions?.ideas.isNotEmpty ?? false;
             final hasNames = _nameSuggestions?.names.isNotEmpty ?? false;
             final showApiSuggestions =
-                isTyping && (hasIdeas || hasNames || _loadingSuggestions);
-
-            final defaultIdeas = [
-              "นักธุรกิจ ร่ำรวย มั่งคั่ง",
-              "หญิงสาวผู้อ่อนหวาน เป็นที่รัก",
-              "ผู้นำที่มีอำนาจ กล้าหาญ",
-              "นักปราชญ์ สติปัญญา",
-              "สุขภาพดี อายุยืน",
-              "ชื่อมงคล มีเสน่ห์ เมตตา",
-            ];
-
-            final currentIdeas = (isTyping && hasIdeas)
-                ? _nameSuggestions!.ideas
-                      .where(
-                        (idea) => idea.trim() != _keywordController.text.trim(),
-                      )
-                      .toList()
-                : defaultIdeas;
-
-            final ideaChips = currentIdeas
-                .map(
-                  (text) => Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        _keywordController.text = text;
-                        _keywordController.selection = TextSelection.collapsed(
-                          offset: text.length,
-                        );
-                        _search();
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                          ),
-                        ),
-                        child: Text(
-                          text,
-                          style: TextStyle(
-                            color: AppColors.textLight,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-                .toList();
+                isTyping && (hasNames || _loadingSuggestions);
 
             if (!showApiSuggestions) {
               return const SizedBox.shrink();
@@ -2438,6 +2338,30 @@ class _NamingScreenState extends State<NamingScreen>
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.secondary.withOpacity(0.14),
+                        ),
+                      ),
+                      child: Text(
+                        "เรียงจากชื่อที่มีความหมายใกล้กับชื่อที่คุณพิมพ์มากที่สุดอยู่ด้านบน แล้วค่อยลดหลั่นลงมา โดยใช้ AI semantic search เทียบจากความหมายเป็นหลัก",
+                        style: GoogleFonts.sarabun(
+                          color: AppColors.textGray,
+                          fontSize: 12,
+                          height: 1.45,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     if (_loadingSuggestions)
@@ -2549,31 +2473,6 @@ class _NamingScreenState extends State<NamingScreen>
                         }).toList(),
                       ),
                   ],
-
-                  if (hasIdeas && currentIdeas.isNotEmpty) ...[
-                    if (_loadingSuggestions || hasNames)
-                      const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.lightbulb_outline_rounded,
-                          color: Color(0xFFFBBF24),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "ไอเดียความหมายอื่นๆ:",
-                          style: GoogleFonts.prompt(
-                            color: const Color(0xFFFBBF24),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(spacing: 8, runSpacing: 8, children: ideaChips),
-                  ],
                 ],
               ),
             );
@@ -2651,68 +2550,157 @@ class _NamingScreenState extends State<NamingScreen>
   }
 
   Widget buildDropdown() {
+    final bool hasSelectedDay = _selectedDay != null;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: hasSelectedDay
+              ? [const Color(0xFFFFF8DF), Colors.white, const Color(0xFFFDF2FF)]
+              : [Colors.white, const Color(0xFFFFFCF2)],
+        ),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _selectedDay != null
-              ? AppColors.accent
-              : AppColors.secondary.withOpacity(0.2),
-          width: 1.5,
+          color: hasSelectedDay
+              ? const Color(0xFFD4AF37)
+              : AppColors.secondary.withOpacity(0.18),
+          width: hasSelectedDay ? 1.8 : 1.4,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: hasSelectedDay
+                ? const Color(0xFFD4AF37).withOpacity(0.14)
+                : Colors.black.withOpacity(0.04),
+            blurRadius: hasSelectedDay ? 16 : 10,
+            offset: const Offset(0, 6),
           ),
+          if (hasSelectedDay)
+            BoxShadow(
+              color: const Color(0xFF8B5CF6).withOpacity(0.08),
+              blurRadius: 18,
+              spreadRadius: 1,
+              offset: const Offset(0, 8),
+            ),
         ],
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedDay,
-          hint: Text(
-            "เลือกวันเกิด...",
-            style: TextStyle(
-              color: AppColors.textGray.withOpacity(0.6),
-              fontSize: 14,
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: hasSelectedDay
+                    ? [const Color(0xFFF7D046), const Color(0xFFD4AF37)]
+                    : [const Color(0xFFE6FBF7), const Color(0xFFD7F4EE)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      (hasSelectedDay
+                              ? const Color(0xFFD4AF37)
+                              : AppColors.primary)
+                          .withOpacity(0.18),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(
+              hasSelectedDay
+                  ? Icons.auto_awesome_rounded
+                  : Icons.calendar_month_rounded,
+              color: hasSelectedDay
+                  ? const Color(0xFF6B4E16)
+                  : AppColors.primary,
+              size: 16,
             ),
           ),
-          style: const TextStyle(
-            color: AppColors.textLight,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-          dropdownColor: Colors.white,
-          isExpanded: true,
-          icon: Icon(Icons.expand_more_rounded, color: AppColors.secondary),
-          items: _days.map((String day) {
-            return DropdownMenuItem<String>(
-              value: day,
-              child: Text(
-                _dayLabels[day]!,
-                style: const TextStyle(
+          const SizedBox(width: 10),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedDay,
+                menuWidth: MediaQuery.of(context).size.width - 48,
+                hint: Text(
+                  "เลือกวันเกิด...",
+                  style: GoogleFonts.prompt(
+                    color: AppColors.textGray.withOpacity(0.62),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: GoogleFonts.prompt(
                   color: AppColors.textLight,
                   fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
+                dropdownColor: Colors.white,
+                isExpanded: true,
+                icon: Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: hasSelectedDay
+                        ? const Color(0xFFFFF4CC)
+                        : AppColors.secondary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: hasSelectedDay
+                        ? const Color(0xFFC58B00)
+                        : AppColors.secondary,
+                    size: 20,
+                  ),
+                ),
+                selectedItemBuilder: (context) {
+                  return _days.map((day) {
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _dayLabels[day]!,
+                        style: GoogleFonts.prompt(
+                          color: AppColors.textLight,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    );
+                  }).toList();
+                },
+                items: _days.map((String day) {
+                  return DropdownMenuItem<String>(
+                    value: day,
+                    child: Text(
+                      _dayLabels[day]!,
+                      style: GoogleFonts.prompt(
+                        color: AppColors.textLight,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedDay = newValue;
+                    if (newValue == null) {
+                      _filterKaki = false;
+                    } else {
+                      _filterKaki = true;
+                    }
+                  });
+                  _refreshResultsKeepingStep2Anchor();
+                },
               ),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedDay = newValue;
-              if (newValue == null) {
-                _filterKaki = false;
-              } else {
-                _filterKaki = true;
-              }
-            });
-            scrollToStep2();
-            _search(scrollToResults: true, showInputSnack: false);
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2734,17 +2722,31 @@ class _NamingScreenState extends State<NamingScreen>
                 16,
               ), // Increased top padding from 28 to 36
               decoration: BoxDecoration(
-                color: const Color(0xFF8B5CF6).withOpacity(0.05),
-                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFFF8F3FF),
+                    const Color(0xFFF4EEFF),
+                    const Color(0xFFFFF9EC),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: const Color(0xFF8B5CF6).withOpacity(0.2),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF8B5CF6).withOpacity(0.03),
-                    blurRadius: 15,
+                    color: const Color(0xFF8B5CF6).withOpacity(0.05),
+                    blurRadius: 18,
                     spreadRadius: 2,
+                    offset: const Offset(0, 10),
+                  ),
+                  BoxShadow(
+                    color: const Color(0xFFD4AF37).withOpacity(0.05),
+                    blurRadius: 22,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -2763,8 +2765,7 @@ class _NamingScreenState extends State<NamingScreen>
                         activeTextColor: Colors.white,
                         onTap: () async {
                           setState(() => _filterSat = !_filterSat);
-                          scrollToStep2();
-                          _search(scrollToResults: true, showInputSnack: false);
+                          _refreshResultsKeepingStep2Anchor();
                         },
                       ),
                       FilterChipWidget(
@@ -2775,8 +2776,7 @@ class _NamingScreenState extends State<NamingScreen>
                         activeTextColor: Colors.white,
                         onTap: () async {
                           setState(() => _filterSha = !_filterSha);
-                          scrollToStep2();
-                          _search(scrollToResults: true, showInputSnack: false);
+                          _refreshResultsKeepingStep2Anchor();
                         },
                       ),
                       FilterChipWidget(
@@ -2802,8 +2802,7 @@ class _NamingScreenState extends State<NamingScreen>
                           }
 
                           setState(() => _similarMode = !_similarMode);
-                          scrollToStep2();
-                          _search(scrollToResults: true, showInputSnack: false);
+                          _refreshResultsKeepingStep2Anchor();
                         },
                       ),
                     ],
@@ -2823,14 +2822,14 @@ class _NamingScreenState extends State<NamingScreen>
                 ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    colors: [Color(0xFF1F2937), Color(0xFF111827)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFD97706).withOpacity(0.5),
+                      color: Colors.black.withOpacity(0.35),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -2846,7 +2845,7 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      "ชื่อพรีเมียม • กดปิดป้ายเพื่อปลดล็อก",
+                      "หาชื่อตามตำราที่ดีที่สุดจาก 3 แสนรายชื่อ",
                       style: GoogleFonts.prompt(
                         color: Colors.white,
                         fontSize: 11,
@@ -3328,10 +3327,11 @@ class _NamingScreenState extends State<NamingScreen>
           const SizedBox(height: 20),
           Text(
             "วิเคราะห์จากชื่อจริง +3 แสนชื่อ",
+            textAlign: TextAlign.center,
             style: GoogleFonts.prompt(
-              color: AppColors.textGray.withOpacity(0.5),
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+              color: AppColors.textLight.withOpacity(0.9),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 40),
@@ -3483,13 +3483,36 @@ class _NamingScreenState extends State<NamingScreen>
                 NameRootResult? rootData;
 
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  content = const SizedBox(
-                    height: 180,
+                  content = SizedBox(
+                    height: 120,
                     child: Center(
-                      child: MagicLoadingView(
-                        height: 110,
-                        message: "กำลังวิเคราะห์รากศัพท์มงคล...",
-                        textColor: AppColors.textGray,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 28,
+                            height: 28,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primary,
+                              ),
+                              backgroundColor: AppColors.primary.withOpacity(
+                                0.12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            "กำลังวิเคราะห์รากศัพท์มงคล...",
+                            style: GoogleFonts.sarabun(
+                              color: AppColors.textGray,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -3651,11 +3674,11 @@ class _NamingScreenState extends State<NamingScreen>
                             : const Icon(
                                 Icons.favorite_rounded,
                                 size: 18,
-                                color: AppColors.textLight,
+                                color: Color(0xFFD946EF),
                               ),
                         label: const Text(
                           "บันทึกชื่อนี้",
-                          style: TextStyle(color: AppColors.textLight),
+                          style: TextStyle(color: Color(0xFF6B21A8)),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary.withOpacity(0.15),
@@ -3723,6 +3746,30 @@ class _NamingScreenState extends State<NamingScreen>
     });
   }
 
+  void _refreshResultsKeepingStep2Anchor() {
+    final hasQuery = _keywordController.text.trim().isNotEmpty;
+    if (hasQuery) {
+      final double? lockedOffset = _scrollController.hasClients
+          ? _scrollController.offset
+          : null;
+
+      _search(
+        scrollToResults: false,
+        showInputSnack: false,
+        reloadSelectedName: false,
+      ).then((_) {
+        if (!mounted || lockedOffset == null || !_scrollController.hasClients) {
+          return;
+        }
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        final target = lockedOffset.clamp(0.0, maxScroll);
+        if ((_scrollController.offset - target).abs() > 1) {
+          _scrollController.jumpTo(target);
+        }
+      });
+    }
+  }
+
   Widget buildMagicRankingHeader() {
     return Column(
       key: _step2Key,
@@ -3736,12 +3783,12 @@ class _NamingScreenState extends State<NamingScreen>
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [Color(0xFF0F9D7A), Color(0xFF13B38A)],
                 ),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                    color: const Color(0xFF0F9D7A).withOpacity(0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -3814,9 +3861,9 @@ class _MagicSubtitleAnimationState extends State<_MagicSubtitleAnimation>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF4F46E5), // Indigo (Deep Contrast)
-                const Color(0xFFD97706), // Power Gold (Vibrant)
-                const Color(0xFF4F46E5), // Indigo (Deep Contrast)
+                const Color(0xFF0B8F70),
+                const Color(0xFFD97706),
+                const Color(0xFF0B8F70),
               ],
               stops: [
                 (shimmer.value - 0.3).clamp(0.0, 1.0),
