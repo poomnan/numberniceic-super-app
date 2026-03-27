@@ -8,6 +8,76 @@ class NewsController extends Manager
 {
     private $startTime;
 
+    private function encodeUrlPathPreserveSlash($path)
+    {
+        $parts = explode('/', trim((string) $path));
+        $encoded = array_map(function ($part) {
+            return rawurlencode($part);
+        }, array_filter($parts, function ($part) {
+            return $part !== '';
+        }));
+        return implode('/', $encoded);
+    }
+
+    private function buildUploadsNewsUrl($host, $pathOrFile)
+    {
+        $raw = trim((string) $pathOrFile);
+        if ($raw === '') {
+            return '';
+        }
+        $encodedPath = $this->encodeUrlPathPreserveSlash($raw);
+        return rtrim($host, '/') . "/public/uploads/news/" . ltrim($encodedPath, '/');
+    }
+
+    private function normalizeNewsImageUrl($host, $rawImage)
+    {
+        $raw = trim((string) $rawImage);
+        if ($raw === '' || strcasecmp($raw, 'null') === 0 || strcasecmp($raw, 'undefined') === 0) {
+            return '';
+        }
+
+        if (stripos($raw, '<img') !== false && preg_match('/src=["\']([^"\']+)["\']/i', $raw, $matches)) {
+            $raw = trim((string) ($matches[1] ?? ''));
+        }
+
+        $raw = html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $raw = trim($raw, " \t\n\r\0\x0B\"'");
+
+        if ($raw === '') {
+            return '';
+        }
+
+        // Force legacy ananya hosts to current host so mobile app no longer depends
+        // on old hosting.
+        $parsed = @parse_url($raw);
+        $legacyHost = strtolower((string) ($parsed['host'] ?? ''));
+        if ($legacyHost === 'ananya.in.th' || $legacyHost === 'www.ananya.in.th') {
+            $path = (string) ($parsed['path'] ?? '');
+            $query = isset($parsed['query']) ? ('?' . $parsed['query']) : '';
+            $raw = rtrim($host, '/') . $path . $query;
+        }
+
+        if (stripos($raw, 'http://') === 0 || stripos($raw, 'https://') === 0 || stripos($raw, 'data:') === 0) {
+            return $raw;
+        }
+        if (strpos($raw, '//') === 0) {
+            return 'https:' . $raw;
+        }
+        if (strpos($raw, '/public/uploads/news/') === 0 || strpos($raw, 'public/uploads/news/') === 0) {
+            return rtrim($host, '/') . '/' . ltrim($raw, '/');
+        }
+        if (strpos($raw, '/uploads/news/') === 0 || strpos($raw, 'uploads/news/') === 0) {
+            return rtrim($host, '/') . '/public/' . ltrim($raw, '/');
+        }
+        if (strpos($raw, '/') === false) {
+            return $this->buildUploadsNewsUrl($host, $raw);
+        }
+        if (strpos($raw, '/') === 0) {
+            return rtrim($host, '/') . $raw;
+        }
+        return rtrim($host, '/') . '/' . ltrim($raw, '/');
+    }
+
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
@@ -476,15 +546,24 @@ class NewsController extends Manager
             $headline = $article['news_headline'] ?? $article['news_topic'] ?? $article['topic'] ?? $article['news_header'] ?? $article['head_text'] ?? $article['title'] ?? $article['name'] ?? $article['subject'] ?? '';
             $short = $article['news_title_short'] ?? $article['news_short'] ?? $headline;
             $desc = $article['news_desc'] ?? $article['intro'] ?? $article['description'] ?? $article['excerpt'] ?? mb_substr(strip_tags($article['news_detail'] ?? $article['detail'] ?? $article['content'] ?? $article['body'] ?? ''), 0, 100);
-            $img = $article['news_pic_header'] ?? $article['news_picture'] ?? $article['photo'] ?? $article['photo1'] ?? $article['cover'] ?? $article['image'] ?? $article['img'] ?? $article['file_name'] ?? $article['url'] ?? '';
+            // Prefer local uploaded file name from `photo` with canonical upload path.
+            $localPhoto = trim($article['photo'] ?? '');
+            if ($localPhoto !== '') {
+                $img = $this->buildUploadsNewsUrl($host, $localPhoto);
+            } else {
+                // Keep only image-ish fields; do not fall back to generic `url` because
+                // that can point to non-image links and cause broken image placeholders.
+                $img = $article['news_pic_header'] ?? $article['news_picture'] ?? $article['photo1'] ?? $article['cover'] ?? $article['image'] ?? $article['img'] ?? $article['file_name'] ?? '';
+            }
             $date = $article['news_date'] ?? $article['created_at'] ?? $article['date'] ?? $article['published_at'] ?? '';
             $cat = $article['category_name'] ?? $article['category'] ?? 'ทั่วไป';
 
             $fix = $article['fix'] ?? '0';
             $detail = $article['news_detail'] ?? $article['detail'] ?? $article['content'] ?? '';
 
-            if (!empty($img) && strpos($img, 'http') !== 0) {
-                $img = $host . '/' . ltrim($img, '/');
+            $img = $this->normalizeNewsImageUrl($host, $img);
+            if ($img === '/' || $img === $host . '/') {
+                $img = '';
             }
 
             // Fix relative images in HTML detail content for Mobile Apps
@@ -529,13 +608,11 @@ class NewsController extends Manager
 
             $localPhoto = trim($article['photo'] ?? '');
             if ($localPhoto !== '') {
-                $img = $host . "/public/uploads/news/" . rawurlencode($localPhoto);
+                $img = $this->buildUploadsNewsUrl($host, $localPhoto);
             } else {
                 $img = $article['news_pic_header'] ?? '';
-                if (!empty($img) && strpos($img, 'http') !== 0) {
-                    $img = $host . '/' . ltrim($img, '/');
-                }
             }
+            $img = $this->normalizeNewsImageUrl($host, $img);
 
             return [
                 'newsid' => $id,
