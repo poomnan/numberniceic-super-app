@@ -16,6 +16,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.view.Gravity
 import android.graphics.Typeface
+import android.animation.ArgbEvaluator
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
+import android.graphics.drawable.GradientDrawable
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
@@ -69,6 +73,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import com.numberniceic.data.admin.SpellItem
+import android.view.animation.LinearInterpolator
 
 
 class PersonNewsF : Fragment() {
@@ -86,6 +91,8 @@ class PersonNewsF : Fragment() {
     private var spellAdapter: SpellAdapter? = null
     private var buddhaAnnualAdapter: BuddhaAdapter? = null
     private var buddhaLifetimeAdapter: BuddhaAdapter? = null
+    private var rengyamMagicAnimator: AnimatorSet? = null
+    private var rengyamSparkleDrawable: GradientDrawable? = null
 
     private val refreshReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: android.content.Intent?) {
@@ -135,6 +142,7 @@ class PersonNewsF : Fragment() {
 
         setupClickListeners()
         initRengYam(view.context)
+        startRengyamMagicAnimation()
         initDressColor3Day()
         
         // News Section Removed
@@ -262,6 +270,7 @@ class PersonNewsF : Fragment() {
     }
 
     override fun onDestroyView() {
+        stopRengyamMagicAnimation()
         super.onDestroyView()
         try {
             requireContext().unregisterReceiver(refreshReceiver)
@@ -857,6 +866,63 @@ class PersonNewsF : Fragment() {
         binding.linearRengyam.isVisible = true
     }
 
+    private fun startRengyamMagicAnimation() {
+        val target = binding.linearRengyam
+        stopRengyamMagicAnimation()
+
+        val density = resources.displayMetrics.density
+        val frameDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setColor(Color.parseColor("#F2DF5E"))
+            cornerRadius = 0f
+        }
+        target.background = frameDrawable
+
+        rengyamSparkleDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            colors = intArrayOf(Color.parseColor("#FFFDE7"), Color.parseColor("#FFD54F"))
+        }
+        val sparkle = rengyamSparkleDrawable ?: return
+        target.overlay.add(sparkle)
+
+        target.post {
+            val sparkleRun = ValueAnimator.ofFloat(0f, 1f).apply {
+                duration = 2400
+                repeatCount = ValueAnimator.INFINITE
+                interpolator = LinearInterpolator()
+                addUpdateListener { animator ->
+                    val t = animator.animatedValue as Float
+                    val inset = 1.5f * density
+                    val width = target.width.toFloat()
+                    if (width <= 0f) return@addUpdateListener
+                    val sparkleSize = (14f * density).toInt()
+                    val half = sparkleSize / 2
+                    val x = inset + ((width - inset * 2) * t)
+                    val y = target.height.toFloat() - inset - half - (1f * density)
+                    sparkle.setBounds(
+                        (x - half).toInt(),
+                        (y - half).toInt(),
+                        (x + half).toInt(),
+                        (y + half).toInt()
+                    )
+                    sparkle.alpha = 255
+                }
+            }
+
+            rengyamMagicAnimator = AnimatorSet().apply {
+                playTogether(sparkleRun)
+                start()
+            }
+        }
+    }
+
+    private fun stopRengyamMagicAnimation() {
+        rengyamMagicAnimator?.cancel()
+        rengyamMagicAnimator = null
+        rengyamSparkleDrawable?.let { binding.linearRengyam.overlay.remove(it) }
+        rengyamSparkleDrawable = null
+    }
+
     private fun setCurrentDate() {
         val dt = DateTime()
         val day = if (PersonContextManager.toThaiDay(dt.dayOfWeek().asText) == "") dt.dayOfWeek().asText else PersonContextManager.toThaiDay(dt.dayOfWeek().asText)
@@ -982,6 +1048,7 @@ class PersonNewsF : Fragment() {
             binding.linearDoView.isVisible = true
             binding.linearColorBag.isVisible = true
             binding.txtNameUser.text = "คุณ${userx.realName}"
+            binding.txtUserBirthPrefix.text = "คุณเกิด"
 
 
             if (userx.birthDay != null) {
@@ -1036,6 +1103,7 @@ class PersonNewsF : Fragment() {
             binding.linearRengyam.isVisible = true
             
             binding.txtNameUser.text = "ยินดีต้อนรับ"
+            binding.txtUserBirthPrefix.text = "คุณ"
             binding.txtDayBirth.text = "บุคคลทั่วไป"
             
             binding.txtBagDesc.text = "ติดต่อเปิดดวงเพื่อดูสีกระเป๋าของคุณในปีนี้"

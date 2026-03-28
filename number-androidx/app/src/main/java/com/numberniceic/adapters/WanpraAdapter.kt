@@ -452,10 +452,17 @@ class WanpraAdapter(
 
             if (!data.todayDateStr.isNullOrEmpty()) {
                 val userName = data.userName ?: ""
-                val fullText = "ดูฤกษ์ดีฤกษ์เศรษฐีปี 2569 สำหรับคุณ $userName คลิ๊ก"
+                val guestOrUser = if (isLoggedInUser && userName.isNotEmpty()) "$userName " else ""
+                val fullText = "● ดูฤกษ์ดีฤกษ์เศรษฐีปี 2569 สำหรับคุณ ${guestOrUser}คลิ๊ก"
                 val spannable = android.text.SpannableString(fullText)
                 
                 txtGreetingMsg?.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
+                spannable.setSpan(
+                    MagicDotSpan(itemView.resources.displayMetrics.density),
+                    0,
+                    1,
+                    android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
 
                 // Color for Username
                 if (userName.isNotEmpty()) {
@@ -483,6 +490,7 @@ class WanpraAdapter(
                 }
                 
                 txtGreetingMsg?.text = spannable
+                txtGreetingMsg?.let { applyMagicDotBadge(it) }
             }
         }
 

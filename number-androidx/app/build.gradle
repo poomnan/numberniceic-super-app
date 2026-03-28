@@ -13,7 +13,7 @@ android {
         minSdk rootProject.min_sdk
         targetSdk rootProject.target_sdk
         versionCode 55
-        versionName "5.9 vc15"
+        versionName "5.9 vc24"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

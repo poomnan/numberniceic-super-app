@@ -199,8 +199,6 @@ class UserLoginF : androidx.fragment.app.Fragment() {
                                 override fun onResponse(call: retrofit2.Call<JsonObject>, response: retrofit2.Response<JsonObject>) {
                                     if (isAdded) {
                                         Log.d("UserLoginF", "FCM Token update response: ${response.code()}")
-                                        // Show SUCCESS toast here too
-                                         Toast.makeText(requireContext(), "อัปเดต Token สำเร็จ ✅", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                                 override fun onFailure(call: retrofit2.Call<JsonObject>, t: Throwable) {
@@ -216,18 +214,13 @@ class UserLoginF : androidx.fragment.app.Fragment() {
             }
 
             Log.d("UserLoginF", "Login SUCCESS. User: ${serverx.userx.userId}")
-            
-            if (parentFragment is LoginBottomSheet) {
-                (parentFragment as LoginBottomSheet).dismiss()
-            } else if (activity is UserLoginAct) {
-                activity?.finish()
-            } else {
-                 if (parentFragment is com.google.android.material.bottomsheet.BottomSheetDialogFragment) {
-                    (parentFragment as com.google.android.material.bottomsheet.BottomSheetDialogFragment).dismiss()
-                 } else {
-                    activity?.onBackPressedDispatcher?.onBackPressed()
-                 }
+
+            val goHomeIntent = Intent(requireContext(), AppActivity::class.java).apply {
+                putExtra("open_home_after_login", true)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
+            startActivity(goHomeIntent)
+            activity?.finish()
         } else {
             Toast.makeText(requireContext(), "User Name หรือ Password ไม่ถูกต้อง!!", Toast.LENGTH_LONG).show()
         }

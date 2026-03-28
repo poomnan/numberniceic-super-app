@@ -498,7 +498,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(24),
+                          bottomLeft: Radius.circular(8),
                           topRight: Radius.circular(24),
                         ),
                         boxShadow: [

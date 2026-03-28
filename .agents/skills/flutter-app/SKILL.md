@@ -33,6 +33,14 @@ Use this skill for prompts containing:
 - For non-VIP users, premium-name lock should be visual overlay on the name area, not full-card blur.
 - Overlay tap should open paywall directly.
 - Do not hide/remove premium rows from list; show the card and lock only the final name display.
+- In `similarMode` (`รวมให้เป็น "ชื่อดี"`), the card shows both base-name scores and combined `total` scores. If `เลขศาสตร์ดี` or `พลังเงาดี` is active, do not filter by `total` alone; require the visible base score to pass too, or users will see red circles in a "good" filtered list.
+- When computing ranking statistics in `similarMode`, use the same pass/fail rule as the visible list so summary counts do not disagree with the rendered cards.
+- If ranking cards visually expose `pairType` strength (`D5/D8/D10`) or `pairpoint`, the order should not contradict that visual signal for names with the same meaning. In that case, numerology quality should win before semantic tie-break noise.
+- Debug/proof UI for ranking should stay compact. Prefer merging `pairType/pairpoint` into existing `เลขศาสตร์` / `พลังเงา` lines on the back of the card rather than adding a separate debug panel that repeats the same information.
+
+## Known UX / Screen Notes
+- The compact status banner above results is presentation-only. It should not behave like a navigation CTA unless it truly changes the result set.
+- In the ranking cards, the matching/combined section should stay compact. Extra label rows can create misleading empty space inside the card.
 
 ## Debug Workflow
 1. Reproduce in the target screen and capture endpoint called.

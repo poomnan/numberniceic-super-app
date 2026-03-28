@@ -19,8 +19,21 @@ class MobileNameResult {
   final String shaPairType;
   final String totalSatPairType;
   final String totalShaPairType;
+  final int satPairPoint;
+  final int shaPairPoint;
+  final int totalSatPairPoint;
+  final int totalShaPairPoint;
   final List<CharHighlight> kakiHighlight;
   final int finalRankScore;
+  final int semanticRankScore;
+  final int numerologyRankScore;
+  final int pairTypeBonus;
+  final int pairPointBonus;
+  final int lengthBonus;
+  final int kakiBonus;
+  final int satBonus;
+  final int shaBonus;
+  final int doubleBonus;
   final List<String> rankReasons;
 
   MobileNameResult({
@@ -44,8 +57,21 @@ class MobileNameResult {
     this.shaPairType = '',
     this.totalSatPairType = '',
     this.totalShaPairType = '',
+    this.satPairPoint = 0,
+    this.shaPairPoint = 0,
+    this.totalSatPairPoint = 0,
+    this.totalShaPairPoint = 0,
     required this.kakiHighlight,
     this.finalRankScore = 0,
+    this.semanticRankScore = 0,
+    this.numerologyRankScore = 0,
+    this.pairTypeBonus = 0,
+    this.pairPointBonus = 0,
+    this.lengthBonus = 0,
+    this.kakiBonus = 0,
+    this.satBonus = 0,
+    this.shaBonus = 0,
+    this.doubleBonus = 0,
     this.rankReasons = const [],
   });
 
@@ -86,8 +112,21 @@ class MobileNameResult {
       shaPairType: json['sha_pair_type'] ?? '',
       totalSatPairType: json['total_sat_pair_type'] ?? '',
       totalShaPairType: json['total_sha_pair_type'] ?? '',
+      satPairPoint: json['sat_pair_point'] ?? 0,
+      shaPairPoint: json['sha_pair_point'] ?? 0,
+      totalSatPairPoint: json['total_sat_pair_point'] ?? 0,
+      totalShaPairPoint: json['total_sha_pair_point'] ?? 0,
       kakiHighlight: highlights,
       finalRankScore: json['final_rank_score'] ?? 0,
+      semanticRankScore: json['semantic_rank_score'] ?? 0,
+      numerologyRankScore: json['numerology_rank_score'] ?? 0,
+      pairTypeBonus: json['pair_type_bonus'] ?? 0,
+      pairPointBonus: json['pair_point_bonus'] ?? 0,
+      lengthBonus: json['length_bonus'] ?? 0,
+      kakiBonus: json['kaki_bonus'] ?? 0,
+      satBonus: json['sat_bonus'] ?? 0,
+      shaBonus: json['sha_bonus'] ?? 0,
+      doubleBonus: json['double_bonus'] ?? 0,
       rankReasons: List<String>.from(json['rank_reasons'] ?? const []),
     );
   }
@@ -103,10 +142,18 @@ class MobileNameResult {
 
     final bool satPass = showMatching ? isTotalSatGood : isSatGood;
     final bool shaPass = showMatching ? isTotalShaGood : isShaGood;
+    final String satPair = showMatching ? totalSatPairType : satPairType;
+    final String shaPair = showMatching ? totalShaPairType : shaPairType;
+    final int satPoint = showMatching ? totalSatPairPoint : satPairPoint;
+    final int shaPoint = showMatching ? totalShaPairPoint : shaPairPoint;
 
     final satBonus = satPass ? 20 : 0;
     final shaBonus = shaPass ? 20 : 0;
     final doubleBonus = (satPass && shaPass) ? 50 : 0;
+    final pairTypeBonus =
+        _pairTypeTierBonus(satPair) + _pairTypeTierBonus(shaPair);
+    final pairPointBonus =
+        _pairPointRankBonus(satPoint) + _pairPointRankBonus(shaPoint);
     final kakiBonus =
         (kakiHighlight.isNotEmpty && !kakiHighlight.any((h) => h.isKaki))
         ? 10
@@ -131,11 +178,37 @@ class MobileNameResult {
         satBonus +
         shaBonus +
         doubleBonus +
+        pairTypeBonus +
+        pairPointBonus +
         kakiBonus +
         lengthBonus;
 
     // Normalize to 100 pt scale
-    return (rawScore * 100 / 215).clamp(0, 100).toInt();
+    return (rawScore * 100 / 283).clamp(0, 100).toInt();
+  }
+
+  int _pairTypeTierBonus(String pairType) {
+    switch (pairType.toUpperCase().trim()) {
+      case 'D10':
+        return 14;
+      case 'D8':
+        return 8;
+      case 'D5':
+        return 3;
+      default:
+        return 0;
+    }
+  }
+
+  int _pairPointRankBonus(int pairPoint) {
+    if (pairPoint >= 80) return 20;
+    if (pairPoint >= 65) return 14;
+    if (pairPoint >= 50) return 9;
+    if (pairPoint >= 30) return 5;
+    if (pairPoint >= 10) return 2;
+    if (pairPoint <= -20) return -8;
+    if (pairPoint < 0) return -4;
+    return 0;
   }
 }
 

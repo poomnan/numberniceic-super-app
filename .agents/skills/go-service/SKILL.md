@@ -39,11 +39,18 @@ Current `/api/v1/name-search` contract must keep:
 - `final_rank_score` for ordering consistency on client
 - `rank_reasons` for explainable ranking UI
 - stable booleans for numerology gates (`is_sat_good`, `is_sha_good`, totals for matching mode)
+- ranking detail fields when used by UI/debug:
+  - `semantic_rank_score`
+  - `numerology_rank_score`
+  - `pair_type_bonus`
+  - `pair_point_bonus`
+  - `sat_bonus`, `sha_bonus`, `double_bonus`, `kaki_bonus`, `length_bonus`
 
 When changing formula:
 1. update backend formula in one place first
 2. keep response fields backward compatible
 3. document normalization/weights in release notes or `NAME_RANKING_AND_PREMIUM.md`
+4. if 2 names have the same normalized meaning, make sure numerology quality (`pairType` + `pairpoint`) can outrank small semantic-distance differences
 
 ## Debug Workflow
 1. Reproduce with exact endpoint + payload.

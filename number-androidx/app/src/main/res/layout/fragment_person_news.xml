@@ -68,43 +68,48 @@
                                         <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="4dp"
+                                    android:fontFamily="@font/sarabun_semibold"
                                     android:text="สวัสดี"
                                     android:textColor="#000000"
                                     android:textStyle="bold"
-                                    android:textSize="18sp" />
+                                    android:textSize="15sp" />
 
                                 <TextView
                                     android:id="@+id/txt_name_user"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="4dp"
+                                    android:layout_marginStart="3dp"
+                                    android:fontFamily="@font/sarabun_semibold"
                                     tools:text="คุณน้ำหอม"
                                     android:textColor="#0091EA"
                                     android:textStyle="bold"
-                                    android:textSize="18sp" />
+                                    android:textSize="15sp" />
 
 
 
 
                                 <TextView
+                                    android:id="@+id/txt_user_birth_prefix"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="5dp"
+                                    android:layout_marginStart="3dp"
+                                    android:fontFamily="@font/sarabun_semibold"
                                     android:text="คุณเกิด"
                                     android:textColor="#000000"
                                     android:textStyle="bold"
-                                    android:textSize="18sp" />
+                                    android:textSize="15sp" />
 
                                 <TextView
                                     android:id="@+id/txt_day_birth"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="5dp"
+                                    android:layout_marginStart="3dp"
+                                    android:fontFamily="@font/sarabun_semibold"
                                     tools:text="วันอาทิตย์"
                                     android:textColor="#0091EA"
                                     android:textStyle="bold"
-                                    android:textSize="18sp" />
+                                    android:textSize="15sp" />
 
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_day_birth"
@@ -116,9 +121,9 @@
 
                                 <ImageView
                                     android:id="@+id/img_birth_light"
-                                    android:layout_width="35dp"
-                                    android:layout_height="35dp"
-                                    android:layout_marginStart="14dp"
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    android:layout_marginStart="8dp"
                                     android:src="@drawable/moon" />
 
                                 <ImageView
@@ -425,7 +430,7 @@
                                     android:clickable="true"
                                     android:focusable="true"
                                     android:orientation="vertical"
-                                    android:padding="8dp">
+                                    android:padding="4dp">
 
                                     <!-- Row 1: Responsive Header with Flexbox -->
                                     <com.google.android.flexbox.FlexboxLayout
@@ -447,9 +452,10 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
+                                            android:fontFamily="@font/sarabun_semibold"
                                             android:text="วันนี้"
                                             android:textColor="#000000"
-                                            android:textSize="18sp"
+                                            android:textSize="15sp"
                                             android:textStyle="bold" />
 
                                         <TextView
@@ -457,25 +463,28 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
+                                            android:fontFamily="@font/sarabun_regular"
                                             android:textColor="#000000"
-                                            android:textSize="14sp"
+                                            android:textSize="15sp"
                                             tools:text="วันศุกร์" />
 
                                         <TextView
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
+                                            android:fontFamily="@font/sarabun_regular"
                                             android:text="ที่"
                                             android:textColor="#000000"
-                                            android:textSize="14sp" />
+                                            android:textSize="15sp" />
 
                                         <TextView
                                             android:id="@+id/txt_current_daynum2"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
+                                            android:fontFamily="@font/sarabun_regular"
                                             android:textColor="#000000"
-                                            android:textSize="14sp"
+                                            android:textSize="15sp"
                                             tools:text="11" />
 
                                         <TextView
@@ -483,8 +492,9 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
+                                            android:fontFamily="@font/sarabun_regular"
                                             android:textColor="#000000"
-                                            android:textSize="14sp"
+                                            android:textSize="15sp"
                                             tools:text="มกราคม" />
 
                                         <TextView
@@ -492,8 +502,9 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
+                                            android:fontFamily="@font/sarabun_regular"
                                             android:textColor="#000000"
-                                            android:textSize="14sp"
+                                            android:textSize="15sp"
                                             tools:text="2562" />
 
                                         <ImageView
@@ -569,7 +580,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/closet" />
 
 
@@ -598,7 +609,7 @@
                                 <ImageView
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="6dp"
                                     android:src="@drawable/approval" />
 
 
@@ -744,7 +755,7 @@
                                 <ImageView
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="6dp"
                                     android:src="@drawable/delete" />
 
                                 <androidx.cardview.widget.CardView
@@ -1026,7 +1037,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/icon_clover" />
 
 
@@ -1052,7 +1063,7 @@
                                     android:id="@+id/img_sapom"
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="6dp"
                                     android:src="@drawable/delete" />
 
                                 <TextView
@@ -1107,7 +1118,7 @@
                                     android:id="@+id/img_cut_nail"
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="6dp"
                                     android:src="@drawable/delete" />
 
                                 <TextView
@@ -1162,7 +1173,7 @@
                                     android:id="@+id/img_cuthair"
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="6dp"
                                     android:src="@drawable/delete" />
 
                                 <TextView
@@ -1218,7 +1229,7 @@
                                     android:id="@+id/img_parmai"
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="6dp"
                                     android:src="@drawable/delete" />
 
                                 <TextView
@@ -1275,7 +1286,7 @@
                                 <ImageView
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
-                                    android:layout_marginStart="10dp"
+                                    android:layout_marginStart="6dp"
                                     android:src="@drawable/ic_evil00" />
 
                                 <TextView
@@ -1324,7 +1335,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:layout_gravity="center_vertical"
                                     android:src="@drawable/buddha" />
                                 <TextView
@@ -1484,7 +1495,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/buddha" />
                                 <TextView
                                     android:id="@+id/txt_header_buddha_life"
@@ -1580,7 +1591,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/approval" />
 
                                 <TextView
@@ -1672,7 +1683,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:layout_gravity="center_vertical"
                                     android:src="@drawable/ic_lotus_gold" />
 
@@ -1767,7 +1778,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/approval" />
 
                                 <TextView
@@ -1857,7 +1868,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:layout_gravity="center_vertical"
                                     android:src="@drawable/ic_clover" />
 
@@ -1946,7 +1957,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/ic_clover" />
 
                                 <TextView
@@ -2034,7 +2045,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:layout_gravity="center_vertical"
                                     android:src="@drawable/ic_evil00" />
 
@@ -2193,7 +2204,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/ic_evil00" />
 
                                 <TextView
@@ -2285,7 +2296,7 @@
                                 <ImageView
                                     android:layout_width="25dp"
                                     android:layout_height="25dp"
-                                    android:layout_marginStart="6dp"
+                                    android:layout_marginStart="2dp"
                                     android:src="@drawable/ic_temple_gold" />
 
                                 <TextView

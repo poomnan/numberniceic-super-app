@@ -141,6 +141,42 @@ class _NameListItemState extends State<NameListItem>
     }
   }
 
+  _LuckyBreakdown _computeLuckyBreakdown() {
+    final bool isSatMatch = widget.result.isSatGood;
+    final bool isShaMatch = widget.result.isShaGood;
+    final bool noKaki =
+        widget.result.kakiHighlight.isNotEmpty &&
+        !widget.result.kakiHighlight.any((h) => h.isKaki);
+    final bool hasMatchingGood =
+        widget.showMatching &&
+        (widget.result.totalSat != widget.result.satSum) &&
+        widget.result.isTotalSatGood &&
+        widget.result.isTotalShaGood;
+
+    final bool satisfiesFilters =
+        (!widget.isFilterSatActive || isSatMatch) &&
+        (!widget.isFilterShaActive || isShaMatch) &&
+        (!widget.isFilterKakiActive || noKaki);
+
+    final bool isLucky = satisfiesFilters && isSatMatch && isShaMatch;
+
+    int multiplier = 0;
+    if (isSatMatch) multiplier++;
+    if (isShaMatch) multiplier++;
+    if (widget.result.kakiHighlight.isNotEmpty && noKaki) multiplier++;
+    if (hasMatchingGood) multiplier++;
+
+    return _LuckyBreakdown(
+      isSatMatch: isSatMatch,
+      isShaMatch: isShaMatch,
+      noKaki: noKaki,
+      hasMatchingGood: hasMatchingGood,
+      isLucky: isLucky,
+      multiplier: multiplier,
+      includesKakiBonus: widget.result.kakiHighlight.isNotEmpty && noKaki,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Sync local state with cache to handle delayed loading or deletions
@@ -182,7 +218,7 @@ class _NameListItemState extends State<NameListItem>
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
           decoration: BoxDecoration(
-            color: AppColors.bgDark, // Clean themed background
+            color: const Color(0xFFFFF9E6), // Match saved-name card background
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: AppColors.accent.withOpacity(0.3),
@@ -315,7 +351,7 @@ class _NameListItemState extends State<NameListItem>
                   if (hasMatching)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.03),
                         border: Border(
@@ -329,6 +365,7 @@ class _NameListItemState extends State<NameListItem>
                         ),
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const Icon(
                             Icons.subdirectory_arrow_right_rounded,
@@ -339,17 +376,7 @@ class _NameListItemState extends State<NameListItem>
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "วิเคราะห์ร่วมกับชื่อ",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.6),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                _buildMatchingNameText(context),
-                              ],
+                              children: [_buildMatchingNameText(context)],
                             ),
                           ),
                           Column(
@@ -388,59 +415,29 @@ class _NameListItemState extends State<NameListItem>
                 right: 0,
                 child: Builder(
                   builder: (context) {
-                    // Logic fix: Only show Lucky Badge if at least one filter is ON
-                    bool isSatMatch = widget.result.isSatGood;
-                    bool isShaMatch = widget.result.isShaGood;
-                    bool noKaki = !widget.result.kakiHighlight.any(
-                      (h) => h.isKaki,
-                    );
-
-                    // A name satisfies filters if:
-                    // - filter is OFF OR (filter is ON AND it matches)
-                    bool satisfiesFilters =
-                        (!widget.isFilterSatActive || isSatMatch) &&
-                        (!widget.isFilterShaActive || isShaMatch) &&
-                        (!widget.isFilterKakiActive || noKaki);
-
-                    // A name is considered "Lucky" ONLY if BOTH numerology and shadow are good (Double Green).
-                    // If either one is not green, it will show "น่าเสียดาย".
-                    bool isLucky =
-                        satisfiesFilters && (isSatMatch && isShaMatch);
-
-                    bool hasMatchingGood =
-                        widget.showMatching &&
-                        (widget.result.totalSat != widget.result.satSum) &&
-                        widget.result.isTotalSatGood &&
-                        widget.result.isTotalShaGood;
-
-                    int multiplier = 0;
-                    if (isSatMatch) multiplier++;
-                    if (isShaMatch) multiplier++;
-                    if (widget.result.kakiHighlight.isNotEmpty && noKaki)
-                      multiplier++;
-                    if (hasMatchingGood) multiplier++;
+                    final lucky = _computeLuckyBreakdown();
 
                     String luckText;
                     List<Color> gradientColors;
 
-                    if (isLucky) {
-                      if (multiplier <= 1) {
+                    if (lucky.isLucky) {
+                      if (lucky.multiplier <= 1) {
                         luckText = 'Lucky ✨';
                       } else {
-                        String prefix = multiplier >= 4
+                        String prefix = lucky.multiplier >= 4
                             ? 'Super'
-                            : (multiplier == 3 ? 'Triple' : 'Double');
-                        luckText = '$prefix Lucky x$multiplier';
+                            : (lucky.multiplier == 3 ? 'Triple' : 'Double');
+                        luckText = '$prefix Lucky x${lucky.multiplier}';
                       }
 
-                      if (multiplier >= 4) {
+                      if (lucky.multiplier >= 4) {
                         gradientColors = [
                           const Color(0xFFDBB632),
                           const Color(0xFFFF8C00),
                           const Color(0xFFFF4FA3),
                           const Color(0xFFB517FF),
                         ];
-                      } else if (multiplier == 3) {
+                      } else if (lucky.multiplier == 3) {
                         gradientColors = [
                           const Color(0xFFDBB632),
                           const Color(0xFFFF8C00),
@@ -470,7 +467,7 @@ class _NameListItemState extends State<NameListItem>
                         return Transform.scale(
                           scale: value,
                           child: _MagicLuckyBadge(
-                            isLucky: isLucky,
+                            isLucky: lucky.isLucky,
                             text: luckText,
                             gradientColors: gradientColors,
                             onTap: () => _toggleFlip('luck'),
@@ -534,19 +531,14 @@ class _NameListItemState extends State<NameListItem>
                   children: [
                     Builder(
                       builder: (context) {
-                        bool isLucky =
-                            widget.result.isSatGood &&
-                            widget.result.isShaGood &&
-                            (!widget.showMatching ||
-                                (widget.result.isTotalSatGood &&
-                                    widget.result.isTotalShaGood));
+                        final lucky = _computeLuckyBreakdown();
 
                         String title;
                         IconData icon;
                         Color color;
 
                         if (_flipType == 'luck') {
-                          if (isLucky) {
+                          if (lucky.isLucky) {
                             title = 'ที่มาของโชค';
                             icon = Icons.auto_awesome;
                             color = const Color(0xFFDBB632);
@@ -611,28 +603,11 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildLuckExplanation() {
-    final bool isSatGood = widget.result.isSatGood;
-    final bool isShaGood = widget.result.isShaGood;
-    final bool noKaki =
-        widget.result.kakiHighlight.isNotEmpty &&
-        !widget.result.kakiHighlight.any((h) => h.isKaki);
-    final bool hasMatching =
-        widget.showMatching &&
-        (widget.result.totalSat != widget.result.satSum) &&
-        widget.result.isTotalSatGood &&
-        widget.result.isTotalShaGood;
+    final lucky = _computeLuckyBreakdown();
 
-    final bool isLucky =
-        isSatGood && isShaGood && (!widget.showMatching || hasMatching);
-
-    int multiplier =
-        2; // isLucky is true, so isSatGood and isShaGood are both true
-    if (widget.result.kakiHighlight.isNotEmpty && noKaki) multiplier++;
-    if (hasMatching) multiplier++;
-
-    final label = multiplier >= 4
+    final label = lucky.multiplier >= 4
         ? 'Super'
-        : multiplier == 3
+        : lucky.multiplier == 3
         ? 'Triple'
         : 'Double';
 
@@ -641,11 +616,11 @@ class _NameListItemState extends State<NameListItem>
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          isLucky
-              ? '$label Lucky x$multiplier ได้มาจาก:'
+          lucky.isLucky
+              ? '$label Lucky x${lucky.multiplier} ได้มาจาก:'
               : 'วิเคราะห์ข้อบกพร่องของชื่อนี้:',
           style: GoogleFonts.sarabun(
-            color: isLucky ? Colors.white70 : const Color(0xFFFCA5A5),
+            color: lucky.isLucky ? Colors.white70 : const Color(0xFFFCA5A5),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -654,27 +629,27 @@ class _NameListItemState extends State<NameListItem>
         _buildCriteriaRow(
           Icons.looks_one_rounded,
           'เลขศาสตร์ (ตัวเลขมงคล)',
-          isSatGood,
-          isSatGood
-              ? 'เลขรวม ${widget.result.satSum} — ดีมาก ✓'
+          lucky.isSatMatch,
+          lucky.isSatMatch
+              ? 'เลขรวม ${widget.result.satSum}${widget.result.satPairType.isNotEmpty ? " (${widget.result.satPairType}/${widget.result.satPairPoint})" : ""} — ดีมาก ✓'
               : 'เลขรวม ${widget.result.satSum} — ไม่ผ่าน',
         ),
         const SizedBox(height: 8),
         _buildCriteriaRow(
           Icons.blur_on_rounded,
           'พลังเงา (เลขเงา)',
-          isShaGood,
-          isShaGood
-              ? 'เลขเงา ${widget.result.shaSum} — ดีมาก ✓'
+          lucky.isShaMatch,
+          lucky.isShaMatch
+              ? 'เลขเงา ${widget.result.shaSum}${widget.result.shaPairType.isNotEmpty ? " (${widget.result.shaPairType}/${widget.result.shaPairPoint})" : ""} — ดีมาก ✓'
               : 'เลขเงา ${widget.result.shaSum} — ไม่ผ่าน',
         ),
-        if (widget.isFilterKakiActive) ...[
+        if (lucky.includesKakiBonus || widget.isFilterKakiActive) ...[
           const SizedBox(height: 8),
           _buildCriteriaRow(
             Icons.shield_rounded,
             'ปลอดกาลกิณี',
-            noKaki,
-            noKaki ? 'ไม่มีอักษรกาลกิณี ✓' : 'มีอักษรกาลกิณี',
+            lucky.noKaki,
+            lucky.noKaki ? 'ไม่มีอักษรกาลกิณี ✓' : 'มีอักษรกาลกิณี',
           ),
         ],
         if (widget.showMatching) ...[
@@ -682,8 +657,8 @@ class _NameListItemState extends State<NameListItem>
           _buildCriteriaRow(
             Icons.people_rounded,
             'เลขศาสตร์รวมกับนามสกุล',
-            hasMatching,
-            hasMatching
+            lucky.hasMatchingGood,
+            lucky.hasMatchingGood
                 ? 'รวม ${widget.result.totalSat}/${widget.result.totalSha} — ดีทั้งคู่ ✓'
                 : 'รวมแล้วยังไม่สมบูรณ์',
           ),
@@ -1975,6 +1950,26 @@ class _NameListItemState extends State<NameListItem>
       },
     );
   }
+}
+
+class _LuckyBreakdown {
+  final bool isSatMatch;
+  final bool isShaMatch;
+  final bool noKaki;
+  final bool hasMatchingGood;
+  final bool isLucky;
+  final int multiplier;
+  final bool includesKakiBonus;
+
+  const _LuckyBreakdown({
+    required this.isSatMatch,
+    required this.isShaMatch,
+    required this.noKaki,
+    required this.hasMatchingGood,
+    required this.isLucky,
+    required this.multiplier,
+    required this.includesKakiBonus,
+  });
 }
 
 class _ThaiHighlightPainter extends CustomPainter {

@@ -166,6 +166,38 @@
                 android:visibility="gone">
 
                 <LinearLayout
+                    android:id="@+id/card_travel"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_travel" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_travel" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์เดินทาง" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_travel" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_merit"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_merit" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_merit" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ทำบุญ" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_merit" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_job"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_job" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_job" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์สมัครงาน" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_job" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_business"
+                    style="@style/AuspiciousCardStyle">
+                    <ImageView android:id="@+id/img_business" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_business" />
+                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์เปิดกิจการ" android:textColor="#1E88E5" android:textSize="9sp" />
+                    <TextView android:id="@+id/txt_dates_business" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/card_marriage"
                     style="@style/AuspiciousCardStyle">
                     <ImageView android:id="@+id/img_marriage" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_marriage" />
@@ -254,13 +286,6 @@
                 </LinearLayout>
 
                 <!-- New Categories -->
-                <LinearLayout
-                    android:id="@+id/card_merit"
-                    style="@style/AuspiciousCardStyle">
-                    <ImageView android:id="@+id/img_merit" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_merit" />
-                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์ทำบุญ" android:textColor="#1E88E5" android:textSize="9sp" />
-                    <TextView android:id="@+id/txt_dates_merit" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
-                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/card_engagement"
@@ -295,35 +320,11 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/card_travel"
-                    style="@style/AuspiciousCardStyle">
-                    <ImageView android:id="@+id/img_travel" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_travel" />
-                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์เดินทาง" android:textColor="#1E88E5" android:textSize="9sp" />
-                    <TextView android:id="@+id/txt_dates_travel" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/card_promotion"
                     style="@style/AuspiciousCardStyle">
                     <ImageView android:id="@+id/img_promotion" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_promotion" />
                     <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์รับตำแหน่ง" android:textColor="#1E88E5" android:textSize="9sp" />
                     <TextView android:id="@+id/txt_dates_promotion" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/card_job"
-                    style="@style/AuspiciousCardStyle">
-                    <ImageView android:id="@+id/img_job" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_job" />
-                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์สมัครงาน" android:textColor="#1E88E5" android:textSize="9sp" />
-                    <TextView android:id="@+id/txt_dates_job" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/card_business"
-                    style="@style/AuspiciousCardStyle">
-                    <ImageView android:id="@+id/img_business" style="@style/AuspiciousIconStyle" android:src="@drawable/ic_business" />
-                    <TextView style="@style/AuspiciousTextStyle" android:text="ฤกษ์เปิดกิจการ" android:textColor="#1E88E5" android:textSize="9sp" />
-                    <TextView android:id="@+id/txt_dates_business" style="@style/AuspiciousTextStyle" android:visibility="gone" tools:text="-" />
                 </LinearLayout>
 
             </com.google.android.flexbox.FlexboxLayout>

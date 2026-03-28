@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -76,6 +75,8 @@ class RengYamF : Fragment() {
     private var isAdminMode: Boolean = false
     private var isLoggedInUser: Boolean = false
     private var hasRengyamAccess: Boolean = false
+    private var isCalendarScrollLocked: Boolean = false
+    private var wanpraLayoutManager: androidx.recyclerview.widget.GridLayoutManager? = null
     private fun shouldShowFullCalendar(): Boolean = isLoggedInUser || hasRengyamAccess
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -84,6 +85,7 @@ class RengYamF : Fragment() {
         isAdminMode = UserContextManager.isAdmin(user)
         isLoggedInUser = !user?.userId.isNullOrEmpty()
         hasRengyamAccess = computeRengyamAccess()
+        updateCalendarScrollLock()
         this.initHeaderData()
         this.setupAdapterList()
         this.fetchDataForHeader()
@@ -123,6 +125,7 @@ class RengYamF : Fragment() {
                 onCategorySelected = { category ->
                     val latestAccess = computeRengyamAccess()
                     hasRengyamAccess = latestAccess
+                    updateCalendarScrollLock()
                     if (!latestAccess) {
                         if (!category.isNullOrBlank()) {
                             showRengyamUnlockDialog(category)
@@ -152,10 +155,24 @@ class RengYamF : Fragment() {
                     cachedLengYamDao?.let { updateRecyclerWithData(it) }
                     fetchAuspiciousForSelectedMonth()
                 },
+                onYearSelected = { selectedYearCe ->
+                    currentViewDate = currentViewDate.withYear(selectedYearCe)
+                    headerData = headerData.copy(selectedCategory = null)
+                    initHeaderData()
+                    cachedLengYamDao?.let { updateRecyclerWithData(it) }
+                    fetchAuspiciousForSelectedMonth()
+                    if (!shouldShowFullCalendar()) {
+                        renderLockedCalendarPlaceholder()
+                    }
+                },
                 _showInauspiciousInfo = showInauspiciousInfo
             )
             rengYamBinding.recyclerviewWanpra.adapter = adater
-            val gridLayout = androidx.recyclerview.widget.GridLayoutManager(context, 7)
+            val gridLayout = object : androidx.recyclerview.widget.GridLayoutManager(context, 7) {
+                override fun canScrollVertically(): Boolean {
+                    return !isCalendarScrollLocked && super.canScrollVertically()
+                }
+            }
             gridLayout.spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
                 override fun getSpanSize(position: Int): Int {
                     val type = adater.getItemViewType(position)
@@ -164,13 +181,21 @@ class RengYamF : Fragment() {
                                type == com.numberniceic.adapters.WanpraAdapter.TYPE_EMPTY_DAY) 1 else 7
                 }
             }
+            wanpraLayoutManager = gridLayout
             rengYamBinding.recyclerviewWanpra.layoutManager = gridLayout
         } else {
              val adapter = rengYamBinding.recyclerviewWanpra.adapter as? WanpraAdapter
              adapter?.isAdminMode = isAdminMode
              adapter?.setRengyamAccess(hasRengyamAccess)
              adapter?.notifyDataSetChanged()
+             updateCalendarScrollLock()
         }
+    }
+
+    private fun updateCalendarScrollLock() {
+        // Requirement: member ที่ยังไม่ปลดล็อก ห้ามเลื่อนลงดูปฏิทิน
+        isCalendarScrollLocked = isLoggedInUser && !hasRengyamAccess
+        wanpraLayoutManager?.requestLayout()
     }
 
     private fun computeRengyamAccess(): Boolean {
@@ -258,9 +283,10 @@ class RengYamF : Fragment() {
         val btnChat = dialogView.findViewById<View>(R.id.btn_unlock_chat_ninin)
         val btnUnlock = dialogView.findViewById<View>(R.id.btn_unlock_submit)
 
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .create()
+        val dialog = BottomSheetDialog(requireContext(), R.style.CustomBottomSheetDialogTheme)
+        dialog.setContentView(dialogView)
+        dialog.behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+        dialog.behavior.skipCollapsed = true
 
         btnChat.setOnClickListener {
             try {
@@ -274,7 +300,7 @@ class RengYamF : Fragment() {
         btnUnlock.setOnClickListener {
             val code = input.text?.toString()?.trim().orEmpty()
             if (code.isEmpty()) {
-                Toast.makeText(requireContext(), "กรุณากรอก Secret Code", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "กรุณากรอก VIP CODE", Toast.LENGTH_SHORT).show()
             } else {
                 dialog.dismiss()
                 unlockRengyamWithCode(code, categoryKey)
@@ -339,6 +365,7 @@ class RengYamF : Fragment() {
         }
 
         hasRengyamAccess = true
+        updateCalendarScrollLock()
         (rengYamBinding.recyclerviewWanpra.adapter as? WanpraAdapter)?.setRengyamAccess(true)
         Toast.makeText(requireContext(), "ปลดล็อกดูฤกษ์ยามสำเร็จ", Toast.LENGTH_LONG).show()
         onCategorySelectedAfterUnlock(categoryKey)
@@ -389,7 +416,28 @@ class RengYamF : Fragment() {
 
         val monthStart = currentViewDate.dayOfMonth().withMinimumValue()
         val firstDayOffset = (monthStart.dayOfWeek - 1).coerceAtLeast(0)
-        repeat(firstDayOffset) { fullDataList.add(com.numberniceic.adapters.EmptyDay()) }
+        if (firstDayOffset > 0) {
+            val prevMonthDate = monthStart.minusMonths(1)
+            val lastDayPrev = prevMonthDate.dayOfMonth().withMaximumValue().dayOfMonth
+            val prevMonth = prevMonthDate.monthOfYear
+            val prevYear = prevMonthDate.year
+
+            for (day in (lastDayPrev - firstDayOffset + 1)..lastDayPrev) {
+                val dtStr = String.format(Locale.US, "%04d-%02d-%02d", prevYear, prevMonth, day)
+                val wp = Wanpra(
+                    wanpraId = null,
+                    wanpraDate = dtStr,
+                    isWanpra = "0",
+                    isTongchai = "0",
+                    isAtipbadee = "0",
+                    isKating = "0",
+                    lunarPhase = "ล็อก",
+                    lunarMonth = "กรุณาปลดล็อก"
+                )
+                wp.isOtherMonth = true
+                fullDataList.add(wp)
+            }
+        }
 
         val lastDay = currentViewDate.dayOfMonth().withMaximumValue().dayOfMonth
         for (day in 1..lastDay) {
@@ -406,6 +454,30 @@ class RengYamF : Fragment() {
                     lunarMonth = "กรุณาปลดล็อก"
                 )
             )
+        }
+
+        val totalCells = fullDataList.count { it is Wanpra }
+        val remaining = 42 - totalCells
+        if (remaining > 0) {
+            val nextMonthDate = monthStart.plusMonths(1)
+            val nextMonth = nextMonthDate.monthOfYear
+            val nextYear = nextMonthDate.year
+
+            for (day in 1..remaining) {
+                val dtStr = String.format(Locale.US, "%04d-%02d-%02d", nextYear, nextMonth, day)
+                val wp = Wanpra(
+                    wanpraId = null,
+                    wanpraDate = dtStr,
+                    isWanpra = "0",
+                    isTongchai = "0",
+                    isAtipbadee = "0",
+                    isKating = "0",
+                    lunarPhase = "ล็อก",
+                    lunarMonth = "กรุณาปลดล็อก"
+                )
+                wp.isOtherMonth = true
+                fullDataList.add(wp)
+            }
         }
 
         rengYamBinding.recyclerviewWanpra.adapter?.notifyDataSetChanged()
@@ -808,6 +880,7 @@ class RengYamF : Fragment() {
                 val latestAccess = computeRengyamAccess()
                 if (latestAccess != hasRengyamAccess) {
                     hasRengyamAccess = latestAccess
+                    updateCalendarScrollLock()
                     setupAdapterList()
                     if (latestAccess && cachedLengYamDao == null) {
                         initRecyclerView()

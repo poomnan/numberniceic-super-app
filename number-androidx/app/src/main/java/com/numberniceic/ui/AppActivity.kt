@@ -209,6 +209,11 @@ class AppActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelected
 
     private fun handleIntentExtras(intent: Intent?) {
         if (intent == null) return
+
+        if (intent.getBooleanExtra("open_home_after_login", false)) {
+            navigateToHomeAfterLogin()
+            return
+        }
         
         val type = intent.getStringExtra("type") ?: ""
         val title = intent.getStringExtra("title") ?: ""
@@ -262,6 +267,25 @@ class AppActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelected
              }
         } else if (intent.getBooleanExtra("open_zircon_orders", false)) {
             startActivity(Intent(this, com.numberniceic.ui.admin.AdminDreamOrdersActivity::class.java))
+        }
+    }
+
+    private fun navigateToHomeAfterLogin() {
+        try {
+            // Consume login redirect flag once, so later navigation is not affected.
+            getSharedPreferences("userdata", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean("just_logged_in", false)
+                .apply()
+            binding.pagerMain.currentItem = 0
+            binding.tabLayout.getTabAt(0)?.select()
+            binding.root.post {
+                if (::dashSheetBehavior.isInitialized) {
+                    showDashboard(forceRefresh = true)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AppActivity", "navigateToHomeAfterLogin failed: ${e.message}")
         }
     }
 

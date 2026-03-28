@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:text="ปลดล็อกดูฤกษ์ยาม"
         android:textColor="#222222"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         android:fontFamily="@font/sarabun_semibold"
         android:includeFontPadding="false" />
@@ -22,12 +22,13 @@
         android:id="@+id/txt_unlock_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="กรอก Secret Code เพื่อเข้าใช้งานดูฤกษ์ยาม หรือเลือกคุยกับคุณนิน"
+        android:layout_marginTop="2dp"
+        android:text="ปรับสถานะเป็น VIPLD เพื่อดูฤกษ์ดีฤกษ์เศรษฐีสำหรับคุณซึ่งดูได้ตลอดชีวิต ปรับสถานะ 5,999 บาท จากนั้นถ้าอยากให้เจาะเวลาดีให้มีค่าครู 100 บาทต่อครั้งเท่านั้น"
         android:textColor="#4A4A4A"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:fontFamily="@font/sarabun_regular"
-        android:includeFontPadding="false" />
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="1dp" />
 
     <EditText
         android:id="@+id/edt_unlock_secret_code"
@@ -35,7 +36,7 @@
         android:layout_height="48dp"
         android:layout_marginTop="14dp"
         android:background="@drawable/bg_ninin_secret_code_input"
-        android:hint="กรอก Secret Code ดูฤกษ์ยาม"
+        android:hint="กรอก VIP CODE ดูฤกษ์ยาม"
         android:textColorHint="#8A8A8A"
         android:inputType="text"
         android:maxLines="1"
@@ -55,25 +56,33 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_unlock_chat_ninin"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="คุยกับคุณนิน"
             android:textAllCaps="false"
             android:textColor="#2E7D32"
             android:textSize="16sp"
             android:fontFamily="@font/sarabun_semibold"
+            android:includeFontPadding="true"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             app:backgroundTint="#E9F5EA"
             app:cornerRadius="12dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_unlock_submit"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:layout_marginStart="10dp"
             android:text="ปลดล็อก"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:fontFamily="@font/sarabun_semibold"
+            android:includeFontPadding="true"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             app:backgroundTint="@color/colorPrimary"
             app:cornerRadius="12dp" />
     </LinearLayout>

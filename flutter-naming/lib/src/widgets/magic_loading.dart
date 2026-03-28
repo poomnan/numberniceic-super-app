@@ -5,11 +5,13 @@ import '../utils/colors.dart';
 
 class MagicLoadingView extends StatefulWidget {
   final String? message;
+  final String? subtitle;
   final double height;
   final Color textColor;
   const MagicLoadingView({
     super.key,
     this.message,
+    this.subtitle,
     this.height = 120,
     this.textColor = Colors.white,
   });
@@ -72,113 +74,287 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
 
   @override
   Widget build(BuildContext context) {
-    final scale = widget.height / 120.0;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          height: widget.height,
-          width: widget.height,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Rotating Magic Circle 1
-              RotationTransition(
-                turns: _rotationController,
-                child: CustomPaint(
-                  painter: _MagicCirclePainter(
-                    color: AppColors.primary.withOpacity(0.4),
-                    strokeWidth: 2 * scale,
-                    dashCount: 8,
-                  ),
-                  size: Size(100 * scale, 100 * scale),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool hasHeightLimit = constraints.hasBoundedHeight;
+        final bool compact = hasHeightLimit && constraints.maxHeight < 260;
+        final double baseSize = compact
+            ? math.min(widget.height * 0.62, constraints.maxHeight * 0.40)
+            : widget.height;
+        final double scale = baseSize / 120.0;
+        final subtitle = compact
+            ? null
+            : widget.subtitle ??
+                  (widget.message == null
+                      ? null
+                      : "AI กำลังคัดสรรชื่อมงคลที่เหมาะกับพลังของคุณ");
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: compact ? 12 * scale : 18 * scale,
+                vertical: compact ? 10 * scale : 14 * scale,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(
+                  (compact ? 18 : 24) * scale,
                 ),
-              ),
-              // Outer boundary ring for better contrast on light backgrounds
-              Container(
-                width: 110 * scale,
-                height: 110 * scale,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.textLight.withOpacity(0.08),
-                    width: 1 * scale,
-                  ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(0.92),
+                    const Color(0xFFFFF8E7).withOpacity(0.96),
+                    const Color(0xFFF7F1FF).withOpacity(0.92),
+                  ],
                 ),
-              ),
-              // Rotating Magic Circle 2 (Reverse)
-              RotationTransition(
-                turns: ReverseAnimation(_rotationController),
-                child: CustomPaint(
-                  painter: _MagicCirclePainter(
-                    color: AppColors.secondary.withOpacity(0.5), // More opaque
-                    strokeWidth: 1.5 * scale,
-                    dashCount: 12,
-                  ),
-                  size: Size(80 * scale, 80 * scale),
+                border: Border.all(
+                  color: AppColors.accent.withOpacity(0.22),
+                  width: 1.2,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD4AF37).withOpacity(0.10),
+                    blurRadius: (compact ? 16 : 28) * scale,
+                    spreadRadius: 1,
+                    offset: Offset(0, (compact ? 6 : 10) * scale),
+                  ),
+                  BoxShadow(
+                    color: AppColors.secondary.withOpacity(0.06),
+                    blurRadius: (compact ? 12 : 18) * scale,
+                    offset: Offset(0, (compact ? 4 : 6) * scale),
+                  ),
+                ],
               ),
-              // Particle Field
-              AnimatedBuilder(
-                animation: _particleController,
-                builder: (context, _) {
-                  return CustomPaint(
-                    painter: _ParticleFieldPainter(
-                      particles: _particles,
-                      progress: _particleController.value,
-                      scale: scale,
-                    ),
-                    size: Size(120 * scale, 120 * scale),
-                  );
-                },
-              ),
-              // Central Pulsing Icon
-              ScaleTransition(
-                scale: Tween<double>(begin: 0.9 * scale, end: 1.1 * scale)
-                    .animate(
-                      CurvedAnimation(
-                        parent: _pulseController,
-                        curve: Curves.easeInOut,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!compact)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12 * scale,
+                        vertical: 6 * scale,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3CD),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37).withOpacity(0.28),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 14 * scale,
+                            color: const Color(0xFFC58B00),
+                          ),
+                          SizedBox(width: 6 * scale),
+                          Text(
+                            "AI MAGIC MATCHING",
+                            style: GoogleFonts.prompt(
+                              color: const Color(0xFF6B4E16),
+                              fontSize: 10 * scale,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.9,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                child: Container(
-                  width: 50 * scale,
-                  height: 50 * scale,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.secondary],
+                  SizedBox(height: (compact ? 6 : 12) * scale),
+                  SizedBox(
+                    height: baseSize,
+                    width: baseSize,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                const Color(0xFFFFF7D6).withOpacity(0.95),
+                                const Color(0xFFFFF7D6).withOpacity(0.15),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                          child: SizedBox(
+                            width: 120 * scale,
+                            height: 120 * scale,
+                          ),
+                        ),
+                        RotationTransition(
+                          turns: _rotationController,
+                          child: CustomPaint(
+                            painter: _MagicCirclePainter(
+                              color: AppColors.primary.withOpacity(0.4),
+                              strokeWidth: 2 * scale,
+                              dashCount: 8,
+                            ),
+                            size: Size(100 * scale, 100 * scale),
+                          ),
+                        ),
+                        Container(
+                          width: 110 * scale,
+                          height: 110 * scale,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.textLight.withOpacity(0.08),
+                              width: 1 * scale,
+                            ),
+                          ),
+                        ),
+                        RotationTransition(
+                          turns: ReverseAnimation(_rotationController),
+                          child: CustomPaint(
+                            painter: _MagicCirclePainter(
+                              color: AppColors.secondary.withOpacity(0.5),
+                              strokeWidth: 1.5 * scale,
+                              dashCount: 12,
+                            ),
+                            size: Size(80 * scale, 80 * scale),
+                          ),
+                        ),
+                        AnimatedBuilder(
+                          animation: _particleController,
+                          builder: (context, _) {
+                            return CustomPaint(
+                              painter: _ParticleFieldPainter(
+                                particles: _particles,
+                                progress: _particleController.value,
+                                scale: scale,
+                              ),
+                              size: Size(120 * scale, 120 * scale),
+                            );
+                          },
+                        ),
+                        ScaleTransition(
+                          scale:
+                              Tween<double>(
+                                begin: 0.9 * scale,
+                                end: 1.1 * scale,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _pulseController,
+                                  curve: Curves.easeInOut,
+                                ),
+                              ),
+                          child: Container(
+                            width: 50 * scale,
+                            height: 50 * scale,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.secondary,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withOpacity(0.5),
+                                  blurRadius: 15 * scale,
+                                  spreadRadius: 2 * scale,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.auto_awesome,
+                                color: Colors.white,
+                                size: 28 * scale,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.5),
-                        blurRadius: 15 * scale,
-                        spreadRadius: 2 * scale,
+                  ),
+                  if (widget.message != null) ...[
+                    SizedBox(height: (compact ? 8 : 12) * scale),
+                    _AnimatedLoadingText(
+                      text: widget.message!,
+                      fontSize: compact
+                          ? 12 * (scale < 0.8 ? 0.9 : 1.0)
+                          : 14 * (scale < 0.8 ? 0.8 : 1.0),
+                      color: widget.textColor,
+                    ),
+                  ],
+                  if (subtitle != null) ...[
+                    SizedBox(height: 6 * scale),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 260 * scale),
+                      child: Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.sarabun(
+                          color: widget.textColor.withOpacity(0.62),
+                          fontSize: 11.5 * (scale < 0.8 ? 0.85 : 1.0),
+                          fontWeight: FontWeight.w500,
+                          height: 1.35,
+                        ),
                       ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.auto_awesome,
-                      color: Colors.white,
-                      size: 28 * scale,
                     ),
-                  ),
-                ),
+                  ],
+                  if (!compact) ...[
+                    SizedBox(height: 10 * scale),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 8 * scale,
+                      runSpacing: 8 * scale,
+                      children: [
+                        _LoadingBadge(label: "กำลังอ่านความหมาย", scale: scale),
+                        _LoadingBadge(label: "คัดตามพลังชื่อ", scale: scale),
+                        _LoadingBadge(
+                          label: "จัดอันดับอย่างประณีต",
+                          scale: scale,
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _LoadingBadge extends StatelessWidget {
+  final String label;
+  final double scale;
+
+  const _LoadingBadge({required this.label, required this.scale});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 10 * scale,
+        vertical: 6 * scale,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.65),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.18)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.sarabun(
+          color: AppColors.textGray,
+          fontSize: 10.5 * (scale < 0.8 ? 0.85 : 1.0),
+          fontWeight: FontWeight.w600,
         ),
-        if (widget.message != null) ...[
-          SizedBox(height: 12 * scale),
-          _AnimatedLoadingText(
-            text: widget.message!,
-            fontSize: 14 * (scale < 0.8 ? 0.8 : 1.0),
-            color: widget.textColor,
-          ),
-        ],
-      ],
+      ),
     );
   }
 }

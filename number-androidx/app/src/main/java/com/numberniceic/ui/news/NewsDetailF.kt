@@ -5,24 +5,15 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.text.Html
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
-import com.bumptech.glide.request.target.Target
 import com.numberniceic.R
 import com.numberniceic.data.news.NewsHeadline
 import com.numberniceic.https.ApiService
-import com.numberniceic.https.NetworkConfig
 import com.numberniceic.https.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,6 +61,8 @@ class NewsDetailF : Fragment() {
             if (!cachedContent.isNullOrEmpty()) {
                 // Use cached content + header info from object (or empty if deep link)
                 loadContent(cachedContent, newsObject?.newsHeader, newsObject?.newsImg, newsObject?.category)
+                // Always refresh from API so stale/malformed image URLs are corrected.
+                fetchAndLoadContent(newsId)
                 return
             }
 
@@ -77,6 +70,8 @@ class NewsDetailF : Fragment() {
             if (newsObject != null && !newsObject.newsDetail.isNullOrEmpty()) {
                 detailCache[newsId] = newsObject.newsDetail
                 loadContent(newsObject.newsDetail, newsObject.newsHeader, newsObject.newsImg, newsObject.category)
+                // Refresh for latest image/url normalization from server.
+                fetchAndLoadContent(newsId)
                 return
             }
 
@@ -109,18 +104,22 @@ class NewsDetailF : Fragment() {
         webSettings.javaScriptEnabled = true
         webSettings.builtInZoomControls = true
         webSettings.displayZoomControls = false
+        webSettings.loadsImagesAutomatically = true
+        webSettings.blockNetworkImage = false
+        webSettings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
     }
 
     private fun loadContent(htmlContent: String, title: String?, imgUrl: String?, category: String?) {
         // Enforce readable content width & Add Beautiful Header
         
         val headerHtml = StringBuilder()
+        val resolvedImageUrl = resolveNewsImageUrl(imgUrl)
         
         // 1. Header Image
-        if (!imgUrl.isNullOrEmpty()) {
+        if (!resolvedImageUrl.isNullOrEmpty()) {
             headerHtml.append("""
                 <div class="header-img-container">
-                    <img src="$imgUrl" class="header-img" />
+                    <img src="$resolvedImageUrl" class="header-img" />
                 </div>
             """.trimIndent())
         }
@@ -170,6 +169,43 @@ class NewsDetailF : Fragment() {
         
         webView.loadDataWithBaseURL("https://numberniceic.online/", styledHtml, "text/html", "utf-8", null)
         progressLoading.visibility = View.GONE
+    }
+
+    private fun resolveNewsImageUrl(rawUrl: String?): String? {
+        var clean = rawUrl?.trim().orEmpty()
+        if (clean.isEmpty()) return null
+
+        // Handle values stored as <img ... src="..."> in legacy content.
+        if (clean.contains("<img", ignoreCase = true)) {
+            val srcMatch = Regex("""src\s*=\s*['"]([^'"]+)['"]""", RegexOption.IGNORE_CASE).find(clean)
+            if (srcMatch != null && srcMatch.groupValues.size > 1) {
+                clean = srcMatch.groupValues[1].trim()
+            }
+        }
+
+        clean = clean.trim().trim('"', '\'').replace("\\/", "/")
+        if (clean.isEmpty()) return null
+        if (clean.equals("null", ignoreCase = true) || clean.equals("undefined", ignoreCase = true)) return null
+
+        // If URL accidentally double-prefixed e.g. https://host/https://...
+        val nestedHttps = clean.indexOf("https://", startIndex = 8)
+        val nestedHttp = clean.indexOf("http://", startIndex = 7)
+        if (nestedHttps > 0) clean = clean.substring(nestedHttps)
+        else if (nestedHttp > 0) clean = clean.substring(nestedHttp)
+
+        // Never rely on legacy host.
+        clean = clean.replace("https://www.ananya.in.th", "https://numberniceic.online", ignoreCase = true)
+            .replace("https://ananya.in.th", "https://numberniceic.online", ignoreCase = true)
+            .replace("http://www.ananya.in.th", "https://numberniceic.online", ignoreCase = true)
+            .replace("http://ananya.in.th", "https://numberniceic.online", ignoreCase = true)
+
+        return when {
+            clean.startsWith("//") -> "https:$clean"
+            clean.startsWith("http://") -> clean
+            clean.startsWith("https://") -> clean
+            clean.startsWith("/") -> "https://numberniceic.online$clean"
+            else -> "https://numberniceic.online/$clean"
+        }
     }
 
     private fun fetchAndLoadContent(newsId: String) {

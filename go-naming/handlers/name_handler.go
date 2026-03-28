@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -54,7 +55,8 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	res.Ideas = []string{}
 	res.Names = []SuggestionItem{}
 
-	seenNames := make(map[string]bool)
+	normalizedQuery := strings.TrimSpace(q)
+	candidates := make(map[string]suggestionCandidate)
 
 	// 1. Semantic search for meanings (embeddings)
 	embedding, err := services.GetEmbedding(queryText)
@@ -66,57 +68,158 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vectorStr := formatVector(embedding)
-	// Query for semantic matches
+	addCandidate := func(id int, name, meaning string, score float64) {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			return
+		}
+
+		cleanMeaning := cleanSuggestionMeaning(name, meaning)
+		if strings.TrimSpace(cleanMeaning) == "" {
+			return
+		}
+
+		if name == normalizedQuery {
+			score += 10000
+		}
+
+		tokenCoverage := countTokenCoverage(cleanMeaning, extractSuggestionTokens(queryText, q))
+		score += float64(tokenCoverage * 25)
+
+		if existing, ok := candidates[name]; !ok || score > existing.Score {
+			candidates[name] = suggestionCandidate{
+				ID:      id,
+				Name:    name,
+				Meaning: cleanMeaning,
+				Score:   score,
+			}
+		}
+	}
+
+	// 2. Exact/near-exact seed so the typed name can surface first if present.
+	if normalizedQuery != "" {
+		exactRows, exactErr := database.DB.Query(`
+			SELECT name_id, thname, COALESCE(meaning, '')
+			FROM names_miracle
+			WHERE thname = $1
+			LIMIT 3
+		`, normalizedQuery)
+		if exactErr == nil {
+			defer exactRows.Close()
+			for exactRows.Next() {
+				var id int
+				var name, meaning string
+				if err := exactRows.Scan(&id, &name, &meaning); err == nil {
+					addCandidate(id, name, meaning, 5000)
+				}
+			}
+		}
+	}
+
+	// 3. Semantic core search from the meaning embedding.
 	semRows, semErr := database.DB.Query(`
-		SELECT name_id, thname, COALESCE(meaning, '') 
+		SELECT name_id, thname, COALESCE(meaning, ''), COALESCE((meaning_vector <=> $1), 1)
 		FROM names_miracle 
 		WHERE meaning_vector IS NOT NULL AND meaning != thname AND char_length(meaning) > 10
 		ORDER BY meaning_vector <=> $1 
-		LIMIT 50
+		LIMIT 200
 	`, vectorStr)
 
 	if semErr == nil {
 		defer semRows.Close()
 		for semRows.Next() {
-			if len(res.Names) >= 10 {
-				break
-			}
-
 			var id int
 			var name, meaning string
-			if err := semRows.Scan(&id, &name, &meaning); err == nil {
-				if !seenNames[name] {
-					// Apply smarter cleanup
-					cleanMeaning := meaning
+			var distance float64
+			if err := semRows.Scan(&id, &name, &meaning, &distance); err == nil {
+				addCandidate(id, name, meaning, 1000-(distance*100))
+			}
+		}
+	}
 
-					// 1. Look for "แปลว่า" or "หมายถึง" near the beginning
-					prefixes := []string{"แปลว่า", "หมายถึง", "คือ"}
-					for _, p := range prefixes {
-						idx := strings.Index(cleanMeaning, p)
-						if idx != -1 && idx < 30 {
-							cleanMeaning = strings.TrimSpace(cleanMeaning[idx+len(p):])
-							break
-						}
-					}
+	// 4. Keyword expansion widens the pool for names with sparse semantic neighbors.
+	searchTokens := extractSuggestionTokens(queryText, q)
+	if len(searchTokens) > 0 {
+		patterns := make([]string, 0, len(searchTokens))
+		for _, token := range searchTokens {
+			patterns = append(patterns, "%"+token+"%")
+		}
 
-					// 2. Also strip current name prefix if it still exists
-					cleanMeaning = strings.TrimPrefix(cleanMeaning, name+" ")
-
-					if len([]rune(cleanMeaning)) > 60 {
-						cleanMeaning = string([]rune(cleanMeaning)[:57]) + "..."
-					}
-
-					res.Names = append(res.Names, SuggestionItem{
-						ID:      id,
-						Name:    name,
-						Meaning: cleanMeaning,
-					})
-					seenNames[name] = true
-
-					// Simple logic to extract "ideas" from meanings
-					// For now, let's keep it simple: take first 2-3 words of meaning as ideas if they are short
+		keywordRows, keywordErr := database.DB.Query(`
+			SELECT name_id, thname, COALESCE(meaning, ''), COALESCE(word_similarity(thname, $2), 0)
+			FROM names_miracle
+			WHERE char_length(meaning) > 10
+			  AND (meaning ILIKE ANY($1) OR thname ILIKE ANY($1))
+			ORDER BY COALESCE(word_similarity(thname, $2), 0) DESC, name_id ASC
+			LIMIT 160
+		`, pq.Array(patterns), normalizedQuery)
+		if keywordErr == nil {
+			defer keywordRows.Close()
+			for keywordRows.Next() {
+				var id int
+				var name, meaning string
+				var rootScore float64
+				if err := keywordRows.Scan(&id, &name, &meaning, &rootScore); err == nil {
+					addCandidate(id, name, meaning, 650+(rootScore*100))
 				}
 			}
+		}
+	}
+
+	ordered := make([]suggestionCandidate, 0, len(candidates))
+	for _, candidate := range candidates {
+		ordered = append(ordered, candidate)
+	}
+
+	sort.SliceStable(ordered, func(i, j int) bool {
+		if ordered[i].Score == ordered[j].Score {
+			return ordered[i].ID < ordered[j].ID
+		}
+		return ordered[i].Score > ordered[j].Score
+	})
+
+	seenMeaningKeys := make(map[string]bool)
+	for _, candidate := range ordered {
+		if len(res.Names) >= 18 {
+			break
+		}
+
+		meaningKey := normalizeSuggestionMeaning(candidate.Meaning)
+		isExact := candidate.Name == normalizedQuery
+		if !isExact && meaningKey != "" && seenMeaningKeys[meaningKey] {
+			continue
+		}
+
+		res.Names = append(res.Names, SuggestionItem{
+			ID:      candidate.ID,
+			Name:    candidate.Name,
+			Meaning: candidate.Meaning,
+		})
+
+		if meaningKey != "" {
+			seenMeaningKeys[meaningKey] = true
+		}
+	}
+
+	// If diversity is too strict for a sparse query, backfill from the ranked pool.
+	if len(res.Names) < 10 {
+		seenNames := make(map[string]bool)
+		for _, item := range res.Names {
+			seenNames[item.Name] = true
+		}
+		for _, candidate := range ordered {
+			if len(res.Names) >= 18 {
+				break
+			}
+			if seenNames[candidate.Name] {
+				continue
+			}
+			res.Names = append(res.Names, SuggestionItem{
+				ID:      candidate.ID,
+				Name:    candidate.Name,
+				Meaning: candidate.Meaning,
+			})
+			seenNames[candidate.Name] = true
 		}
 	}
 
@@ -164,6 +267,96 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse(w, http.StatusOK, res)
+}
+
+type suggestionCandidate struct {
+	ID      int
+	Name    string
+	Meaning string
+	Score   float64
+}
+
+func cleanSuggestionMeaning(name, meaning string) string {
+	cleanMeaning := strings.TrimSpace(meaning)
+
+	prefixes := []string{"แปลว่า", "หมายถึง", "คือ"}
+	for _, prefix := range prefixes {
+		idx := strings.Index(cleanMeaning, prefix)
+		if idx != -1 && idx < 30 {
+			cleanMeaning = strings.TrimSpace(cleanMeaning[idx+len(prefix):])
+			break
+		}
+	}
+
+	cleanMeaning = strings.TrimPrefix(cleanMeaning, name+" ")
+	cleanMeaning = strings.Join(strings.Fields(cleanMeaning), " ")
+
+	if len([]rune(cleanMeaning)) > 60 {
+		cleanMeaning = string([]rune(cleanMeaning)[:57]) + "..."
+	}
+
+	return cleanMeaning
+}
+
+func normalizeSuggestionMeaning(meaning string) string {
+	return strings.Join(strings.Fields(strings.TrimSpace(meaning)), " ")
+}
+
+func extractSuggestionTokens(texts ...string) []string {
+	stopWords := map[string]bool{
+		"แปลว่า":  true,
+		"หมายถึง": true,
+		"คือ":     true,
+		"ผู้ที่":  true,
+		"ความ":    true,
+		"การ":     true,
+		"และ":     true,
+		"กับ":     true,
+		"ของ":     true,
+		"ที่":     true,
+		"ชื่อ":    true,
+	}
+
+	tokenSet := make(map[string]bool)
+	tokens := make([]string, 0, 6)
+	replacer := strings.NewReplacer(",", " ", ".", " ", "(", " ", ")", " ")
+
+	for _, text := range texts {
+		for _, token := range strings.Fields(replacer.Replace(text)) {
+			token = strings.TrimSpace(token)
+			if token == "" || stopWords[token] {
+				continue
+			}
+			runeLen := len([]rune(token))
+			if runeLen < 2 || runeLen > 12 {
+				continue
+			}
+			if tokenSet[token] {
+				continue
+			}
+			tokenSet[token] = true
+			tokens = append(tokens, token)
+			if len(tokens) >= 6 {
+				return tokens
+			}
+		}
+	}
+
+	return tokens
+}
+
+func countTokenCoverage(meaning string, tokens []string) int {
+	if len(tokens) == 0 {
+		return 0
+	}
+
+	coverage := 0
+	for _, token := range tokens {
+		if strings.Contains(meaning, token) {
+			coverage++
+		}
+	}
+	return coverage
 }
 
 // Helper to send JSON response (duplicated here to avoid cycle import)

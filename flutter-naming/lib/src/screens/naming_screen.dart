@@ -1709,7 +1709,7 @@ class _NamingScreenState extends State<NamingScreen>
             const SizedBox(height: 6),
           ],
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1754,7 +1754,7 @@ class _NamingScreenState extends State<NamingScreen>
                   height: 24,
                 ), // Increased from 16 to give VIP Badge space
                 buildFilterChipsSection(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 6),
               ],
             ),
           ),
@@ -2822,16 +2822,16 @@ class _NamingScreenState extends State<NamingScreen>
                 ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1F2937), Color(0xFF111827)],
+                    colors: [Color(0xFF2E7D5A), Color(0xFF1F5F45)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.35),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: const Color(0xFF1F5F45).withOpacity(0.28),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),

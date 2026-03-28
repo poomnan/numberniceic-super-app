@@ -40,3 +40,8 @@ Skill locations:
 
 ## Safety Rule
 Do not modify runtime business logic unless explicitly requested. Prefer documenting contracts, tracing flow, and making backward-compatible fixes.
+
+## Learned Context
+- In `flutter-naming`, `similarMode` (`รวมให้เป็น "ชื่อดี"`) displays both base-name scores and combined `total` scores on the ranking card. When debugging filters like `เลขศาสตร์ดี` / `พลังเงาดี`, validate both what the list filters on and what the user still sees on the card to avoid "filtered but still red" confusion.
+- In naming ranking, if 2 names share effectively the same meaning, visible numerology quality should not be contradicted by the order. Stronger `pairType/pairpoint` should outrank weaker ones before tiny semantic-distance differences decide the final order.
+- On the back of the ranking card, prefer showing compact proof inline with `เลขศาสตร์` / `พลังเงา` (for example `24 (D10/80)`) rather than a separate debug box that repeats the same data.
