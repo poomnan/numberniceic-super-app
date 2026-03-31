@@ -88,29 +88,18 @@ class UserController extends Manager
         // Fix Timezone for Thailand
         date_default_timezone_set('Asia/Bangkok');
         $presentDay = date('Y-m-d');
-        // Increased from 6 to 12 months now that we have efficient filtering
-        $endDate = date('Y-m-d', strtotime('+12 months'));
+        $queryParams = $request->getQueryParams();
+        $requestedYear = isset($queryParams['year']) ? (int) $queryParams['year'] : (int) date('Y');
+        $requestedMonth = isset($queryParams['month']) ? (int) $queryParams['month'] : (int) date('n');
+        $monthRange = \App\Managers\ThaiCalendarHelper::getMonthRange($requestedYear, $requestedMonth);
+        $calendarStartDate = $monthRange['start'];
+        $endDate = $monthRange['end'];
 
-        // Use Pre-calculated DB for today's status (O(1) speed)
         $pdo = $this->db;
-        $stmtToday = $pdo->prepare("SELECT is_wanpra, is_tongchai, is_atipbadee FROM auspicious_days WHERE date = ?");
-        $stmtToday->execute([$presentDay]);
-        $todayData = $stmtToday->fetch(\PDO::FETCH_ASSOC);
-
-        $wanTongchai = "0";
-        $wanAtipbadee = "0";
-        $wanPraStr = "0";
-
-        if ($todayData) {
-            $wanTongchai = $todayData['is_tongchai'] ? "1" : "0";
-            $wanAtipbadee = $todayData['is_atipbadee'] ? "1" : "0";
-            $wanPraStr = $todayData['is_wanpra'] ? "1" : "0";
-        }
-
-        // ALWAYS override Kalayok (ธงชัย/อธิบดี) with live computation — DB data may be stale
-        $kalayokToday = \App\Managers\ThaiCalendarHelper::getKalayok($presentDay);
-        $wanTongchai = $kalayokToday['is_tongchai'] ? "1" : "0";
-        $wanAtipbadee = $kalayokToday['is_atipbadee'] ? "1" : "0";
+        $todayStatus = \App\Managers\ThaiCalendarHelper::getAuspiciousStatus($presentDay);
+        $wanTongchai = $todayStatus['is_tongchai'] ? "1" : "0";
+        $wanAtipbadee = $todayStatus['is_atipbadee'] ? "1" : "0";
+        $wanPraStr = $todayStatus['is_wanpra'] ? "1" : "0";
 
         // EMERGENCY FIX: Force 21 Jan 2026 to NOT be Tongchai
         if ($presentDay == '2026-01-21') {
@@ -123,7 +112,7 @@ class UserController extends Manager
         $result->execute();
         $dbSpecial = $result->fetch(\PDO::FETCH_OBJ);
 
-        $wanKating = "0";
+        $wanKating = $todayStatus['is_kating'] ? "1" : "0";
         $descParts = [];
         if ($wanPraStr == "1")
             $descParts[] = "วันพระ";
@@ -151,11 +140,9 @@ class UserController extends Manager
             }
             if (!empty($dbSpecial->wan_detail))
                 $wanDetail = $dbSpecial->wan_detail;
-            if (!empty($dbSpecial->wan_kating))
-                $wanKating = $dbSpecial->wan_kating;
         }
 
-        $chokTodayL = \App\Managers\ThaiCalendarHelper::queryMahaChok($presentDay);
+        $chokTodayL = $todayStatus;
         
         $WanSpecial = [
             'dayid' => $dayId,
@@ -173,59 +160,58 @@ class UserController extends Manager
             'wan_chaichok' => (string) ($chokTodayL['is_chaichok'] ? "1" : "0")
         ];
 
-        // SUPER SPEED FIX: Use pre-calculated Database table
-        $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT date as wanpra_date, is_wanpra as is_wanpra, is_tongchai, is_atipbadee FROM auspicious_days WHERE date >= ? AND date <= ? ORDER BY date ASC");
-        $stmt->execute([$presentDay, $endDate]);
-        $arrWanpras = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        // Map types to match expected helper format if necessary
-        // OPTIMIZATION: Convert to compact format to reduce response size
-        // Efficiently fetch Kating days in bulk
-        $stmtKating = $pdo->prepare("SELECT wan_date FROM dayspecialtb WHERE wan_kating = '1' AND wan_date >= ? AND wan_date <= ?");
-        $stmtKating->execute([$presentDay, $endDate]);
-        $katingDays = $stmtKating->fetchAll(\PDO::FETCH_COLUMN);
-        // Create a lookup map for faster access
-        $katingMap = array_flip($katingDays);
-
         $filteredWanpras = [];
-        foreach ($arrWanpras as $key => $wp) {
-            $isWanpra = ($wp['is_wanpra'] == 1 || $wp['is_wanpra'] == '1');
-            $isTongchai = ($wp['is_tongchai'] == 1 || $wp['is_tongchai'] == '1');
-            $isAtipbadee = ($wp['is_atipbadee'] == 1 || $wp['is_atipbadee'] == '1');
+        $currentDate = new \DateTime($calendarStartDate);
+        $finalDate = new \DateTime($endDate);
+        while ($currentDate <= $finalDate) {
+            $dateStr = $currentDate->format('Y-m-d');
+            $status = \App\Managers\ThaiCalendarHelper::getAuspiciousStatus($dateStr);
+            $isKating = !empty($status['is_kating']);
 
-            // Check if this date is a Kating day using the map
-            $isKating = isset($katingMap[$wp['wanpra_date']]);
+            $filteredWanpras[] = [
+                'wanpra_date' => $dateStr,
+                'is_wanpra' => $status['is_wanpra'] ? "1" : "0",
+                'is_tongchai' => $status['is_tongchai'] ? "1" : "0",
+                'is_atipbadee' => $status['is_atipbadee'] ? "1" : "0",
+                'is_kating' => $isKating ? "1" : "0",
+                'is_loy' => !empty($status['is_loy']),
+                'is_fu' => !empty($status['is_fu']),
+                'is_jom' => !empty($status['is_jom']),
+                'display_tags' => $status['display_tags'] ?? [],
+                'display_tags_prioritized' => $status['display_tags_prioritized'] ?? [],
+                'calendar_display_tags' => $status['calendar_display_tags'] ?? [],
+                'kal_tags' => $status['kal_tags'] ?? [],
+                'dithi_tags' => $status['dithi_tags'] ?? [],
+                'day_type_tags' => $status['day_type_tags'] ?? [],
+                'warning_tags' => $status['warning_tags'] ?? [],
+                'tag_details' => $status['tag_details'] ?? [],
+                'myhora_display_tags' => $status['myhora_display_tags'] ?? [],
+                'myhora_display_tags_prioritized' => $status['myhora_display_tags_prioritized'] ?? [],
+                'myhora_tag_details' => $status['myhora_tag_details'] ?? [],
+                'mahamodo_display_tags' => $status['mahamodo_display_tags'] ?? [],
+                'mahamodo_display_tags_prioritized' => $status['mahamodo_display_tags_prioritized'] ?? [],
+                'mahamodo_tag_details' => $status['mahamodo_tag_details'] ?? [],
+                'has_positive_tags' => !empty($status['has_positive_tags']),
+                'has_negative_tags' => !empty($status['has_negative_tags']),
+                'is_conflict_day' => !empty($status['is_conflict_day']),
+                'is_sittichok' => $status['is_sittichok'],
+                'is_mahasittichok' => $status['is_mahasittichok'],
+                'is_ammarit' => $status['is_ammarit'],
+                'is_rachachok' => $status['is_rachachok'],
+                'is_chaichok' => $status['is_chaichok'],
+                'is_riangmon' => $status['is_riangmon'],
+                'is_ubath' => $status['is_ubath'],
+                'is_lokawinat' => $status['is_lokawinat']
+            ];
 
-            // Perform Chok calculation for each flagged date to support recycler display
-            $chokDate = \App\Managers\ThaiCalendarHelper::queryMahaChok($wp['wanpra_date']);
-
-            // CRITICAL FIX: Only send items with at least one flag = true
-            // This reduces 332 items to ~113 items to bypass web server buffer limit
-            if ($isWanpra || $isTongchai || $isAtipbadee || $isKating || array_filter($chokDate)) {
-                $filteredWanpras[] = [
-                    'wanpra_date' => $wp['wanpra_date'],
-                    'is_wanpra' => $isWanpra ? "1" : "0",
-                    'is_tongchai' => $chokDate['is_tongchai'] ? "1" : "0",
-                    'is_atipbadee' => $chokDate['is_atipbadee'] ? "1" : "0",
-                    'is_kating' => $isKating ? "1" : "0",
-                    'is_sittichok' => $chokDate['is_sittichok'],
-                    'is_mahasittichok' => $chokDate['is_mahasittichok'],
-                    'is_ammarit' => $chokDate['is_ammarit'],
-                    'is_rachachok' => $chokDate['is_rachachok'],
-                    'is_chaichok' => $chokDate['is_chaichok'],
-                    'is_riangmon' => $chokDate['is_riangmon'],
-                    'is_ubath' => $chokDate['is_ubath'],
-                    'is_lokawinat' => $chokDate['is_lokawinat']
-                ];
-            }
+            $currentDate->modify('+1 day');
         }
 
         $arrWanpras = $filteredWanpras;
 
 
         // Efficiently find the next wanpra once, instead of in a loop
-        $nextWanpra = $this->nextWanpra($presentDay, $arrWanpras);
+        $nextWanpra = $this->nextWanpra($presentDay);
 
         if ($arrWanpras) {
             $objWanprasx = $arrWanpras;
@@ -252,18 +238,19 @@ class UserController extends Manager
         return $response;
     }
 
-    private function nextWanpra(string $strWanpra, array $wanpraList): string
+    private function nextWanpra(string $strWanpra, int $lookaheadDays = 120): string
     {
-        $wanPra = "";
-        foreach ($wanpraList as $value) {
-            if (date('Y-m-d') <= $value['wanpra_date']) {
-                if ($value['is_wanpra'] == 1) {
-                    $wanPra = $value['wanpra_date'];
-                    break;
-                }
+        $cursor = new \DateTimeImmutable($strWanpra);
+        $end = $cursor->modify("+{$lookaheadDays} days");
+
+        while ($cursor <= $end) {
+            if (\App\Managers\ThaiCalendarHelper::isWanPra($cursor)) {
+                return $cursor->format('Y-m-d');
             }
+            $cursor = $cursor->modify('+1 day');
         }
-        return $wanPra;
+
+        return "";
     }
 
     private function getStatusFromDB($dateStr)
@@ -294,18 +281,12 @@ class UserController extends Manager
             return ['is_wanpra' => 0, 'is_tongchai' => 0, 'is_atipbadee' => 0];
         }
 
-        $stmt = $this->db->prepare("SELECT is_wanpra, is_tongchai, is_atipbadee FROM auspicious_days WHERE date = ?");
-        $stmt->execute([$formatted]);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        if ($row) {
-            return [
-                'is_wanpra' => (int) $row['is_wanpra'],
-                'is_tongchai' => (int) $row['is_tongchai'],
-                'is_atipbadee' => (int) $row['is_atipbadee']
-            ];
-        }
-        return ['is_wanpra' => 0, 'is_tongchai' => 0, 'is_atipbadee' => 0];
+        $status = \App\Managers\ThaiCalendarHelper::getAuspiciousStatus($formatted);
+        return [
+            'is_wanpra' => $status['is_wanpra'] ? 1 : 0,
+            'is_tongchai' => $status['is_tongchai'] ? 1 : 0,
+            'is_atipbadee' => $status['is_atipbadee'] ? 1 : 0
+        ];
     }
 
     public function miraDoV2($request, $response)

@@ -190,7 +190,10 @@ interface ApiService {
     ): Call<MiracleDo>
 
     @GET("member/lengyam")
-    fun getLengYam(): Call<LengYamDao>
+    fun getLengYam(
+        @Query("year") year: Int? = null,
+        @Query("month") month: Int? = null
+    ): Call<LengYamDao>
 
     @GET(BackendHosts.NAMING_BASE + "/api/kalagni")
     fun getKalagniDay(@Query("birth_day") birthDay: String): Call<com.google.gson.JsonObject>

@@ -1,6 +1,7 @@
 package com.numberniceic.utils
 
 import org.joda.time.DateTime
+import org.joda.time.Days
 import org.joda.time.LocalDate
 
 data class TaksaPoint(val r: Int, val c: Int)
@@ -17,6 +18,243 @@ data class TaksaResult(
 )
 
 object ThaiAstrologyLib {
+    private const val LUNAR_EPOCH_GREGORIAN_YEAR = 1900
+    private const val YEAR_SELECTION_RADIUS = 12
+
+    private data class LunarState(
+        val lunarYear: Int,
+        val thaiMonth: Int,
+        val dithi: Int
+    )
+
+    private val kalayokTongchaiByCsRemainder = intArrayOf(0, 5, 1, 4, 7, 3, 6, 2)
+    private val kalayokAtipbadeeByCsRemainder = intArrayOf(0, 5, 6, 7, 1, 2, 3, 4)
+    private val kalayokUbathByCsRemainder = intArrayOf(0, 4, 7, 3, 6, 2, 5, 1)
+    private val kalayokLokawinatByCsRemainder = intArrayOf(0, 7, 1, 2, 3, 4, 5, 6)
+
+    private val jan1LunarStateCache = mutableMapOf(
+        LUNAR_EPOCH_GREGORIAN_YEAR to LunarState(
+            lunarYear = LUNAR_EPOCH_GREGORIAN_YEAR,
+            thaiMonth = 2,
+            dithi = 1
+        )
+    )
+    private val lunarMonthLengthsCache = mutableMapOf<Int, Map<Int, Int>>()
+
+    fun getYearSelectionRange(centerYearCe: Int, radius: Int = YEAR_SELECTION_RADIUS): IntRange {
+        return (centerYearCe - radius)..(centerYearCe + radius)
+    }
+
+    fun getSupportedDisplayYearRange(): IntRange = getYearSelectionRange(LocalDate.now().year)
+
+    fun isSupportedDisplayYear(yearCe: Int): Boolean = true
+
+    fun getSupportedDisplayYearRangeBeLabel(): String {
+        val range = getSupportedDisplayYearRange()
+        return "${range.first + 543}-${range.last + 543}"
+    }
+
+    private fun gregorianYearDayCount(year: Int): Int {
+        return if ((year % 400 == 0) || (year % 4 == 0 && year % 100 != 0)) 366 else 365
+    }
+
+    private fun buddhistEraYear(gregorianYear: Int): Int = gregorianYear + 544
+
+    private fun aharkun(gregorianYear: Int): Int {
+        val be = buddhistEraYear(gregorianYear).toLong()
+        return (((be * 292207L) + 499L) / 800L).toInt() + 4
+    }
+
+    private fun avoman(gregorianYear: Int): Int {
+        return ((11 * aharkun(gregorianYear)) + 25) % 692
+    }
+
+    private fun bodithey(gregorianYear: Int): Int {
+        val ahk = aharkun(gregorianYear)
+        return (((11 * ahk) + 25) / 692 + ahk + 29) % 30
+    }
+
+    private fun isSolarLeapYearInLunisolarSystem(gregorianYear: Int): Boolean {
+        val be = buddhistEraYear(gregorianYear).toLong()
+        return 800 - (((be * 292207L) + 499L) % 800L).toInt() <= 207
+    }
+
+    private fun boditheyLeapType(gregorianYear: Int): Int {
+        val av = avoman(gregorianYear)
+        val bod = bodithey(gregorianYear)
+
+        var isLeapMonth = bod >= 25 || bod <= 5
+        if (bod == 25 && bodithey(gregorianYear + 1) == 5) {
+            isLeapMonth = false
+        }
+        if (bod == 24 && bodithey(gregorianYear + 1) == 6) {
+            isLeapMonth = true
+        }
+
+        val isLeapDay = if (isSolarLeapYearInLunisolarSystem(gregorianYear)) {
+            av <= 126
+        } else {
+            av <= 137 && avoman(gregorianYear + 1) != 0
+        }
+
+        return when {
+            isLeapMonth && isLeapDay -> 3
+            isLeapMonth -> 1
+            isLeapDay -> 2
+            else -> 0
+        }
+    }
+
+    private fun lunarYearType(gregorianYear: Int): Int {
+        val leapType = boditheyLeapType(gregorianYear)
+        return when {
+            leapType == 3 -> 1
+            leapType == 1 || leapType == 2 -> leapType
+            boditheyLeapType(gregorianYear - 1) == 3 -> 2
+            else -> 0
+        }
+    }
+
+    private fun lunarMonthLengths(lunarYear: Int): Map<Int, Int> {
+        return lunarMonthLengthsCache.getOrPut(lunarYear) {
+            when (lunarYearType(lunarYear)) {
+                1 -> linkedMapOf(
+                    1 to 29,
+                    2 to 30,
+                    3 to 29,
+                    4 to 30,
+                    5 to 29,
+                    6 to 30,
+                    7 to 29,
+                    8 to 30,
+                    18 to 30,
+                    9 to 29,
+                    10 to 30,
+                    11 to 29,
+                    12 to 30
+                )
+                2 -> linkedMapOf(
+                    1 to 29,
+                    2 to 30,
+                    3 to 29,
+                    4 to 30,
+                    5 to 29,
+                    6 to 30,
+                    7 to 30,
+                    8 to 30,
+                    9 to 29,
+                    10 to 30,
+                    11 to 29,
+                    12 to 30
+                )
+                else -> linkedMapOf(
+                    1 to 29,
+                    2 to 30,
+                    3 to 29,
+                    4 to 30,
+                    5 to 29,
+                    6 to 30,
+                    7 to 29,
+                    8 to 30,
+                    9 to 29,
+                    10 to 30,
+                    11 to 29,
+                    12 to 30
+                )
+            }
+        }
+    }
+
+    private fun normalizedThaiMonth(thaiMonth: Int): Int {
+        return when {
+            thaiMonth == 18 || thaiMonth == 13 -> 8
+            thaiMonth > 12 -> thaiMonth - 12
+            else -> thaiMonth
+        }
+    }
+
+    private fun lunarMonthLength(thaiMonth: Int, lunarYear: Int): Int {
+        return lunarMonthLengths(lunarYear)[thaiMonth]
+            ?: error("Unknown Thai lunar month $thaiMonth in lunar year $lunarYear")
+    }
+
+    private fun moveToNextLunarMonth(state: LunarState): LunarState {
+        val sequence = lunarMonthLengths(state.lunarYear).keys.toList()
+        val index = sequence.indexOf(state.thaiMonth)
+        check(index >= 0) { "Unable to advance lunar month ${state.thaiMonth} in lunar year ${state.lunarYear}" }
+
+        return if (index + 1 < sequence.size) {
+            state.copy(thaiMonth = sequence[index + 1])
+        } else {
+            state.copy(lunarYear = state.lunarYear + 1, thaiMonth = 1)
+        }
+    }
+
+    private fun moveToPreviousLunarMonth(state: LunarState): LunarState {
+        val sequence = lunarMonthLengths(state.lunarYear).keys.toList()
+        val index = sequence.indexOf(state.thaiMonth)
+        check(index >= 0) { "Unable to rewind lunar month ${state.thaiMonth} in lunar year ${state.lunarYear}" }
+
+        return if (index > 0) {
+            state.copy(thaiMonth = sequence[index - 1])
+        } else {
+            val previousLunarYear = state.lunarYear - 1
+            val previousSequence = lunarMonthLengths(previousLunarYear).keys.toList()
+            state.copy(lunarYear = previousLunarYear, thaiMonth = previousSequence.last())
+        }
+    }
+
+    private fun advanceLunarStateByDays(initialState: LunarState, deltaDays: Int): LunarState {
+        var state = initialState
+        var delta = deltaDays
+
+        while (delta > 0) {
+            val currentMonthLength = lunarMonthLength(state.thaiMonth, state.lunarYear)
+            val remainingInMonth = currentMonthLength - state.dithi
+            if (delta <= remainingInMonth) {
+                return state.copy(dithi = state.dithi + delta)
+            }
+
+            delta -= remainingInMonth + 1
+            state = moveToNextLunarMonth(state).copy(dithi = 1)
+        }
+
+        while (delta < 0) {
+            val daysBeforeCurrent = state.dithi - 1
+            if (-delta <= daysBeforeCurrent) {
+                return state.copy(dithi = state.dithi + delta)
+            }
+
+            delta += daysBeforeCurrent + 1
+            val previousState = moveToPreviousLunarMonth(state)
+            state = previousState.copy(
+                dithi = lunarMonthLength(previousState.thaiMonth, previousState.lunarYear)
+            )
+        }
+
+        return state
+    }
+
+    private fun getLunarStateAtJan1(gregorianYear: Int): LunarState {
+        jan1LunarStateCache[gregorianYear]?.let { return it }
+
+        val state = if (gregorianYear > LUNAR_EPOCH_GREGORIAN_YEAR) {
+            advanceLunarStateByDays(
+                getLunarStateAtJan1(gregorianYear - 1),
+                gregorianYearDayCount(gregorianYear - 1)
+            )
+        } else {
+            advanceLunarStateByDays(
+                getLunarStateAtJan1(gregorianYear + 1),
+                -gregorianYearDayCount(gregorianYear)
+            )
+        }
+
+        jan1LunarStateCache[gregorianYear] = state
+        return state
+    }
+
+    fun canResolveThaiLunar(date: LocalDate): Boolean = true
 
     // ตารางผังดาว (3x3 Grid)
     val BOARD = arrayOf(
@@ -79,45 +317,59 @@ object ThaiAstrologyLib {
 
     /**
      * 3. วันกาลโยค (Kala-Yoga Days)
-     * คำนวณตามปี CS 1387 - 1388 (2569)
+     * คำนวณแบบ dynamic ตามปีจุลศักราช
      */
     fun getKalayok(date: LocalDate): List<String> {
         val tags = mutableListOf<String>()
-        val w = date.dayOfWeek // 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat, 7=Sun
-        val cutoff = LocalDate(2026, 4, 16)
+        val w = date.dayOfWeek // 1=Mon ... 7=Sun
+        val csYear = if (!date.isBefore(LocalDate(date.year, 4, 16))) date.year - 638 else date.year - 639
+        val remainder = ((csYear % 7) + 7) % 7
+        val rem = if (remainder == 0) 7 else remainder
 
-        if (date.isBefore(cutoff)) {
-            // จ.ศ. 1387: ธงชัย=ศุกร์, อธิบดี=ศุกร์, อุบาทว์=พฤหัส, โลกาวินาศ=อาทิตย์, กระทิงวัน=จันทร์
-            if (w == 5) tags.addAll(listOf("ธงชัย", "อธิบดี"))
-            if (w == 4) tags.add("อุบาทว์")
-            if (w == 7) tags.add("โลกาวินาศ")
-            if (w == 1) tags.add("กระทิงวัน")
-        } else {
-            // จ.ศ. 1388: ธงชัย=จันทร์, อธิบดี=เสาร์, อุบาทว์=อาทิตย์, โลกาวินาศ=จันทร์, กระทิงวัน=เสาร์
-            if (w == 1) tags.addAll(listOf("ธงชัย", "โลกาวินาศ"))
-            if (w == 6) tags.addAll(listOf("อธิบดี", "กระทิงวัน"))
-            if (w == 7) tags.add("อุบาทว์")
-        }
+        if (w == kalayokTongchaiByCsRemainder[rem]) tags.add("ธงชัย")
+        if (w == kalayokAtipbadeeByCsRemainder[rem]) tags.add("อธิบดี")
+        if (w == kalayokUbathByCsRemainder[rem]) tags.add("อุบาทว์")
+        if (w == kalayokLokawinatByCsRemainder[rem]) tags.add("โลกาวินาศ")
+
         return tags
     }
 
     /**
-     * 7.1 วันจม-วันฟู (Month-based Success/Failure)
-     * w: 1=Mon, 2=Tue... 7=Sun
+     * 7.1 วันลอย-วันฟู-วันจม
+     * วันฟู/วันจมยึดตามตาราง mahamodo โดยใช้เดือนจันทรคติและวันในสัปดาห์ตรง ๆ
+     * ส่วนวันลอยคง logic เดิมไว้เพื่อไม่ให้กระทบพฤติกรรมเดิมนอกเหนือจากที่ร้องขอ
      */
-    fun getLoyFuJom(w: Int, mThai: Int): List<String> {
+    fun getLoyFuJom(weekday: Int, dithiRaw: Int, mThai: Int): List<String> {
         val res = mutableListOf<String>()
-        val month = if (mThai == 13 || mThai == 18) 8 else if (mThai > 12) mThai - 12 else mThai
+        val month = normalizedThaiMonth(mThai)
+        val residue = ((dithiRaw % 7) + 7) % 7
 
-        // วันลอย/ฟู/จม ตามคัมภีร์กาลโยค
-        val loyDays = mapOf(1 to 4, 2 to 5, 3 to 6, 8 to 6, 4 to 7, 9 to 7, 5 to 1, 10 to 1, 6 to 2, 11 to 2, 7 to 3, 12 to 3)
-        val fuDays = mapOf(1 to 1, 2 to 2, 3 to 3, 8 to 3, 4 to 4, 9 to 4, 5 to 5, 10 to 5, 6 to 6, 11 to 6, 7 to 7, 12 to 7)
-        val jomDays = mapOf(1 to 5, 2 to 6, 3 to 7, 8 to 7, 4 to 1, 9 to 1, 5 to 2, 10 to 2, 6 to 3, 11 to 3, 7 to 4, 12 to 4)
+        val loyResidue = when (month) {
+            1, 6 -> 6
+            2, 12 -> 0
+            3, 4, 7, 8 -> 5
+            5 -> 4
+            9 -> 2
+            10, 11 -> 1
+            else -> 5
+        }
+        val jomFuRule = when (month) {
+            1 -> Pair(5, 1) // ศุกร์, จันทร์
+            2 -> Pair(6, 2) // เสาร์, อังคาร
+            3, 8 -> Pair(7, 3) // อาทิตย์, พุธ
+            4, 9 -> Pair(1, 4) // จันทร์, พฤหัสบดี
+            5, 10 -> Pair(2, 5) // อังคาร, ศุกร์
+            6, 11 -> Pair(3, 6) // พุธ, เสาร์
+            7, 12 -> Pair(4, 7) // พฤหัสบดี, อาทิตย์
+            else -> null
+        }
 
-        if (loyDays[month] == w) res.add("วันลอย")
-        if (fuDays[month] == w) res.add("วันฟู")
-        if (jomDays[month] == w) res.add("วันจม")
-        
+        if (residue == loyResidue) res.add("วันลอย")
+        if (jomFuRule != null) {
+            if (weekday == jomFuRule.first) res.add("วันจม")
+            if (weekday == jomFuRule.second) res.add("วันฟู")
+        }
+
         return res
     }
     
@@ -210,7 +462,8 @@ object ThaiAstrologyLib {
             "ยมขันธ์" to mapOf(7 to 12, 1 to 11, 2 to 7, 3 to 13, 4 to 6, 5 to 8, 6 to 9),
             "อัตนิโรจน์" to mapOf(7 to 4, 1 to 6, 2 to 1, 3 to 3, 4 to 3, 5 to 9, 6 to 1),
             "ทินกาล" to mapOf(7 to 1, 1 to 2, 2 to 10, 3 to 7, 4 to 1, 5 to 6, 6 to 6),
-            "ทินสูญ" to mapOf(7 to 12, 1 to 10, 2 to 15, 3 to 8, 4 to 5, 5 to 7, 6 to 8),
+            // ตามเงื่อนไขปัจจุบัน: อาทิตย์ 5, จันทร์ 2, อังคาร 8, พุธ 3, พฤหัส 1, ศุกร์ 9, เสาร์ 8
+            "ทินสูญ" to mapOf(7 to 5, 1 to 2, 2 to 8, 3 to 3, 4 to 1, 5 to 9, 6 to 8),
             "กาฬโชค" to mapOf(7 to 4, 1 to 6, 2 to 1, 3 to 3, 4 to 8, 5 to 9, 6 to 10),
             "กาลสูญ" to mapOf(7 to 4, 1 to 2, 2 to 7, 3 to 5, 4 to 8, 5 to 3, 6 to 6),
             "กาลทัณฑ์" to mapOf(7 to 12, 1 to 11, 2 to 10, 3 to 9, 4 to 8, 5 to 7, 6 to 1),
@@ -220,10 +473,16 @@ object ThaiAstrologyLib {
             "มฤตยู" to mapOf(7 to 9, 1 to 1, 2 to 10, 3 to 9, 4 to 8, 5 to 7, 6 to 6),
             "วันบอด" to mapOf(7 to 7, 1 to 8, 2 to 4, 3 to 7, 4 to 1, 5 to 14, 6 to 11),
             "กาลทีน" to mapOf(7 to 5, 1 to 6, 2 to 10, 3 to 8, 4 to 11, 5 to 5, 6 to 7)
+            ,
+            // ทักทินไฟ (ห้ามแต่งงาน): อาทิตย์ 12, เสาร์ 6, จันทร์ 11, อังคาร 10, พุธ 9, พฤหัส 8, ศุกร์ 7
+            "ทักทินไฟ" to mapOf(7 to 12, 6 to 6, 1 to 11, 2 to 10, 3 to 9, 4 to 8, 5 to 7)
         )
 
         badMap.forEach { (name, rule) ->
-            if (rule[w] == d) res.add(name)
+            if (rule[w] == d) {
+                res.add(name)
+                if (name == "ทักทินไฟ") res.add("ห้ามแต่งงาน")
+            }
         }
 
 
@@ -257,7 +516,7 @@ object ThaiAstrologyLib {
         if (d > 15) d -= 15
         
         // Normalize month (handle leap months like 18 or 13)
-        val m = if (mThai == 18 || mThai == 13) 8 else if (mThai > 12) mThai - 12 else mThai
+        val m = normalizedThaiMonth(mThai)
 
         return when (m) {
             6, 3 -> d == 4
@@ -275,6 +534,8 @@ object ThaiAstrologyLib {
      * dithiRaw: 1-15 (Waxing), 16-30 (Waning)
      */
     fun queryDithiCommonProhibitions(dithiRaw: Int): String? {
+        if (dithiRaw == 15 || dithiRaw == 30) return "ห้ามเผาผี" // ขึ้น 15 ค่ำ / แรม 15 ค่ำ
+        if (dithiRaw == 22) return "ห้ามแต่งงาน" // แรม 7 ค่ำ
         var d = dithiRaw
         if (d > 15) d -= 15
         
@@ -298,24 +559,26 @@ object ThaiAstrologyLib {
         }
     }
 
-    // คำนวณดิถีแบบ Anchor สำหรับปี 2569
+    fun isWanPra(date: LocalDate): Boolean {
+        val (dithi, _) = getThaiLunar(date)
+        val day = if (dithi > 15) dithi - 15 else dithi
+        return day == 8 || day == 15
+    }
+
+    fun isKatingDay(date: LocalDate): Boolean {
+        val (dithi, thaiMonth) = getThaiLunar(date)
+        val day = if (dithi > 15) dithi - 15 else dithi
+        val sundayBasedWeekday = if (date.dayOfWeek == 7) 1 else date.dayOfWeek + 1
+        val normalizedMonth = normalizedThaiMonth(thaiMonth)
+        return sundayBasedWeekday == day ||
+            normalizedMonth == day
+    }
+
+    // คำนวณดิถีแบบ dynamic lunisolar arithmetic
     fun getThaiLunar(date: LocalDate): Pair<Int, Int> {
-        val anchors = mapOf(
-            1 to Pair(19, 3), 2 to Pair(17, 4), 3 to Pair(19, 5),
-            4 to Pair(17, 6), 5 to Pair(17, 7), 6 to Pair(15, 8),
-            7 to Pair(15, 18), 8 to Pair(14, 9), 9 to Pair(12, 10),
-            10 to Pair(12, 11), 11 to Pair(10, 12), 12 to Pair(10, 1)
-        )
-        
-        val anchor = anchors[date.monthOfYear] ?: return Pair(1, 1)
-        
-        return if (date.dayOfMonth >= anchor.first) {
-            Pair((date.dayOfMonth - anchor.first) + 1, anchor.second)
-        } else {
-            val prevMonthDate = date.minusMonths(1)
-            val prevAnchor = anchors[prevMonthDate.monthOfYear] ?: return Pair(1, 1)
-            val daysInPrev = date.minusDays(date.dayOfMonth).dayOfMonth
-            Pair((daysInPrev - prevAnchor.first) + 1 + date.dayOfMonth, prevAnchor.second)
-        }
+        val jan1State = getLunarStateAtJan1(date.year)
+        val deltaDays = Days.daysBetween(LocalDate(date.year, 1, 1), date).days
+        val state = advanceLunarStateByDays(jan1State, deltaDays)
+        return state.dithi to state.thaiMonth
     }
 }

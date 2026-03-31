@@ -13,10 +13,24 @@ data class Wanpra(
     @SerializedName("is_tongchai") var isTongchai: Any? = "0",
     @SerializedName("is_atipbadee") var isAtipbadee: Any? = "0",
     @SerializedName("is_kating") var isKating: Any? = "0",
+    @SerializedName("is_loy") var isLoy: Boolean = false,
+    @SerializedName("is_jom") var isJom: Boolean = false,
+    @SerializedName("is_fu") var isFu: Boolean = false,
+    @SerializedName("display_tags") var displayTags: List<String>? = null,
+    @SerializedName("display_tags_prioritized") var displayTagsPrioritized: List<String>? = null,
+    @SerializedName("calendar_display_tags") var calendarDisplayTags: List<String>? = null,
+    @SerializedName("kal_tags") var kalTags: List<String>? = null,
+    @SerializedName("dithi_tags") var dithiTags: List<String>? = null,
+    @SerializedName("day_type_tags") var dayTypeTags: List<String>? = null,
+    @SerializedName("warning_tags") var warningTags: List<String>? = null,
+    @SerializedName("tag_details") var tagDetails: List<TagDetail>? = null,
+    @SerializedName("myhora_display_tags") var myhoraDisplayTags: List<String>? = null,
+    @SerializedName("myhora_display_tags_prioritized") var myhoraDisplayTagsPrioritized: List<String>? = null,
+    @SerializedName("myhora_tag_details") var myhoraTagDetails: List<TagDetail>? = null,
+    @SerializedName("mahamodo_display_tags") var mahamodoDisplayTags: List<String>? = null,
+    @SerializedName("mahamodo_display_tags_prioritized") var mahamodoDisplayTagsPrioritized: List<String>? = null,
+    @SerializedName("mahamodo_tag_details") var mahamodoTagDetails: List<TagDetail>? = null,
     var isFoo: Boolean = false,
-    var isLoy: Boolean = false,
-    var isJom: Boolean = false,
-    var isFu: Boolean = false,
     @SerializedName("is_riangmon") var isRiangMon: Boolean = false,
     @SerializedName("is_sittichok") var isSittichok: Boolean = false,
     @SerializedName("is_ammarit") var isAmmarit: Boolean = false,
@@ -46,6 +60,20 @@ data class Wanpra(
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createTypedArrayList(TagDetail.CREATOR),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createTypedArrayList(TagDetail.CREATOR),
+        source.createStringArrayList(),
+        source.createStringArrayList(),
+        source.createTypedArrayList(TagDetail.CREATOR),
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
@@ -58,8 +86,8 @@ data class Wanpra(
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
-        source.readByte() != 0.toByte(),
-        source.readByte() != 0.toByte(),
+        source.readByte() != 0.toByte(), // isBestDay
+        source.readByte() != 0.toByte(), // isHighlighted
         source.readByte() != 0.toByte(), // isOtherMonth
         source.readString(),
         source.readString()
@@ -74,10 +102,24 @@ data class Wanpra(
         writeValue(isTongchai)
         writeValue(isAtipbadee)
         writeValue(isKating)
-        writeByte(if (isFoo) 1 else 0)
         writeByte(if (isLoy) 1 else 0)
         writeByte(if (isJom) 1 else 0)
         writeByte(if (isFu) 1 else 0)
+        writeStringList(displayTags)
+        writeStringList(displayTagsPrioritized)
+        writeStringList(calendarDisplayTags)
+        writeStringList(kalTags)
+        writeStringList(dithiTags)
+        writeStringList(dayTypeTags)
+        writeStringList(warningTags)
+        writeTypedList(tagDetails)
+        writeStringList(myhoraDisplayTags)
+        writeStringList(myhoraDisplayTagsPrioritized)
+        writeTypedList(myhoraTagDetails)
+        writeStringList(mahamodoDisplayTags)
+        writeStringList(mahamodoDisplayTagsPrioritized)
+        writeTypedList(mahamodoTagDetails)
+        writeByte(if (isFoo) 1 else 0)
         writeByte(if (isRiangMon) 1 else 0)
         writeByte(if (isSittichok) 1 else 0)
         writeByte(if (isAmmarit) 1 else 0)

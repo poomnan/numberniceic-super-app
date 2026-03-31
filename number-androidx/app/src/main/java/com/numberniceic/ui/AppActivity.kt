@@ -73,48 +73,56 @@ class AppActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelected
     
     private val notificationReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            invalidateOptionsMenu()
-            
-            val title = intent?.getStringExtra("title") ?: ""
-            val body = intent?.getStringExtra("body") ?: ""
-            val type = intent?.getStringExtra("type") ?: ""
-            val url = intent?.getStringExtra("url")
-            
-            Log.d("AppActivity", "Notification Received Broadcast: type=$type, title=$title, url=$url")
-            
-            // Set flag to vibrate bell on next update
-            shouldVibrateBell = true
-            
-            // Update Chat Badge
-            updateChatFabBadge()
-            
-            // 🎶 Play Sound Effect for Chat
-            if (type == "chat" || type == "guest_chat" || type == "admin_message" || type == "customer_message") {
-                context?.let { com.numberniceic.utils.SoundManager.playChatSound(it) }
-                // 🚀 Trigger UI Refresh via StateManager
-                com.numberniceic.data.chat.AdminChatStateManager.refreshSignal++
-            }
-            
-            // 1. Show Special Notification Bottom Sheet (Premium Popup)
-            if (type == "custom" || type == "webview_merit" || type == "webview_changenum" || type == "order_success") {
-                showSpecialNotification(title, body, url)
-            }
-            else {
-                val isBagColor = title.contains("สีกระเป๋า") || body.contains("สีกระเป๋า") || type == "bag_color"
-                val isLuckyNum = title.contains("เลขนำโชค") || type == "lucky_number"
-                val isSpell = type == "webview_spell"
-
-                if (isBagColor || isLuckyNum || isSpell) {
-                    showDashboard(forceRefresh = true)
-                } else {
-                    val refreshIntent = Intent("com.numberniceic.REFRESH_DASHBOARD")
-                    sendBroadcast(refreshIntent)
+            try {
+                invalidateOptionsMenu()
+                
+                val title = intent?.getStringExtra("title") ?: ""
+                val body = intent?.getStringExtra("body") ?: ""
+                val type = intent?.getStringExtra("type") ?: ""
+                val url = intent?.getStringExtra("url")
+                
+                Log.d("AppActivity", "Notification Received Broadcast: type=$type, title=$title, url=$url")
+                
+                // Set flag to vibrate bell on next update
+                shouldVibrateBell = true
+                
+                // Update Chat Badge
+                updateChatFabBadge()
+                
+                // 🎶 Play Sound Effect for Chat
+                if (type == "chat" || type == "guest_chat" || type == "admin_message" || type == "customer_message") {
+                    context?.let { com.numberniceic.utils.SoundManager.playChatSound(it) }
+                    // 🚀 Trigger UI Refresh via StateManager
+                    com.numberniceic.data.chat.AdminChatStateManager.refreshSignal++
                 }
+                
+                if (isFinishing || isDestroyed) {
+                    Log.w("AppActivity", "Skipping notification UI update because activity is finishing/destroyed")
+                    return
+                }
+
+                // 1. Show Special Notification Bottom Sheet (Premium Popup)
+                if (type == "custom" || type == "webview_merit" || type == "webview_changenum" || type == "order_success") {
+                    showSpecialNotification(title, body, url)
+                } else {
+                    val isBagColor = title.contains("สีกระเป๋า") || body.contains("สีกระเป๋า") || type == "bag_color"
+                    val isLuckyNum = title.contains("เลขนำโชค") || type == "lucky_number"
+                    val isSpell = type == "webview_spell"
+
+                    if (isBagColor || isLuckyNum || isSpell) {
+                        showDashboard(forceRefresh = true)
+                    } else {
+                        val refreshIntent = Intent("com.numberniceic.REFRESH_DASHBOARD")
+                        sendBroadcast(refreshIntent)
+                    }
+                }
+                
+                // 🚀 อัปเดตสถานะ VIP ทันทีที่ได้รับการแจ้งเตือน (ไม่ต้องรอ Polling 10 วิ)
+                Log.d("AppActivity", "Notification received: Triggering immediate VIP status poll")
+                pollVIPStatus()
+            } catch (e: Exception) {
+                Log.e("AppActivity", "notificationReceiver failed", e)
             }
-            
-            // 🚀 อัปเดตสถานะ VIP ทันทีที่ได้รับการแจ้งเตือน (ไม่ต้องรอ Polling 10 วิ)
-            Log.d("AppActivity", "Notification received: Triggering immediate VIP status poll")
-            pollVIPStatus()
         }
     }
 
@@ -1287,7 +1295,16 @@ class AppActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelected
     
     fun updateUserUI() {
         Log.d("AppActivity", "updateUserUI called")
-        onResume()
+
+        if (isFinishing || isDestroyed) return
+
+        val user = UserContextManager.userX(this)
+        if (UserContextManager.isAdmin(user)) {
+            pollAdminChatForBadge()
+        } else {
+            refreshUnreadCountFromServer()
+        }
+        updateChatFabBadge()
         
         // Show Dashboard if just logged in
         val sharedref = getSharedPreferences("userdata", Context.MODE_PRIVATE)
@@ -1307,7 +1324,15 @@ class AppActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelected
                 } catch (e: Exception) { e.printStackTrace() }
             }, 300)
             
-            showDashboard()
+            Handler(android.os.Looper.getMainLooper()).post {
+                try {
+                    if (!isFinishing && !isDestroyed) {
+                        showDashboard()
+                    }
+                } catch (e: Exception) {
+                    Log.e("AppActivity", "updateUserUI showDashboard failed", e)
+                }
+            }
         }
         
         // Also refresh other fragments if needed

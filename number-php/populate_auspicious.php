@@ -16,12 +16,22 @@ try {
     $pdo = new PDO($dsn, $dbConf['user'], $dbConf['pass']);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    echo "Populating 'auspicious_days' table until end of 2027...\n";
+    $supportedRange = ThaiCalendarHelper::getSupportedDateRange();
+    $startDate = $argv[1] ?? $supportedRange['start'];
+    $endDate = $argv[2] ?? $supportedRange['end'];
+    echo "Syncing 'auspicious_days' table for {$startDate} to {$endDate}...\n";
 
-    $start = new DateTime('2026-01-01');
-    $end = new DateTime('2027-12-31');
+    $start = new DateTime($startDate);
+    $end = new DateTime($endDate);
 
-    $stmt = $pdo->prepare("INSERT IGNORE INTO auspicious_days (date, is_wanpra, is_tongchai, is_atipbadee) VALUES (?, ?, ?, ?)");
+    $stmt = $pdo->prepare(
+        "INSERT INTO auspicious_days (date, is_wanpra, is_tongchai, is_atipbadee)
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+            is_wanpra = VALUES(is_wanpra),
+            is_tongchai = VALUES(is_tongchai),
+            is_atipbadee = VALUES(is_atipbadee)"
+    );
 
     $count = 0;
     $current = clone $start;
@@ -39,7 +49,7 @@ try {
         $current->modify('+1 day');
     }
 
-    echo "Processed $count days. Database updated.\n";
+        echo "Processed $count days. Database synchronized.\n";
 
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";

@@ -169,7 +169,7 @@ class PersonNewsViewModel(application: Application) : AndroidViewModel(applicati
             }
 
             // Calculate Age & Birthday (Local Logic)
-            val birthday: DateTime? = if (userx?.birthDay != null) DateTime.parse(userx.birthDay) else null
+            val birthday: DateTime? = PersonContextManager.parseBirthdayOrNull(userx?.birthDay)
             var ageCurrent = 0
             var ageYang = 0
             var dayBirthEng = ""

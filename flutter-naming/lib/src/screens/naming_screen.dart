@@ -1304,59 +1304,10 @@ class _NamingScreenState extends State<NamingScreen>
   }
 
   Widget buildSelectedNameMeaningUnderKeyword() {
-    final keyword = _keywordController.text.trim();
-    if (_isPivotingIdea) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              "กำลังสแกนหาชื่อที่เหมาะสมจากไอเดียของคุณ…",
-              style: GoogleFonts.sarabun(
-                color: AppColors.textGray,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    if (_isPivotingIdea) return const SizedBox.shrink();
     if (_selectedNameMeaningName == null) return const SizedBox.shrink();
 
-    if (_isLoadingSelectedNameMeaning) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              "กำลังดึงความหมายของชื่อ…",
-              style: GoogleFonts.sarabun(
-                color: AppColors.textGray,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    if (_isLoadingSelectedNameMeaning) return const SizedBox.shrink();
     if (_selectedNameMeaning == null && _selectedNameAnalysis == null) {
       return const SizedBox.shrink();
     }
@@ -2286,7 +2237,12 @@ class _NamingScreenState extends State<NamingScreen>
           },
         ),
 
-        buildSelectedNameMeaningUnderKeyword(),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: buildSelectedNameMeaningUnderKeyword(),
+        ),
 
         // Combined Suggestion Box
         Builder(
@@ -2300,180 +2256,189 @@ class _NamingScreenState extends State<NamingScreen>
               return const SizedBox.shrink();
             }
 
-            return Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.bgDark,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // --- SECTION 1: API SUGGESTIONS (NAMES) ---
-                  if (_loadingSuggestions || hasNames) ...[
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.auto_awesome_rounded,
-                          color: AppColors.secondary,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "รายชื่อที่ความหมายใกล้เคียง:",
-                          style: GoogleFonts.prompt(
+            return AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: Container(
+                margin: EdgeInsets.only(top: hasNames ? 10 : 14),
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  _loadingSuggestions ? 14 : 12,
+                  12,
+                  _loadingSuggestions ? 14 : 12,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.bgDark,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- SECTION 1: API SUGGESTIONS (NAMES) ---
+                    if (_loadingSuggestions || hasNames) ...[
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome_rounded,
                             color: AppColors.secondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            "รายชื่อที่ความหมายใกล้เคียง:",
+                            style: GoogleFonts.prompt(
+                              color: AppColors.secondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.secondary.withOpacity(0.14),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.secondary.withOpacity(0.14),
-                        ),
-                      ),
-                      child: Text(
-                        "เรียงจากชื่อที่มีความหมายใกล้กับชื่อที่คุณพิมพ์มากที่สุดอยู่ด้านบน แล้วค่อยลดหลั่นลงมา โดยใช้ AI semantic search เทียบจากความหมายเป็นหลัก",
-                        style: GoogleFonts.sarabun(
-                          color: AppColors.textGray,
-                          fontSize: 12,
-                          height: 1.45,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    if (_loadingSuggestions)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: MagicLoadingView(
-                            height: 60,
-                            message: "กำลังค้นหาไอเดีย...",
-                            textColor: AppColors.textGray,
+                        child: Text(
+                          "เรียงจากชื่อที่มีความหมายใกล้กับชื่อที่คุณพิมพ์มากที่สุดอยู่ด้านบน แล้วค่อยลดหลั่นลงมา โดยใช้ AI semantic search เทียบจากความหมายเป็นหลัก",
+                          style: GoogleFonts.sarabun(
+                            color: AppColors.textGray,
+                            fontSize: 12,
+                            height: 1.45,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      )
-                    else
-                      Column(
-                        children: _nameSuggestions!.names.map((item) {
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                _keywordController.text = item.name;
-                                _keywordController.selection =
-                                    TextSelection.collapsed(
-                                      offset: item.name.length,
-                                    );
-                                // Close keyboard first
-                                FocusScope.of(context).unfocus();
+                      ),
+                      SizedBox(height: _loadingSuggestions ? 12 : 10),
+                      if (_loadingSuggestions)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(8, 6, 8, 2),
+                            child: MagicLoadingView(
+                              height: 64,
+                              message: "กำลังค้นหาไอเดีย...",
+                              textColor: AppColors.textGray,
+                            ),
+                          ),
+                        )
+                      else
+                        Column(
+                          children: _nameSuggestions!.names.map((item) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  _keywordController.text = item.name;
+                                  _keywordController.selection =
+                                      TextSelection.collapsed(
+                                        offset: item.name.length,
+                                      );
+                                  // Close keyboard first
+                                  FocusScope.of(context).unfocus();
 
-                                loadSelectedNameMeaning(
-                                  item.name,
-                                  meaning: item.meaning,
-                                );
-                                _search();
-                                // Scroll to show the search field and result
-                                scrollToSearchField();
-                              },
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 8,
-                                ),
-                                margin: const EdgeInsets.only(bottom: 4),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(
-                                      color: AppColors.textGray.withOpacity(
-                                        0.1,
+                                  loadSelectedNameMeaning(
+                                    item.name,
+                                    meaning: item.meaning,
+                                  );
+                                  _search();
+                                  // Scroll to show the search field and result
+                                  scrollToSearchField();
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 8,
+                                  ),
+                                  margin: const EdgeInsets.only(bottom: 4),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: AppColors.textGray.withOpacity(
+                                          0.1,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.name,
-                                            style: GoogleFonts.prompt(
-                                              color: AppColors.textLight,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.name,
+                                              style: GoogleFonts.prompt(
+                                                color: AppColors.textLight,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            item.meaning,
-                                            style: GoogleFonts.sarabun(
-                                              color: AppColors.textGray,
-                                              fontSize: 13,
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              item.meaning,
+                                              style: GoogleFonts.sarabun(
+                                                color: AppColors.textGray,
+                                                fontSize: 13,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    // Professional Action Indicator
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary.withOpacity(
-                                          0.1,
+                                          ],
                                         ),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
+                                      ),
+                                      const SizedBox(width: 12),
+                                      // Professional Action Indicator
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
                                           color: AppColors.primary.withOpacity(
-                                            0.2,
+                                            0.1,
                                           ),
-                                          width: 1,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: AppColors.primary
+                                                .withOpacity(0.2),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.chevron_right_rounded,
+                                          size: 20,
+                                          color: AppColors.primary.withOpacity(
+                                            0.8,
+                                          ),
                                         ),
                                       ),
-                                      child: Icon(
-                                        Icons.chevron_right_rounded,
-                                        size: 20,
-                                        color: AppColors.primary.withOpacity(
-                                          0.8,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                            );
+                          }).toList(),
+                        ),
+                    ],
                   ],
-                ],
+                ),
               ),
             );
           },

@@ -16,37 +16,64 @@ try {
     $pdo = new PDO($dsn, $dbConf['user'], $dbConf['pass']);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    echo "Cleaning up existing 'วันกระทิงวัน' entries to avoid duplicates and fix errors...\n";
-    $pdo->exec("DELETE FROM dayspecialtb WHERE wan_kating = '1'");
+    $supportedRange = ThaiCalendarHelper::getSupportedDateRange();
+    $startDate = $argv[1] ?? $supportedRange['start'];
+    $endDate = $argv[2] ?? $supportedRange['end'];
+    echo "Synchronizing 'วันกระทิงวัน' entries for {$startDate} to {$endDate}...\n";
 
-    echo "Calculating and Importing Kating Days (2025-2027) based on formula...\n";
+    $start = new DateTime($startDate);
+    $end = new DateTime($endDate);
+    $countInserted = 0;
+    $countUpdated = 0;
+    $countCleared = 0;
 
-    $start = new DateTime('2025-01-01');
-    $end = new DateTime('2027-12-31');
-    $count = 0;
+    $clearStmt = $pdo->prepare(
+        "UPDATE dayspecialtb
+         SET wan_kating = '0',
+             wan_desc = CASE WHEN wan_desc = 'วันกระทิงวัน' THEN '' ELSE wan_desc END,
+             wan_detail = CASE WHEN wan_detail = 'วันกระทิงวันตามสูตรฤกษ์ยาม' THEN '' ELSE wan_detail END
+         WHERE wan_date >= ? AND wan_date <= ?"
+    );
+    $clearStmt->execute([$startDate, $endDate]);
 
-    $stmt = $pdo->prepare("INSERT INTO dayspecialtb (wan_date, wan_desc, wan_detail, wan_pra, wan_kating, wan_tongchai, wan_atipbadee) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $selectStmt = $pdo->prepare("SELECT dayid, wan_desc, wan_detail FROM dayspecialtb WHERE wan_date = ? ORDER BY dayid ASC");
+    $updateStmt = $pdo->prepare(
+        "UPDATE dayspecialtb
+         SET wan_desc = ?, wan_detail = ?, wan_pra = ?, wan_kating = '1', wan_tongchai = ?, wan_atipbadee = ?
+         WHERE dayid = ?"
+    );
+    $insertStmt = $pdo->prepare(
+        "INSERT INTO dayspecialtb (wan_date, wan_desc, wan_detail, wan_pra, wan_kating, wan_tongchai, wan_atipbadee)
+         VALUES (?, ?, ?, ?, '1', ?, ?)"
+    );
 
     while ($start <= $end) {
         $dStr = $start->format('Y-m-d');
 
         try {
-            $lunar = ThaiCalendarHelper::getThaiLunarDate($dStr);
-            $w = (int) $start->format('w'); // 0=Sun, 6=Sat
-            $thaiDoW = $w + 1; // 1=Sun, 7=Sat
+            $status = ThaiCalendarHelper::getAuspiciousStatus($dStr);
+            if (!empty($status['is_kating'])) {
+                $selectStmt->execute([$dStr]);
+                $existingRows = $selectStmt->fetchAll(PDO::FETCH_ASSOC);
 
-            $month = $lunar['month'];
-            $day = $lunar['day'];
-            $target = ($month - 1) % 7 + 1; // Loop back after 7
-
-            if ($thaiDoW == $target && $day == $target) {
-                $phase = ($lunar['phase'] == 'waxing') ? "ขึ้น" : "แรม";
                 $desc = "วันกระทิงวัน";
-                $detail = "วันแรงฤกษ์มงคลตามตำรา (เลขวัน $thaiDoW | เดือน $month | $phase $day ค่ำ)";
+                $detail = "วันกระทิงวันตามสูตรฤกษ์ยาม";
+                $wanPra = !empty($status['is_wanpra']) ? '1' : '0';
+                $tongchai = !empty($status['is_tongchai']) ? '1' : '0';
+                $atipbadee = !empty($status['is_atipbadee']) ? '1' : '0';
 
-                $stmt->execute([$dStr, $desc, $detail, '0', '1', '0', '0']);
-                echo "INSERTED: $dStr ($desc)\n";
-                $count++;
+                if (!empty($existingRows)) {
+                    $row = $existingRows[0];
+                    $finalDesc = !empty($row['wan_desc']) ? $row['wan_desc'] : $desc;
+                    $finalDetail = !empty($row['wan_detail']) ? $row['wan_detail'] : $detail;
+                    $updateStmt->execute([$finalDesc, $finalDetail, $wanPra, $tongchai, $atipbadee, $row['dayid']]);
+                    $countUpdated++;
+                } else {
+                    $insertStmt->execute([$dStr, $desc, $detail, $wanPra, $tongchai, $atipbadee]);
+                    $countInserted++;
+                }
+            } else {
+                $countCleared++;
             }
         } catch (Exception $e) {
             // Skip errors
@@ -54,7 +81,7 @@ try {
         $start->modify('+1 day');
     }
 
-    echo "\nSuccessfully imported $count Kating days.\n";
+    echo "\nKating sync complete. Inserted: $countInserted Updated: $countUpdated Checked non-kating days: $countCleared\n";
 
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";

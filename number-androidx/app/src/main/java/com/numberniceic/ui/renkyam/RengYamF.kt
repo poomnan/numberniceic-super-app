@@ -88,6 +88,7 @@ class RengYamF : Fragment() {
     private var wanpraLayoutManager: androidx.recyclerview.widget.GridLayoutManager? = null
     // Show the full calendar even for guests to encourage login later.
     private fun shouldShowFullCalendar(): Boolean = true
+    private fun guestLockedMonthYear(): DateTime = DateTime(2026, 3, 1, 0, 0)
 
     private fun isFlagEnabled(value: Any?): Boolean {
         val normalized = value?.toString()?.trim()?.lowercase(Locale.ROOT) ?: return false
@@ -184,7 +185,73 @@ class RengYamF : Fragment() {
         wp.mahamodoTagDetails = filterDetails(wp.mahamodoTagDetails)
     }
 
-    private fun hasPositiveAuspiciousTag(wp: Wanpra): Boolean {
+    private fun shouldLimitCalendarTagsForPublic(): Boolean {
+        return !isLoggedInUser || !hasRengyamAccess
+    }
+
+    private fun limitedPublicCalendarTags(tags: List<String>?): List<String>? {
+        val distinctTags = tags.orEmpty()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+        if (distinctTags.isEmpty()) return null
+
+        val prioritized = distinctTags.filter { tag ->
+            val canonical = RengYamTagCanonicalizer.canonical(tag.substringBefore(" [").trim())
+            canonical == "วันอธิบดี" || canonical == "วันธงชัย"
+        }
+
+        return (if (prioritized.isNotEmpty()) prioritized else distinctTags.take(3)).ifEmpty { null }
+    }
+
+    private fun limitCalendarPreviewForPublic(wp: Wanpra) {
+        if (!shouldLimitCalendarTagsForPublic()) return
+
+        val allowedTags = limitedPublicCalendarTags(
+            sequenceOf(
+                wp.calendarDisplayTags,
+                wp.displayTagsPrioritized,
+                wp.displayTags,
+                wp.kalTags,
+                wp.dithiTags,
+                wp.dayTypeTags,
+                wp.warningTags
+            ).flatMap { it.orEmpty().asSequence() }
+                .toList()
+        )
+
+        wp.calendarDisplayTags = allowedTags
+        wp.displayTagsPrioritized = allowedTags
+        wp.displayTags = allowedTags
+        wp.kalTags = allowedTags
+        wp.dithiTags = null
+        wp.dayTypeTags = null
+        wp.warningTags = null
+
+        val allowedSet = allowedTags.orEmpty().toSet()
+        wp.tagDetails = wp.tagDetails
+            ?.filter { detail ->
+                val tag = detail.tag?.trim().orEmpty()
+                allowedSet.contains(tag)
+            }
+            ?.ifEmpty { null }
+    }
+
+    private fun applyPersonalizedKalagniTags(wp: Wanpra) {
+        val personalizedTags = mutableListOf<String>()
+        if (wp.kalagniBirth && wp.kalagniAge) {
+            personalizedTags += "อัปมงคลอายุย่าง และวันเกิด"
+        } else {
+            if (wp.kalagniBirth) personalizedTags += "อัปมงคลวันเกิด"
+            if (wp.kalagniAge) personalizedTags += "อัปมงคลอายุย่าง"
+        }
+        if (personalizedTags.isEmpty()) return
+
+        wp.calendarDisplayTags = (wp.calendarDisplayTags.orEmpty() + personalizedTags).distinct()
+        wp.warningTags = (wp.warningTags.orEmpty() + personalizedTags).distinct()
+    }
+
+    private fun hasPositiveAuspiciousTagRaw(wp: Wanpra): Boolean {
         val positiveTags = setOf(
             "วันธงชัย", "วันอธิบดี", "ดิถีเรียงหมอน",
             "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค",
@@ -194,14 +261,36 @@ class RengYamF : Fragment() {
         return hasAnyTag(wp, positiveTags)
     }
 
+    private fun isPlainSafeDay(wp: Wanpra): Boolean {
+        val hasCleanTag = hasAnyTag(wp, setOf("ปลอด"))
+        if (hasCleanTag) return true
+
+        return !wp.isKalagni &&
+            !hasHardNegativeTag(wp) &&
+            !hasPositiveAuspiciousTagRaw(wp) &&
+            !isFlagEnabled(wp.isWanpra)
+    }
+
+    private fun hasPositiveAuspiciousTag(wp: Wanpra): Boolean {
+        return hasPositiveAuspiciousTagRaw(wp) || isPlainSafeDay(wp)
+    }
+
+    private fun toThaiMonthShort(monthIndex: Int, fallback: String): String {
+        val shortMonths = listOf(
+            "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+            "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+        )
+        return shortMonths.getOrNull(monthIndex - 1) ?: fallback
+    }
+
     private fun hasHardNegativeTag(wp: Wanpra): Boolean {
         val hardNegativeTags = setOf(
-            "วันอุบาทว์/อุบาสน", "วันโลกาวินาศ", "วันจม",
-            "พิฆาต", "ดิถีพิฆาต", "กาลกรรณี", "กาลสูร", "กาลโชค",
+            "วันอุบาทว์/อุบาสน", "วันอุบาทว์", "อุบาทว์", "วันโลกาวินาศ", "วันจม",
+            "พิฆาต", "ดิถีพิฆาต", "กาลกิณี", "กาลสูร", "กาลโชค",
             "กาลทิน", "กาลทัณฑ์", "โลกาวินาศ", "วินาศ", "มฤตยู",
             "บอด", "ทินสูรย์", "ทินศูร", "ทินกาล", "ทัคธทิน",
             "ยมขันธ์", "ทักทิน", "พิลา", "ทรทึก",
-            "ทึกทึน", "อัตนิโรจน์", "ทินสูญ", "กาฬโชค", "กาลสูญ", "โลกวินาส", "วินาสส์", "วันบอด", "กาลทีน"
+            "ทึกทึน", "อัตนิโรจน์", "ทินสูญ", "ทักทินไฟ", "กาฬโชค", "กาลสูญ", "โลกวินาส", "วินาสส์", "วันบอด", "กาลทีน"
         )
         return hasAnyTag(wp, hardNegativeTags) ||
             hasTagPrefix(wp, "มหาสูญ") ||
@@ -217,62 +306,63 @@ class RengYamF : Fragment() {
             return false
         }
 
+        val plainSafeDay = isPlainSafeDay(wp)
         return when (category) {
             "marriage", "engagement" ->
-                (wp.isRiangMon || hasAnyTag(wp, setOf("ดิถีเรียงหมอน", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
+                (plainSafeDay || wp.isRiangMon || hasAnyTag(wp, setOf("ดิถีเรียงหมอน", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
                     !hasWarningKeyword(wp, "สตรี") &&
                     !hasWarningKeyword(wp, "บุรุษ")
             "surgery" ->
-                hasAnyTag(wp, setOf("อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
                     !hasWarningKeyword(wp, "สตรี") &&
                     !hasWarningKeyword(wp, "บุรุษ")
             "house", "build_house", "move_house" ->
-                hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
                     !hasWarningKeyword(wp, "บ้าน") &&
                     !hasWarningKeyword(wp, "ที่ดิน") &&
                     !hasWarningKeyword(wp, "ดิน") &&
                     !hasWarningKeyword(wp, "วัง") &&
                     !hasWarningKeyword(wp, "ภูเขา")
             "ordination" ->
-                (isFlagEnabled(wp.isWanpra) || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค"))) &&
+                (plainSafeDay || isFlagEnabled(wp.isWanpra) || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค"))) &&
                     !hasWarningKeyword(wp, "พัทธสีมา") &&
                     !hasWarningKeyword(wp, "บวช")
             "deordination" ->
-                hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
                     !hasWarningKeyword(wp, "พัทธสีมา") &&
                     !hasWarningKeyword(wp, "บวช")
             "car", "buy_car" ->
-                hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
                     !hasWarningKeyword(wp, "รถ")
             "childbirth" ->
-                hasAnyTag(wp, setOf("อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
                     !hasWarningKeyword(wp, "สตรี")
             "shop", "business" ->
-                hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "วันลอย", "วันฟู", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))
+                plainSafeDay || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "วันลอย", "วันฟู", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))
             "merit" ->
-                (isFlagEnabled(wp.isWanpra) || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค"))) &&
+                (plainSafeDay || isFlagEnabled(wp.isWanpra) || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค"))) &&
                     !hasWarningKeyword(wp, "เทพ")
             "debt" ->
-                hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))
+                plainSafeDay || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))
             "plant" ->
-                hasAnyTag(wp, setOf("วันลอย", "วันฟู", "วันธงชัย", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("วันลอย", "วันฟู", "วันธงชัย", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค"))) &&
                     !hasWarningKeyword(wp, "พืช") &&
                     !hasWarningKeyword(wp, "ดิน") &&
                     !hasWarningKeyword(wp, "ที่ดิน")
             "spirit_house" ->
-                hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))) &&
                     !hasWarningKeyword(wp, "เทพ") &&
                     !hasWarningKeyword(wp, "บ้าน") &&
                     !hasWarningKeyword(wp, "ที่ดิน") &&
                     !hasWarningKeyword(wp, "ดิน")
             "travel" ->
-                hasAnyTag(wp, setOf("วันลอย", "วันฟู", "วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค")) &&
+                (plainSafeDay || hasAnyTag(wp, setOf("วันลอย", "วันฟู", "วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค"))) &&
                     !hasWarningKeyword(wp, "น้ำ") &&
                     !hasWarningKeyword(wp, "ป่า") &&
                     !hasWarningKeyword(wp, "ภูเขา") &&
                     !hasWarningKeyword(wp, "เรือ")
             "promotion", "job" ->
-                hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))
+                plainSafeDay || hasAnyTag(wp, setOf("วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค"))
             else -> false
         }
     }
@@ -290,6 +380,10 @@ class RengYamF : Fragment() {
         val user = UserContextManager.userX(requireContext())
         isAdminMode = UserContextManager.isAdmin(user)
         isLoggedInUser = !user?.userId.isNullOrEmpty()
+        if (!isLoggedInUser) {
+            // Guest requirement: keep calendar fixed at March 2569 (March 2026 CE).
+            currentViewDate = guestLockedMonthYear()
+        }
         hasRengyamAccess = computeRengyamAccess()
         updateCalendarScrollLock()
         this.initHeaderData()
@@ -353,6 +447,7 @@ class RengYamF : Fragment() {
                     showDayTagDetailBottomSheet(day)
                 },
                 onMonthNav = { direction ->
+                    if (!isLoggedInUser) return@WanpraAdapter
                     val targetDate = currentViewDate.plusMonths(direction)
                     currentViewDate = targetDate
                     headerData = headerData.copy(selectedCategory = null)
@@ -360,7 +455,16 @@ class RengYamF : Fragment() {
                     cachedLengYamDao?.let { updateRecyclerWithData(it) }
                     fetchAuspiciousForSelectedMonth()
                 },
+                onMonthSelected = { selectedMonth ->
+                    if (!isLoggedInUser) return@WanpraAdapter
+                    currentViewDate = currentViewDate.withMonthOfYear(selectedMonth)
+                    headerData = headerData.copy(selectedCategory = null)
+                    initHeaderData()
+                    cachedLengYamDao?.let { updateRecyclerWithData(it) }
+                    fetchAuspiciousForSelectedMonth()
+                },
                 onYearSelected = { selectedYearCe ->
+                    if (!isLoggedInUser) return@WanpraAdapter
                     currentViewDate = currentViewDate.withYear(selectedYearCe)
                     headerData = headerData.copy(selectedCategory = null)
                     initHeaderData()
@@ -424,7 +528,7 @@ class RengYamF : Fragment() {
             canonical.startsWith("อัคนิโรธ") -> 1
             canonical == "วันอุบาทว์/อุบาสน" || canonical == "วันโลกาวินาศ" || canonical == "วันจม" -> 2
             canonical.startsWith("มหาสูญ") || canonical.startsWith("อายกรรมพลาย") -> 3
-            canonical == "พิฆาต" || canonical == "ดิถีพิฆาต" || canonical == "ทรทึก" || canonical == "มฤตยู" || canonical == "กาลกรรณี" || canonical == "บอด" || canonical == "วินาศ" || canonical == "โลกาวินาศ" ||
+            canonical == "พิฆาต" || canonical == "ดิถีพิฆาต" || canonical == "ทรทึก" || canonical == "มฤตยู" || canonical == "กาลกิณี" || canonical == "บอด" || canonical == "วินาศ" || canonical == "โลกาวินาศ" ||
                 canonical == "ทึกทึน" || canonical == "อัตนิโรจน์" || canonical == "ทินสูญ" || canonical == "กาฬโชค" || canonical == "กาลสูญ" || canonical == "โลกวินาส" || canonical == "วินาสส์" ||
                 canonical == "กาลทีน" -> 4
             canonical == "วันธงชัย" || canonical == "วันอธิบดี" -> 5
@@ -439,12 +543,28 @@ class RengYamF : Fragment() {
         return details.withIndex()
             .sortedWith(
                 compareBy<IndexedValue<DayTagDetail>>(
-                    { levelPriority(classifyTagBadgeLevel(it.value)) },
+                    { detailGroupPriority(it.value) },
                     { tagPriority(it.value.tag) },
                     { it.index }
                 )
             )
             .map { it.value }
+    }
+
+    private fun detailGroupPriority(detail: DayTagDetail): Int {
+        val tag = RengYamTagCanonicalizer.canonical(detail.tag.trim())
+        val goodTags = setOf(
+            "วันธงชัย", "วันอธิบดี", "อำฤตโชค", "อมุตโชค", "มหาสิทธิโชค", "สิทธิโชค", "ราชาโชค", "ชัยโชค",
+            "ดิถีเรียงหมอน", "วันลอย", "วันฟู", "ไชยดิถี", "ภัทรดีถี", "ปุณณดีถี", "นันทดีถี", "มิตตะดีถี"
+        )
+
+        return when {
+            tag in goodTags -> 0
+            tag.startsWith("ทิศดี") -> 1
+            tag.startsWith("ทิศไม่ดี") -> 2
+            tag.startsWith("ห้าม") || tag.startsWith("อัปมงคล") || tag.startsWith("อัคนิโรธ") -> 3
+            else -> 4
+        }
     }
 
     private fun classifyTagBadgeLevel(detail: DayTagDetail): TagBadgeLevel {
@@ -473,13 +593,16 @@ class RengYamF : Fragment() {
             addAll(wp.dayTypeTags.orEmpty())
             addAll(wp.warningTags.orEmpty())
         }.filter { it.isNotBlank() }
-        if (groupedTags.isNotEmpty()) return groupedTags.distinct()
+        if (groupedTags.isNotEmpty()) {
+            val expanded = expandAmmaritVariants(groupedTags)
+            return expanded.distinct()
+        }
 
         val prioritized = wp.displayTagsPrioritized.orEmpty().filter { it.isNotBlank() }
-        if (prioritized.isNotEmpty()) return prioritized.distinct()
+        if (prioritized.isNotEmpty()) return expandAmmaritVariants(prioritized).distinct()
 
         val display = wp.displayTags.orEmpty().filter { it.isNotBlank() }
-        if (display.isNotEmpty()) return display.distinct()
+        if (display.isNotEmpty()) return expandAmmaritVariants(display).distinct()
 
         val fallback = mutableListOf<String>()
         if (isFlagEnabled(wp.isTongchai)) fallback.add("วันธงชัย")
@@ -496,7 +619,18 @@ class RengYamF : Fragment() {
         if (isFlagEnabled(wp.isKating)) fallback.add("กระทิงวัน")
         if (wp.isUbath) fallback.add("วันอุบาทว์/อุบาสน")
         if (wp.isLokawinat) fallback.add("วันโลกาวินาศ")
-        return fallback.distinct()
+        if (fallback.isEmpty() && isPlainSafeDay(wp)) fallback.add("ปลอด")
+        return expandAmmaritVariants(fallback).distinct()
+    }
+
+    private fun expandAmmaritVariants(tags: List<String>): List<String> {
+        if (tags.isEmpty()) return tags
+        val set = tags.toMutableList()
+        val hasAmmarit = set.any { it == "อำฤตโชค" }
+        val hasAmmut = set.any { it == "อมุตโชค" }
+        if (hasAmmarit && !hasAmmut) set.add("อมุตโชค")
+        if (hasAmmut && !hasAmmarit) set.add("อำฤตโชค")
+        return set
     }
 
     private fun collectDayTagDetails(wp: Wanpra): List<DayTagDetail> {
@@ -524,6 +658,27 @@ class RengYamF : Fragment() {
         }
 
         backendDetails.toList().forEach { seenTags.add(it.tag.trim()) }
+        if (seenTags.contains("อำฤตโชค")) {
+            addUnique(
+                DayTagDetail(
+                    tag = "อมุตโชค",
+                    displayTag = "อมุตโชค",
+                    source = "ดิถี/ฤกษ์",
+                    school = "",
+                    description = RengYamTagMeaning.explain("อมุตโชค")
+                )
+            )
+        } else if (seenTags.contains("อมุตโชค")) {
+            addUnique(
+                DayTagDetail(
+                    tag = "อำฤตโชค",
+                    displayTag = "อำฤตโชค",
+                    source = "ดิถี/ฤกษ์",
+                    school = "",
+                    description = RengYamTagMeaning.explain("อำฤตโชค")
+                )
+            )
+        }
 
         if (wp.kalagniBirth && wp.kalagniAge) {
             addUnique(
@@ -572,6 +727,18 @@ class RengYamF : Fragment() {
                 )
             )
         }
+        val inauspicious = dt?.let { ThaiAstrologyLib.queryInauspicious(it.dayOfWeek, ThaiAstrologyLib.getThaiLunar(it).first) }.orEmpty()
+        inauspicious.forEach { tag ->
+            addUnique(
+                DayTagDetail(
+                    tag = tag,
+                    displayTag = tag,
+                    source = "ข้อห้าม",
+                    school = "",
+                    description = RengYamTagMeaning.explain(tag)
+                )
+            )
+        }
         if (backendDetails.isNotEmpty()) return sortTagDetails(backendDetails)
 
         val fallback = collectDisplayTagsForDay(wp).map { tag ->
@@ -617,6 +784,26 @@ class RengYamF : Fragment() {
         }
 
         dialogView.findViewById<TextView>(R.id.txt_day_detail_subtitle)?.text = dateText
+        dialogView.findViewById<TextView>(R.id.txt_day_detail_lunar)?.text = run {
+            val phase = wp.lunarPhase?.trim().orEmpty()
+            val month = wp.lunarMonth?.trim().orEmpty()
+            if (phase.isNotBlank() && month.isNotBlank()) {
+                "$phase เดือน $month"
+            } else {
+                val dt = try { formatter.parseDateTime(wp.wanpraDate).toLocalDate() } catch (_: Exception) { null }
+                if (dt != null) {
+                    val (dithiRaw, mThai) = ThaiAstrologyLib.getThaiLunar(dt)
+                    val lunarPhase = if (dithiRaw <= 15) {
+                        "ขึ้น ${toThaiNum(dithiRaw.toString())} ค่ำ"
+                    } else {
+                        "แรม ${toThaiNum((dithiRaw - 15).toString())} ค่ำ"
+                    }
+                    "$lunarPhase เดือน ${toThaiNum(mThai.toString())}"
+                } else {
+                    "-"
+                }
+            }
+        }
         dialogView.findViewById<TextView>(R.id.txt_back_to_auspicious)?.apply {
             if (!backToListLabel.isNullOrBlank() && onBackToList != null) {
                 visibility = View.VISIBLE
@@ -629,6 +816,7 @@ class RengYamF : Fragment() {
                 } else {
                     setCompoundDrawables(null, null, null, null)
                 }
+                paintFlags = paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
                 setOnClickListener {
                     dialog.dismiss()
                     onBackToList.invoke()
@@ -917,6 +1105,34 @@ class RengYamF : Fragment() {
         }
     }
 
+    private fun travelDirectionAbbrev(direction: String): String? {
+        return when (direction.trim()) {
+            "เหนือ" -> "N"
+            "ตะวันออกเฉียงเหนือ" -> "NE"
+            "ตะวันออก" -> "E"
+            "ตะวันออกเฉียงใต้" -> "SE"
+            "ใต้" -> "S"
+            "ตะวันตกเฉียงใต้" -> "SW"
+            "ตะวันตก" -> "W"
+            "ตะวันตกเฉียงเหนือ" -> "NW"
+            else -> null
+        }
+    }
+
+    private fun addTravelDirectionTagForDay(dateKey: String) {
+        val wp = dateToWanpraMap[dateKey] ?: return
+        val dt = try { formatter.parseDateTime(dateKey).toLocalDate() } catch (_: Exception) { null }
+        val info = dt?.let { travelDirectionInfoForDay(it.dayOfWeek) } ?: return
+        val goodAbbrev = travelDirectionAbbrev(info.deityDirection)
+        val badAbbrev1 = travelDirectionAbbrev(info.spearDirection)
+        val badAbbrev2 = travelDirectionAbbrev(info.ghostDirection)
+        val badAbbrevPair = listOfNotNull(badAbbrev1, badAbbrev2).joinToString(",")
+        val tags = wp.calendarDisplayTags.orEmpty().toMutableList()
+        if (!goodAbbrev.isNullOrBlank()) tags.add("ทิศดี ($goodAbbrev)")
+        if (badAbbrevPair.isNotBlank()) tags.add("ทิศไม่ดี ($badAbbrevPair)")
+        wp.calendarDisplayTags = tags.distinct()
+    }
+
     private fun createTravelDirectionSection(info: TravelDirectionInfo): View {
         val density = resources.displayMetrics.density
         val fontSemiBold = androidx.core.content.res.ResourcesCompat.getFont(requireContext(), R.font.sarabun_semibold)
@@ -1087,6 +1303,40 @@ class RengYamF : Fragment() {
         wanpraLayoutManager?.requestLayout()
     }
 
+    private fun normalizeVipAccessToken(value: String?): String {
+        return value
+            ?.trim()
+            ?.lowercase(Locale.ROOT)
+            ?.replace("บาท", "")
+            ?.replace(" ", "")
+            ?.replace(",", "")
+            .orEmpty()
+    }
+
+    private fun isRengyamVipDescriptor(value: String?): Boolean {
+        val normalized = normalizeVipAccessToken(value)
+        if (normalized.isBlank()) return false
+
+        return normalized == "rengyam_vip" ||
+            normalized == "rengyamyearly" ||
+            normalized == "rengyam_yearly" ||
+            normalized.contains("ดูฤกษ์ยาม") ||
+            normalized.contains("ฤกษ์ยาม1ปี") ||
+            normalized.contains("ฤกษ์ยามรายปี") ||
+            normalized.contains("5999") ||
+            normalized.contains("rengyam")
+    }
+
+    private fun deriveRengyamExpireAtMillis(rawAccess: String?): Long {
+        val cal = Calendar.getInstance()
+        if (normalizeVipAccessToken(rawAccess).contains("vip")) {
+            cal.add(Calendar.YEAR, 50)
+        } else {
+            cal.add(Calendar.YEAR, 1)
+        }
+        return cal.timeInMillis
+    }
+
     private fun computeRengyamAccess(): Boolean {
         val usagePref = requireContext().getSharedPreferences(RENGYAM_USAGE_PREFS, android.content.Context.MODE_PRIVATE)
         val userId = currentUserId() ?: return false
@@ -1153,16 +1403,26 @@ class RengYamF : Fragment() {
     private fun syncRengyamAccessFromServer(memberData: Serverx?) {
         val userId = currentUserId() ?: return
         val access = memberData?.rengyamAccess
-        if (access == null || !access.granted) return
+        if (access != null && access.granted && isRengyamVipDescriptor(access.viptype ?: access.codename)) {
+            val expireAtMillis = try {
+                val expireAt = access.expireAt
+                if (expireAt.isNullOrBlank()) {
+                    deriveRengyamExpireAtMillis(access.viptype ?: access.codename)
+                } else {
+                    DateTime.parse(expireAt).plusDays(1).minusMillis(1).millis
+                }
+            } catch (e: Exception) {
+                deriveRengyamExpireAtMillis(access.viptype ?: access.codename)
+            }
 
-        val expireAtMillis = try {
-            val expireAt = access.expireAt ?: return
-            DateTime.parse(expireAt).plusDays(1).minusMillis(1).millis
-        } catch (e: Exception) {
+            persistRengyamAccessForUser(userId, expireAtMillis, granted = true)
             return
         }
 
-        persistRengyamAccessForUser(userId, expireAtMillis, granted = true)
+        val fallbackVipCode = memberData?.userx?.vipcode
+        if (isRengyamVipDescriptor(fallbackVipCode)) {
+            persistRengyamAccessForUser(userId, deriveRengyamExpireAtMillis(fallbackVipCode), granted = true)
+        }
     }
 
     private fun showRengyamUnlockDialog(categoryKey: String) {
@@ -1239,19 +1499,11 @@ class RengYamF : Fragment() {
     private fun handleUnlockSuccess(message: String?, vipLevel: String?, userId: String, categoryKey: String): Boolean {
         val normalizedMessage = message?.lowercase(Locale.ROOT)?.trim().orEmpty()
         val vipType = vipLevel?.lowercase(Locale.ROOT)?.trim().orEmpty()
-        if (normalizedMessage != "success" || (vipType != "rengyam_vip" && vipType != "rengyam_yearly")) {
+        if (normalizedMessage != "success" || !isRengyamVipDescriptor(vipLevel)) {
             return false
         }
 
-        if (vipType == "rengyam_yearly") {
-            val cal = Calendar.getInstance()
-            cal.add(Calendar.YEAR, 1)
-            persistRengyamAccessForUser(userId, cal.timeInMillis)
-        } else if (vipType == "rengyam_vip") {
-            val cal = Calendar.getInstance()
-            cal.add(Calendar.YEAR, 50)
-            persistRengyamAccessForUser(userId, cal.timeInMillis)
-        }
+        persistRengyamAccessForUser(userId, deriveRengyamExpireAtMillis(vipType))
 
         hasRengyamAccess = true
         updateCalendarScrollLock()
@@ -1479,6 +1731,7 @@ class RengYamF : Fragment() {
             )
             sanitizeAgniknirodTags(mergedWp, formatter.parseDateTime(dtStr).toLocalDate())
             RengYamTagCanonicalizer.normalize(mergedWp)
+            limitCalendarPreviewForPublic(mergedWp)
             dateToWanpra[dtStr] = mergedWp
         }
 
@@ -1501,8 +1754,10 @@ class RengYamF : Fragment() {
             wp.kalagniBirth = headerData.kalagniBirthDays.orEmpty().any { isSameKalagniDay(currentDayName, it) }
             wp.kalagniAge = headerData.kalagniAgeDays.orEmpty().any { isSameKalagniDay(currentDayName, it) }
             wp.isKalagni = wp.kalagniBirth || wp.kalagniAge
+            applyPersonalizedKalagniTags(wp)
             sanitizeAgniknirodTags(wp, dt)
             RengYamTagCanonicalizer.normalize(wp)
+            limitCalendarPreviewForPublic(wp)
 
             wp.isBestDay = false
         }
@@ -1563,6 +1818,10 @@ class RengYamF : Fragment() {
             businessDays = datesForCategory(safeWanpras, "business", bestDates)
         )
         this.headerData = headerData
+
+        dateToWanpra.keys.forEach { dateKey ->
+            addTravelDirectionTagForDay(dateKey)
+        }
 
         // 🌟 Apply Highlight Logic based on selected Category
         val selectedCat = headerData.selectedCategory
@@ -1625,6 +1884,7 @@ class RengYamF : Fragment() {
                     applyLocalAuspiciousData(wp, dt)
                     sanitizeAgniknirodTags(wp, dt)
                     RengYamTagCanonicalizer.normalize(wp)
+                    limitCalendarPreviewForPublic(wp)
                     fullDataList.add(wp)
                 }
             }
@@ -1675,6 +1935,7 @@ class RengYamF : Fragment() {
                  applyLocalAuspiciousData(wp, dt)
                  sanitizeAgniknirodTags(wp, dt)
                  RengYamTagCanonicalizer.normalize(wp)
+                 limitCalendarPreviewForPublic(wp)
                  fullDataList.add(wp)
              }
         }
@@ -1699,8 +1960,9 @@ class RengYamF : Fragment() {
         val (dithi, mThai) = ThaiAstrologyLib.getThaiLunar(dt)
         val kalayok = ThaiAstrologyLib.getKalayok(dt)
         val chok = ThaiAstrologyLib.queryMahaChok(dt.dayOfWeek, dithi)
-        val loyFuJom = ThaiAstrologyLib.getLoyFuJom(dithi, mThai)
+        val loyFuJom = ThaiAstrologyLib.getLoyFuJom(dt.dayOfWeek, dithi, mThai)
         val dithiProhibition = ThaiAstrologyLib.queryDithiCommonProhibitions(dithi)
+        val inauspicious = ThaiAstrologyLib.queryInauspicious(dt.dayOfWeek, dithi)
 
         wp.isWanpra = if (ThaiAstrologyLib.isWanPra(dt)) "1" else "0"
         wp.isTongchai = if (kalayok.contains("ธงชัย")) "1" else "0"
@@ -1720,6 +1982,10 @@ class RengYamF : Fragment() {
         if (!dithiProhibition.isNullOrBlank()) {
             wp.warningTags = (wp.warningTags.orEmpty() + dithiProhibition).distinct()
             wp.calendarDisplayTags = (wp.calendarDisplayTags.orEmpty() + dithiProhibition).distinct()
+        }
+        if (inauspicious.isNotEmpty()) {
+            wp.warningTags = (wp.warningTags.orEmpty() + inauspicious).distinct()
+            wp.calendarDisplayTags = (wp.calendarDisplayTags.orEmpty() + inauspicious).distinct()
         }
         wp.lunarPhase = if (dithi <= 15) "ขึ้น ${toThaiNum(dithi.toString())} ค่ำ" else "แรม ${toThaiNum((dithi - 15).toString())} ค่ำ"
         wp.lunarMonth = toThaiNum(mThai.toString())
@@ -1750,7 +2016,7 @@ class RengYamF : Fragment() {
         } else {
             val kalayok = ThaiAstrologyLib.getKalayok(now)
             val (dithi, mThai) = ThaiAstrologyLib.getThaiLunar(now)
-            val lfj = ThaiAstrologyLib.getLoyFuJom(dithi, mThai)
+            val lfj = ThaiAstrologyLib.getLoyFuJom(now.dayOfWeek, dithi, mThai)
             val chok = ThaiAstrologyLib.queryMahaChok(now.dayOfWeek, dithi)
             mutableListOf<String>().apply {
                 addAll(kalayok)
@@ -2020,23 +2286,64 @@ class RengYamF : Fragment() {
             val verticalList = android.widget.LinearLayout(context).apply {
                 orientation = android.widget.LinearLayout.VERTICAL
             }
+
+            val tableHeader = android.widget.LinearLayout(context).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                setPadding(12, 10, 12, 10)
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    setColor(android.graphics.Color.parseColor("#CFEBDC"))
+                    cornerRadius = 14f
+                }
+            }
+            val headerDate = TextView(context).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                text = "วันที่"
+                setTextColor(android.graphics.Color.parseColor("#2D5F48"))
+                textSize = 14f
+                typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.sarabun_semibold)
+            }
+            val headerTags = TextView(context).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                text = "ฤกษ์"
+                gravity = android.view.Gravity.END
+                setTextColor(android.graphics.Color.parseColor("#2D5F48"))
+                textSize = 14f
+                typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.sarabun_semibold)
+            }
+            tableHeader.addView(headerDate)
+            tableHeader.addView(headerTags)
+            verticalList.addView(tableHeader)
             
             displayData.forEach { wp ->
-                val itemView = inflater.inflate(R.layout.item_wanpra_value, verticalList, false)
+                val itemView = inflater.inflate(R.layout.item_auspicious_table_row, verticalList, false)
                 
                 // Bind basic data
                 val txtDate = itemView.findViewById<TextView>(R.id.txt_date_wanpra)
+                val txtLunar = itemView.findViewById<TextView>(R.id.txt_lunar_wanpra)
                 val dt = try { formatter.parseDateTime(wp.wanpraDate) } catch(e: Exception) { null }
                 if (dt != null) {
                     val thaiDay = PersonContextManager.toThaiDay(dt.dayOfWeek().asText)
                     val dayRaw = if (thaiDay.isEmpty()) dt.dayOfWeek().asText else thaiDay
                     val day = dayRaw.replace("วัน", "")
                     val dayNum = dt.dayOfMonth().asString
-                    val month = PersonContextManager.toThaiMonth(dt.monthOfYear().asText).let { if (it.isNotEmpty()) it[0] else dt.monthOfYear().asText }
+                    val monthFallback = PersonContextManager.toThaiMonth(dt.monthOfYear().asText).let {
+                        val first = it.firstOrNull().orEmpty()
+                        if (first.isBlank()) dt.monthOfYear().asText else first
+                    }
+                    val month = toThaiMonthShort(dt.monthOfYear, monthFallback)
                     val year = (dt.year + 543).toString()
                     txtDate.text = "$day $dayNum $month $year"
+                    val lunarText = if (!wp.lunarPhase.isNullOrBlank() && !wp.lunarMonth.isNullOrBlank()) {
+                        "${wp.lunarPhase} เดือน ${wp.lunarMonth}"
+                    } else {
+                        val (dithiRaw, mThai) = ThaiAstrologyLib.getThaiLunar(dt.toLocalDate())
+                        val phase = if (dithiRaw <= 15) "ขึ้น ${toThaiNum(dithiRaw.toString())} ค่ำ" else "แรม ${toThaiNum((dithiRaw - 15).toString())} ค่ำ"
+                        "$phase เดือน ${toThaiNum(mThai.toString())}"
+                    }
+                    txtLunar?.text = lunarText
                 } else {
                     txtDate.text = wp.wanpraDate
+                    txtLunar?.text = "-"
                 }
 
                 itemView.findViewById<TextView>(R.id.txt_extra_note)?.visibility = View.GONE
@@ -2055,6 +2362,7 @@ class RengYamF : Fragment() {
                 itemView.findViewById<View>(R.id.badge_fu)?.isVisible = wp.isFu
                 itemView.findViewById<View>(R.id.badge_loy)?.isVisible = wp.isLoy
                 itemView.findViewById<View>(R.id.badge_riangmon)?.isVisible = wp.isRiangMon
+                itemView.findViewById<View>(R.id.badge_safe_day)?.isVisible = isPlainSafeDay(wp)
                 itemView.findViewById<View>(R.id.badge_lokawinat)?.isVisible = wp.isLokawinat
                 
                 itemView.findViewById<View>(R.id.badge_kalagni)?.visibility = if (wp.isKalagni) View.VISIBLE else View.GONE

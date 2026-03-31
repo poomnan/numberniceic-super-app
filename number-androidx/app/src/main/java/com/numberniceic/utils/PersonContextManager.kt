@@ -1,5 +1,7 @@
 package com.numberniceic.utils
 
+import android.util.Log
+import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.Years
 
@@ -26,6 +28,17 @@ class PersonContextManager {
         fun ageCurrent(year:Int, month:Int, day:Int):Int? {
             return getUsersAge(year, month, day)
 
+        }
+
+        fun parseBirthdayOrNull(rawBirthDay: String?): DateTime? {
+            if (rawBirthDay.isNullOrBlank()) return null
+
+            return try {
+                DateTime.parse(rawBirthDay.trim())
+            } catch (e: Exception) {
+                Log.w("PersonContextManager", "Invalid birthday format: $rawBirthDay", e)
+                null
+            }
         }
 
 

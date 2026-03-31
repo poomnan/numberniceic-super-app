@@ -98,13 +98,12 @@ class Clothcolor3df : DialogFragment() {
         val dayOfWeekEng = ViewModelHelper.resolveOutfitCurrentDayEng(dt)
 
         val sHour = userx.sHour
-        val birthday: DateTime = try {
-            DateTime.parse(userx.birthDay)
-        } catch (e: Exception) {
-            Log.e("Clothcolor3df", "Invalid birthday format: ${userx.birthDay}", e)
+        val birthday = PersonContextManager.parseBirthdayOrNull(userx.birthDay)
+        if (birthday == null) {
+            Log.e("Clothcolor3df", "Invalid birthday format: ${userx.birthDay}")
             return
         }
-        val dayBirth = birthday!!.dayOfWeek().getAsText(Locale.ENGLISH)
+        val dayBirth = birthday.dayOfWeek().getAsText(Locale.ENGLISH)
         val dayNumBirth = PersonContextManager.convertDayEngToNum(dayBirth)
         
         val dayBirthNumber = if (sHour <= 4) {

@@ -48,28 +48,54 @@
         android:background="@android:color/transparent"
         android:padding="2dp">
 
-        <!-- Row 1: Day Number -->
-        <RelativeLayout
+        <!-- Reserve equal top band for Buddhist icon/text -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="24dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="2dp">
             <ImageView
                 android:id="@+id/icon_pra"
                 android:layout_width="14dp"
                 android:layout_height="14dp"
-                android:layout_alignParentStart="true"
                 android:src="@drawable/buddha"
                 android:visibility="gone" />
             <TextView
                 android:id="@+id/icon_sia"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_below="@+id/icon_pra"
+                android:layout_marginStart="4dp"
                 android:text="X"
                 android:textColor="#C62828"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/txt_buddhist_day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:layout_marginStart="4dp"
+                android:fontFamily="@font/sarabun_semibold"
+                android:textColor="#F9A825"
+                android:textStyle="bold"
+                android:maxLines="2"
+                android:ellipsize="none"
+                android:includeFontPadding="false"
+                android:visibility="gone"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="5sp"
+                app:autoSizeMaxTextSize="7sp"
+                app:autoSizeStepGranularity="0.5sp"
+                tools:text="วันพระ" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-19dp">
             <TextView
                 android:id="@+id/txt_day_num"
                 android:layout_width="wrap_content"
@@ -79,7 +105,7 @@
                 android:textColor="#000000"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                tools:text="๑๕" />
+                tools:text="๑๐" />
         </RelativeLayout>
 
         <!-- Row 2: Lunar Info -->

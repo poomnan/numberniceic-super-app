@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="12dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <View
+        android:id="@+id/bg_best_day"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:id="@+id/txt_date_wanpra"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="@font/sarabun_semibold"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="#1F4F3B"
+                android:textSize="15sp"
+                tools:text="จันทร์ 2 มีนาคม 2569" />
+
+            <TextView
+                android:id="@+id/txt_lunar_wanpra"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:fontFamily="@font/sarabun_regular"
+                android:maxLines="1"
+                android:textColor="#4D7965"
+                android:textSize="13sp"
+                tools:text="ขึ้น 10 ค่ำ เดือน 4" />
+        </LinearLayout>
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/flex_badges"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:alignItems="center"
+            app:flexWrap="wrap"
+            app:justifyContent="flex_end">
+
+            <TextView
+                android:id="@+id/badge_pra"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_blue_rounded"
+                android:layout_margin="2dp"
+                android:text="วันพระ"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_tongchai"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_green_pill"
+                android:layout_margin="2dp"
+                android:text="ธงชัย"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_atipbadee"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_blue_rounded"
+                android:layout_margin="2dp"
+                android:text="อธิบดี"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_lokawinat"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_red_pill"
+                android:layout_margin="2dp"
+                android:text="โลกาวินาศ"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_sittichok"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_blue_rounded"
+                android:layout_margin="2dp"
+                android:text="สิทธิโชค"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_ammarit"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_green_pill"
+                android:layout_margin="2dp"
+                android:text="อมฤตโชค"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_mahasitti"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_green_pill"
+                android:layout_margin="2dp"
+                android:text="มหาสิทธิโชค"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_racha"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_blue_rounded"
+                android:layout_margin="2dp"
+                android:text="ราชาโชค"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_chaichok"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_blue_rounded"
+                android:layout_margin="2dp"
+                android:text="ชัยโชค"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_fu"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_blue_rounded"
+                android:layout_margin="2dp"
+                android:text="วันฟู"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_loy"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_blue_rounded"
+                android:layout_margin="2dp"
+                android:text="วันลอย"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_riangmon"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_orange_rounded"
+                android:layout_margin="2dp"
+                android:text="เรียงหมอน"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_safe_day"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_green_pill"
+                android:layout_margin="2dp"
+                android:text="วันปลอด"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/badge_kalagni"
+                style="@style/AuspiciousBadge"
+                android:background="@drawable/bg_white_pill"
+                android:layout_margin="2dp"
+                android:textColor="#C62828"
+                android:visibility="gone"
+                tools:text="วันอัปมงคล" />
+        </com.google.android.flexbox.FlexboxLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txt_extra_note"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/img_best_crown"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="#B4DCC6" />
+
+</LinearLayout>

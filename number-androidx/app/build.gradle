@@ -12,8 +12,8 @@ android {
         applicationId "com.numberniceic"
         minSdk rootProject.min_sdk
         targetSdk rootProject.target_sdk
-        versionCode 59
-        versionName "5.9 vc45"
+        versionCode 65
+        versionName "5.9 vc50"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

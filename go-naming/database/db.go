@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -44,7 +45,59 @@ func ConnectMySQL() {
 	MySQLDB.SetMaxIdleConns(5)
 	MySQLDB.SetConnMaxLifetime(5 * 60 * 1000 * 1000 * 1000) // 5 minutes
 
+	// Initialize MySQL tables used by the Android app/admin panel (idempotent)
+	initMySQLAstroTermsDictionaryTable()
+
 	fmt.Println("MySQL connection established")
+}
+
+func initMySQLAstroTermsDictionaryTable() {
+	if MySQLDB == nil {
+		return
+	}
+
+	// Dictionary for Thai astrology term strings shown in the apps (calendar/bottom sheet/etc).
+	// We keep a stable `term_key` and allow admin to edit display_name/description without code changes.
+	//
+	// Using MySQL here because the app/admin already uses membertb/bagcolortb on the same DB.
+	createTable := `
+	CREATE TABLE IF NOT EXISTS astro_terms_dictionary (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		term_key VARCHAR(80) NOT NULL UNIQUE,
+		display_name VARCHAR(255) NOT NULL,
+		description TEXT,
+		is_active TINYINT(1) NOT NULL DEFAULT 1,
+		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		INDEX idx_display_name (display_name)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+	`
+	if _, err := MySQLDB.Exec(createTable); err != nil {
+		log.Printf("Warning: initMySQLAstroTermsDictionaryTable create failed: %v", err)
+		return
+	}
+
+	// Seed a minimal baseline to make the admin screen immediately useful.
+	// Safe to run on every boot (INSERT IGNORE).
+	type seed struct {
+		Key, Name, Desc string
+	}
+	seeds := []seed{
+		{Key: "WAN_TONGCHAI", Name: "วันธงชัย", Desc: "เหมาะสำหรับเริ่มต้นสิ่งใหม่ งานมงคล และการตัดสินใจสำคัญ"},
+		{Key: "WAN_ATIPBADEE", Name: "วันอธิบดี", Desc: "เหมาะสำหรับงานสำคัญ การเจรจา การเริ่มต้นกิจการ"},
+		{Key: "WAN_RIANGMON", Name: "วันเรียงหมอน", Desc: "เหมาะสำหรับพิธีแต่งงาน/มงคลสมรส"},
+		{Key: "WAN_WANPRA", Name: "วันพระ", Desc: "วันสำคัญทางพระพุทธศาสนา เหมาะแก่การทำบุญ รักษาศีล และปฏิบัติธรรม"},
+		{Key: "WAN_LOY", Name: "วันลอย", Desc: "วันลอย (ตามการคำนวณในระบบ)"},
+		{Key: "WAN_FU", Name: "วันฟู", Desc: "วันฟู (ตามการคำนวณในระบบ)"},
+	}
+
+	// Avoid heavy multi-row statements to keep compatibility and error isolation.
+	for _, s := range seeds {
+		_, _ = MySQLDB.Exec(
+			"INSERT IGNORE INTO astro_terms_dictionary (term_key, display_name, description, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, ?, ?)",
+			s.Key, s.Name, s.Desc, time.Now(), time.Now(),
+		)
+	}
 }
 
 func Connect() {

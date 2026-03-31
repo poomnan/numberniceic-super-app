@@ -96,14 +96,18 @@ class PersonNewsF : Fragment() {
 
     private val refreshReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: android.content.Intent?) {
-            Log.d("PersonNewsF", "Refresh Broadcast Received - Reloading Data")
-            if (isAdded) {
-                val ctx = context ?: return
-                // Force network refresh when notification arrives to show latest data immediately
-                viewModel.loadAllData(ctx, forceRefresh = true)
-                initDataUserCalculationsOnly() 
-                updateDynamicNotifications()
-                loadAssignedSpells()
+            try {
+                Log.d("PersonNewsF", "Refresh Broadcast Received - Reloading Data")
+                if (isAdded) {
+                    val ctx = context ?: return
+                    // Force network refresh when notification arrives to show latest data immediately
+                    viewModel.loadAllData(ctx, forceRefresh = true)
+                    initDataUserCalculationsOnly()
+                    updateDynamicNotifications()
+                    loadAssignedSpells()
+                }
+            } catch (e: Exception) {
+                Log.e("PersonNewsF", "refreshReceiver failed", e)
             }
         }
     }
@@ -1051,19 +1055,17 @@ class PersonNewsF : Fragment() {
             binding.txtUserBirthPrefix.text = "คุณเกิด"
 
 
-            if (userx.birthDay != null) {
-                val birthday: DateTime? = DateTime.parse(userx.birthDay)
-                if (birthday != null) {
-                    this.ageNextYang = PersonContextManager.ageYang(birthday.year, birthday.monthOfYear, birthday.dayOfMonth)
-                    this.ageCurrent = PersonContextManager.ageCurrent(birthday.year, birthday.monthOfYear, birthday.dayOfMonth)
-                }
+            val birthday = PersonContextManager.parseBirthdayOrNull(userx.birthDay)
+            if (birthday != null) {
+                this.ageNextYang = PersonContextManager.ageYang(birthday.year, birthday.monthOfYear, birthday.dayOfMonth)
+                this.ageCurrent = PersonContextManager.ageCurrent(birthday.year, birthday.monthOfYear, birthday.dayOfMonth)
 
                 if (this.ageNextYang != null) {
                     binding.txtAgeYang.text = "อายุ $ageCurrent ปี ย่าง $ageNextYang ปี"
                     buddhaAnnualAdapter?.updateAge(ageCurrent, ageNextYang)
                 }
 
-                val d = birthday!!.dayOfWeek()
+                val d = birthday.dayOfWeek()
                 val dayBirth = d.getAsText(Locale.ENGLISH)
                 val dayNumBirth = PersonContextManager.convertDayEngToNum(dayBirth)
                 val dayBirthNumber = if (userx.sHour <= 4) {
@@ -1211,23 +1213,33 @@ class PersonNewsF : Fragment() {
         // --- Zodiac Calculation Logic Start ---
         if (userx != null) {
             try {
-                // 1. Get Birthday Month (and Day)
-                val dobParts = userx.birthDay?.split("-") 
-                // Assuming format YYYY-MM-DD from server or similar. Adjust if format differs.
-                
-                if (dobParts != null && dobParts.size >= 2) {
+                // 1. Get Birthday Month (and Day) safely from parsed birthday first.
+                val parsedBirthday = PersonContextManager.parseBirthdayOrNull(userx.birthDay)
+
+                if (parsedBirthday != null) {
                      var day = 0
                      var month = 0
-                     
-                     // Simple heuristic: if parts[0] > 31 it's likely Year. YYYY-MM-DD
-                     if ((dobParts[0].toIntOrNull() ?: 0) > 31) {
-                         month = dobParts[1].toIntOrNull() ?: 0
-                         day = dobParts[2].toIntOrNull() ?: 0
-                     } else {
-                         // Format DD-MM-YYYY
-                         day = dobParts[0].toIntOrNull() ?: 0
-                         month = dobParts[1].toIntOrNull() ?: 0
-                     }
+
+                    val dobParts = userx.birthDay
+                        ?.split(" ")
+                        ?.firstOrNull()
+                        ?.split("-")
+                        ?.filter { it.isNotEmpty() }
+
+                    if (dobParts != null && dobParts.size >= 3) {
+                        // Simple heuristic: if parts[0] > 31 it's likely Year. YYYY-MM-DD
+                        if ((dobParts[0].toIntOrNull() ?: 0) > 31) {
+                            month = dobParts[1].toIntOrNull() ?: parsedBirthday.monthOfYear
+                            day = dobParts[2].toIntOrNull() ?: parsedBirthday.dayOfMonth
+                        } else {
+                            // Format DD-MM-YYYY
+                            day = dobParts[0].toIntOrNull() ?: parsedBirthday.dayOfMonth
+                            month = dobParts[1].toIntOrNull() ?: parsedBirthday.monthOfYear
+                        }
+                    } else {
+                        month = parsedBirthday.monthOfYear
+                        day = parsedBirthday.dayOfMonth
+                    }
 
                     // 2. Get Birth Time (Hour)
                     // The Userx class does not have 'birthTime' string field.

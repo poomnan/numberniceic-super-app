@@ -22,6 +22,11 @@
         <i class="fa-solid fa-newspaper"></i> บทความ
     </a>
 
+    <a href="/web/admin/rengyam-tags" class="btn"
+        style="background: #0ea5e9; color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px;">
+        <i class="fa-solid fa-book-open"></i> คำอธิบายฤกษ์ยาม
+    </a>
+
     <a href="/cron/wanpra?force=test" target="_blank" class="btn"
         style="background: #fd7e14; color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px;"
         onclick="return confirm('⚠️ ยืนยันทดสอบส่งแจ้งเตือนวันพระ? \n(ข้อความจะถูกส่งหาทุกคนที่มี App)');">

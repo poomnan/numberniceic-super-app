@@ -42,6 +42,35 @@ class NotificationManager extends Manager
     }
 
     /**
+     * Check whether an equivalent notification has already been stored today.
+     * Used by cron jobs to avoid duplicate push deliveries within the same day window.
+     */
+    public function hasSentToday($memberId, $type, $title)
+    {
+        try {
+            $sql = "SELECT COUNT(*) as count
+                    FROM notifications
+                    WHERE member_id = :member_id
+                      AND type = :type
+                      AND title = :title
+                      AND DATE(created_at) = CURDATE()";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':member_id' => $memberId,
+                ':type' => $type,
+                ':title' => $title
+            ]);
+
+            $result = $stmt->fetch(PDO::FETCH_OBJ);
+            return $result ? ((int) $result->count > 0) : false;
+        } catch (\Exception $e) {
+            error_log("NotificationManager::hasSentToday Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Get notifications for a specific user
      * Supports filtering by type and pagination
      */

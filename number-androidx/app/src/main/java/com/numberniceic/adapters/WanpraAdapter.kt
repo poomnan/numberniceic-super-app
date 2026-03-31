@@ -24,6 +24,7 @@ import com.numberniceic.R
 import com.numberniceic.data.rengyam.WanSpecial
 import com.numberniceic.data.rengyam.Wanpra
 import com.numberniceic.utils.PersonContextManager
+import com.numberniceic.utils.RengYamTagCanonicalizer
 import com.numberniceic.utils.ThaiAstrologyLib
 import com.numberniceic.utils.TaksaResult
 import org.joda.time.DateTime
@@ -96,6 +97,11 @@ private fun toThaiNum(s: String?): String {
             .replace('9','๙')
 }
 
+private fun isTruthy(value: Any?): Boolean {
+    val normalized = value?.toString()?.trim()?.lowercase(Locale.ROOT) ?: return false
+    return normalized == "1" || normalized == "1.0" || normalized == "true"
+}
+
 private fun formatAuspiciousDates(dates: List<String>, monthStr: String): String {
     val dayNums = dates.mapNotNull { 
         try { it.split("-")[2].toInt().toString() } catch (e: java.lang.Exception) { null }
@@ -110,9 +116,11 @@ class WanpraAdapter(
     private val isLoggedInUser: Boolean = false,
     private var hasRengyamAccess: Boolean = false,
     private val onMonthNav: ((Int) -> Unit)? = null,
+    private val onMonthSelected: ((Int) -> Unit)? = null,
     private val onYearSelected: ((Int) -> Unit)? = null,
     private val onCategorySelected: ((String?) -> Unit)? = null,
     private val onLockedCategoryClick: ((String) -> Unit)? = null,
+    private val onCalendarDayClick: ((Wanpra) -> Unit)? = null,
     var isGridLayout: Boolean = true,
     private val _showInauspiciousInfo: Boolean = true
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -173,6 +181,7 @@ class WanpraAdapter(
                 isLoggedInUser,
                 hasRengyamAccess,
                 onMonthNav,
+                onMonthSelected,
                 onYearSelected,
                 onCategorySelected,
                 onLockedCategoryClick,
@@ -213,6 +222,7 @@ class WanpraAdapter(
         private val isLoggedInUser: Boolean = false,
         private var hasRengyamAccess: Boolean = false,
         private val onMonthNav: ((Int) -> Unit)? = null,
+        private val onMonthSelected: ((Int) -> Unit)? = null,
         private val onYearSelected: ((Int) -> Unit)? = null,
         private val onCategorySelected: ((String?) -> Unit)? = null,
         private val onLockedCategoryClick: ((String) -> Unit)? = null,
@@ -227,13 +237,37 @@ class WanpraAdapter(
             val txtCurrentYear = itemView.findViewById<TextView>(R.id.txt_current_year)
             val btnPrev = itemView.findViewById<View>(R.id.btn_prev_month)
             val btnNext = itemView.findViewById<View>(R.id.btn_next_month)
+            val btnMonthDropdown = itemView.findViewById<View>(R.id.btn_month_dropdown)
+            val btnYearDropdown = itemView.findViewById<View>(R.id.btn_year_dropdown)
+
+            val monthNames = (1..12).map { monthIndex ->
+                val label = DateTime(2024, monthIndex, 1, 0, 0).monthOfYear().asText
+                PersonContextManager.toThaiMonth(label).firstOrNull().orEmpty().ifBlank { monthIndex.toString() }
+            }
+            val currentMonthIndex = monthNames.indexOf(data.monthStr).takeIf { it >= 0 }?.plus(1) ?: DateTime.now().monthOfYear
+            val yearBe = data.yearStr.toIntOrNull() ?: (DateTime.now().year + 543)
+            val yearCe = yearBe - 543
+
+            // Center title uses the old UX: big month + year, no dropdown markers.
             txtCurrentMonth?.text = data.monthStr
-            txtCurrentYear?.text = toThaiNum(data.yearStr)
-            btnPrev?.setOnClickListener { onMonthNav?.invoke(-1) }
-            btnNext?.setOnClickListener { onMonthNav?.invoke(1) }
-            txtCurrentYear?.setOnClickListener { anchor ->
-                val yearCe = data.yearStr.toIntOrNull() ?: return@setOnClickListener
-                showYearDropdown(anchor, yearCe)
+            txtCurrentYear?.text = toThaiNum(yearBe.toString())
+            val allowMonthYearNav = isLoggedInUser
+            fun applyLock(view: View?, enabled: Boolean) {
+                view?.isEnabled = enabled
+                view?.alpha = if (enabled) 1.0f else 0.25f
+                if (!enabled) view?.setOnClickListener(null)
+            }
+
+            applyLock(btnPrev, allowMonthYearNav)
+            applyLock(btnNext, allowMonthYearNav)
+            applyLock(btnMonthDropdown, allowMonthYearNav)
+            applyLock(btnYearDropdown, allowMonthYearNav)
+
+            if (allowMonthYearNav) {
+                btnPrev?.setOnClickListener { onMonthNav?.invoke(-1) }
+                btnNext?.setOnClickListener { onMonthNav?.invoke(1) }
+                btnMonthDropdown?.setOnClickListener { anchor -> showMonthDropdown(anchor, currentMonthIndex, monthNames) }
+                btnYearDropdown?.setOnClickListener { anchor -> showYearDropdown(anchor, yearCe) }
             }
             val btnChat = itemView.findViewById<View>(R.id.btn_chat_ninin)
             btnChat?.visibility = if (isLoggedInUser) View.GONE else View.VISIBLE
@@ -453,7 +487,7 @@ class WanpraAdapter(
             if (!data.todayDateStr.isNullOrEmpty()) {
                 val userName = data.userName ?: ""
                 val guestOrUser = if (isLoggedInUser && userName.isNotEmpty()) "$userName " else ""
-                val fullText = "● ดูฤกษ์ดีฤกษ์เศรษฐีปี 2569 สำหรับคุณ ${guestOrUser}คลิ๊ก"
+                val fullText = "● ดูฤกษ์ดีฤกษ์เศรษฐีปี ${data.yearStr} สำหรับคุณ ${guestOrUser}คลิ๊ก"
                 val spannable = android.text.SpannableString(fullText)
                 
                 txtGreetingMsg?.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
@@ -494,15 +528,33 @@ class WanpraAdapter(
             }
         }
 
+        private fun showMonthDropdown(anchor: View, currentMonth: Int, monthNames: List<String>) {
+            val popup = PopupMenu(anchor.context, anchor)
+            monthNames.forEachIndexed { index, label ->
+                val monthIndex = index + 1
+                val item = popup.menu.add(0, monthIndex, 0, "$label (${String.format("%02d", monthIndex)})")
+                item.isCheckable = true
+                item.isChecked = monthIndex == currentMonth
+            }
+            popup.menu.setGroupCheckable(0, true, true)
+            popup.setOnMenuItemClickListener { item ->
+                onMonthSelected?.invoke(item.itemId)
+                true
+            }
+            popup.show()
+        }
+
         private fun showYearDropdown(anchor: View, currentYearCe: Int) {
             val popup = PopupMenu(anchor.context, anchor)
-            val currentYearBe = currentYearCe
-            val startYearBe = currentYearBe
-            val endYearBe = currentYearBe + 10
-            for (yearBe in startYearBe..endYearBe) {
-                val yearCe = yearBe - 543
-                popup.menu.add(0, yearCe, 0, "พ.ศ. ${toThaiNum(yearBe.toString())}")
+            val nowYearCe = DateTime.now().year
+            val supportedYears = nowYearCe..(nowYearCe + 12)
+            for (yearCe in supportedYears) {
+                val yearBe = yearCe + 543
+                val item = popup.menu.add(0, yearCe, 0, "พ.ศ. ${toThaiNum(yearBe.toString())}")
+                item.isCheckable = true
+                item.isChecked = yearCe == currentYearCe
             }
+            popup.menu.setGroupCheckable(0, true, true)
             popup.setOnMenuItemClickListener { item ->
                 onYearSelected?.invoke(item.itemId)
                 true
@@ -690,6 +742,7 @@ class WanpraAdapter(
                         if (choks.contains("สิทธิโชค")) addBadge("สิทธิโชค", "#2E7D32")
                         if (choks.contains("ราชาโชค")) addBadge("ราชาโชค", "#2E7D32")
                         if (choks.contains("ชัยโชค")) addBadge("ชัยโชค", "#2E7D32")
+                        if (isTruthy(wp.isKating)) addBadge("กระทิงวัน", "#D32F2F")
                         if (kalayok.contains("อุบาทว์")) addBadge("อุบาทว์", "#D32F2F")
                         if (kalayok.contains("โลกาวินาศ")) addBadge("โลกาวินาศ", "#D32F2F")
                         
@@ -731,12 +784,16 @@ class WanpraAdapter(
         val layoutBorderMarquee: View? = itemView.findViewById(R.id.layout_border_marquee)
         val viewBorderMarquee: View? = itemView.findViewById(R.id.view_border_marquee)
         val txtDayNum: TextView? = itemView.findViewById(R.id.txt_day_num)
+        val txtBuddhistDay: TextView? = itemView.findViewById(R.id.txt_buddhist_day)
         val txtLunar: TextView? = itemView.findViewById(R.id.txt_lunar_info)
         val flexBadges: LinearLayout? = itemView.findViewById(R.id.flex_badges)
         val viewMarqueeMask: View? = itemView.findViewById(R.id.view_marquee_mask)
         val iconPra: View? = itemView.findViewById(R.id.icon_pra)
 
         fun bind(wp: Wanpra) {
+            val goodColor = "#1976D2"
+            val forbiddenColor = "#C62828"
+            val warningColor = forbiddenColor
             val dt = try { formatter.parseDateTime(wp.wanpraDate).toLocalDate() } catch(e: Exception) { null }
             val isToday = wp.wanpraDate == org.joda.time.DateTime.now().toString("yyyy-MM-dd")
             val wpDate = wp.wanpraDate
@@ -751,9 +808,27 @@ class WanpraAdapter(
                     "${wp.lunarPhase ?: ""}\nเดือน ${wp.lunarMonth ?: ""}"
                 }
                 txtLunar?.visibility = if (txtLunar?.text.isNullOrBlank()) View.GONE else View.VISIBLE
+                val buddhistLabel = if (!wp.isOtherMonth && !isLockedCell) {
+                    val (dithiRaw, mThai) = com.numberniceic.utils.ThaiAstrologyLib.getThaiLunar(dt)
+                    val normalizedMonth = if (mThai == 13 || mThai == 18) 8 else mThai
+                    when {
+                        dithiRaw == 15 && normalizedMonth == 3 -> "มาฆบูชา"
+                        dithiRaw == 15 && normalizedMonth == 6 -> "วิสาขบูชา"
+                        dithiRaw == 15 && normalizedMonth == 8 -> "อาสาฬหบูชา"
+                        dithiRaw == 16 && normalizedMonth == 8 -> "เข้าพรรษา"
+                        dithiRaw == 15 && normalizedMonth == 11 -> "ออกพรรษา"
+                        dithiRaw == 8 || dithiRaw == 15 || dithiRaw == 23 || dithiRaw == 30 -> "วันพระ"
+                        else -> null
+                    }
+                } else {
+                    null
+                }
+                txtBuddhistDay?.text = buddhistLabel.orEmpty()
+                txtBuddhistDay?.visibility = if (buddhistLabel.isNullOrBlank()) View.GONE else View.VISIBLE
             } else {
                 txtDayNum?.visibility = View.GONE
                 txtLunar?.visibility = View.GONE
+                txtBuddhistDay?.visibility = View.GONE
             }
 
             // 🧚 Centralized Color & Text Hierarchy
@@ -789,22 +864,23 @@ class WanpraAdapter(
             }
 
             // 🧚 Icon Pra Logic
-            val isPra = wp.isWanpra?.toString() == "1" || (wp.lunarPhase?.let { it.contains("๘ ค่ำ") || it.contains("๑๕ ค่ำ") } ?: false)
+            val isPra = wp.isWanpra?.toString() == "1"
             iconPra?.visibility = if (isPra && !wp.isOtherMonth) View.VISIBLE else View.GONE
-            if (isPra && iconPra is android.widget.ImageView) iconPra.setColorFilter(android.graphics.Color.parseColor("#D4AF37"))
+            if (isPra && iconPra is android.widget.ImageView) iconPra.setColorFilter(android.graphics.Color.parseColor("#FFD600"))
 
             // 🧚 Flex Badges Initialization
             flexBadges?.visibility = View.VISIBLE
             flexBadges?.removeAllViews()
             val sarabunTypeface = androidx.core.content.res.ResourcesCompat.getFont(itemView.context, R.font.sarabun_semibold)
             
-            fun norm(v: Any?): Boolean {
-                val s = v?.toString()?.lowercase() ?: ""
-                return s == "1" || s == "1.0" || s == "true"
-            }
-
             fun addBadge(text: String, color: String) {
-                val badgeColor = if (wp.isOtherMonth) "#9E9E9E" else color
+                val clean = text.substringBefore(" [").trim()
+                val overrideColor = if (
+                    clean.contains("อัตนิโรธ") ||
+                    clean.contains("อัตนิโรจน์") ||
+                    clean.contains("อัคนิโรธ")
+                ) "#6A1B9A" else null
+                val badgeColor = if (wp.isOtherMonth) "#9E9E9E" else (overrideColor ?: color)
                     val tv = TextView(itemView.context).apply {
                         setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 7f)
                         setTextColor(android.graphics.Color.parseColor(badgeColor))
@@ -827,51 +903,132 @@ class WanpraAdapter(
                 try {
                     val wDay = dt.dayOfWeek
                     val (lunarDithi, mThai) = com.numberniceic.utils.ThaiAstrologyLib.getThaiLunar(dt)
-                    val lfjTags = com.numberniceic.utils.ThaiAstrologyLib.getLoyFuJom(wDay, mThai)
-                    val choks = com.numberniceic.utils.ThaiAstrologyLib.queryMahaChok(wDay, lunarDithi)
                     val dithi5 = com.numberniceic.utils.ThaiAstrologyLib.getDithiMongkol5(wDay, lunarDithi)
-                    val badDithis = com.numberniceic.utils.ThaiAstrologyLib.queryInauspicious(wDay, lunarDithi)
                     val isMahasun = com.numberniceic.utils.ThaiAstrologyLib.queryMahasun(mThai, lunarDithi)
-                    val dithiCommonProhibition = com.numberniceic.utils.ThaiAstrologyLib.queryDithiCommonProhibitions(lunarDithi)
-                    val kalayok = com.numberniceic.utils.ThaiAstrologyLib.getKalayok(dt)
                     
-                    val goodColor = "#2196F3" // Blue for auspicious days
-                    
-                    // Rendering sequence
-                    if (kalayok.contains("ธงชัย")) addBadge("ธงชัย", goodColor)
-                    if (kalayok.contains("อธิบดี")) addBadge("อธิบดี", goodColor)
-                    if (com.numberniceic.utils.ThaiAstrologyLib.isRiangMon(lunarDithi)) addBadge("วันเคียงหมอน", goodColor)
-                    if (lfjTags.any { it.contains("ลอย") }) addBadge("วันลอย", goodColor)
-                    if (lfjTags.any { it.contains("ฟู") }) addBadge("วันฟู", goodColor)
-                    if (lfjTags.any { it.contains("จม") }) addBadge("วันจม", "#D32F2F")
-                    
-                    // แสดงรายละเอียดกฤษ์เต็มสำหรับ:
-                    // - Admin
-                    // - Member ที่ปลดล็อกแล้ว
-                    // - Member ที่ login อยู่ (ตาม requirement ล่าสุดให้โชว์เต็มเพื่อเชิญชวนใช้งาน)
-                    if (this@WanpraAdapter.isAdminMode || this@WanpraAdapter.hasRengyamAccess || this@WanpraAdapter.isLoggedInUser) {
-                        if (choks.contains("อำฤตโชค")) addBadge("อำฤตโชค", goodColor)
-                        if (choks.contains("มหาสิทธิโชค")) addBadge("มหาสิทธิโชค", goodColor)
-                        if (choks.contains("สิทธิโชค")) addBadge("สิทธิโชค", goodColor)
-                        if (choks.contains("ราชาโชค")) addBadge("ราชาโชค", goodColor)
-                        if (choks.contains("ชัยโชค")) addBadge("ชัยโชค", goodColor)
-                        
-                        dithi5.forEach { addBadge(it, goodColor) }
-                        badDithis.forEach { addBadge(it, "#D32F2F") }
-                        if (isMahasun) addBadge("มหาสูญ", "#D32F2F")
-                        dithiCommonProhibition?.let { addBadge(it, "#8E24AA") }
-                        
-                        if (kalayok.contains("อุบาทว์")) addBadge("อุบาทว์", "#D32F2F")
-                        if (kalayok.contains("โลกาวินาศ")) addBadge("โลกาวินาศ", "#D32F2F")
+                    fun tagGroupPriority(text: String): Int {
+                        val clean = RengYamTagCanonicalizer.canonical(text.substringBefore(" [").trim())
+                        if (clean.startsWith("ทิศดี")) return 2
+                        if (clean.startsWith("ทิศไม่ดี")) return 1
+                        if (clean.startsWith("อัปมงคล") || clean.startsWith("อัคนิโรธ") || clean.startsWith("ห้าม")) return 0
+                        if (clean == "วันอุบาทว์/อุบาสน" || clean == "วันโลกาวินาศ" || clean == "วันจม") return 0
+                        if (
+                            clean.startsWith("มหาสูญ") || clean.startsWith("อายกรรมพลาย") ||
+                            clean == "พิฆาต" || clean == "ดิถีพิฆาต" || clean == "ทรทึก" || clean == "กระทิงวัน" ||
+                            clean == "กาลกิณี" || clean == "มฤตยู" || clean == "บอด" ||
+                            clean == "วินาศ" || clean == "โลกาวินาศ" || clean == "ทินสูรย์" ||
+                            clean == "ทินศูร" || clean == "ทินกาล" || clean == "ทัคธทิน" ||
+                            clean == "กาลทิน" || clean == "กาลโชค" || clean == "กาลสูร" ||
+                            clean == "กาลทัณฑ์" || clean == "ยมขันธ์" || clean == "ทักทิน" ||
+                            clean == "พิลา" || clean == "ทึกทึน" || clean == "อัตนิโรจน์" ||
+                            clean == "ทินสูญ" || clean == "กาฬโชค" || clean == "กาลสูญ" ||
+                            clean == "โลกวินาส" || clean == "วินาสส์" || clean == "วันบอด" || clean == "กาลทีน"
+                        ) return 1
+                        if (
+                            clean == "วันธงชัย" || clean == "วันอธิบดี" ||
+                            clean.contains("ธงชัย") || clean.contains("อธิบดี") ||
+                            clean.contains("อำฤตโชค") || clean.contains("อมุตโชค") || clean.contains("มหาสิทธิโชค") ||
+                            clean.contains("สิทธิโชค") || clean.contains("ราชาโชค") ||
+                            clean.contains("ชัยโชค") || clean == "ดิถีเรียงหมอน" ||
+                            clean == "วันลอย" || clean == "วันฟู" || clean == "กระทิงวัน" ||
+                            clean == "ไชยดิถี" || clean == "ภัทรดีถี" || clean == "ปุณณดีถี" ||
+                            clean == "นันทดีถี" || clean == "มิตตะดีถี"
+                        ) return 2
+                        return 1
                     }
+                    fun badgeColorFor(text: String): String {
+                        val clean = RengYamTagCanonicalizer.canonical(text.substringBefore(" [").trim())
+                        if (clean.startsWith("ทิศดี")) return "#2E7D32"
+                        if (clean.startsWith("ทิศไม่ดี")) return "#EF8E1D"
+                        if (clean.startsWith("ห้าม")) return "#6A1B9A"
+                        if (clean.contains("อัตนิโรธ") || clean.contains("อัตนิโรจน์")) return "#6A1B9A"
+                        return when (tagGroupPriority(text)) {
+                            0 -> forbiddenColor
+                            1 -> warningColor
+                            else -> goodColor
+                        }
+                    }
+
+                    fun isGoodDirection(text: String): Boolean {
+                        val clean = RengYamTagCanonicalizer.canonical(text.substringBefore(" [").trim())
+                        return clean.startsWith("ทิศดี")
+                    }
+
+                    fun isBadDirection(text: String): Boolean {
+                        val clean = RengYamTagCanonicalizer.canonical(text.substringBefore(" [").trim())
+                        return clean.startsWith("ทิศไม่ดี")
+                    }
+                    
+                    val groupedTags = buildList {
+                        addAll(wp.kalTags.orEmpty())
+                        addAll(wp.dithiTags.orEmpty())
+                        addAll(wp.dayTypeTags.orEmpty())
+                        addAll(wp.warningTags.orEmpty())
+                    }
+                    val rawTags = when {
+                        !wp.calendarDisplayTags.isNullOrEmpty() ->
+                            wp.calendarDisplayTags.orEmpty().distinct()
+                        groupedTags.isNotEmpty() -> groupedTags
+                        !wp.displayTagsPrioritized.isNullOrEmpty() -> wp.displayTagsPrioritized.orEmpty()
+                        else -> wp.displayTags.orEmpty()
+                    }.filter { it.isNotBlank() }
+
+                    val directionGood = rawTags.filter { isGoodDirection(it) }
+                    val directionBad = rawTags.filter { isBadDirection(it) }
+                    val goodTags = rawTags.filter {
+                        !isGoodDirection(it) && !isBadDirection(it) && tagGroupPriority(it) == 2
+                    }
+                    val badTags = rawTags.filter {
+                        !isGoodDirection(it) && !isBadDirection(it) && tagGroupPriority(it) == 0
+                    }
+                    val remaining = rawTags
+                        .filterNot {
+                            directionGood.contains(it) ||
+                                directionBad.contains(it) ||
+                                goodTags.contains(it) ||
+                                badTags.contains(it)
+                        }
+                        .withIndex()
+                        .sortedWith(
+                            compareByDescending<IndexedValue<String>> { tagGroupPriority(it.value) }
+                                .thenBy { it.index }
+                        )
+                        .map { it.value }
+
+                    val backendTags = (goodTags + directionGood + directionBad + badTags + remaining).distinct()
+
+                    if (backendTags.isNotEmpty()) {
+                        backendTags.forEach { addBadge(it, badgeColorFor(it)) }
+                    } else if (!wp.isOtherMonth) {
+                        // Use local fallback only for current-month cells when backend tags are absent.
+                        if (isTruthy(wp.isTongchai)) addBadge("ธงชัย", goodColor)
+                        if (isTruthy(wp.isAtipbadee)) addBadge("อธิบดี", goodColor)
+                        if (wp.isRiangMon) addBadge("ดิถีเรียงหมอน", goodColor)
+                        if (wp.isLoy) addBadge("วันลอย", goodColor)
+                        if (wp.isFu) addBadge("วันฟู", goodColor)
+                        if (wp.isJom) addBadge("วันจม", forbiddenColor)
+                        if (isTruthy(wp.isKating)) addBadge("กระทิงวัน", warningColor)
+
+                        if (wp.isAmmarit) addBadge("อำฤตโชค", goodColor)
+                        if (wp.isMahaSittichok) addBadge("มหาสิทธิโชค", goodColor)
+                        if (wp.isSittichok) addBadge("สิทธิโชค", goodColor)
+                        if (wp.isRachaChok) addBadge("ราชาโชค", goodColor)
+                        if (wp.isChaiChok) addBadge("ชัยโชค", goodColor)
+
+                        dithi5.forEach { addBadge(it, warningColor) }
+                        if (isMahasun) addBadge("มหาสูญ", warningColor)
+                        if (wp.isUbath) addBadge("วันอุบาทว์/อุบาสน", forbiddenColor)
+                        if (wp.isLokawinat) addBadge("วันโลกาวินาศ", forbiddenColor)
+                    }
+
                 } catch (e: Exception) {}
             }
 
             // Personalized Inauspicious (Only for main month and Admin mode)
             if (!wp.isOtherMonth && this@WanpraAdapter.isAdminMode) {
-                if (wp.kalagniBirth && wp.kalagniAge) addBadge("อัปมงคลอายุย่าง และวันเกิด", "#C62828")
-                else if (wp.kalagniBirth) addBadge("อัปมงคลวันเกิด", "#C62828")
-                else if (wp.kalagniAge || wp.isKalagni) addBadge("อัปมงคลอายุย่าง", "#C62828")
+                if (wp.kalagniBirth && wp.kalagniAge) addBadge("อัปมงคลอายุย่าง และวันเกิด", forbiddenColor)
+                else if (wp.kalagniBirth) addBadge("อัปมงคลวันเกิด", forbiddenColor)
+                else if (wp.kalagniAge || wp.isKalagni) addBadge("อัปมงคลอายุย่าง", forbiddenColor)
             }
 
             viewBorderAura?.visibility = if (wp.isHighlighted && !wp.isOtherMonth) View.VISIBLE else View.GONE
@@ -902,6 +1059,12 @@ class WanpraAdapter(
                 } else {
                     layoutBorderMarquee?.visibility = View.GONE
                     viewBorderMarquee?.clearAnimation()
+                }
+            }
+
+            itemView.setOnClickListener {
+                if (!wp.isOtherMonth && !wp.wanpraDate.isNullOrBlank()) {
+                    onCalendarDayClick?.invoke(wp)
                 }
             }
         }

@@ -225,12 +225,19 @@ class NotificationController extends Manager
             // Fetch All Tokens & MemberID
             $stmt = $this->db->query("SELECT memberid, fcm_token FROM membertb WHERE fcm_token IS NOT NULL AND fcm_token != ''");
             $users = $stmt->fetchAll(\PDO::FETCH_OBJ);
+            $notificationManager = new NotificationManager($this->container);
 
             $total = count($users);
             $successCount = 0;
+            $skipDuplicateCount = 0;
 
             if ($total > 0) {
                 foreach ($users as $u) {
+                    if ($notificationManager->hasSentToday((string) $u->memberid, 'wanpra', $msgTitle)) {
+                        $skipDuplicateCount++;
+                        continue;
+                    }
+
                     $res = '';
                     // Use existing sendFcm (HTTP v1 loop)
                     $result = $this->sendFcm($u->fcm_token, $msgTitle, $msgBody, ['type' => 'wanpra', 'memberid' => (string) $u->memberid], $res);
@@ -242,7 +249,8 @@ class NotificationController extends Manager
 
                 $response->getBody()->write(json_encode([
                     'status' => 'success',
-                    'message' => "Sent '$msgTitle' to $successCount / $total devices."
+                    'message' => "Sent '$msgTitle' to $successCount / $total devices.",
+                    'duplicates_skipped' => $skipDuplicateCount
                 ]));
             } else {
                 $response->getBody()->write(json_encode(['status' => 'skipped', 'message' => 'No tokens found']));

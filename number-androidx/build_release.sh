@@ -27,7 +27,11 @@ if [ -f "$AAB_PATH" ]; then
     echo "📄 AAB: $OUTPUT_DIR/numberniceic-release.aab"
 fi
 
-if [ -f "$APK_PATH" ]; then
+if [ ! -f "$APK_PATH" ]; then
+    APK_PATH=$(find app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
+fi
+
+if [ -n "$APK_PATH" ] && [ -f "$APK_PATH" ]; then
     cp "$APK_PATH" "$OUTPUT_DIR/numberniceic-release.apk"
     echo "📄 APK: $OUTPUT_DIR/numberniceic-release.apk"
 fi

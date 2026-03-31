@@ -131,7 +131,7 @@ class Clothcolor3dModel: ViewModel() {
         var ageYang: Int? = null
         val userx = UserContextManager.userX(context)
         if (userx != null) {
-            val birthday: DateTime? = DateTime.parse(userx.birthDay)
+            val birthday: DateTime? = PersonContextManager.parseBirthdayOrNull(userx.birthDay)
             if (birthday != null) {
                 ageYang = PersonContextManager.ageYang(birthday.year, birthday.monthOfYear, birthday.dayOfMonth)
 
@@ -332,7 +332,7 @@ class Clothcolor3dModel: ViewModel() {
     fun getLogicExplanation(context: Context): String {
         try {
             val userx = UserContextManager.userX(context) ?: return ""
-            val birthday = DateTime.parse(userx.birthDay) ?: return ""
+            val birthday = PersonContextManager.parseBirthdayOrNull(userx.birthDay) ?: return ""
             val ageYang = PersonContextManager.ageYang(birthday.year, birthday.monthOfYear, birthday.dayOfMonth) ?: return ""
 
             val sHour = userx.sHour
