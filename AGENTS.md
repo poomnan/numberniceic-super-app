@@ -41,7 +41,15 @@ Skill locations:
 ## Safety Rule
 Do not modify runtime business logic unless explicitly requested. Prefer documenting contracts, tracing flow, and making backward-compatible fixes.
 
-## Learned Context
-- In `flutter-naming`, `similarMode` (`รวมให้เป็น "ชื่อดี"`) displays both base-name scores and combined `total` scores on the ranking card. When debugging filters like `เลขศาสตร์ดี` / `พลังเงาดี`, validate both what the list filters on and what the user still sees on the card to avoid "filtered but still red" confusion.
-- In naming ranking, if 2 names share effectively the same meaning, visible numerology quality should not be contradicted by the order. Stronger `pairType/pairpoint` should outrank weaker ones before tiny semantic-distance differences decide the final order.
-- On the back of the ranking card, prefer showing compact proof inline with `เลขศาสตร์` / `พลังเงา` (for example `24 (D10/80)`) rather than a separate debug box that repeats the same data.
+## Learned Context (Summary)
+- **RengYam Calendar**: 06:00 boundary, badge deduplication, day labels. Details in [rengyam-calendar-logic.md](file:///.agents/knowledge/rengyam-calendar-logic.md).
+- **Wedding Search**: Complex couples' inauspicious exclusions. Details in [thai-wedding-logic.md](file:///.agents/knowledge/thai-wedding-logic.md).
+- **Naming Ranking**: Numerology quality vs pairType/pairpoint prioritization. Details in [naming-ranking-logic.md](file:///.agents/knowledge/naming-ranking-logic.md).
+- **Premium Aesthetics**: High-end UI standards, modern typography, no placeholders. Details in [ui-ux-guidelines.md](file:///.agents/knowledge/ui-ux-guidelines.md).
+
+## Knowledge Base
+Domain-specific knowledge files for deeper context:
+- [.agents/knowledge/rengyam-calendar-logic.md](file:///.agents/knowledge/rengyam-calendar-logic.md) — RengYam calendar: kalagni logic, frozen header, badge deduplication, grid layout, gotchas.
+- [.agents/knowledge/thai-wedding-logic.md](file:///.agents/knowledge/thai-wedding-logic.md) — Thai Wedding search: Couples' criteria, Red days, fixed bad days mapping.
+- [.agents/knowledge/naming-ranking-logic.md](file:///.agents/knowledge/naming-ranking-logic.md) — Naming & ranking: logic for scores, ranking cards, similar mode filters.
+- [.agents/knowledge/ui-ux-guidelines.md](file:///.agents/knowledge/ui-ux-guidelines.md) — UI & Design: Style philosophy, color palette, premium aesthetics requirements.
