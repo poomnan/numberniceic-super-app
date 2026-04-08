@@ -43,6 +43,7 @@ use Slim\Views\PhpRenderer;
 require_once 'vendor/autoload.php';
 require_once 'app/Managers/BuddhaPangController.php';
 require_once 'app/Managers/SacredTempleController.php';
+require_once 'app/Managers/RengYamTagController.php';
 require_once 'configs/constant.php';
 require_once 'configs/config.php';
 

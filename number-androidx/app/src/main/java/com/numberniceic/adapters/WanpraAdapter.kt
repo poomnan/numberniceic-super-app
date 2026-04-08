@@ -241,7 +241,7 @@ class WanpraAdapter(
             val btnYearDropdown = itemView.findViewById<View>(R.id.btn_year_dropdown)
 
             val monthNames = (1..12).map { monthIndex ->
-                val label = DateTime(2024, monthIndex, 1, 0, 0).monthOfYear().asText
+                val label = DateTime(2024, monthIndex, 1, 0, 0).monthOfYear().getAsText(java.util.Locale.ENGLISH)
                 PersonContextManager.toThaiMonth(label).firstOrNull().orEmpty().ifBlank { monthIndex.toString() }
             }
             val currentMonthIndex = monthNames.indexOf(data.monthStr).takeIf { it >= 0 }?.plus(1) ?: DateTime.now().monthOfYear
@@ -302,8 +302,16 @@ class WanpraAdapter(
             if (showInauspiciousInfo && (!data.kalagniBirth.isNullOrBlank() || !data.kalagniAge.isNullOrBlank())) {
                 flexTaksa?.visibility = View.VISIBLE
                 val birthDay = data.birthSourceDay ?: ""
-                val badBirthDay = data.kalagniBirthDualText ?: data.kalagniBirth ?: "-"
-                val badAgeDay = data.kalagniAgeDualText ?: data.kalagniAge ?: "-"
+                val badBirthDay = data.kalagniBirthDualText ?: data.kalagniBirth ?: ""
+                val badAgeDay = data.kalagniAgeDualText ?: data.kalagniAge ?: ""
+                
+                // Merge and deduplicate the inauspicious days to avoid duplicates like "วันเสาร์ พุธ (กลางคืน), เสาร์"
+                val allBadDays = mutableListOf<String>()
+                badAgeDay.split(",").forEach { s -> s.trim().takeIf { it.isNotEmpty() }?.let { allBadDays.add(it) } }
+                badBirthDay.split(",").forEach { s -> s.trim().takeIf { it.isNotEmpty() }?.let { allBadDays.add(it) } }
+                
+                val distinctBadDays = allBadDays.distinct().joinToString(", ")
+
                 val ageLabel = data.userAge ?: 0
                 val userDisplayName = data.userName?.trim().orEmpty()
                 val greetingText = if (userDisplayName.isNotEmpty()) "สวัสดีคุณ$userDisplayName" else "สวัสดีคุณ..."
@@ -342,22 +350,21 @@ class WanpraAdapter(
                 val colorOrange = Color.parseColor("#E65100")
 
                 if (birthDay.isNotEmpty()) {
-                    val fullText = "${userPrefix}อายุย่าง $ageLabel เกิดวัน$birthDay\nห้ามใช้ฤกษ์วัน$badAgeDay $badBirthDay"
+                    // Anchor: BadBirthDayAndAge (วันอัปมงคลวันเกิดและ อายุย่าง)
+                    val fullText = "${userPrefix}อายุย่าง $ageLabel เกิดวัน$birthDay\nห้ามใช้ฤกษ์วัน$distinctBadDays"
                     badgeBirth?.text = styleLeadingMagicDot(colorize(fullText, mapOf(
                         greetingText to colorBlue,
                         "อายุย่าง $ageLabel" to colorGreen,
                         "วัน$birthDay" to colorBlue,
-                        "วัน$badAgeDay" to colorOrange,
-                        badBirthDay to colorOrange
+                        "วัน$distinctBadDays" to colorOrange
                     )))
                     badgeBirth?.let { applyMagicDotBadge(it) }
                 } else {
-                    val fullText = "${userPrefix}อายุย่าง $ageLabel\nห้ามใช้ฤกษ์วัน$badAgeDay $badBirthDay"
+                    val fullText = "${userPrefix}อายุย่าง $ageLabel\nห้ามใช้ฤกษ์วัน$distinctBadDays"
                     badgeBirth?.text = styleLeadingMagicDot(colorize(fullText, mapOf(
                         greetingText to colorBlue,
                         "อายุย่าง $ageLabel" to colorGreen,
-                        "วัน$badAgeDay" to colorOrange,
-                        badBirthDay to colorOrange
+                        "วัน$distinctBadDays" to colorOrange
                     )))
                     badgeBirth?.let { applyMagicDotBadge(it) }
                 }
@@ -690,7 +697,7 @@ class WanpraAdapter(
                 if (dt != null) {
                     val day = PersonContextManager.toThaiDay(dt.dayOfWeek().asText).replace("วัน", "")
                     val dayNum = dt.dayOfMonth().asString
-                    val month = (PersonContextManager.toThaiMonth(dt.monthOfYear().asText).firstOrNull() ?: dt.monthOfYear().asText)
+                    val month = (PersonContextManager.toThaiMonth(dt.monthOfYear().getAsText(java.util.Locale.ENGLISH)).firstOrNull() ?: dt.monthOfYear().asText)
                     itemView.findViewById<TextView>(R.id.txt_date_wanpra).text = "$day $dayNum $month ${dt.year + 543}"
                 }
                 val badgeKalagniRow = itemView.findViewById<TextView>(R.id.badge_kalagni)
@@ -702,7 +709,22 @@ class WanpraAdapter(
                         else -> "วันอัปมงคลอายุย่าง"
                     }
                 } else { badgeKalagniRow?.visibility = View.GONE }
-                itemView.setBackgroundColor(android.graphics.Color.parseColor(if (wp.isHighlighted) "#FFF9C4" else if (wp.isBestDay) "#FFF176" else "#FFFDE7"))
+                var hasBadStuff = wp.isKalagni || wp.kalagniAge || wp.kalagniBirth
+                val goodColor = "#1976D2"
+                val forbiddenColor = "#C62828"
+                val warningColor = forbiddenColor
+
+                // Background decision: 
+                // 1. Highlighted (Auspicious Selection) -> #E8F5E9 (Light Green)
+                // 2. Best Day -> #E8F5E9 (Light Green)
+                // 3. Clean Day (No bad stuff) -> #E8F5E9 (Light Green)
+                // 4. Day with Bad Stuff -> #FFFFFF (White)
+                
+                val bgColor = when {
+                    wp.isHighlighted || wp.isBestDay -> "#E8F5E9"
+                    else -> "#FFFFFF" // Temp fallback, will re-adjust below after full scan
+                }
+                itemView.setBackgroundColor(android.graphics.Color.parseColor(bgColor))
                 
                 // Add Admin Info for List View
                 val flexBadges = itemView.findViewById<com.google.android.flexbox.FlexboxLayout>(R.id.flex_badges)
@@ -710,7 +732,7 @@ class WanpraAdapter(
                     flexBadges.visibility = View.VISIBLE
                     flexBadges.removeAllViews()
                     val sarabunTypeface = androidx.core.content.res.ResourcesCompat.getFont(itemView.context, R.font.sarabun_semibold)
-                    
+                    // ANCHOR: AddBadgeRengYam (แสดงผลฤกษ์ยามในช่องปฎิทิน)
                     fun addBadge(text: String, color: String) {
                         val badgeColor = if (wp.isOtherMonth) "#9E9E9E" else color
                         val tv = TextView(itemView.context).apply {
@@ -742,13 +764,34 @@ class WanpraAdapter(
                         if (choks.contains("สิทธิโชค")) addBadge("สิทธิโชค", "#2E7D32")
                         if (choks.contains("ราชาโชค")) addBadge("ราชาโชค", "#2E7D32")
                         if (choks.contains("ชัยโชค")) addBadge("ชัยโชค", "#2E7D32")
-                        if (isTruthy(wp.isKating)) addBadge("กระทิงวัน", "#D32F2F")
-                        if (kalayok.contains("อุบาทว์")) addBadge("อุบาทว์", "#D32F2F")
-                        if (kalayok.contains("โลกาวินาศ")) addBadge("โลกาวินาศ", "#D32F2F")
+                        if (isTruthy(wp.isKating)) { addBadge("กระทิงวัน", "#D32F2F"); hasBadStuff = true }
+                        if (kalayok.contains("อุบาทว์")) { addBadge("อุบาทว์", "#D32F2F"); hasBadStuff = true }
+                        if (kalayok.contains("โลกาวินาศ")) { addBadge("โลกาวินาศ", "#D32F2F"); hasBadStuff = true }
                         
-                        if (wp.kalagniBirth) addBadge("อัปมงคลวันเกิด", "#C62828")
-                        if (wp.kalagniAge) addBadge("อัปมงคลอายุย่าง", "#C62828")
+                        if (wp.kalagniBirth && wp.kalagniAge) {
+                            addBadge("อัปมงคลอายุย่าง และวันเกิด", "#C62828")
+                        } else {
+                            if (wp.kalagniBirth) addBadge("อัปมงคลวันเกิด", "#C62828")
+                            if (wp.kalagniAge) addBadge("อัปมงคลอายุย่าง", "#C62828")
+                        }
                         
+                        // Backend provided check for additional bad tags
+                        val allTags = buildList {
+                            addAll(wp.calendarDisplayTags.orEmpty())
+                            addAll(wp.warningTags.orEmpty())
+                            addAll(wp.displayTags.orEmpty())
+                            addAll(wp.dayTypeTags.orEmpty())
+                        }.joinToString("|")
+                        
+                        val badMarkers = listOf("ทินสูญ", "ทินสูรย์", "ทรทึก", "มหาสูญ", "อายกรรมพลาย", "ทัคธทิน", "กาลทิน", "ยมขันธ์", "พิลา", "ทึกทึน", "ทักทิน", "อัตนิโรจน์", "อัคนิโรธ", "ห้าม")
+                        if (badMarkers.any { allTags.contains(it) }) hasBadStuff = true
+
+                        // Final background adjustment
+                        if (!wp.isHighlighted && !wp.isBestDay) {
+                            val finalBg = if (hasBadStuff) "#FFFFFF" else "#E8F5E9"
+                            itemView.setBackgroundColor(android.graphics.Color.parseColor(finalBg))
+                        }
+
                     } catch (e: Exception) {}
                 }
             }
@@ -817,6 +860,9 @@ class WanpraAdapter(
                         dithiRaw == 15 && normalizedMonth == 8 -> "อาสาฬหบูชา"
                         dithiRaw == 16 && normalizedMonth == 8 -> "เข้าพรรษา"
                         dithiRaw == 15 && normalizedMonth == 11 -> "ออกพรรษา"
+                        dithiRaw == 15 && normalizedMonth == 12 -> "วันลอยกระทง"
+                        dt.monthOfYear == 4 && dt.dayOfMonth in 13..15 -> "วันสงกรานต์"
+                        dt.monthOfYear == 4 && dt.dayOfMonth == 4 -> "วันเช็งเม้ง"
                         dithiRaw == 8 || dithiRaw == 15 || dithiRaw == 23 || dithiRaw == 30 -> "วันพระ"
                         else -> null
                     }
@@ -984,9 +1030,9 @@ class WanpraAdapter(
                     val remaining = rawTags
                         .filterNot {
                             directionGood.contains(it) ||
-                                directionBad.contains(it) ||
-                                goodTags.contains(it) ||
-                                badTags.contains(it)
+                            directionBad.contains(it) ||
+                            goodTags.contains(it) ||
+                            badTags.contains(it)
                         }
                         .withIndex()
                         .sortedWith(
@@ -996,9 +1042,14 @@ class WanpraAdapter(
                         .map { it.value }
 
                     val backendTags = (goodTags + directionGood + directionBad + badTags + remaining).distinct()
+                    var hasBadStuff = false
 
                     if (backendTags.isNotEmpty()) {
-                        backendTags.forEach { addBadge(it, badgeColorFor(it)) }
+                        backendTags.forEach { 
+                            val color = badgeColorFor(it)
+                            addBadge(it, color)
+                            if (color == forbiddenColor) hasBadStuff = true
+                        }
                     } else if (!wp.isOtherMonth) {
                         // Use local fallback only for current-month cells when backend tags are absent.
                         if (isTruthy(wp.isTongchai)) addBadge("ธงชัย", goodColor)
@@ -1006,7 +1057,7 @@ class WanpraAdapter(
                         if (wp.isRiangMon) addBadge("ดิถีเรียงหมอน", goodColor)
                         if (wp.isLoy) addBadge("วันลอย", goodColor)
                         if (wp.isFu) addBadge("วันฟู", goodColor)
-                        if (wp.isJom) addBadge("วันจม", forbiddenColor)
+                        if (wp.isJom) { addBadge("วันจม", forbiddenColor); hasBadStuff = true }
                         if (isTruthy(wp.isKating)) addBadge("กระทิงวัน", warningColor)
 
                         if (wp.isAmmarit) addBadge("อำฤตโชค", goodColor)
@@ -1017,18 +1068,53 @@ class WanpraAdapter(
 
                         dithi5.forEach { addBadge(it, warningColor) }
                         if (isMahasun) addBadge("มหาสูญ", warningColor)
-                        if (wp.isUbath) addBadge("วันอุบาทว์/อุบาสน", forbiddenColor)
-                        if (wp.isLokawinat) addBadge("วันโลกาวินาศ", forbiddenColor)
+                        if (wp.isUbath) { addBadge("วันอุบาทว์/อุบาสน", forbiddenColor); hasBadStuff = true }
+                        if (wp.isLokawinat) { addBadge("วันโลกาวินาศ", forbiddenColor); hasBadStuff = true }
                     }
+
+                    // Check personalized inauspicious for background decision
+                    if (!wp.isOtherMonth && this@WanpraAdapter.isAdminMode) {
+                        if (wp.kalagniBirth || wp.kalagniAge || wp.isKalagni) {
+                            hasBadStuff = true
+                        }
+                    }
+                    
+                    // Final background decision for current month cells
+                    if (!wp.isOtherMonth && !wp.isHighlighted && !wp.isBestDay && !hasBadStuff) {
+                        viewMarqueeMask?.setBackgroundColor(android.graphics.Color.parseColor("#E8F5E9"))
+                    } else if (!wp.isOtherMonth && !wp.isHighlighted && !wp.isBestDay) {
+                        viewMarqueeMask?.setBackgroundResource(R.drawable.bg_calendar_cell)
+                    }
+
 
                 } catch (e: Exception) {}
             }
 
             // Personalized Inauspicious (Only for main month and Admin mode)
             if (!wp.isOtherMonth && this@WanpraAdapter.isAdminMode) {
-                if (wp.kalagniBirth && wp.kalagniAge) addBadge("อัปมงคลอายุย่าง และวันเกิด", forbiddenColor)
-                else if (wp.kalagniBirth) addBadge("อัปมงคลวันเกิด", forbiddenColor)
-                else if (wp.kalagniAge || wp.isKalagni) addBadge("อัปมงคลอายุย่าง", forbiddenColor)
+                val existingTags = buildList {
+                    addAll(wp.calendarDisplayTags.orEmpty())
+                    addAll(wp.displayTagsPrioritized.orEmpty())
+                    addAll(wp.displayTags.orEmpty())
+                    addAll(wp.warningTags.orEmpty())
+                    addAll(wp.kalTags.orEmpty())
+                }.joinToString("")
+                
+                if (wp.kalagniBirth && wp.kalagniAge) {
+                    if (!existingTags.contains("อัปมงคลอายุย่าง และวันเกิด")) {
+                        addBadge("อัปมงคลอายุย่าง และวันเกิด", forbiddenColor)
+                    }
+                } else {
+                    if (wp.kalagniBirth && !existingTags.contains("อัปมงคลวันเกิด")) {
+                        addBadge("อัปมงคลวันเกิด", forbiddenColor)
+                    }
+                    if (wp.kalagniAge && !existingTags.contains("อัปมงคลอายุย่าง")) {
+                        addBadge("อัปมงคลอายุย่าง", forbiddenColor)
+                    }
+                    if (wp.isKalagni && !wp.kalagniBirth && !wp.kalagniAge && !existingTags.contains("วันอัปมงคล")) {
+                        addBadge("วันอัปมงคล", forbiddenColor)
+                    }
+                }
             }
 
             viewBorderAura?.visibility = if (wp.isHighlighted && !wp.isOtherMonth) View.VISIBLE else View.GONE
@@ -1040,15 +1126,12 @@ class WanpraAdapter(
                 viewBorderMarquee?.clearAnimation()
             } else {
                 // Determine base background
-                if (wp.isHighlighted) {
+                if (wp.isHighlighted || wp.isBestDay) {
                     // Set to Light Green for Auspicious selection as requested
                     viewMarqueeMask?.setBackgroundColor(android.graphics.Color.parseColor("#E8F5E9"))
-                } else {
-                    viewMarqueeMask?.setBackgroundResource(when {
-                        wp.isBestDay -> R.drawable.bg_calendar_cell_best
-                        else -> R.drawable.bg_calendar_cell
-                    })
                 }
+                // (Clear day background is set dynamically above during badge calculation)
+
                 
                 if (wp.isBestDay) {
                     layoutBorderMarquee?.visibility = View.VISIBLE

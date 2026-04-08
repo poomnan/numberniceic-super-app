@@ -16,8 +16,9 @@ class FilterChipWidget extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool isActive;
+  final bool isLoading;
   final VoidCallback onTap;
-  final Color? activeColor;
+  final Color? activeChipColor;
   final Color? activeTextColor;
 
   const FilterChipWidget({
@@ -26,35 +27,36 @@ class FilterChipWidget extends StatelessWidget {
     required this.icon,
     required this.isActive,
     required this.onTap,
-    this.activeColor,
+    this.isLoading = false,
+    this.activeChipColor,
     this.activeTextColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final finalActiveColor = activeColor ?? AppColors.accent;
+    final finalActiveColor = activeChipColor ?? AppColors.accent;
     final finalActiveTextColor =
         activeTextColor ??
-        (activeColor != null ? Colors.white : AppColors.textLight);
+        (activeChipColor != null ? Colors.white : AppColors.textLight);
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: isLoading ? null : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? finalActiveColor : Colors.white.withOpacity(0.5),
+          color: isActive ? finalActiveColor : Colors.white.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isActive
                 ? finalActiveColor
-                : AppColors.secondary.withOpacity(0.2),
+                : AppColors.secondary.withValues(alpha: 0.2),
             width: 1.5,
           ),
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: finalActiveColor.withOpacity(0.2),
+                    color: finalActiveColor.withValues(alpha: 0.2),
                     blurRadius: 8,
                     spreadRadius: 1,
                     offset: const Offset(0, 2),
@@ -65,13 +67,23 @@ class FilterChipWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isActive
-                  ? finalActiveTextColor
-                  : AppColors.textGray.withOpacity(0.7),
-            ),
+            if (isLoading)
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: isActive ? finalActiveTextColor : finalActiveColor,
+                ),
+              )
+            else
+              Icon(
+                icon,
+                size: 18,
+                color: isActive
+                    ? finalActiveTextColor
+                    : AppColors.textGray.withValues(alpha: 0.7),
+              ),
             const SizedBox(width: 8),
             Text(
               label,

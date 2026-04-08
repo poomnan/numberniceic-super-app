@@ -68,7 +68,9 @@ class WanpraReminderWorker(context: Context, params: WorkerParameters) : Corouti
             if (events.isEmpty()) return@forEach
 
             val dayNum = wanDate.dayOfMonth().asString
-            val monthThai = com.numberniceic.utils.PersonContextManager.toThaiMonth(wanDate.monthOfYear().asText)[0]
+            val monthLabelEng = wanDate.monthOfYear().getAsText(java.util.Locale.ENGLISH)
+            val monthThaiResult = com.numberniceic.utils.PersonContextManager.toThaiMonth(monthLabelEng)
+            val monthThai = if (monthThaiResult[0].isNotEmpty()) monthThaiResult[0] else wanDate.monthOfYear().asText
             val yearThai = wanDate.year + 543
             val fullThaiDate = "$dayNum $monthThai $yearThai"
             

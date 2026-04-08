@@ -12,7 +12,7 @@ class NewsController extends Manager
     {
         $parts = explode('/', trim((string) $path));
         $encoded = array_map(function ($part) {
-            return rawurlencode($part);
+            return rawurlencode(rawurldecode($part));
         }, array_filter($parts, function ($part) {
             return $part !== '';
         }));
@@ -27,6 +27,20 @@ class NewsController extends Manager
         }
         $encodedPath = $this->encodeUrlPathPreserveSlash($raw);
         return rtrim($host, '/') . "/public/uploads/news/" . ltrim($encodedPath, '/');
+    }
+
+    private function resolvePreferredNewsImage($host, $article)
+    {
+        $localPhoto = trim((string) ($article['photo'] ?? ''));
+        if ($localPhoto !== '') {
+            $cleanPhoto = ltrim(str_replace('\\', '/', $localPhoto), '/');
+            $localPhotoPath = dirname(__DIR__, 4) . '/public/uploads/news/' . $cleanPhoto;
+            if (is_file($localPhotoPath)) {
+                return $this->buildUploadsNewsUrl($host, $cleanPhoto);
+            }
+        }
+
+        return $article['news_pic_header'] ?? $article['news_picture'] ?? $article['photo1'] ?? $article['cover'] ?? $article['image'] ?? $article['img'] ?? $article['file_name'] ?? '';
     }
 
     private function normalizeNewsImageUrl($host, $rawImage)
@@ -57,25 +71,43 @@ class NewsController extends Manager
             $raw = rtrim($host, '/') . $path . $query;
         }
 
-        if (stripos($raw, 'http://') === 0 || stripos($raw, 'https://') === 0 || stripos($raw, 'data:') === 0) {
+        if (stripos($raw, 'http://') === 0 || stripos($raw, 'https://') === 0) {
+            $parts = @parse_url($raw);
+            if (!$parts || empty($parts['host']) || empty($parts['scheme'])) {
+                return $raw;
+            }
+            $path = (string) ($parts['path'] ?? '');
+            if ($path !== '') {
+                $path = '/' . $this->encodeUrlPathPreserveSlash($path);
+            }
+            $query = isset($parts['query']) ? ('?' . $parts['query']) : '';
+            $fragment = isset($parts['fragment']) ? ('#' . $parts['fragment']) : '';
+            $port = isset($parts['port']) ? (':' . $parts['port']) : '';
+            return $parts['scheme'] . '://' . $parts['host'] . $port . $path . $query . $fragment;
+        }
+        if (stripos($raw, 'data:') === 0) {
             return $raw;
         }
         if (strpos($raw, '//') === 0) {
             return 'https:' . $raw;
         }
         if (strpos($raw, '/public/uploads/news/') === 0 || strpos($raw, 'public/uploads/news/') === 0) {
-            return rtrim($host, '/') . '/' . ltrim($raw, '/');
+            $encodedPath = $this->encodeUrlPathPreserveSlash($raw);
+            return rtrim($host, '/') . '/' . ltrim($encodedPath, '/');
         }
         if (strpos($raw, '/uploads/news/') === 0 || strpos($raw, 'uploads/news/') === 0) {
-            return rtrim($host, '/') . '/public/' . ltrim($raw, '/');
+            $encodedPath = $this->encodeUrlPathPreserveSlash($raw);
+            return rtrim($host, '/') . '/public/' . ltrim($encodedPath, '/');
         }
         if (strpos($raw, '/') === false) {
             return $this->buildUploadsNewsUrl($host, $raw);
         }
         if (strpos($raw, '/') === 0) {
-            return rtrim($host, '/') . $raw;
+            $encodedPath = $this->encodeUrlPathPreserveSlash($raw);
+            return rtrim($host, '/') . '/' . ltrim($encodedPath, '/');
         }
-        return rtrim($host, '/') . '/' . ltrim($raw, '/');
+        $encodedPath = $this->encodeUrlPathPreserveSlash($raw);
+        return rtrim($host, '/') . '/' . ltrim($encodedPath, '/');
     }
 
     public function __construct(ContainerInterface $container)
@@ -457,7 +489,7 @@ class NewsController extends Manager
 
     public function newsTop24Stable($request, $response)
     {
-        $host = "http://43.228.85.200:81";
+        $host = "https://numberniceic.online";
         $this->db->exec("SET NAMES utf8");
         $mapArticle = $this->_getMapArticleStableCallback($host);
 
@@ -546,15 +578,8 @@ class NewsController extends Manager
             $headline = $article['news_headline'] ?? $article['news_topic'] ?? $article['topic'] ?? $article['news_header'] ?? $article['head_text'] ?? $article['title'] ?? $article['name'] ?? $article['subject'] ?? '';
             $short = $article['news_title_short'] ?? $article['news_short'] ?? $headline;
             $desc = $article['news_desc'] ?? $article['intro'] ?? $article['description'] ?? $article['excerpt'] ?? mb_substr(strip_tags($article['news_detail'] ?? $article['detail'] ?? $article['content'] ?? $article['body'] ?? ''), 0, 100);
-            // Prefer local uploaded file name from `photo` with canonical upload path.
-            $localPhoto = trim($article['photo'] ?? '');
-            if ($localPhoto !== '') {
-                $img = $this->buildUploadsNewsUrl($host, $localPhoto);
-            } else {
-                // Keep only image-ish fields; do not fall back to generic `url` because
-                // that can point to non-image links and cause broken image placeholders.
-                $img = $article['news_pic_header'] ?? $article['news_picture'] ?? $article['photo1'] ?? $article['cover'] ?? $article['image'] ?? $article['img'] ?? $article['file_name'] ?? '';
-            }
+            // Prefer `photo` only when file really exists, otherwise fallback to canonical image fields.
+            $img = $this->resolvePreferredNewsImage($host, $article);
             $date = $article['news_date'] ?? $article['created_at'] ?? $article['date'] ?? $article['published_at'] ?? '';
             $cat = $article['category_name'] ?? $article['category'] ?? 'ทั่วไป';
 
@@ -606,12 +631,7 @@ class NewsController extends Manager
             $fix = $article['fix'] ?? '0';
             $detail = $article['news_detail'] ?? '';
 
-            $localPhoto = trim($article['photo'] ?? '');
-            if ($localPhoto !== '') {
-                $img = $this->buildUploadsNewsUrl($host, $localPhoto);
-            } else {
-                $img = $article['news_pic_header'] ?? '';
-            }
+            $img = $this->resolvePreferredNewsImage($host, $article);
             $img = $this->normalizeNewsImageUrl($host, $img);
 
             return [

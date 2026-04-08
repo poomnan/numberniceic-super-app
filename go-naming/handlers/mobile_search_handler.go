@@ -22,6 +22,8 @@ type MobileSearchRequest struct {
 	Day             string `json:"day"`
 	Gender          string `json:"gender"`
 	SemanticMeaning string `json:"semantic_meaning"`
+	MeaningIntent   string `json:"meaning_intent"`
+	EntryMode       string `json:"entry_mode"`
 	FilterSat       bool   `json:"filter_sat"`
 	FilterSha       bool   `json:"filter_sha"`
 	FilterKaki      bool   `json:"filter_kaki"`
@@ -86,11 +88,21 @@ type KakiInfo struct {
 
 // MobileSearchResponse is the full response for mobile
 type MobileSearchResponse struct {
-	Success  bool               `json:"success"`
-	Error    any                `json:"error,omitempty"`
-	Results  []MobileNameResult `json:"results"`
-	KakiInfo *KakiInfo          `json:"kaki_info,omitempty"`
-	Total    int                `json:"total"`
+	Success       bool               `json:"success"`
+	Error         any                `json:"error,omitempty"`
+	Results       []MobileNameResult `json:"results"`
+	KakiInfo      *KakiInfo          `json:"kaki_info,omitempty"`
+	RetrievalMeta *RetrievalMeta     `json:"retrieval_meta,omitempty"`
+	Total         int                `json:"total"`
+}
+
+type RetrievalMeta struct {
+	EntryMode         string  `json:"entry_mode"`
+	RetrievalStrategy string  `json:"retrieval_strategy"`
+	MeaningContext    string  `json:"meaning_context"`
+	SemanticWeight    float64 `json:"semantic_weight"`
+	WordWeight        float64 `json:"word_weight"`
+	CandidateLimit    int     `json:"candidate_limit"`
 }
 
 func setMobileCORSHeaders(w http.ResponseWriter) {
@@ -348,9 +360,9 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Search param: Keyword='%s', Meaning='%s'", req.Keyword, req.SemanticMeaning)
 
+	var meaningDB string
 	if req.SemanticMeaning == "" && req.Keyword != "" {
 		// Fallback: If frontend didn't send semantic meaning, fetch it from DB using the keyword
-		var meaningDB string
 		err := database.DB.QueryRow("SELECT meaning FROM names_miracle WHERE thname = $1 LIMIT 1", req.Keyword).Scan(&meaningDB)
 		if err == nil && meaningDB != "" {
 			req.SemanticMeaning = meaningDB
@@ -358,25 +370,24 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	wordContext := req.Keyword
-	meaningContext := req.Keyword
+	searchContext := services.BuildMeaningSearchContext(
+		services.MeaningSearchPipelineInput{
+			Keyword:         req.Keyword,
+			Lastname:        req.Lastname,
+			SemanticMeaning: req.SemanticMeaning,
+			MeaningIntent:   req.MeaningIntent,
+			EntryMode:       req.EntryMode,
+			SimilarMode:     req.SimilarMode,
+			Limit:           req.Limit,
+		},
+		meaningDB,
+	)
 
-	if req.SemanticMeaning != "" {
-		meaningContext = req.SemanticMeaning
-	} else if req.Lastname != "" {
-		if meaningContext == "" {
-			meaningContext = req.Lastname
-		} else if req.SimilarMode {
-			meaningContext = fmt.Sprintf("%s %s", req.Keyword, req.Lastname)
-		}
-	}
-
-	if wordContext == "" || strings.TrimSpace(wordContext) == "" {
-		if !(req.SimilarMode && req.Lastname != "") {
-			jsonResponse(w, http.StatusOK, MobileSearchResponse{Success: true, Results: []MobileNameResult{}, Total: 0})
-			return
-		}
-		wordContext = ""
+	if searchContext.WordContext == "" &&
+		searchContext.MeaningContext == "" &&
+		!searchContext.IsBroadSearch {
+		jsonResponse(w, http.StatusOK, MobileSearchResponse{Success: true, Results: []MobileNameResult{}, Total: 0})
+		return
 	}
 
 	limit := req.Limit
@@ -479,34 +490,31 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 4. Get Embedding
-	embedding, err := services.GetEmbedding(meaningContext)
+	embedding, err := services.GetEmbedding(searchContext.MeaningContext)
 	if err != nil {
 		log.Printf("OpenAI embedding failed: %v", err)
 		embedding = make([]float64, 1536)
 	}
-	log.Printf("MeaningContext: '%s', EmbeddingPreview: %v", meaningContext, previewEmbedding(embedding, 5))
+	log.Printf(
+		"MeaningContext: '%s', Strategy='%s', EmbeddingPreview: %v",
+		searchContext.MeaningContext,
+		searchContext.RetrievalStrategy,
+		previewEmbedding(embedding, 5),
+	)
 
 	buildQuery := func(relaxFilters bool) (string, []interface{}) {
-		isBroadSearch := req.Keyword == ""
+		isBroadSearch := searchContext.IsBroadSearch
 
 		query := `
 			SELECT name_id, thname, meaning, gender,
 			       sat_sum, sha_sum, `
-
-		if isBroadSearch {
-			query += `0.0 as distance, 0.0 as root_score, 1.0 as semantic_score, 1.0 as hybrid_score, `
-		} else {
-			query += `COALESCE((meaning_vector <=> $1), 0) as distance,
-			       COALESCE(word_similarity(thname, $2), 0) as root_score,
-			       GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) as semantic_score,
-			       (COALESCE(word_similarity(thname, $2), 0) * 0.4 + GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) * 0.6) as hybrid_score, `
-		}
+		query += searchContext.SelectProjection()
 
 		query += `0.0 as bonus_calculated
 			FROM names_miracle 
 			WHERE 1=1
 		`
-		args := []interface{}{formatVector(embedding), wordContext}
+		args := []interface{}{formatVector(embedding), searchContext.WordContext}
 		argCounter := 3
 
 		// Enforce conditions if Filter is ON OR if we are in "รวมให้เป็น ชื่อดี" (SimilarMode) mode
@@ -569,13 +577,9 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			// In broad discovery, we can't sort by meaning. Use name_id as a base.
 			query += " ORDER BY name_id DESC "
 		} else {
-			query += fmt.Sprintf(" ORDER BY (COALESCE(word_similarity(thname, $%d), 0) * 0.5 + (1 - COALESCE(meaning_vector <=> $1, 1)) * 2.5) DESC ", 2)
+			query += " ORDER BY " + searchContext.OrderByExpression() + " "
 		}
-
-		limitVal := 100
-		if req.SimilarMode {
-			limitVal = 150 // Increase limit for combining to avoid filter exhaustion
-		}
+		limitVal := searchContext.CandidateLimit
 		query += fmt.Sprintf(" LIMIT %d", limitVal)
 
 		log.Printf("DB Query: %s, Args: %+v", query, args)
@@ -648,8 +652,10 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	runDesperateSearch := func() ([]MobileNameResult, error) {
-		query := "SELECT name_id, thname, meaning, gender, sat_sum, sha_sum, COALESCE((meaning_vector <=> $1), 0) as distance, COALESCE(word_similarity(thname, $2), 0) as root_score, GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) as semantic_score, (COALESCE(word_similarity(thname, $2), 0) * 0.4 + GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) * 0.6) as hybrid_score, 0.0 as bonus_calculated FROM names_miracle WHERE 1=1"
-		args := []interface{}{formatVector(embedding), wordContext}
+		query := "SELECT name_id, thname, meaning, gender, sat_sum, sha_sum, " +
+			searchContext.SelectProjection() +
+			"0.0 as bonus_calculated FROM names_miracle WHERE 1=1"
+		args := []interface{}{formatVector(embedding), searchContext.WordContext}
 		argCounter := 3
 
 		// Gender filter removed per user request
@@ -667,7 +673,11 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			argCounter++
 		}
 
-		query += fmt.Sprintf(" ORDER BY (COALESCE(word_similarity(thname, $2), 0) * 0.5 + (1 - COALESCE(meaning_vector <=> $1, 1)) * 2.5) DESC LIMIT %d", 100)
+		query += fmt.Sprintf(
+			" ORDER BY %s LIMIT %d",
+			searchContext.OrderByExpression(),
+			searchContext.CandidateLimit,
+		)
 
 		rows, err := database.DB.Query(query, args...)
 		if err != nil {
@@ -774,6 +784,14 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		Success: true,
 		Results: results,
 		Total:   len(results),
+		RetrievalMeta: &RetrievalMeta{
+			EntryMode:         string(searchContext.EntryMode),
+			RetrievalStrategy: searchContext.RetrievalStrategy,
+			MeaningContext:    searchContext.MeaningContext,
+			SemanticWeight:    searchContext.SemanticWeight,
+			WordWeight:        searchContext.WordWeight,
+			CandidateLimit:    searchContext.CandidateLimit,
+		},
 	}
 
 	if req.Day != "" {

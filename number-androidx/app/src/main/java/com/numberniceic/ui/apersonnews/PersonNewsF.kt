@@ -875,46 +875,53 @@ class PersonNewsF : Fragment() {
         stopRengyamMagicAnimation()
 
         val density = resources.displayMetrics.density
-        val frameDrawable = GradientDrawable().apply {
+        
+        // Use the original background (color #F2DF5E) and no elevation as requested
+        target.setBackgroundColor(Color.parseColor("#F2DF5E"))
+        target.elevation = 0f 
+        
+        // 2. Create the Shimmer/Light Beam Layer (Diagonal Sheen)
+        val shimmerHighlight = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            setColor(Color.parseColor("#F2DF5E"))
-            cornerRadius = 0f
+            gradientType = GradientDrawable.LINEAR_GRADIENT
+            orientation = GradientDrawable.Orientation.TL_BR // Diagonal Sheen
+            colors = intArrayOf(
+                Color.parseColor("#00FFFFFF"), // Transparent
+                Color.parseColor("#90FFFFFF"), // Bright Semi-Transparent White
+                Color.parseColor("#00FFFFFF")  // Transparent
+            )
         }
-        target.background = frameDrawable
+        
+        rengyamSparkleDrawable = shimmerHighlight
+        target.overlay.add(shimmerHighlight)
 
-        rengyamSparkleDrawable = GradientDrawable().apply {
-            shape = GradientDrawable.OVAL
-            colors = intArrayOf(Color.parseColor("#FFFDE7"), Color.parseColor("#FFD54F"))
-        }
-        val sparkle = rengyamSparkleDrawable ?: return
-        target.overlay.add(sparkle)
-
+        // 3. Animate the light beam sweep
         target.post {
-            val sparkleRun = ValueAnimator.ofFloat(0f, 1f).apply {
-                duration = 2400
+            val sweepAnim = ValueAnimator.ofFloat(-1.5f, 1.5f).apply {
+                duration = 3000
                 repeatCount = ValueAnimator.INFINITE
                 interpolator = LinearInterpolator()
                 addUpdateListener { animator ->
                     val t = animator.animatedValue as Float
-                    val inset = 1.5f * density
-                    val width = target.width.toFloat()
-                    if (width <= 0f) return@addUpdateListener
-                    val sparkleSize = (14f * density).toInt()
-                    val half = sparkleSize / 2
-                    val x = inset + ((width - inset * 2) * t)
-                    val y = target.height.toFloat() - inset - half - (1f * density)
-                    sparkle.setBounds(
-                        (x - half).toInt(),
-                        (y - half).toInt(),
-                        (x + half).toInt(),
-                        (y + half).toInt()
+                    val w = target.width.toFloat()
+                    val h = target.height.toFloat()
+                    if (w <= 0f) return@addUpdateListener
+
+                    val highlightWidth = w * 0.4f // Width of the beam
+                    val x = w * t // Current center position
+                    
+                    // Set bounds for a wide vertical streak passing through
+                    shimmerHighlight.setBounds(
+                        (x - highlightWidth / 2).toInt(),
+                        0,
+                        (x + highlightWidth / 2).toInt(),
+                        h.toInt()
                     )
-                    sparkle.alpha = 255
                 }
             }
 
             rengyamMagicAnimator = AnimatorSet().apply {
-                playTogether(sparkleRun)
+                playTogether(sweepAnim)
                 start()
             }
         }
@@ -929,20 +936,16 @@ class PersonNewsF : Fragment() {
 
     private fun setCurrentDate() {
         val dt = DateTime()
-        val day = if (PersonContextManager.toThaiDay(dt.dayOfWeek().asText) == "") dt.dayOfWeek().asText else PersonContextManager.toThaiDay(dt.dayOfWeek().asText)
-        val month = if (PersonContextManager.toThaiMonth(dt.monthOfYear().asText)[1] == "") PersonContextManager.monthTH2FullTH(dt.monthOfYear().asText)[1] else PersonContextManager.toThaiMonth(dt.monthOfYear().asText)[1]
+        val dayLabelEng = dt.dayOfWeek().getAsText(java.util.Locale.ENGLISH)
+        val thaiDay = PersonContextManager.toThaiDay(dayLabelEng)
+        val day = if (thaiDay == "") dt.dayOfWeek().asText else thaiDay
+        val monthLabelEng = dt.monthOfYear().getAsText(java.util.Locale.ENGLISH)
+        val month = if (PersonContextManager.toThaiMonth(monthLabelEng)[1] == "") PersonContextManager.monthTH2FullTH(dt.monthOfYear().asText)[1] else PersonContextManager.toThaiMonth(monthLabelEng)[1]
 
         binding.txtCurrentDay2.text = day
-        binding.txtCurrentDay2.setTextColor(android.graphics.Color.BLACK)
-        
         binding.txtCurrentDaynum2.text = dt.dayOfMonth().asText
-        binding.txtCurrentDaynum2.setTextColor(android.graphics.Color.BLACK)
-        
         binding.txtCurrentMount2.text = month
-        binding.txtCurrentMount2.setTextColor(android.graphics.Color.BLACK)
-        
         binding.txtCurrentYear2.text = (dt.year().asText.toInt() + 543).toString()
-        binding.txtCurrentYear2.setTextColor(android.graphics.Color.BLACK)
     }
 
     private fun setBagColor(bagColor: List<BagColor>?, age: String?) {

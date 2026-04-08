@@ -30,7 +30,7 @@ class InformationScreen extends StatelessWidget {
           bottom: TabBar(
             isScrollable: true,
             labelColor: AppColors.accent, // Gold
-            unselectedLabelColor: Colors.white.withOpacity(0.4),
+            unselectedLabelColor: Colors.white.withValues(alpha: 0.4),
             indicatorColor: AppColors.accent,
             indicatorWeight: 3,
             labelStyle: GoogleFonts.prompt(
@@ -187,7 +187,9 @@ class InformationScreen extends StatelessWidget {
             color: Colors.white,
           ),
           const SizedBox(height: 24),
-          _buildTip("วิเคราะห์จากฐานข้อมูลชื่อจริงคุณภาพสูงกว่า 300,000 รายชื่อ"),
+          _buildTip(
+            "วิเคราะห์จากฐานข้อมูลชื่อจริงคุณภาพสูงกว่า 300,000 รายชื่อ",
+          ),
         ],
       ),
     );
@@ -203,16 +205,45 @@ class InformationScreen extends StatelessWidget {
           _buildHeroSection(
             icon: Icons.emoji_events_rounded,
             title: "การจัดอันดับชื่อ",
-            subtitle: "Advanced Hybrid Scoring (100pt)",
+            subtitle: "Ranking by selected criteria",
             colors: [const Color(0xFFDBB632), const Color(0xFFB45309)],
           ),
           const SizedBox(height: 28),
+          _buildFeatureCard(
+            number: "1",
+            title: "ต้องเลือกเงื่อนไขก่อนจึงเริ่มจัดอันดับ",
+            description:
+                "ระบบจะยังไม่จัดอันดับรายชื่อจนกว่าคุณจะกดอย่างน้อยหนึ่งเงื่อนไข คือ 'เลขศาสตร์ดี' หรือ 'พลังเงาดี' เพื่อให้การจัดลำดับมีหลักเกณฑ์ที่ชัดเจน",
+            bullets: [
+              "ยังไม่เลือกเงื่อนไข: ระบบยังไม่แสดงรายการจัดอันดับ",
+              "เลือก 1 เงื่อนไข: ระบบจัดอันดับตามแกนนั้นเท่านั้น",
+              "เลือก 2 เงื่อนไข: ระบบค่อยพิจารณาทั้ง SAT และ SHA ร่วมกัน",
+            ],
+            icon: Icons.rule_rounded,
+            color: const Color(0xFFDBB632),
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureCard(
+            number: "2",
+            title: "ความหมายเป็นด่านแรก เงื่อนไขที่เลือกเป็นด่านจัดอันดับ",
+            description:
+                "ระบบเริ่มจาก semantic retrieval เพื่อหาชื่อที่มีความหมายใกล้เคียงก่อน จากนั้นจึงใช้เงื่อนไขที่คุณเลือกมาเรียงลำดับผลลัพธ์",
+            bullets: [
+              "เลือกเลขศาสตร์ดี: ดู SAT เป็นหลัก",
+              "เลือกพลังเงาดี: ดู SHA เป็นหลัก",
+              "เลือกทั้งสอง: ต้องผ่านร่วมกันจึงมีโอกาสขึ้นกลุ่มดีเยี่ยม",
+            ],
+            icon: Icons.account_tree_rounded,
+            color: const Color(0xFF60A5FA),
+          ),
+          const SizedBox(height: 20),
 
           _buildBonusCard(
             label: "ความแม่นยำความหมาย",
             sublabel: "Semantic Score",
             points: "Base",
-            description: "คะแนนพื้นฐานจากความใกล้เคียงของความหมายที่ AI วิเคราะห์",
+            description:
+                "ใช้เพื่อหากลุ่มชื่อที่ตรงความหมายก่อน แล้วค่อยให้เงื่อนไขที่คุณเลือกเป็นตัวจัดอันดับ",
             icon: Icons.search_rounded,
             color: const Color(0xFF60A5FA),
             highlight: false,
@@ -222,7 +253,8 @@ class InformationScreen extends StatelessWidget {
             label: "โบนัสเลขศาสตร์",
             sublabel: "SAT Bonus",
             points: "+20pt",
-            description: "หากผลรวมของชื่อตกคู่เลขมงคลตามตำราเลขศาสตร์",
+            description:
+                "ใช้เมื่อคุณเปิดเงื่อนไข 'เลขศาสตร์ดี' หรือเปิดทั้งสองเงื่อนไขร่วมกัน",
             icon: Icons.calculate_rounded,
             color: const Color(0xFF4ADE80),
             highlight: false,
@@ -232,7 +264,8 @@ class InformationScreen extends StatelessWidget {
             label: "โบนัสพลังเงา",
             sublabel: "SHA Bonus",
             points: "+20pt",
-            description: "หากพลังแฝงเบื้องหลังชื่ออยู่ในเกณฑ์มงคลสูงสุด",
+            description:
+                "ใช้เมื่อคุณเปิดเงื่อนไข 'พลังเงาดี' หรือเปิดทั้งสองเงื่อนไขร่วมกัน",
             icon: Icons.grid_view_rounded,
             color: const Color(0xFF34D399),
             highlight: false,
@@ -242,7 +275,8 @@ class InformationScreen extends StatelessWidget {
             label: "Double Lucky ⭐",
             sublabel: "Elite Grand Bonus",
             points: "+50pt",
-            description: "ชื่อที่ผ่านทั้งเลขศาสตร์และพลังเงาพร้อมกัน (สุดยอดชื่อมงคล)",
+            description:
+                "ใช้เฉพาะตอนที่คุณเลือกทั้งเลขศาสตร์ดีและพลังเงาดีพร้อมกันเท่านั้น",
             icon: Icons.auto_awesome,
             color: const Color(0xFFDBB632),
             highlight: true,
@@ -252,7 +286,8 @@ class InformationScreen extends StatelessWidget {
             label: "โบนัสปลอดกาลกิณี",
             sublabel: "Crystal Clean Bonus",
             points: "+10pt",
-            description: "ชื่อที่ไม่มีอักษรกาลกิณีตามวันเกิดของคุณเลยแม้แต่ตัวเดียว",
+            description:
+                "ชื่อที่ไม่มีอักษรกาลกิณีตามวันเกิดของคุณเลยแม้แต่ตัวเดียว",
             icon: Icons.shield_rounded,
             color: const Color(0xFFA78BFA),
             highlight: false,
@@ -275,12 +310,12 @@ class InformationScreen extends StatelessWidget {
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: const Color(0xFFDBB632).withOpacity(0.3),
+                color: const Color(0xFFDBB632).withValues(alpha: 0.3),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -291,7 +326,7 @@ class InformationScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDBB632).withOpacity(0.12),
+                    color: const Color(0xFFDBB632).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
@@ -308,16 +343,16 @@ class InformationScreen extends StatelessWidget {
                       Text(
                         "เป้าหมายคะแนนสูงสุด",
                         style: GoogleFonts.prompt(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       Text(
-                        "100 pt",
+                        "ขึ้นกับเงื่อนไข",
                         style: GoogleFonts.prompt(
                           color: const Color(0xFFDBB632),
-                          fontSize: 34,
+                          fontSize: 26,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -346,10 +381,10 @@ class InformationScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colors[0].withOpacity(0.2), width: 1.5),
+        border: Border.all(color: colors[0].withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -360,7 +395,7 @@ class InformationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colors[0].withOpacity(0.1),
+              color: colors[0].withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, size: 36, color: colors[0]),
@@ -408,10 +443,10 @@ class InformationScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.15), width: 1.2),
+        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -428,7 +463,7 @@ class InformationScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -451,14 +486,14 @@ class InformationScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              Icon(icon, color: color.withOpacity(0.4), size: 20),
+              Icon(icon, color: color.withValues(alpha: 0.4), size: 20),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             description,
             style: GoogleFonts.sarabun(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 14,
               height: 1.6,
             ),
@@ -476,7 +511,7 @@ class InformationScreen extends StatelessWidget {
                     child: Text(
                       b,
                       style: GoogleFonts.sarabun(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 13,
                       ),
                     ),
@@ -514,10 +549,10 @@ class InformationScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(0.15), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.15), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -531,7 +566,7 @@ class InformationScreen extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
@@ -570,7 +605,7 @@ class InformationScreen extends StatelessWidget {
                 Text(
                   description,
                   style: GoogleFonts.sarabun(
-                    color: Colors.white.withOpacity(0.6),
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 13,
                     height: 1.5,
                   ),
@@ -578,7 +613,7 @@ class InformationScreen extends StatelessWidget {
               ],
             ),
           ),
-          Icon(icon, color: color.withOpacity(0.4), size: 20),
+          Icon(icon, color: color.withValues(alpha: 0.4), size: 20),
         ],
       ),
     );
@@ -596,18 +631,18 @@ class InformationScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: highlight
-              ? color.withOpacity(0.6)
-              : Colors.white.withOpacity(0.1),
+              ? color.withValues(alpha: 0.6)
+              : Colors.white.withValues(alpha: 0.1),
           width: highlight ? 2.0 : 1.0,
         ),
         boxShadow: highlight
             ? [
                 BoxShadow(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -619,7 +654,7 @@ class InformationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: color, size: 22),
@@ -649,7 +684,7 @@ class InformationScreen extends StatelessWidget {
                           vertical: 1,
                         ),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.15),
+                          color: color.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -668,7 +703,7 @@ class InformationScreen extends StatelessWidget {
                 Text(
                   description,
                   style: GoogleFonts.sarabun(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -680,9 +715,9 @@ class InformationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: color.withOpacity(0.2)),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
             ),
             child: Text(
               points,
@@ -702,9 +737,9 @@ class InformationScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withOpacity(0.5),
+        color: const Color(0xFF1E293B).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -719,7 +754,7 @@ class InformationScreen extends StatelessWidget {
             child: Text(
               text,
               style: GoogleFonts.sarabun(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 13,
                 height: 1.5,
               ),
@@ -827,18 +862,20 @@ class _MagicStepCardState extends State<_MagicStepCard>
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.12 + glow * 0.15),
+                color: color.withValues(alpha: 0.12 + glow * 0.15),
                 blurRadius: 15 + glow * 10,
                 spreadRadius: glow * 2,
               ),
               BoxShadow(
-                color: const Color(0xFF8B5CF6).withOpacity(0.08 + glow * 0.1),
+                color: const Color(
+                  0xFF8B5CF6,
+                ).withValues(alpha: 0.08 + glow * 0.1),
                 blurRadius: 25 + glow * 15,
                 spreadRadius: glow * 1,
               ),
             ],
             border: Border.all(
-              color: color.withOpacity(0.2 + glow * 0.3),
+              color: color.withValues(alpha: 0.2 + glow * 0.3),
               width: 1.5,
             ),
           ),
@@ -895,7 +932,7 @@ class _MagicStepCardState extends State<_MagicStepCard>
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.4 + glow * 0.4),
+                            color: color.withValues(alpha: 0.4 + glow * 0.4),
                             blurRadius: 8 + glow * 8,
                             spreadRadius: glow * 2,
                           ),
@@ -949,7 +986,7 @@ class _MagicStepCardState extends State<_MagicStepCard>
                                   Icon(
                                     Icons.auto_awesome,
                                     size: 10,
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
@@ -968,7 +1005,7 @@ class _MagicStepCardState extends State<_MagicStepCard>
                           Text(
                             widget.description,
                             style: GoogleFonts.sarabun(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               fontSize: 13,
                               height: 1.5,
                             ),
@@ -976,7 +1013,11 @@ class _MagicStepCardState extends State<_MagicStepCard>
                         ],
                       ),
                     ),
-                    Icon(widget.icon, color: color.withOpacity(0.7), size: 24),
+                    Icon(
+                      widget.icon,
+                      color: color.withValues(alpha: 0.7),
+                      size: 24,
+                    ),
                   ],
                 ),
               ),
@@ -1011,9 +1052,9 @@ class _ShimmerPainter extends CustomPainter {
       ..shader = LinearGradient(
         colors: [
           Colors.transparent,
-          color.withOpacity(0.12),
-          AppColors.primary.withOpacity(0.2),
-          color.withOpacity(0.12),
+          color.withValues(alpha: 0.12),
+          AppColors.primary.withValues(alpha: 0.2),
+          color.withValues(alpha: 0.12),
           Colors.transparent,
         ],
         stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
@@ -1051,7 +1092,7 @@ class _ParticlePainter extends CustomPainter {
       final py = size.height - (t * (size.height + 20));
       final opacity = math.sin(t * math.pi).clamp(0.0, 1.0);
       final paint = Paint()
-        ..color = color.withOpacity(opacity * 0.9)
+        ..color = color.withValues(alpha: opacity * 0.9)
         ..style = PaintingStyle.fill;
       // Draw sparkle as 4-point star
       _drawSparkle(
@@ -1059,7 +1100,7 @@ class _ParticlePainter extends CustomPainter {
         Offset(px, py),
         p.size * opacity,
         paint,
-        color.withOpacity(opacity * 0.6),
+        color.withValues(alpha: opacity * 0.6),
       );
     }
   }

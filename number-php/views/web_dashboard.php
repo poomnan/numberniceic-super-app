@@ -323,6 +323,10 @@
                                     style="border-color:#6610f2; color:#6610f2; background: #f3f0ff;">
                                     จัดการสิทธิ์การใช้งาน 💎
                                 </a>
+                                <a href="/web/admin/rengyam-tags" class="admin-btn"
+                                    style="border-color:#198754; color:#198754; background: #eef7f3;">
+                                    จัดการความหมายฤกษ์ยาม 🏷️
+                                </a>
                             </div>
                         </div>
                     <?php endif; ?>

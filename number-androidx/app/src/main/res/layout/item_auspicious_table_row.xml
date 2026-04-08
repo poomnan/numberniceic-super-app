@@ -163,17 +163,72 @@
         </com.google.android.flexbox.FlexboxLayout>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/txt_extra_note"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone" />
+    <LinearLayout
+        android:id="@+id/layout_best_times_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="#F9FBE7"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:visibility="gone"
+        tools:visibility="visible">
 
-    <ImageView
-        android:id="@+id/img_best_crown"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/sarabun_semibold"
+            android:text="ทิศและยามดีประจำวัน"
+            android:textColor="#33691E"
+            android:textSize="13sp" />
+
+        <!-- Directions Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/txt_direction_good"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/sarabun_semibold"
+                android:gravity="center"
+                android:textColor="#2E7D32"
+                android:textSize="12sp"
+                tools:text="ทิศมงคล: ตะวันออก" />
+
+            <View
+                android:layout_width="8dp"
+                android:layout_height="1dp" />
+
+            <TextView
+                android:id="@+id/txt_direction_bad"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/sarabun_semibold"
+                android:gravity="center"
+                android:textColor="#C62828"
+                android:textSize="12sp"
+                tools:text="ทิศห้าม: ตะวันตก" />
+        </LinearLayout>
+
+        <!-- Times Table -->
+        <LinearLayout
+            android:id="@+id/layout_times_table"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_white_rounded"
+            android:orientation="vertical"
+            android:padding="2dp">
+            <!-- Rows will be injected here -->
+        </LinearLayout>
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"

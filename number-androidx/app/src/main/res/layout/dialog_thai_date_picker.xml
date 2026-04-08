@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dialog_rounded"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/txt_picker_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/sarabun_semibold"
+        android:gravity="center"
+        android:text="เลือกวันเกิด"
+        android:textColor="#333333"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp" />
+
+    <!-- 3 Spinner Pickers: Day / Month / Year (พ.ศ.) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <!-- Day Picker -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/sarabun_semibold"
+                android:text="วัน"
+                android:textColor="#888888"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <NumberPicker
+                android:id="@+id/picker_day"
+                android:layout_width="80dp"
+                android:layout_height="160dp"
+                android:theme="@style/AppTheme" />
+        </LinearLayout>
+
+        <!-- Month Picker -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/sarabun_semibold"
+                android:text="เดือน"
+                android:textColor="#888888"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <NumberPicker
+                android:id="@+id/picker_month"
+                android:layout_width="100dp"
+                android:layout_height="160dp"
+                android:theme="@style/AppTheme" />
+        </LinearLayout>
+
+        <!-- Year Picker (พ.ศ.) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/sarabun_semibold"
+                android:text="ปี (พ.ศ.)"
+                android:textColor="#888888"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <NumberPicker
+                android:id="@+id/picker_year"
+                android:layout_width="90dp"
+                android:layout_height="160dp"
+                android:theme="@style/AppTheme" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/btn_picker_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/sarabun_semibold"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:text="ยกเลิก"
+            android:textColor="#888888"
+            android:textSize="16sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
+
+        <TextView
+            android:id="@+id/btn_picker_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/sarabun_semibold"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp"
+            android:text="ตกลง"
+            android:textColor="#FF4081"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginStart="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
+
+    </LinearLayout>
+
+</LinearLayout>

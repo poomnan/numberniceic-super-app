@@ -14,6 +14,7 @@ class ThaiCalendarHelper
 {
     private const DEFAULT_RANGE_YEARS_BEFORE = 1;
     private const DEFAULT_RANGE_YEARS_AFTER = 1;
+    private const DEFAULT_SONGKRAN_CUTOVER_MONTH_DAY = '04-16';
 
     private const LUNAR_EPOCH_GREGORIAN_YEAR = 1900;
     private const LUNAR_EPOCH_MONTH = 2;
@@ -198,21 +199,6 @@ class ThaiCalendarHelper
         6 => [4 => 'มิตตะดีถี', 9 => 'มิตตะดีถี', 14 => 'มิตตะดีถี'],
     ];
 
-    // A small anomaly list for dates where the published myhora daily page
-    // diverges from the documented rule tables we can model dynamically.
-    private const MYHORA_VERIFIED_TAG_OVERRIDES = [
-        '2026-03-06' => ['กาลสูร', 'อายกรรมพลายตติยะ', 'วันธงชัย', 'วันอธิบดี', 'อัคนิโรธ (-น้ำ)'],
-        '2026-03-11' => ['กาลกรรณี', 'วันจม', 'อัคนิโรธ (-รถ)'],
-        '2026-03-14' => ['ชัยโชค', 'บอด', 'วันลอย', 'อัคนิโรธ (-พืช)'],
-        '2026-03-16' => ['บอด', 'ทรทึก', 'อัคนิโรธ (-วัง)'],
-        '2026-03-22' => ['โลกาวินาศ', 'วันโลกาวินาศ', 'วันลอย', 'อัคนิโรธ (-ภูเขา)'],
-        '2026-03-23' => ['สิทธิโชค', 'วินาศ', 'กระทิงวัน', 'อัคนิโรธ (-ที่ดิน)'],
-        '2026-03-24' => ['วินาศ', 'มหาสูญ [ข]', 'วันฟู', 'อัคนิโรธ (-บ้าน)'],
-        '2026-03-25' => ['บอด', 'ทรทึก', 'อัคนิโรธ (-วัง)'],
-        '2026-03-26' => ['มฤตยู', 'วันอุบาทว์/อุบาสน', 'วันจม', 'อัคนิโรธ (-รถ)'],
-        '2026-03-27' => ['ทินสูรย์', 'วันธงชัย', 'วันอธิบดี', 'อัคนิโรธ (-ดิน)'],
-    ];
-
     private const TAG_MEANINGS = [
         'วันธงชัย' => 'วันเด่นด้านการเริ่มต้นและเดินหน้ากิจการ มักใช้เป็นวันเปิดงานหรือทำเรื่องสำคัญ',
         'วันอธิบดี' => 'วันแห่งอำนาจการจัดการ เหมาะกับงานที่ต้องการการตัดสินใจและการบริหาร',
@@ -267,6 +253,8 @@ class ThaiCalendarHelper
     private static $tagMetaCache = null;
     private static $tagMetaDbChecked = false;
     private static $tagMetaCacheAt = 0;
+    private static $myHoraVerifiedOverrides = null;
+    private static $songkranCutoverConfig = null;
 
     private static $jan1LunarStateCache = [
         self::LUNAR_EPOCH_GREGORIAN_YEAR => [
@@ -612,8 +600,45 @@ class ThaiCalendarHelper
     private static function getChulaSakaratYear(\DateTimeImmutable $date)
     {
         $gregorianYear = (int) $date->format('Y');
-        $cutover = new \DateTimeImmutable(sprintf('%04d-04-16', $gregorianYear));
+        $cutover = self::getSongkranCutoverDate($gregorianYear);
         return ($date >= $cutover) ? ($gregorianYear - 638) : ($gregorianYear - 639);
+    }
+
+    private static function getSongkranCutoverConfig()
+    {
+        if (is_array(self::$songkranCutoverConfig)) {
+            return self::$songkranCutoverConfig;
+        }
+
+        $path = dirname(__DIR__, 3) . '/shared/rengyam/songkran_cutover_dates.json';
+        if (!is_file($path)) {
+            self::$songkranCutoverConfig = [
+                'default' => self::DEFAULT_SONGKRAN_CUTOVER_MONTH_DAY,
+                'years' => [],
+            ];
+            return self::$songkranCutoverConfig;
+        }
+
+        $decoded = json_decode((string) file_get_contents($path), true);
+        $default = is_array($decoded) && !empty($decoded['default'])
+            ? (string) $decoded['default']
+            : self::DEFAULT_SONGKRAN_CUTOVER_MONTH_DAY;
+        $years = is_array($decoded['years'] ?? null) ? $decoded['years'] : [];
+
+        self::$songkranCutoverConfig = [
+            'default' => $default,
+            'years' => $years,
+        ];
+
+        return self::$songkranCutoverConfig;
+    }
+
+    private static function getSongkranCutoverDate($gregorianYear)
+    {
+        $config = self::getSongkranCutoverConfig();
+        $dateStr = $config['years'][(string) $gregorianYear]
+            ?? sprintf('%04d-%s', (int) $gregorianYear, $config['default']);
+        return new \DateTimeImmutable($dateStr);
     }
 
     private static function getMondayBasedWeekdayNumber(\DateTimeImmutable $date)
@@ -634,7 +659,7 @@ class ThaiCalendarHelper
     public static function getKalayok($dateStr)
     {
         $date = self::toImmutableDate($dateStr);
-        $weekday = self::getMondayBasedWeekdayNumber($date);
+        $weekday = self::getMondayBasedWeekdayNumber($date); // Kala-yoga tables use 1=Monday...7=Sunday
         $csYear = self::getChulaSakaratYear($date);
         $remainder = $csYear % 7;
         if ($remainder === 0) {
@@ -812,6 +837,24 @@ class ThaiCalendarHelper
         }
 
         return $tags;
+    }
+
+    private static function getMyHoraVerifiedTagOverrides()
+    {
+        if (is_array(self::$myHoraVerifiedOverrides)) {
+            return self::$myHoraVerifiedOverrides;
+        }
+
+        $path = dirname(__DIR__, 3) . '/shared/rengyam/myhora_verified_tag_overrides.json';
+        if (!is_file($path)) {
+            self::$myHoraVerifiedOverrides = [];
+            return self::$myHoraVerifiedOverrides;
+        }
+
+        $decoded = json_decode((string) file_get_contents($path), true);
+        self::$myHoraVerifiedOverrides = is_array($decoded) ? $decoded : [];
+
+        return self::$myHoraVerifiedOverrides;
     }
 
     private static function getMahamodoAgniTag($dithi)
@@ -1459,7 +1502,8 @@ class ThaiCalendarHelper
         $status = self::queryMahaChok($dateStr);
         $status['is_wanpra'] = self::isWanPra($dateStr);
 
-        $myhoraDisplayTags = self::MYHORA_VERIFIED_TAG_OVERRIDES[$dateStr] ?? self::buildGenericMyHoraDisplayTags($dateStr, $status);
+        $verifiedOverrides = self::getMyHoraVerifiedTagOverrides();
+        $myhoraDisplayTags = $verifiedOverrides[$dateStr] ?? self::buildGenericMyHoraDisplayTags($dateStr, $status);
         $myhoraDisplayTags = self::normalizeMyHoraDisplayTags($myhoraDisplayTags);
         $myhoraBundle = self::buildMyHoraTagBundle($myhoraDisplayTags);
         $myhoraPrioritized = array_merge(

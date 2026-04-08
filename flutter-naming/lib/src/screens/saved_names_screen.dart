@@ -206,6 +206,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
         );
       },
     ).then((value) {
+      if (!mounted) return;
       if (value != null) {
         Navigator.pop(context, value);
       }
@@ -254,13 +255,13 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
           Icon(
             Icons.collections_bookmark_rounded,
             size: 80,
-            color: AppColors.textLight.withOpacity(0.1),
+            color: AppColors.textLight.withValues(alpha: 0.1),
           ),
           const SizedBox(height: 16),
           Text(
             "ยังไม่มีชื่อในคลังเลยค่ะ",
             style: GoogleFonts.sarabun(
-              color: AppColors.textLight.withOpacity(0.4),
+              color: AppColors.textLight.withValues(alpha: 0.4),
               fontSize: 18,
               fontWeight: FontWeight.w500,
             ),
@@ -306,10 +307,10 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFFFF9E6), // Elegant Champagne
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.accent.withOpacity(0.3), width: 1),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -424,10 +425,10 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.05),
+                                color: Colors.red.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: Colors.red.withOpacity(0.15),
+                                  color: Colors.red.withValues(alpha: 0.15),
                                 ),
                               ),
                               child: const Icon(
@@ -451,7 +452,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.accent.withOpacity(0.3),
+                                    color: AppColors.accent.withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -503,13 +504,13 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 8,
                             offset: const Offset(-2, 2),
                           ),
                         ],
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -557,9 +558,9 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: bgColor.withOpacity(0.15),
+        color: bgColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: bgColor.withOpacity(0.4)),
+        border: Border.all(color: bgColor.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -645,17 +646,17 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 6,
               offset: const Offset(0, 4),
             ),
             BoxShadow(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               blurRadius: 0,
               offset: const Offset(-1, -1),
             ),
           ],
-          border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 1),
         ),
         child: Text(
           score,
@@ -703,7 +704,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                 ),
               ),
               Divider(
-                color: AppColors.textGray.withOpacity(0.1),
+                color: AppColors.textGray.withValues(alpha: 0.1),
                 height: 32,
                 thickness: 1,
               ),
@@ -817,7 +818,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
             final data = snapshot.data!;
             return AlertDialog(
               backgroundColor: AppColors.bgDark,
-              shadowColor: AppColors.primary.withOpacity(0.1),
+              shadowColor: AppColors.primary.withValues(alpha: 0.1),
               surfaceTintColor: Colors.transparent,
               elevation: 20,
               shape: RoundedRectangleBorder(
@@ -841,7 +842,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                               (isGood
                                       ? AppColors.success
                                       : const Color(0xFFEF4444))
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -865,7 +866,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                         Text(
                           "เลขศาสตร์ $number",
                           style: GoogleFonts.prompt(
-                            color: AppColors.textGray.withOpacity(0.7),
+                            color: AppColors.textGray.withValues(alpha: 0.7),
                             fontSize: 12,
                           ),
                         ),
@@ -893,7 +894,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                   child: Column(
                     children: [
                       Divider(
-                        color: AppColors.textGray.withOpacity(0.1),
+                        color: AppColors.textGray.withValues(alpha: 0.1),
                         height: 24,
                       ),
                       Text(
@@ -942,7 +943,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
             borderRadius: BorderRadius.circular(24),
             side: BorderSide(
               color: isLucky
-                  ? const Color(0xFFDBB632).withOpacity(0.4)
+                  ? const Color(0xFFDBB632).withValues(alpha: 0.4)
                   : Colors.white24,
               width: 1.5,
             ),

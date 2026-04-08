@@ -106,24 +106,24 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white.withOpacity(0.92),
-                    const Color(0xFFFFF8E7).withOpacity(0.96),
-                    const Color(0xFFF7F1FF).withOpacity(0.92),
+                    Colors.white.withValues(alpha: 0.92),
+                    const Color(0xFFFFF8E7).withValues(alpha: 0.96),
+                    const Color(0xFFF7F1FF).withValues(alpha: 0.92),
                   ],
                 ),
                 border: Border.all(
-                  color: AppColors.accent.withOpacity(0.22),
+                  color: AppColors.accent.withValues(alpha: 0.22),
                   width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFD4AF37).withOpacity(0.10),
+                    color: const Color(0xFFD4AF37).withValues(alpha: 0.10),
                     blurRadius: (compact ? 16 : 28) * scale,
                     spreadRadius: 1,
                     offset: Offset(0, (compact ? 6 : 10) * scale),
                   ),
                   BoxShadow(
-                    color: AppColors.secondary.withOpacity(0.06),
+                    color: AppColors.secondary.withValues(alpha: 0.06),
                     blurRadius: (compact ? 12 : 18) * scale,
                     offset: Offset(0, (compact ? 4 : 6) * scale),
                   ),
@@ -142,7 +142,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                         color: const Color(0xFFFFF3CD),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: const Color(0xFFD4AF37).withOpacity(0.28),
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.28),
                         ),
                       ),
                       child: Row(
@@ -178,8 +178,8 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
                               colors: [
-                                const Color(0xFFFFF7D6).withOpacity(0.95),
-                                const Color(0xFFFFF7D6).withOpacity(0.15),
+                                const Color(0xFFFFF7D6).withValues(alpha: 0.95),
+                                const Color(0xFFFFF7D6).withValues(alpha: 0.15),
                                 Colors.transparent,
                               ],
                             ),
@@ -193,7 +193,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                           turns: _rotationController,
                           child: CustomPaint(
                             painter: _MagicCirclePainter(
-                              color: AppColors.primary.withOpacity(0.4),
+                              color: AppColors.primary.withValues(alpha: 0.4),
                               strokeWidth: 2 * scale,
                               dashCount: 8,
                             ),
@@ -206,7 +206,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.textLight.withOpacity(0.08),
+                              color: AppColors.textLight.withValues(alpha: 0.08),
                               width: 1 * scale,
                             ),
                           ),
@@ -215,7 +215,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                           turns: ReverseAnimation(_rotationController),
                           child: CustomPaint(
                             painter: _MagicCirclePainter(
-                              color: AppColors.secondary.withOpacity(0.5),
+                              color: AppColors.secondary.withValues(alpha: 0.5),
                               strokeWidth: 1.5 * scale,
                               dashCount: 12,
                             ),
@@ -259,7 +259,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withOpacity(0.5),
+                                  color: AppColors.primary.withValues(alpha: 0.5),
                                   blurRadius: 15 * scale,
                                   spreadRadius: 2 * scale,
                                 ),
@@ -295,7 +295,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                         subtitle,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.sarabun(
-                          color: widget.textColor.withOpacity(0.62),
+                          color: widget.textColor.withValues(alpha: 0.62),
                           fontSize: 11.5 * (scale < 0.8 ? 0.85 : 1.0),
                           fontWeight: FontWeight.w500,
                           height: 1.35,
@@ -343,9 +343,9 @@ class _LoadingBadge extends StatelessWidget {
         vertical: 6 * scale,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.65),
+        color: Colors.white.withValues(alpha: 0.65),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.18)),
+        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.18)),
       ),
       child: Text(
         label,
@@ -438,7 +438,7 @@ class _ParticleFieldPainter extends CustomPainter {
           AppColors.accent,
           Colors.white,
           p.opacity,
-        )!.withOpacity(0.6 * math.sin(progress * math.pi));
+        )!.withValues(alpha: 0.6 * math.sin(progress * math.pi));
 
       canvas.drawCircle(Offset(x, y), p.size * scale, paint);
     }
@@ -490,9 +490,9 @@ class _AnimatedLoadingTextState extends State<_AnimatedLoadingText>
           shaderCallback: (bounds) {
             return LinearGradient(
               colors: [
-                widget.color.withOpacity(0.7),
+                widget.color.withValues(alpha: 0.7),
                 AppColors.accent,
-                widget.color.withOpacity(0.7),
+                widget.color.withValues(alpha: 0.7),
               ],
               stops: [
                 _controller.value - 0.2,

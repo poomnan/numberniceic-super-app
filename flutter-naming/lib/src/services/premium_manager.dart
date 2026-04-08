@@ -37,7 +37,7 @@ class PremiumManager extends ChangeNotifier {
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   // Set to true to bypass all paywall gates during development.
-  static const bool _bypassForTesting = false;
+  static const bool _bypassForTesting = true;
   // ──────────────────────────────────────────────────────
 
   // Getters

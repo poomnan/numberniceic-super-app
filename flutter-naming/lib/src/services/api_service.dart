@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/name_intent_model.dart';
 import '../models/name_model.dart';
 import '../models/name_root_result.dart';
 import '../models/number_meaning_model.dart';
@@ -43,6 +44,8 @@ class ApiService {
     String? lastname,
     String? day,
     String? semanticMeaning,
+    String? meaningIntent,
+    String? entryMode,
     bool filterSat = true,
     bool filterSha = true,
     bool filterKaki = false,
@@ -55,6 +58,8 @@ class ApiService {
       "lastname": lastname ?? "",
       "day": day ?? "",
       "semantic_meaning": semanticMeaning ?? "",
+      "meaning_intent": meaningIntent ?? "",
+      "entry_mode": entryMode ?? "",
       "filter_sat": filterSat,
       "filter_sha": filterSha,
       "filter_kaki": filterKaki,
@@ -90,6 +95,30 @@ class ApiService {
       throw ApiException(
         'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่',
       );
+    }
+  }
+
+  Future<NameIntentResult?> detectNameIntent(String input) async {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return null;
+
+    final url = Uri.parse('$baseUrl/api/v1/name-intent');
+    final body = {"input": trimmed};
+
+    try {
+      final response = await _postJsonWithRetry(url, body);
+
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final Map<String, dynamic> data = _decodeJsonBody(
+        response,
+        fallbackMessage: 'ไม่สามารถวิเคราะห์รูปแบบคำค้นได้ในขณะนี้',
+      );
+      return NameIntentResult.fromJson(data);
+    } catch (e) {
+      return null;
     }
   }
 

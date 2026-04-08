@@ -2,12 +2,13 @@
 set -e
 
 # Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVER_IP="numberniceic.online"
 SERVER_USER="root"
 SERVER_PASSWORD="Lydh@58LTG"
 SERVICE_NAME="go-naming"
 REMOTE_DIR="/home/tayap/go-naming"
-LOCAL_DIR="/Users/tayap/project-naming/go-naming"
+LOCAL_DIR="${LOCAL_DIR:-$SCRIPT_DIR}"
 DEPLOY_SSH_HOST="${DEPLOY_SSH_HOST:-$SERVER_IP}"
 
 echo "=== Deploying go-naming backend to $SERVER_IP (SSH: $DEPLOY_SSH_HOST) ==="

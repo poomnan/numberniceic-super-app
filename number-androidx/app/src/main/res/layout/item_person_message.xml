@@ -320,13 +320,14 @@
                                     android:text="วันนี้"
                                     android:textColor="#000000"
                                     android:textSize="16sp" />
+                                <!-- ANCHOR: Blue day (วันสีนำ้เงิน) -->
                                  <TextView
                                     android:id="@+id/txt_current_day2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="2dp"
                                     android:text="วันศุกร์"
-                                    android:textColor="#000000"
+                                    android:textColor="#0091EA"
                                     android:textSize="16sp" />
 
                                 <TextView
@@ -336,32 +337,33 @@
                                     android:text="ที่"
                                     android:textColor="#000000"
                                     android:textSize="14sp" />
-
+                                <!-- ANCHOR: Blue today (วันที่สีนำ้เงิน) -->
                                 <TextView
                                     android:id="@+id/txt_current_daynum2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="2dp"
                                     android:text="11"
-                                    android:textColor="#000000"
+                                    android:textColor="#0091EA"
                                     android:textSize="14sp" />
 
+                                <!-- ANCHOR: Blue Mount (เดือนที่สีนำ้เงิน) -->
                                 <TextView
                                     android:id="@+id/txt_current_mount2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="2dp"
                                     android:text="มกราคม"
-                                    android:textColor="#000000"
+                                    android:textColor="#0091EA"
                                     android:textSize="14sp" />
-
+                                <!-- ANCHOR: Blue Year (ปีที่สีนำ้เงิน) -->
                                 <TextView
                                     android:id="@+id/txt_current_year2"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="2dp"
                                     android:layout_weight="1"
-                                    android:textColor="#000000"
+                                    android:textColor="#0091EA"
                                     android:textSize="14sp"
                                     tools:text="2562" />
 

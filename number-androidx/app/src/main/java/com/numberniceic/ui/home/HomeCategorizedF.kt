@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.numberniceic.R
 import okhttp3.Request
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 class HomeCategorizedF : Fragment() {
 
@@ -231,8 +232,9 @@ class HomeCategorizedF : Fragment() {
             try {
                 val client = RetrofitClient.okHttpClient
                 for (url in candidates) {
+                    val safeUrl = sanitizeHttpUrl(url) ?: continue
                     try {
-                        val req = Request.Builder().url(url).get().build()
+                        val req = Request.Builder().url(safeUrl).get().build()
                         client.newCall(req).execute().use { resp ->
                             if (!resp.isSuccessful) continue
                             val bytes = resp.body?.bytes() ?: continue
@@ -255,5 +257,14 @@ class HomeCategorizedF : Fragment() {
             } catch (_: CancellationException) {
             }
         }
+    }
+
+    private fun sanitizeHttpUrl(url: String): String? {
+        val trimmed = url.trim()
+        if (trimmed.isEmpty()) return null
+        trimmed.toHttpUrlOrNull()?.let { return it.toString() }
+        val spaceEscaped = trimmed.replace(" ", "%20")
+        spaceEscaped.toHttpUrlOrNull()?.let { return it.toString() }
+        return null
     }
 }

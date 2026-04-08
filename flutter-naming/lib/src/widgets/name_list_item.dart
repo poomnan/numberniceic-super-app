@@ -153,16 +153,33 @@ class _NameListItemState extends State<NameListItem>
         widget.result.isTotalSatGood &&
         widget.result.isTotalShaGood;
 
+    final bool satSelected = widget.isFilterSatActive;
+    final bool shaSelected = widget.isFilterShaActive;
+
     final bool satisfiesFilters =
-        (!widget.isFilterSatActive || isSatMatch) &&
-        (!widget.isFilterShaActive || isShaMatch) &&
+        (!satSelected || isSatMatch) &&
+        (!shaSelected || isShaMatch) &&
         (!widget.isFilterKakiActive || noKaki);
 
-    final bool isLucky = satisfiesFilters && isSatMatch && isShaMatch;
+    final bool passesSelectedCriteria = satSelected && shaSelected
+        ? (isSatMatch && isShaMatch)
+        : satSelected
+        ? isSatMatch
+        : shaSelected
+        ? isShaMatch
+        : (isSatMatch && isShaMatch);
+
+    final bool hasAnyRedSignal = !isSatMatch || !isShaMatch;
+    final bool isLucky =
+        satisfiesFilters && passesSelectedCriteria && !hasAnyRedSignal;
 
     int multiplier = 0;
-    if (isSatMatch) multiplier++;
-    if (isShaMatch) multiplier++;
+    if (satSelected && isSatMatch) multiplier++;
+    if (shaSelected && isShaMatch) multiplier++;
+    if (!satSelected && !shaSelected) {
+      if (isSatMatch) multiplier++;
+      if (isShaMatch) multiplier++;
+    }
     if (widget.result.kakiHighlight.isNotEmpty && noKaki) multiplier++;
     if (hasMatchingGood) multiplier++;
 
@@ -207,6 +224,13 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildFrontSide(bool hasMatching) {
+    final bool isEvenRow = widget.rank > 0 ? widget.rank.isEven : false;
+    final Color rowBackground = isEvenRow
+        ? const Color(0xFFFFFCF4)
+        : const Color(0xFFFFFFFF);
+    const bool showSatScore = true;
+    const bool showShaScore = true;
+
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: (_) => _onTapCancel(),
@@ -216,268 +240,240 @@ class _NameListItemState extends State<NameListItem>
         duration: const Duration(milliseconds: 100),
         curve: Curves.easeOut,
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF9E6), // Match saved-name card background
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: AppColors.accent.withOpacity(0.3),
-              width: 1.5,
+            color: rowBackground,
+            borderRadius: BorderRadius.circular(18),
+            border: Border(
+              bottom: BorderSide(
+                color: AppColors.textGray.withValues(alpha: 0.12),
+                width: 0.8,
+              ),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-                spreadRadius: 0,
+                color: AppColors.primary.withValues(
+                  alpha: isEvenRow ? 0.06 : 0.03,
+                ),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Stack(
+          child: Column(
             children: [
-              // Ranking Badge at top-left
-              if (widget.rank > 0)
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  child: _buildRankBadge(widget.rank),
+              // Top info row for Rank and Lucky status - Centered as requested
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (widget.rank > 0) ...[
+                      _buildRankBadge(widget.rank),
+                      const SizedBox(width: 12),
+                    ],
+                    Builder(
+                      builder: (context) {
+                        final lucky = _computeLuckyBreakdown();
+                        String luckText;
+                        List<Color> gradientColors;
+
+                        if (lucky.isLucky) {
+                          // ANCHOR: Lucky Badge (โชคดี)
+                          if (lucky.multiplier <= 1) {
+                            luckText = 'Lucky ✨';
+                          } else {
+                            String prefix = lucky.multiplier >= 4
+                                ? 'Super'
+                                : (lucky.multiplier == 3 ? 'Triple' : 'Double');
+                            luckText = '$prefix Lucky x${lucky.multiplier}';
+                          }
+
+                          if (lucky.multiplier >= 4) {
+                            gradientColors = [
+                              const Color(0xFFDBB632),
+                              const Color(0xFFFF8C00),
+                              const Color(0xFFFF4FA3),
+                              const Color(0xFFB517FF),
+                            ];
+                          } else if (lucky.multiplier == 3) {
+                            gradientColors = [
+                              const Color(0xFFDBB632),
+                              const Color(0xFFFF8C00),
+                              const Color(0xFFFF4FA3),
+                            ];
+                          } else {
+                            gradientColors = [
+                              const Color(0xFFDBB632),
+                              const Color(0xFFFF8C00),
+                            ];
+                          }
+                        } else {
+                          // ANCHOR: UnLucky Badge (โชคไม่ดี)
+                          luckText = 'น่าเสียดาย!?';
+                          gradientColors = [
+                            const Color(0xFF71717A),
+                            const Color(0xFF3F3F46),
+                          ];
+                        }
+
+                        return _MagicLuckyBadge(
+                          isLucky: lucky.isLucky,
+                          text: luckText,
+                          gradientColors: gradientColors,
+                          onTap: () => _toggleFlip('luck'),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      20,
-                      44,
-                      20,
-                      16,
-                    ), // Increased top padding to avoid overlap with badges
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ซ้าย: ข้อมูลชื่อทั้งหมด
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ซ้าย: ข้อมูลชื่อทั้งหมด
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () {
-                                      if (widget.onTap != null) widget.onTap!();
-                                    },
-                                    child: _buildNameText(context),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              // Badges row
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 4,
-                                children: [
-                                  if (widget.result.kakiHighlight.isNotEmpty &&
-                                      !widget.result.kakiHighlight.any(
-                                        (h) => h.isKaki,
-                                      ))
-                                    _buildNoKakiBadge(),
-                                  if (widget.result.kakiHighlight.any(
-                                    (h) => h.isKaki,
-                                  ))
-                                    _buildKakiWarningBadge(),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.result.meaning,
-                                style: const TextStyle(
-                                  color: AppColors.textGray,
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  fontFamily: 'Sarabun',
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              // เปลี่ยนจาก Row เป็น Column เพื่อประหยัดพื้นที่แนวนอน
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Transform.scale(
-                                        scale: 0.9,
-                                        alignment: Alignment.centerLeft,
-                                        child: _buildRootWordButton(context),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      _buildBookmarkButton(),
-                                    ],
-                                  ),
-                                ],
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  if (widget.onTap != null) widget.onTap!();
+                                },
+                                child: _buildNameText(context),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        // ขวา: คะแนน (ย้ายมาไว้ด้านขวาเพื่อลดพื้นที่ว่าง)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            // Top score display
-                            _buildSmartScoreDisplay(
-                              widget.result.satSum,
-                              widget.result.isSatGood,
-                              "",
-                              isActive: widget.isFilterSatActive,
-                              labelOnLeft: true,
-                              pairType: widget.result.satPairType,
-                            ),
-                            const SizedBox(height: 12),
-                            _buildSmartScoreDisplay(
-                              widget.result.shaSum,
-                              widget.result.isShaGood,
-                              "",
-                              isActive: widget.isFilterShaActive,
-                              labelOnLeft: true,
-                              pairType: widget.result.shaPairType,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (hasMatching)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.03),
-                        border: Border(
-                          top: BorderSide(
-                            color: Colors.white.withOpacity(0.08),
-                          ),
-                        ),
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(24),
-                          bottomRight: Radius.circular(24),
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.subdirectory_arrow_right_rounded,
-                            color: Color(0xFF8B6B04),
-                            size: 24,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [_buildMatchingNameText(context)],
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          const SizedBox(height: 2),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
                             children: [
-                              _buildSmartScoreDisplay(
-                                widget.result.totalSat,
-                                widget.result.isTotalSatGood,
-                                "",
-                                isActive: widget.isFilterSatActive,
-                                size: 34,
-                                labelOnLeft: true,
-                                pairType: widget.result.totalSatPairType,
+                              if (widget.result.kakiHighlight.isNotEmpty &&
+                                  !widget.result.kakiHighlight.any(
+                                    (h) => h.isKaki,
+                                  ))
+                                _buildNoKakiBadge(),
+                              if (widget.result.kakiHighlight.any(
+                                (h) => h.isKaki,
+                              ))
+                                _buildKakiWarningBadge(),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.result.meaning,
+                            style: const TextStyle(
+                              color: AppColors.textGray,
+                              fontSize: 15,
+                              height: 1.5,
+                              fontFamily: 'Sarabun',
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Transform.scale(
+                                scale: 0.9,
+                                alignment: Alignment.centerLeft,
+                                child: _buildRootWordButton(context),
                               ),
-                              const SizedBox(height: 4),
-                              _buildSmartScoreDisplay(
-                                widget.result.totalSha,
-                                widget.result.isTotalShaGood,
-                                "",
-                                isActive: widget.isFilterShaActive,
-                                size: 34,
-                                labelOnLeft: true,
-                                pairType: widget.result.totalShaPairType,
-                              ),
+                              const SizedBox(width: 8),
+                              _buildBookmarkButton(),
                             ],
                           ),
                         ],
                       ),
                     ),
-                ],
-              ),
-              // === ส่วนแสดงป้าย Double Lucky ที่มุมขวาล่าง (แก้ไขใหม่) ===
-              // === ส่วนแสดงป้าย Double Lucky ที่มุมขวาล่าง (แก้ไขใหม่) ===
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Builder(
-                  builder: (context) {
-                    final lucky = _computeLuckyBreakdown();
-
-                    String luckText;
-                    List<Color> gradientColors;
-
-                    if (lucky.isLucky) {
-                      if (lucky.multiplier <= 1) {
-                        luckText = 'Lucky ✨';
-                      } else {
-                        String prefix = lucky.multiplier >= 4
-                            ? 'Super'
-                            : (lucky.multiplier == 3 ? 'Triple' : 'Double');
-                        luckText = '$prefix Lucky x${lucky.multiplier}';
-                      }
-
-                      if (lucky.multiplier >= 4) {
-                        gradientColors = [
-                          const Color(0xFFDBB632),
-                          const Color(0xFFFF8C00),
-                          const Color(0xFFFF4FA3),
-                          const Color(0xFFB517FF),
-                        ];
-                      } else if (lucky.multiplier == 3) {
-                        gradientColors = [
-                          const Color(0xFFDBB632),
-                          const Color(0xFFFF8C00),
-                          const Color(0xFFFF4FA3),
-                        ];
-                      } else {
-                        gradientColors = [
-                          const Color(0xFFDBB632),
-                          const Color(0xFFFF8C00),
-                        ];
-                      }
-                    } else {
-                      // Only show 'น่าเสียดาย' if filters represent a search for good names
-                      // Otherwise just keep it gray/locked
-                      luckText = 'น่าเสียดาย';
-                      gradientColors = [
-                        const Color(0xFF71717A),
-                        const Color(0xFF3F3F46),
-                      ]; // Zinc/Gray shades
-                    }
-
-                    return TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      duration: const Duration(milliseconds: 800),
-                      curve: Curves.elasticOut,
-                      builder: (context, value, child) {
-                        return Transform.scale(
-                          scale: value,
-                          child: _MagicLuckyBadge(
-                            isLucky: lucky.isLucky,
-                            text: luckText,
-                            gradientColors: gradientColors,
-                            onTap: () => _toggleFlip('luck'),
+                    const SizedBox(width: 8),
+                    // ขวา: คะแนน
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (showSatScore)
+                          _buildSmartScoreDisplay(
+                            widget.result.satSum,
+                            widget.result.isSatGood,
+                            "",
+                            isActive: widget.isFilterSatActive,
+                            labelOnLeft: true,
+                            pairType: widget.result.satPairType,
                           ),
-                        );
-                      },
-                    );
-                  },
+                        if (showSatScore && showShaScore)
+                          const SizedBox(height: 12),
+                        if (showShaScore)
+                          _buildSmartScoreDisplay(
+                            widget.result.shaSum,
+                            widget.result.isShaGood,
+                            "",
+                            isActive: widget.isFilterShaActive,
+                            labelOnLeft: true,
+                            pairType: widget.result.shaPairType,
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
+              if (hasMatching)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 0, 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.subdirectory_arrow_right_rounded,
+                        color: Color(0xFF8B6B04),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [_buildMatchingNameText(context)],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (showSatScore)
+                            _buildSmartScoreDisplay(
+                              widget.result.totalSat,
+                              widget.result.isTotalSatGood,
+                              "",
+                              isActive: widget.isFilterSatActive,
+                              size: 34,
+                              labelOnLeft: true,
+                              pairType: widget.result.totalSatPairType,
+                            ),
+                          if (showSatScore && showShaScore)
+                            const SizedBox(height: 4),
+                          if (showShaScore)
+                            _buildSmartScoreDisplay(
+                              widget.result.totalSha,
+                              widget.result.isTotalShaGood,
+                              "",
+                              isActive: widget.isFilterShaActive,
+                              size: 34,
+                              labelOnLeft: true,
+                              pairType: widget.result.totalShaPairType,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -503,8 +499,8 @@ class _NameListItemState extends State<NameListItem>
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: _flipType == 'luck'
-                ? const Color(0xFFDBB632).withOpacity(0.4)
-                : AppColors.accent.withOpacity(0.3),
+                ? const Color(0xFFDBB632).withValues(alpha: 0.4)
+                : AppColors.accent.withValues(alpha: 0.3),
             width: 1.5,
           ),
           boxShadow: [
@@ -513,7 +509,7 @@ class _NameListItemState extends State<NameListItem>
                   (_flipType == 'luck'
                           ? const Color(0xFFDBB632)
                           : AppColors.accent)
-                      .withOpacity(0.15),
+                      .withValues(alpha: 0.15),
               blurRadius: 20,
               spreadRadius: 2,
             ),
@@ -804,28 +800,20 @@ class _NameListItemState extends State<NameListItem>
   Widget _buildRankBadge(int rank) {
     final bool useTotal =
         widget.showMatching && (widget.result.totalSat != widget.result.satSum);
-    final bool isSatGood = useTotal
-        ? widget.result.isTotalSatGood
-        : widget.result.isSatGood;
-    final bool isShaGood = useTotal
-        ? widget.result.isTotalShaGood
-        : widget.result.isShaGood;
     final score = widget.result.calculateScore(showMatching: useTotal);
 
     // Top 3 get special colors
     Color textColor;
     IconData? icon;
 
-    final bool isLucky = isSatGood && isShaGood;
-
-    if (rank == 1 && isLucky) {
-      textColor = AppColors.secondary; // Dark gold for light bg
+    if (rank == 1) {
+      textColor = const Color(0xFFB8860B); // Gold
       icon = Icons.emoji_events;
-    } else if (rank == 2 && isLucky) {
-      textColor = const Color(0xFF64748B); // Slate Gray for Silver
+    } else if (rank == 2) {
+      textColor = const Color(0xFF64748B); // Silver
       icon = Icons.emoji_events;
-    } else if (rank == 3 && isLucky) {
-      textColor = const Color(0xFF8B4513); // Saddle Brown for Bronze
+    } else if (rank == 3) {
+      textColor = const Color(0xFFCD7F32); // Bronze
       icon = Icons.emoji_events;
     } else {
       textColor = const Color(0xFF7C3AED); // Modern Purple
@@ -844,7 +832,7 @@ class _NameListItemState extends State<NameListItem>
             onLongPress: () => _showScoreBreakdown(context, rank, score),
             onTap: () => _toggleFlip('score'),
             child: Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: const EdgeInsets.fromLTRB(0, 12, 16, 0),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -852,6 +840,7 @@ class _NameListItemState extends State<NameListItem>
                     Icon(icon, size: 16, color: textColor),
                     const SizedBox(width: 6),
                   ],
+                  //ANCHOR: RanKNO1 (อันดับ)
                   Text(
                     'อันดับ #$rank',
                     style: TextStyle(
@@ -903,7 +892,7 @@ class _NameListItemState extends State<NameListItem>
               Text(
                 'อันดับ #$rank • $totalScore คะแนน',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 14,
                 ),
               ),
@@ -919,7 +908,7 @@ class _NameListItemState extends State<NameListItem>
               Text(
                 'คะแนนรวมคำนวณจากความหมาย, เลขศาสตร์, พลังเงา และความยาวของชื่อ เพื่อให้ได้ชื่อที่ดีที่สุดสำหรับคุณ',
                 style: GoogleFonts.sarabun(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 13,
                   height: 1.5,
                 ),
@@ -931,7 +920,7 @@ class _NameListItemState extends State<NameListItem>
               Text(
                 'ยิ่งคะแนนสูง ยิ่งเหมาะสมกับความต้องการ',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                   fontSize: 11,
                 ),
                 textAlign: TextAlign.center,
@@ -959,7 +948,7 @@ class _NameListItemState extends State<NameListItem>
           child: Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               fontSize: 13,
             ),
           ),
@@ -968,13 +957,13 @@ class _NameListItemState extends State<NameListItem>
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
           decoration: BoxDecoration(
             color: isPositive
-                ? const Color(0xFF10B981).withOpacity(0.2)
-                : Colors.white.withOpacity(0.05),
+                ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                : Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isPositive
-                  ? const Color(0xFF10B981).withOpacity(0.4)
-                  : Colors.white.withOpacity(0.1),
+                  ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                  : Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Text(
@@ -982,7 +971,7 @@ class _NameListItemState extends State<NameListItem>
             style: TextStyle(
               color: isPositive
                   ? const Color(0xFF34D399)
-                  : Colors.white.withOpacity(0.4),
+                  : Colors.white.withValues(alpha: 0.4),
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
@@ -1004,8 +993,9 @@ class _NameListItemState extends State<NameListItem>
     int sVal = 0;
     if (score is int) {
       sVal = score;
-    } else if (score is String)
+    } else if (score is String) {
       sVal = int.tryParse(score) ?? 0;
+    }
 
     final circle = (sVal >= 100)
         ? _buildTripleDigitScores(
@@ -1013,6 +1003,7 @@ class _NameListItemState extends State<NameListItem>
             isGood,
             size,
             isActive: isActive,
+            renderNeutral: false,
             pairType: pairType,
           )
         : _buildScoreCircle(
@@ -1021,6 +1012,7 @@ class _NameListItemState extends State<NameListItem>
             "",
             size: size,
             isActive: isActive,
+            renderNeutral: false,
             pairType: pairType,
           );
 
@@ -1031,7 +1023,7 @@ class _NameListItemState extends State<NameListItem>
           Text(
             label,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: size * 11 / 44,
               fontWeight: FontWeight.w600,
               fontFamily: 'Prompt',
@@ -1069,6 +1061,7 @@ class _NameListItemState extends State<NameListItem>
     bool isGood,
     double size, {
     bool isActive = true,
+    bool renderNeutral = false,
     String pairType = '',
   }) {
     String s = score.toString();
@@ -1084,6 +1077,7 @@ class _NameListItemState extends State<NameListItem>
           "",
           size: size,
           isActive: isActive,
+          renderNeutral: renderNeutral,
           pairType: pairType,
         ),
         const SizedBox(width: 4),
@@ -1093,6 +1087,7 @@ class _NameListItemState extends State<NameListItem>
           "",
           size: size,
           isActive: isActive,
+          renderNeutral: renderNeutral,
           pairType: pairType,
         ),
       ],
@@ -1104,13 +1099,17 @@ class _NameListItemState extends State<NameListItem>
     bool isGood,
     String label, {
     bool isActive = true,
+    bool renderNeutral = false,
     double size = 44,
     String pairType = '',
   }) {
     Color lightColor;
     Color darkColor;
 
-    if (pairType.isNotEmpty) {
+    if (renderNeutral) {
+      lightColor = const Color(0xFFF8FAFC);
+      darkColor = const Color(0xFFE5E7EB);
+    } else if (pairType.isNotEmpty) {
       Color base = _pairTypeColor(pairType);
       String p = pairType.toUpperCase();
 
@@ -1143,7 +1142,7 @@ class _NameListItemState extends State<NameListItem>
           darkColor = const Color(0xFFF87171);
         }
       } else {
-        lightColor = base.withOpacity(0.8);
+        lightColor = base.withValues(alpha: 0.8);
         darkColor = base;
       }
     } else {
@@ -1172,18 +1171,18 @@ class _NameListItemState extends State<NameListItem>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     blurRadius: 6,
                     offset: const Offset(0, 4),
                   ),
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     blurRadius: 0,
                     offset: const Offset(-1, -1),
                   ),
                 ],
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   width: 1,
                 ),
               ),
@@ -1221,47 +1220,55 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildRootWordButton(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        _showRootWordDialog(context);
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.secondary,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.secondary.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(
-            color: AppColors.primary.withOpacity(0.5),
-            width: 1,
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.secondary, AppColors.accent],
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.auto_stories_rounded,
-              size: 14,
-              color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            _showRootWordDialog(context);
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.auto_stories_rounded,
+                  size: 16,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 8),
+                // ANCHOR: WordOriginItem (รากศัพท์รายการ)
+                Text(
+                  "รากศัพท์",
+                  style: GoogleFonts.prompt(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 4),
-            const Text(
-              "ดูรากศัพท์",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.3,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1278,13 +1285,13 @@ class _NameListItemState extends State<NameListItem>
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: _isSaved
-              ? savedColor.withOpacity(0.08)
-              : Colors.black.withOpacity(0.05),
+              ? savedColor.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _isSaved
-                ? savedColor.withOpacity(0.3)
-                : Colors.black.withOpacity(0.1),
+                ? savedColor.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.1),
           ),
         ),
         child: _isSaving
@@ -1299,7 +1306,9 @@ class _NameListItemState extends State<NameListItem>
             : Icon(
                 _isSaved ? Icons.favorite : Icons.favorite_border,
                 size: 20,
-                color: _isSaved ? savedColor : Colors.black.withOpacity(0.3),
+                color: _isSaved
+                    ? savedColor
+                    : Colors.black.withValues(alpha: 0.3),
               ),
       ),
     );
@@ -1311,9 +1320,11 @@ class _NameListItemState extends State<NameListItem>
       decoration: BoxDecoration(
         color: const Color(
           0xFF10B981,
-        ).withOpacity(0.15), // Emerald-500 light bg
+        ).withValues(alpha: 0.15), // Emerald-500 light bg
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.4),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1342,9 +1353,11 @@ class _NameListItemState extends State<NameListItem>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withOpacity(0.15),
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.4)),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1369,9 +1382,11 @@ class _NameListItemState extends State<NameListItem>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B5CF6).withOpacity(0.15),
+        color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.4)),
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1396,9 +1411,11 @@ class _NameListItemState extends State<NameListItem>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withOpacity(0.15),
+        color: const Color(0xFFEF4444).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.4)),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1429,6 +1446,8 @@ class _NameListItemState extends State<NameListItem>
     final bool hasKaki =
         widget.comparisonAnalysis != null &&
         widget.comparisonAnalysis!.characters.any((c) => c.isKaki);
+    final combinedName = widget.result.name.trim();
+    final combinedPhrase = (widget.comparisonName ?? '').trim();
 
     final textStyle = TextStyle(
       color: isGold ? AppColors.accent : AppColors.inputText,
@@ -1436,15 +1455,15 @@ class _NameListItemState extends State<NameListItem>
       fontWeight: FontWeight.bold,
     );
 
-    Widget textWidget;
+    Widget nameWidget;
 
     if (widget.comparisonAnalysis != null && hasKaki) {
       final tp = TextPainter(
-        text: TextSpan(text: widget.comparisonName ?? '', style: textStyle),
+        text: TextSpan(text: combinedName, style: textStyle),
         textDirection: TextDirection.ltr,
       )..layout();
 
-      textWidget = CustomPaint(
+      nameWidget = CustomPaint(
         size: Size(tp.width, 32),
         painter: _ThaiHighlightPainter(
           highlights: widget.comparisonAnalysis!.characters,
@@ -1453,13 +1472,53 @@ class _NameListItemState extends State<NameListItem>
         ),
       );
     } else {
-      textWidget = Text(widget.comparisonName ?? '', style: textStyle);
+      nameWidget = Text(combinedName, style: textStyle);
     }
 
-    if (isGold && !hasKaki) {
-      return ShimmeringGoldText(child: textWidget);
+    final nameSection = isGold && !hasKaki
+        ? ShimmeringGoldText(child: nameWidget)
+        : nameWidget;
+
+    if (combinedPhrase.isEmpty) {
+      return nameSection;
     }
-    return textWidget;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            style: GoogleFonts.sarabun(
+              fontSize: 15,
+              height: 1.45,
+              color: AppColors.textLight,
+            ),
+            children: [
+              TextSpan(
+                text: '"',
+                style: textStyle.copyWith(
+                  fontSize: 17,
+                  color: isGold ? AppColors.accent : AppColors.textLight,
+                ),
+              ),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: nameSection,
+              ),
+              TextSpan(
+                text: '" $combinedPhrase',
+                style: GoogleFonts.sarabun(
+                  fontSize: 15,
+                  height: 1.45,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF9A7B00),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildNameText(BuildContext context) {
@@ -1572,12 +1631,14 @@ class _NameListItemState extends State<NameListItem>
 
                 return AlertDialog(
                   backgroundColor: const Color(0xFFF1F5F9),
-                  shadowColor: Colors.black.withOpacity(0.3),
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
                   surfaceTintColor: Colors.transparent,
                   elevation: 10,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.black.withOpacity(0.05)),
+                    side: BorderSide(
+                      color: Colors.black.withValues(alpha: 0.05),
+                    ),
                   ),
                   title: Column(
                     children: [
@@ -1823,12 +1884,12 @@ class _NameListItemState extends State<NameListItem>
 
             return AlertDialog(
               backgroundColor: const Color(0xFF1E293B),
-              shadowColor: Colors.black.withOpacity(0.5),
+              shadowColor: Colors.black.withValues(alpha: 0.5),
               surfaceTintColor: Colors.transparent,
               elevation: 20,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
-                side: BorderSide(color: Colors.white.withOpacity(0.1)),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
               ),
               title: Row(
                 children: [
@@ -1841,7 +1902,7 @@ class _NameListItemState extends State<NameListItem>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: color.withOpacity(0.4),
+                          color: color.withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1867,7 +1928,7 @@ class _NameListItemState extends State<NameListItem>
                             Text(
                               "เลขศาสตร์ $number",
                               style: GoogleFonts.prompt(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: 0.5),
                                 fontSize: 12,
                               ),
                             ),
@@ -1879,10 +1940,10 @@ class _NameListItemState extends State<NameListItem>
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: color.withOpacity(0.2),
+                                  color: color.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: color.withOpacity(0.5),
+                                    color: color.withValues(alpha: 0.5),
                                     width: 1,
                                   ),
                                 ),
@@ -1925,7 +1986,7 @@ class _NameListItemState extends State<NameListItem>
                       Text(
                         data.detail.replaceAll("\\n", "\n"),
                         style: GoogleFonts.sarabun(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           height: 1.7,
                           fontSize: 15,
                           letterSpacing: 0.1,
@@ -2202,28 +2263,28 @@ class _MagicLuckyBadgeState extends State<_MagicLuckyBadge>
       return GestureDetector(
         onTap: widget.onTap,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: widget.gradientColors),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(8),
-              topRight: Radius.circular(24),
+            color: widget.gradientColors.last.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: widget.gradientColors.last.withValues(alpha: 0.2),
+              width: 1,
             ),
-            border: Border.all(color: Colors.white.withOpacity(0.15), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.info_outline_rounded,
-                color: Colors.white,
+                color: widget.gradientColors.last.withValues(alpha: 0.7),
                 size: 14,
               ),
               const SizedBox(width: 6),
               Text(
                 widget.text,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: widget.gradientColors.last,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -2248,33 +2309,41 @@ class _MagicLuckyBadgeState extends State<_MagicLuckyBadge>
         return GestureDetector(
           onTap: widget.onTap,
           child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: widget.gradientColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(8),
                 topRight: Radius.circular(24),
+                topLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.1 + glow * 0.2),
+                  color: color.withValues(alpha: 0.2 + glow * 0.2),
                   blurRadius: 10 + glow * 12,
                   spreadRadius: glow * 2,
                 ),
                 BoxShadow(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.05 + glow * 0.1),
+                  color: const Color(
+                    0xFF8B5CF6,
+                  ).withValues(alpha: 0.1 + glow * 0.1),
                   blurRadius: 15 + glow * 10,
                   spreadRadius: glow * 1,
                 ),
               ],
             ),
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 // Shimmer sweep overlay
                 Positioned.fill(
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(8),
-                      topRight: Radius.circular(24),
-                    ),
+                    borderRadius: BorderRadius.circular(24),
                     child: CustomPaint(
                       painter: _LuckyShimmerPainter(
                         progress: _shimmerAnim.value,
@@ -2286,10 +2355,7 @@ class _MagicLuckyBadgeState extends State<_MagicLuckyBadge>
                 // Floating sparkle particles
                 Positioned.fill(
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(8),
-                      topRight: Radius.circular(24),
-                    ),
+                    borderRadius: BorderRadius.circular(24),
                     child: CustomPaint(
                       painter: _LuckyParticlePainter(
                         particles: _particles,
@@ -2299,81 +2365,63 @@ class _MagicLuckyBadgeState extends State<_MagicLuckyBadge>
                     ),
                   ),
                 ),
-                // Main content
-                Container(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: widget.gradientColors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                // Icon and text
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Shimmering Icon
+                    ShaderMask(
+                      shaderCallback: (bounds) => LinearGradient(
+                        colors: [
+                          Colors.white,
+                          const Color(0xFF8B5CF6).withValues(alpha: 0.5),
+                          Colors.white,
+                        ],
+                        stops: [
+                          (_shimmerAnim.value - 0.2).clamp(0.0, 1.0),
+                          _shimmerAnim.value.clamp(0.0, 1.0),
+                          (_shimmerAnim.value + 0.2).clamp(0.0, 1.0),
+                        ],
+                      ).createShader(bounds),
+                      child: const Icon(
+                        Icons.auto_awesome,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(8),
-                      topRight: Radius.circular(24),
-                    ),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3 + glow * 0.4),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Shimmering Icon
-                      ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          colors: [
-                            Colors.white,
-                            const Color(0xFF8B5CF6),
-                            Colors.white,
-                          ],
-                          stops: [
-                            (_shimmerAnim.value - 0.2).clamp(0.0, 1.0),
-                            _shimmerAnim.value.clamp(0.0, 1.0),
-                            (_shimmerAnim.value + 0.2).clamp(0.0, 1.0),
-                          ],
-                        ).createShader(bounds),
-                        child: const Icon(
-                          Icons.auto_awesome,
+                    const SizedBox(width: 6),
+                    // Animated text with shimmer sweep
+                    ShaderMask(
+                      shaderCallback: (bounds) => LinearGradient(
+                        colors: [
+                          Colors.white,
+                          const Color(0xFFFFFFFF).withValues(alpha: 0.7),
+                          Colors.white,
+                        ],
+                        stops: [
+                          (_shimmerAnim.value - 0.1).clamp(0.0, 1.0),
+                          _shimmerAnim.value.clamp(0.0, 1.0),
+                          (_shimmerAnim.value + 0.1).clamp(0.0, 1.0),
+                        ],
+                      ).createShader(bounds),
+                      child: Text(
+                        widget.text,
+                        style: const TextStyle(
                           color: Colors.white,
-                          size: 14,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black26,
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      // Animated text with shimmer sweep
-                      ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          colors: [
-                            Colors.white,
-                            const Color(0xFFFDE68A),
-                            Colors.white,
-                          ],
-                          stops: [
-                            (_shimmerAnim.value - 0.1).clamp(0.0, 1.0),
-                            _shimmerAnim.value.clamp(0.0, 1.0),
-                            (_shimmerAnim.value + 0.1).clamp(0.0, 1.0),
-                          ],
-                        ).createShader(bounds),
-                        child: Text(
-                          widget.text,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black12,
-                                offset: Offset(0, 1),
-                                blurRadius: 2,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2493,9 +2541,9 @@ class _LuckyShimmerPainter extends CustomPainter {
       ..shader = LinearGradient(
         colors: [
           Colors.transparent,
-          color.withOpacity(0.05),
-          Colors.white.withOpacity(0.12),
-          color.withOpacity(0.05),
+          color.withValues(alpha: 0.05),
+          Colors.white.withValues(alpha: 0.12),
+          color.withValues(alpha: 0.05),
           Colors.transparent,
         ],
         stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
@@ -2531,7 +2579,7 @@ class _LuckyParticlePainter extends CustomPainter {
       final opacity = math.sin(t * math.pi).clamp(0.0, 1.0);
 
       final paint = Paint()
-        ..color = color.withOpacity(opacity * 0.8)
+        ..color = color.withValues(alpha: opacity * 0.8)
         ..style = PaintingStyle.fill;
 
       _drawStar(canvas, Offset(px, py), p.size * opacity, paint);

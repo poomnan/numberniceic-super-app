@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           // Add a semi-transparent black overlay to dim background
-          Container(color: Colors.white.withOpacity(0.3)),
+          Container(color: Colors.white.withValues(alpha: 0.3)),
           Positioned(
             top: -100,
             left: -100,
@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary.withOpacity(0.2),
+                color: AppColors.primary.withValues(alpha: 0.2),
                 backgroundBlendMode: BlendMode.screen,
                 boxShadow: const [
                   BoxShadow(blurRadius: 100, color: AppColors.primary),
@@ -49,7 +49,7 @@ class HomeScreen extends StatelessWidget {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.secondary.withOpacity(0.2),
+                color: AppColors.secondary.withValues(alpha: 0.2),
                 backgroundBlendMode: BlendMode.screen,
                 boxShadow: const [
                   BoxShadow(blurRadius: 100, color: AppColors.secondary),

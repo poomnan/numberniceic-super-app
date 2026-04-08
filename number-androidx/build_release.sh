@@ -1,40 +1,37 @@
 #!/bin/bash
 
-# --- การตั้งค่า ---
+set -euo pipefail
+
 OUTPUT_DIR="app/release"
-AAB_PATH="app/build/outputs/bundle/release/app-release.aab"
-APK_PATH="app/build/outputs/apk/release/app-release.apk"
+APK_OUTPUT_DIR="app/build/outputs/apk/release"
 
-echo "🚀 กำลังเริ่มกระบวนการ Build Android Release..."
+echo "🚀 กำลังเริ่มสร้าง Android release APK สำหรับส่งทดสอบ..."
 
-# 1. ทำความสะอาดและ Build
-echo "📦 1/2 กำลัง Build Bundle (AAB) และ APK..."
-./gradlew clean bundleRelease assembleRelease
+echo "📦 1/3 Clean project"
+./gradlew clean
 
-if [ $? -eq 0 ]; then
-    echo "✅ Build สำเร็จ!"
-else
-    echo "❌ Build ไม่สำเร็จ กรุณาตรวจสอบข้อผิดพลาด"
+echo "📦 2/3 Assemble release APK"
+./gradlew assembleRelease
+
+APK_PATH=$(find "$APK_OUTPUT_DIR" -maxdepth 1 -type f -name '*.apk' | head -n 1)
+
+if [ -z "$APK_PATH" ] || [ ! -f "$APK_PATH" ]; then
+    echo "❌ ไม่พบไฟล์ APK ใน $APK_OUTPUT_DIR"
     exit 1
 fi
 
-# 2. จัดเตรียมไฟล์ผลลัพธ์
-echo "📂 2/2 กำลังคัดเลือกไฟล์ไปยังโฟลเดอร์ $OUTPUT_DIR..."
-mkdir -p $OUTPUT_DIR
+VERSION_NAME=$(sed -nE 's/^[[:space:]]*versionName[[:space:]]+"([^"]+)"$/\1/p' app/build.gradle | head -n 1)
+VERSION_CODE=$(sed -nE 's/^[[:space:]]*versionCode[[:space:]]+([0-9]+)$/\1/p' app/build.gradle | head -n 1)
+SAFE_VERSION_NAME=$(printf "%s" "$VERSION_NAME" | sed -E 's/[^A-Za-z0-9._-]+/-/g; s/-+/-/g; s/^-|-$//g')
+SHARE_APK_NAME="numberniceic-test-v${SAFE_VERSION_NAME}-${VERSION_CODE}.apk"
 
-if [ -f "$AAB_PATH" ]; then
-    cp "$AAB_PATH" "$OUTPUT_DIR/numberniceic-release.aab"
-    echo "📄 AAB: $OUTPUT_DIR/numberniceic-release.aab"
-fi
+echo "📂 3/3 คัดลอก APK ไปยัง $OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
+cp "$APK_PATH" "$OUTPUT_DIR/$SHARE_APK_NAME"
 
-if [ ! -f "$APK_PATH" ]; then
-    APK_PATH=$(find app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
-fi
-
-if [ -n "$APK_PATH" ] && [ -f "$APK_PATH" ]; then
-    cp "$APK_PATH" "$OUTPUT_DIR/numberniceic-release.apk"
-    echo "📄 APK: $OUTPUT_DIR/numberniceic-release.apk"
-fi
-
-echo "🎉 กระบวนการ Build Release เสร็จสิ้น!"
-echo "คุณสามารถนำไฟล์ในโฟลเดอร์ $OUTPUT_DIR ไป Deploy ต่อได้"
+echo "✅ สร้างไฟล์สำหรับส่งให้ผู้ทดสอบเรียบร้อย"
+echo "📄 APK: $OUTPUT_DIR/$SHARE_APK_NAME"
+echo ""
+echo "หมายเหตุ:"
+echo "- ส่งไฟล์ .apk นี้ให้เพื่อนติดตั้งได้เลย"
+echo "- อย่าส่งไฟล์ .aab ผ่าน LINE เพราะ Android จะติดตั้งไม่ได้"

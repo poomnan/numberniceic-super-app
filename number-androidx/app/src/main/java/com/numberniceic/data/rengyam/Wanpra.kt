@@ -42,11 +42,17 @@ data class Wanpra(
     var isKalagni: Boolean = false,
     var kalagniBirth: Boolean = false,
     var kalagniAge: Boolean = false,
+    var kalagniBirthLabel: String? = null,
+    var kalagniAgeLabel: String? = null,
     var isBestDay: Boolean = false,
     var isHighlighted: Boolean = false,
     var isOtherMonth: Boolean = false,
     var lunarPhase: String? = null,
-    var lunarMonth: String? = null
+    var lunarMonth: String? = null,
+    var marriageGroomAgeNext: Int? = null,
+    var marriageBrideAgeNext: Int? = null,
+    var marriageGroomRedDays: List<String>? = null,
+    var marriageBrideRedDays: List<String>? = null
 ) : Parcelable {
     
 
@@ -83,14 +89,20 @@ data class Wanpra(
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
         source.readByte() != 0.toByte(),
-        source.readByte() != 0.toByte(),
-        source.readByte() != 0.toByte(),
-        source.readByte() != 0.toByte(),
+        source.readByte() != 0.toByte(), // isKalagni
+        source.readByte() != 0.toByte(), // kalagniBirth
+        source.readByte() != 0.toByte(), // kalagniAge
+        source.readString(), // kalagniBirthLabel
+        source.readString(), // kalagniAgeLabel
         source.readByte() != 0.toByte(), // isBestDay
         source.readByte() != 0.toByte(), // isHighlighted
         source.readByte() != 0.toByte(), // isOtherMonth
         source.readString(),
-        source.readString()
+        source.readString(),
+        source.readValue(Int::class.java.classLoader) as? Int,
+        source.readValue(Int::class.java.classLoader) as? Int,
+        source.createStringArrayList(),
+        source.createStringArrayList()
     )
 
     override fun describeContents() = 0
@@ -131,11 +143,17 @@ data class Wanpra(
         writeByte(if (isKalagni) 1 else 0)
         writeByte(if (kalagniBirth) 1 else 0)
         writeByte(if (kalagniAge) 1 else 0)
+        writeString(kalagniBirthLabel)
+        writeString(kalagniAgeLabel)
         writeByte(if (isBestDay) 1 else 0)
         writeByte(if (isHighlighted) 1 else 0)
         writeByte(if (isOtherMonth) 1 else 0)
         writeString(lunarPhase)
         writeString(lunarMonth)
+        writeValue(marriageGroomAgeNext)
+        writeValue(marriageBrideAgeNext)
+        writeStringList(marriageGroomRedDays)
+        writeStringList(marriageBrideRedDays)
     }
 
     companion object {

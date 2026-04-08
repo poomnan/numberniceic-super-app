@@ -27,6 +27,54 @@ class DashboardSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<({String label, String value, Color accent})> stats = [];
+
+    if (isSatActive && isShaActive) {
+      stats.add((
+        label: 'ดีเยี่ยม',
+        value: excellentNames,
+        accent: const Color(0xFFDBB632),
+      ));
+      stats.add((
+        label: 'เลขศาสตร์',
+        value: numerologyGood,
+        accent: const Color(0xFF10B981),
+      ));
+      stats.add((
+        label: 'พลังเงา',
+        value: shadowGood,
+        accent: const Color(0xFF6366F1),
+      ));
+    } else if (isSatActive) {
+      stats.add((
+        label: 'ทั้งหมด',
+        value: totalNames.toString(),
+        accent: const Color(0xFFDBB632),
+      ));
+      stats.add((
+        label: 'เลขศาสตร์',
+        value: numerologyGood,
+        accent: const Color(0xFF10B981),
+      ));
+    } else if (isShaActive) {
+      stats.add((
+        label: 'ทั้งหมด',
+        value: totalNames.toString(),
+        accent: const Color(0xFFDBB632),
+      ));
+      stats.add((
+        label: 'พลังเงา',
+        value: shadowGood,
+        accent: const Color(0xFF6366F1),
+      ));
+    } else {
+      stats.add((
+        label: 'ทั้งหมด',
+        value: totalNames.toString(),
+        accent: const Color(0xFFDBB632),
+      ));
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,68 +84,28 @@ class DashboardSummary extends StatelessWidget {
           child: Text(
             'พบรายชื่อวิเคราะห์ได้ตามเงื่อนไข',
             style: GoogleFonts.sarabun(
-              color: AppColors.textGray.withOpacity(0.6),
+              color: AppColors.textGray.withValues(alpha: 0.6),
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
             ),
           ),
         ),
+        // ANCHOR: Count by Ranking (รายชื่อวิเคราะห์ได้ตามเงื่อนไข)
         // Premium Stat Row - ดีไซน์ใหม่ให้พรีเมียมและโดดเด่นเสมอ
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _buildModernStatChip(
-                  icon: Icons.emoji_events_rounded,
-                  label: 'ดีเยี่ยม',
-                  value: excellentNames,
-                  // สีทองอร่ามสำหรับ Excellent
-                  color: const Color(0xFFDBB632), 
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFFFF9E6), Color(0xFFFDE68A)],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: stats
+              .map(
+                (stat) => Expanded(
+                  child: _buildSimpleStat(
+                    label: stat.label,
+                    value: stat.value,
+                    accent: stat.accent,
                   ),
-                  isProminent: true,
-                  isActive: isSatActive && isShaActive,
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildModernStatChip(
-                  icon: Icons.calculate_rounded,
-                  label: 'เลขศาสตร์',
-                  value: numerologyGood,
-                  // สีเขียวมรกตพรีเมียม
-                  color: const Color(0xFF10B981),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFECFDF5), Color(0xFFA7F3D0)],
-                  ),
-                  isActive: isSatActive,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildModernStatChip(
-                  icon: Icons.blur_on_rounded,
-                  label: 'พลังเงา',
-                  value: shadowGood,
-                  // สีน้ำเงินครามพรีเมียม
-                  color: const Color(0xFF6366F1),
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFEEF2FF), Color(0xFFC7D2FE)],
-                  ),
-                  isActive: isShaActive,
-                ),
-              ),
-            ],
-          ),
+              )
+              .toList(),
         ),
 
         // Recommended Days (if provided)
@@ -108,7 +116,9 @@ class DashboardSummary extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.bgDarker,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.accent.withOpacity(0.2)),
+              border: Border.all(
+                color: AppColors.accent.withValues(alpha: 0.2),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -122,7 +132,7 @@ class DashboardSummary extends StatelessWidget {
                 Text(
                   'ฤกษ์ดีสำหรับ: ',
                   style: GoogleFonts.sarabun(
-                    color: AppColors.textGray.withOpacity(0.7),
+                    color: AppColors.textGray.withValues(alpha: 0.7),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -131,7 +141,7 @@ class DashboardSummary extends StatelessWidget {
                   child: Text(
                     recommendedDays!,
                     style: GoogleFonts.prompt(
-                      color: AppColors.textLight.withOpacity(0.9),
+                      color: AppColors.textLight.withValues(alpha: 0.9),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -146,78 +156,33 @@ class DashboardSummary extends StatelessWidget {
     );
   }
 
-  Widget _buildModernStatChip({
-    required IconData icon,
+  Widget _buildSimpleStat({
     required String label,
     required String value,
-    required Color color,
-    required Gradient gradient,
-    bool isProminent = false,
-    bool isActive = true,
+    required Color accent,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withOpacity(isActive ? 0.4 : 0.1),
-          width: isActive ? 1.5 : 1.0,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.sarabun(
+            color: accent.withValues(alpha: 0.9),
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.1,
+          ),
         ),
-        gradient: gradient,
-        boxShadow: [
-          if (isActive)
-            BoxShadow(
-              color: color.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Small Compact Icon
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.7),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 14, color: color),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.prompt(
+            color: AppColors.textLight,
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
           ),
-          const SizedBox(width: 8),
-          // Label & Value side by side or stacked compactly
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.sarabun(
-                    color: color.withOpacity(0.8),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  value,
-                  style: GoogleFonts.prompt(
-                    color: AppColors.textLight.withOpacity(0.9),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    height: 1.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

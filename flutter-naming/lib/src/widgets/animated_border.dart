@@ -126,7 +126,7 @@ class _BorderPainter extends CustomPainter {
       ); // Stronger blur
 
     glowPaint.shader = SweepGradient(
-      colors: colors.map((c) => c.withOpacity(0.5)).toList(), // Higher opacity
+      colors: colors.map((c) => c.withValues(alpha: 0.5)).toList(), // Higher opacity
       transform: GradientRotation(animationValue * 2 * 3.14159),
     ).createShader(rect);
 
@@ -139,7 +139,7 @@ class _BorderPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
 
     neonPaint.shader = SweepGradient(
-      colors: colors.map((c) => c.withOpacity(0.8)).toList(),
+      colors: colors.map((c) => c.withValues(alpha: 0.8)).toList(),
       transform: GradientRotation(animationValue * 2 * 3.14159),
     ).createShader(rect);
 

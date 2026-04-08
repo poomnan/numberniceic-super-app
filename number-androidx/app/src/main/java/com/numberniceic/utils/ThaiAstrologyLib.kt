@@ -1,8 +1,10 @@
 package com.numberniceic.utils
 
+import com.numberniceic.BuildConfig
 import org.joda.time.DateTime
 import org.joda.time.Days
 import org.joda.time.LocalDate
+import org.json.JSONObject
 
 data class TaksaPoint(val r: Int, val c: Int)
 
@@ -20,6 +22,18 @@ data class TaksaResult(
 object ThaiAstrologyLib {
     private const val LUNAR_EPOCH_GREGORIAN_YEAR = 1900
     private const val YEAR_SELECTION_RADIUS = 12
+    private const val DEFAULT_SONGKRAN_CUTOVER_MONTH_DAY = "04-16"
+
+    data class CalendarTagBundle(
+        val kalTags: List<String>,
+        val dithiTags: List<String>,
+        val dayTypeTags: List<String>,
+        val warningTags: List<String>,
+        val otherTags: List<String>
+    ) {
+        fun prioritized(): List<String> =
+            kalTags + dithiTags + dayTypeTags + warningTags + otherTags
+    }
 
     private data class LunarState(
         val lunarYear: Int,
@@ -40,6 +54,7 @@ object ThaiAstrologyLib {
         )
     )
     private val lunarMonthLengthsCache = mutableMapOf<Int, Map<Int, Int>>()
+    private val songkranCutoverDateByYear: Map<Int, String> by lazy { parseSongkranCutoverDateByYear() }
 
     fun getYearSelectionRange(centerYearCe: Int, radius: Int = YEAR_SELECTION_RADIUS): IntRange {
         return (centerYearCe - radius)..(centerYearCe + radius)
@@ -173,6 +188,249 @@ object ThaiAstrologyLib {
         }
     }
 
+    private fun dayOfFortnight(dithiRaw: Int): Int {
+        return if (dithiRaw > 15) dithiRaw - 15 else dithiRaw
+    }
+
+    private fun parseSongkranCutoverDateByYear(): Map<Int, String> {
+        return try {
+            val root = JSONObject(BuildConfig.SONGKRAN_CUTOVER_JSON)
+            val years = root.optJSONObject("years") ?: return emptyMap()
+            buildMap {
+                years.keys().forEach { key ->
+                    val year = key.toIntOrNull() ?: return@forEach
+                    val value = years.optString(key).takeIf { it.isNotBlank() } ?: return@forEach
+                    put(year, value)
+                }
+            }
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
+
+    private fun getSongkranCutoverDate(year: Int): LocalDate {
+        val configured = songkranCutoverDateByYear[year]
+        val fallback = "$year-$DEFAULT_SONGKRAN_CUTOVER_MONTH_DAY"
+        return LocalDate.parse(configured ?: fallback)
+    }
+
+    private fun getMyHoraSolarZodiacName(date: LocalDate): String {
+        val month = date.monthOfYear
+        val day = date.dayOfMonth
+        return when {
+            (month == 4 && day >= 13) || (month == 5 && day <= 13) -> "เมษ"
+            (month == 5 && day >= 14) || (month == 6 && day <= 13) -> "พฤษภ"
+            (month == 6 && day >= 14) || (month == 7 && day <= 14) -> "มิถุน"
+            (month == 7 && day >= 15) || (month == 8 && day <= 16) -> "กรกฎ"
+            (month == 8 && day >= 17) || (month == 9 && day <= 16) -> "สิงห์"
+            (month == 9 && day >= 17) || (month == 10 && day <= 16) -> "กันย์"
+            (month == 10 && day >= 17) || (month == 11 && day <= 15) -> "ตุล"
+            (month == 11 && day >= 16) || (month == 12 && day <= 15) -> "พิจิก"
+            (month == 12 && day >= 16) || (month == 1 && day <= 15) -> "ธนู"
+            (month == 1 && day >= 16) || (month == 2 && day <= 12) -> "มกร"
+            (month == 2 && day >= 13) || (month == 3 && day <= 13) -> "กุมภ์"
+            else -> "มีน"
+        }
+    }
+
+    private fun getMyHoraMahasunTags(date: LocalDate, mThai: Int, dithiRaw: Int): List<String> {
+        val day = dayOfFortnight(dithiRaw)
+        val normalizedMonth = normalizedThaiMonth(mThai)
+        val solarZodiac = getMyHoraSolarZodiacName(date)
+        val solarMap = mapOf(
+            "เมษ" to 6, "พฤษภ" to 4, "มิถุน" to 8, "กรกฎ" to 6,
+            "สิงห์" to 10, "กันย์" to 8, "ตุล" to 12, "พิจิก" to 10,
+            "ธนู" to 2, "มกร" to 12, "กุมภ์" to 4, "มีน" to 2
+        )
+        val lunarMap = mapOf(
+            6 to 4, 3 to 4, 7 to 8, 10 to 8, 8 to 6, 5 to 6,
+            11 to 12, 2 to 12, 9 to 10, 12 to 10, 1 to 2, 4 to 2
+        )
+
+        return buildList {
+            if (solarMap[solarZodiac] == day) add("มหาสูญ [ก]")
+            if (lunarMap[normalizedMonth] == day) add("มหาสูญ [ข]")
+        }
+    }
+
+    private fun getMyHoraAyakarnTag(mThai: Int, dithiRaw: Int): String? {
+        val day = dayOfFortnight(dithiRaw)
+        val normalizedMonth = normalizedThaiMonth(mThai)
+        val rules = mapOf(
+            3 to mapOf(4 to "ปฐม", 5 to "ทุติยะ", 6 to "ตติยะ"),
+            7 to mapOf(4 to "ปฐม", 5 to "ทุติยะ", 6 to "ตติยะ"),
+            4 to mapOf(1 to "ปฐม", 2 to "ทุติยะ", 3 to "ตติยะ"),
+            10 to mapOf(1 to "ปฐม", 2 to "ทุติยะ", 3 to "ตติยะ"),
+            5 to mapOf(13 to "ปฐม", 14 to "ทุติยะ", 15 to "ตติยะ"),
+            11 to mapOf(13 to "ปฐม", 14 to "ทุติยะ", 15 to "ตติยะ"),
+            6 to mapOf(10 to "ปฐม", 11 to "ทุติยะ", 12 to "ตติยะ"),
+            8 to mapOf(6 to "ปฐม", 7 to "ทุติยะ", 8 to "ตติยะ"),
+            9 to mapOf(3 to "ปฐม", 4 to "ทุติยะ", 5 to "ตติยะ"),
+            12 to mapOf(2 to "ปฐม", 3 to "ทุติยะ", 4 to "ตติยะ"),
+            1 to mapOf(9 to "ปฐม", 10 to "ทุติยะ", 11 to "ตติยะ"),
+            2 to mapOf(7 to "ปฐม", 8 to "ทุติยะ", 9 to "ตติยะ")
+        )
+        return rules[normalizedMonth]?.get(day)?.let { "อายกรรมพลาย$it" }
+    }
+
+    private fun getMyHoraTrathuekTag(mThai: Int, dithiRaw: Int): String? {
+        val day = dayOfFortnight(dithiRaw)
+        val normalizedMonth = normalizedThaiMonth(mThai)
+        val rules = mapOf(
+            5 to 7, 6 to 7, 7 to 7, 8 to 8, 9 to 8, 10 to 8,
+            11 to 9, 12 to 9, 1 to 9, 2 to 4, 3 to 4, 4 to 4
+        )
+        return if (rules[normalizedMonth] == day) "ทรทึก" else null
+    }
+
+    fun getMyHoraAgniTag(dithiRaw: Int): String? {
+        val day = dayOfFortnight(dithiRaw)
+        val targets = mapOf(
+            1 to "อัคนิโรธ (-สัตว์)",
+            2 to "อัคนิโรธ (-ป่า)",
+            3 to "อัคนิโรธ (-น้ำ)",
+            4 to "อัคนิโรธ (-ภูเขา)",
+            5 to "อัคนิโรธ (-ที่ดิน)",
+            6 to "อัคนิโรธ (-บ้าน)",
+            7 to "อัคนิโรธ (-วัง)",
+            8 to "อัคนิโรธ (-รถ)",
+            9 to "อัคนิโรธ (-ดิน)",
+            10 to "อัคนิโรธ (-เรือ)",
+            11 to "อัคนิโรธ (-พืช)",
+            12 to "อัคนิโรธ (-สตรี)",
+            13 to "อัคนิโรธ (-บุรุษ)",
+            14 to "อัคนิโรธ (-พัทธสีมา)",
+            15 to "อัคนิโรธ (-เทพ)"
+        )
+        return targets[day]
+    }
+
+    fun getMyHoraLoyFuJomTags(dithiRaw: Int, mThai: Int): List<String> {
+        val month = normalizedThaiMonth(mThai)
+        val rules = mapOf(
+            1 to Triple(6, 1, 3),
+            2 to Triple(0, 2, 4),
+            3 to Triple(5, 0, 2),
+            4 to Triple(5, 0, 2),
+            5 to Triple(4, 6, 1),
+            6 to Triple(6, 1, 3),
+            7 to Triple(5, 0, 2),
+            8 to Triple(5, 0, 2),
+            9 to Triple(2, 4, 6),
+            10 to Triple(1, 3, 5),
+            11 to Triple(1, 3, 5),
+            12 to Triple(0, 2, 4)
+        )
+        val (loy, fu, jom) = rules[month] ?: rules.getValue(4)
+        val residue = ((dithiRaw % 7) + 7) % 7
+        return buildList {
+            if (residue == loy) add("วันลอย")
+            if (residue == fu) add("วันฟู")
+            if (residue == jom) add("วันจม")
+        }
+    }
+
+    private fun isGoodDithiTag(tag: String): Boolean {
+        return tag in setOf(
+            "มหาสิทธิโชค", "สิทธิโชค", "อำฤตโชค", "อมุตโชค", "ราชาโชค", "ชัยโชค",
+            "ไชยดิถี", "ภัทรดีถี", "ปุณณดีถี", "นันทดีถี", "มิตตะดีถี"
+        )
+    }
+
+    private fun isPrimaryDithiTag(tag: String): Boolean {
+        if (isGoodDithiTag(tag)) return true
+        if (tag in setOf(
+                "พิฆาต", "ดิถีพิฆาต", "ดิถีเรียงหมอน", "กระทิงวัน", "ทรทึก",
+                "ทึกทึน", "อัตนิโรจน์", "ทินสูญ", "กาฬโชค", "กาลสูญ",
+                "โลกวินาส", "วินาสส์", "วันบอด", "กาลทีน", "กาลกรรณี",
+                "กาลทิน", "ทินสูรย์", "กาลสูร", "กาลโชค", "ยมขันธ์", "ทักทิน", "ทัคธทิน",
+                "วินาศ", "โลกาวินาศ", "มฤตยู"
+            )) return true
+        return tag.startsWith("มหาสูญ") || tag.startsWith("อายกรรมพลาย")
+    }
+
+    private fun classifyCalendarTag(tag: String): String {
+        return when {
+            tag in setOf("วันธงชัย", "วันอธิบดี", "วันอุบาทว์/อุบาสน", "วันโลกาวินาศ") -> "kal"
+            tag in setOf("วันลอย", "วันฟู", "วันจม") -> "day_type"
+            tag.startsWith("อัคนิโรธ") -> "warning"
+            isPrimaryDithiTag(tag) -> "dithi"
+            else -> "other"
+        }
+    }
+
+    fun normalizeMyHoraDisplayTags(tags: List<String>): List<String> {
+        val normalized = mutableListOf<String>()
+        val seen = linkedSetOf<String>()
+        var chosenDayType: String? = null
+
+        tags.forEach { raw ->
+            val tag = raw.trim()
+            if (tag.isEmpty() || !seen.add(tag)) return@forEach
+            if (tag in setOf("วันลอย", "วันฟู", "วันจม")) {
+                if (chosenDayType != null) return@forEach
+                chosenDayType = tag
+            }
+            normalized += tag
+        }
+
+        return normalized
+    }
+
+    fun buildMyHoraTagBundle(displayTags: List<String>): CalendarTagBundle {
+        val kal = mutableListOf<String>()
+        val dithi = mutableListOf<String>()
+        val dayType = mutableListOf<String>()
+        val warning = mutableListOf<String>()
+        val other = mutableListOf<String>()
+
+        displayTags.forEach { tag ->
+            when (classifyCalendarTag(tag)) {
+                "kal" -> kal += tag
+                "dithi" -> dithi += tag
+                "day_type" -> dayType += tag
+                "warning" -> warning += tag
+                else -> other += tag
+            }
+        }
+
+        return CalendarTagBundle(kal, dithi, dayType, warning, other)
+    }
+
+    fun buildMyHoraDisplayTags(date: LocalDate, verifiedOverrides: Map<String, List<String>>? = null): List<String> {
+        verifiedOverrides?.get(date.toString("yyyy-MM-dd"))?.let { overrideTags ->
+            return normalizeMyHoraDisplayTags(overrideTags)
+        }
+
+        val (dithi, mThai) = getThaiLunar(date)
+        val kalayok = getKalayok(date)
+        val chok = queryMahaChok(date.dayOfWeek, dithi)
+        val tags = mutableListOf<String>()
+
+        if ("มหาสิทธิโชค" in chok) tags += "มหาสิทธิโชค"
+        if ("สิทธิโชค" in chok) tags += "สิทธิโชค"
+        if ("อำฤตโชค" in chok) tags += "อำฤตโชค"
+        if ("ราชาโชค" in chok) tags += "ราชาโชค"
+        if ("ชัยโชค" in chok) tags += "ชัยโชค"
+
+        tags += queryMyHoraPrimaryBadTags(date.dayOfWeek, dithi)
+        tags += getMyHoraMahasunTags(date, mThai, dithi)
+        getMyHoraAyakarnTag(mThai, dithi)?.let { tags += it }
+        if (isKatingDay(date)) tags += "กระทิงวัน"
+        getMyHoraTrathuekTag(mThai, dithi)?.let { tags += it }
+
+        if ("ธงชัย" in kalayok) tags += "วันธงชัย"
+        if ("อธิบดี" in kalayok) tags += "วันอธิบดี"
+        if ("อุบาทว์" in kalayok) tags += "วันอุบาทว์/อุบาสน"
+        if ("โลกาวินาศ" in kalayok) tags += "วันโลกาวินาศ"
+
+        tags += getMyHoraLoyFuJomTags(dithi, mThai)
+        if (isRiangMon(dithi)) tags += "ดิถีเรียงหมอน"
+        getMyHoraAgniTag(dithi)?.let { tags += it }
+
+        return normalizeMyHoraDisplayTags(tags)
+    }
+
     private fun lunarMonthLength(thaiMonth: Int, lunarYear: Int): Int {
         return lunarMonthLengths(lunarYear)[thaiMonth]
             ?: error("Unknown Thai lunar month $thaiMonth in lunar year $lunarYear")
@@ -256,51 +514,81 @@ object ThaiAstrologyLib {
 
     fun canResolveThaiLunar(date: LocalDate): Boolean = true
 
-    // ตารางผังดาว (3x3 Grid)
+    // ตารางผังดาว (3x3 Grid) - ทิศมาตรฐาน
+    // 6 1 2
+    // 5 0 3
+    // 4 8 7
     val BOARD = arrayOf(
-        intArrayOf(1, 2, 3),
-        intArrayOf(6, 0, 4),
-        intArrayOf(8, 5, 7)
+        intArrayOf(6, 1, 2),
+        intArrayOf(5, 0, 3),
+        intArrayOf(4, 8, 7)
     )
 
-    // ลำดับการนับ (Clockwise Path)
+    // ลำดับการนับ (Clockwise Path) - อาทิตย์(1) -> จันทร์(2) -> อังคาร(3) -> พุธ(4) -> เสาร์(7) -> พฤหัส(5) -> ราหู(8) -> ศุกร์(6)
+    // จุดพัก (0) จะถูกข้ามในการนับปกติ
     val MASTER_PATH = listOf(
-        TaksaPoint(0, 0), TaksaPoint(0, 1), TaksaPoint(0, 2),
-        TaksaPoint(1, 2), TaksaPoint(2, 2), TaksaPoint(2, 1),
-        TaksaPoint(2, 0), TaksaPoint(1, 0), TaksaPoint(1, 1)
+        TaksaPoint(0, 1), // 1 อาทิตย์
+        TaksaPoint(0, 2), // 2 จันทร์
+        TaksaPoint(1, 2), // 3 อังคาร
+        intArrayOf(1, 0).let { TaksaPoint(2, 2) }, // 4 พุธ(กลางวัน) - Wait, let's just list points directly
+        TaksaPoint(2, 2), // 4 พุธ(กลางวัน) - No, standard sequence: 1,2,3,4,7,5,8,6
+        // Fixed coordinates for sequence 1,2,3,4,7,5,8,6
+        TaksaPoint(0, 1), // 1 (N)
+        TaksaPoint(0, 2), // 2 (NE)
+        TaksaPoint(1, 2), // 3 (E)
+        TaksaPoint(2, 2), // 4 (SE)
+        TaksaPoint(2, 1), // 8 (S) - Rahu
+        TaksaPoint(2, 0), // 7 (SW) - Saturday
+        TaksaPoint(1, 0), // 5 (W) - Thursday
+        TaksaPoint(0, 0)  // 6 (NW) - Friday
+    )
+    // Actually the standard 8-direction sequence in Taksa is: 1, 2, 3, 4, 7, 5, 8, 6.
+    // Let's use a explicit list of day numbers in order to find indices.
+    private val TAKSA_SEQUENCE = listOf(1, 2, 3, 4, 7, 5, 8, 6)
+    private val TAKSA_COORDS = listOf(
+        TaksaPoint(0, 1), // 1 อาทิตย์
+        TaksaPoint(0, 2), // 2 จันทร์
+        TaksaPoint(1, 2), // 3 อังคาร
+        TaksaPoint(2, 2), // 4 พุธ(กลางวัน)
+        TaksaPoint(2, 1), // 8 ราหู
+        TaksaPoint(2, 0), // 7 เสาร์
+        TaksaPoint(1, 0), // 5 พฤหัส
+        TaksaPoint(0, 0)  // 6 ศุกร์
     )
 
     fun calculateTaksa(birthDate: LocalDate, birthDayNum: Int): TaksaResult {
-        val now = LocalDate.now()
-        
-        // 1. คำนวณอายุย่าง (ไทย)
-        var ageFull = now.year - birthDate.year
-        if (now.monthOfYear < birthDate.monthOfYear || (now.monthOfYear == birthDate.monthOfYear && now.dayOfMonth < birthDate.dayOfMonth)) {
+        return calculateTaksa(birthDate, birthDayNum, LocalDate.now())
+    }
+
+    fun calculateTaksa(birthDate: LocalDate, birthDayNum: Int, referenceDate: LocalDate): TaksaResult {
+        // 1. คำนวณอายุย่าง ณ วันอ้างอิง
+        var ageFull = referenceDate.year - birthDate.year
+        if (referenceDate.monthOfYear < birthDate.monthOfYear || (referenceDate.monthOfYear == birthDate.monthOfYear && referenceDate.dayOfMonth < birthDate.dayOfMonth)) {
             ageFull--
         }
         val ageNext = ageFull + 1
 
-        // 2. ผลรวมอายุย่าง (Digital Root)
-        var sumAge = sumDigits(ageNext)
+        // 2. หาจุดเริ่มต้น (ตำแหน่งวันเกิดในวงโคจร 8 ทิศ)
+        val startIdx = TAKSA_SEQUENCE.indexOf(birthDayNum)
+        val birthPos = TAKSA_COORDS[startIdx]
+
+        // 3. คำนวณจุดปัจจุบัน (นับตามอายุย่าง 1 ก้าวต่อปี)
+        // เริ่มก้าวที่ 1 ที่วันเกิดตัวเอง
+        val currentIdx = (startIdx + (ageNext - 1)) % 8
+        val targetPos = TAKSA_COORDS[currentIdx]
+
+        // 4. คำนวณกาลกิณี (จุดเสีย)
+        // ในทักษา กาลกิณีคือจุดที่ 8 จากจุดตั้งต้น (หรือถอยหลัง 1 ก้าว)
         
-        // 3. หาจุดเริ่มต้น (พิกัดวันเกิด)
-        val startIdx = MASTER_PATH.indexOfFirst { BOARD[it.r][it.c] == birthDayNum }
-        val birthPos = MASTER_PATH[startIdx]
+        // กาลกิณีจร (ตามอายุย่าง)
+        val badIdx = (currentIdx + 7) % 8
+        val badPos = TAKSA_COORDS[badIdx]
 
-        // 4. นับก้าว (เริ่มที่วันเกิดเป็นก้าวที่ 1)
-        val pathLen = MASTER_PATH.size
-        val targetIdx = (startIdx + (sumAge - 1)) % pathLen
-        val targetPos = MASTER_PATH[targetIdx]
+        // กาลกิณีวันเกิด (ถาวร)
+        val birthBadIdx = (startIdx + 7) % 8
+        val birthBadPos = TAKSA_COORDS[birthBadIdx]
 
-        // 5. จุดอัปมงคลอายุย่าง (ถอยหลัง 1 ก้าว)
-        val badIdx = (targetIdx - 1 + pathLen) % pathLen
-        val badPos = MASTER_PATH[badIdx]
-
-        // 6. จุดอัปมงคลวันเกิด (ถอยหลัง 1 ก้าวจากวันเกิด)
-        val birthBadIdx = (startIdx - 1 + pathLen) % pathLen
-        val birthBadPos = MASTER_PATH[birthBadIdx]
-
-        return TaksaResult(BOARD, MASTER_PATH, targetPos, badPos, birthBadPos, birthPos, ageNext, sumAge)
+        return TaksaResult(BOARD, TAKSA_COORDS, targetPos, badPos, birthBadPos, birthPos, ageNext, ageNext)
     }
 
     private fun sumDigits(n: Int): Int {
@@ -321,15 +609,16 @@ object ThaiAstrologyLib {
      */
     fun getKalayok(date: LocalDate): List<String> {
         val tags = mutableListOf<String>()
-        val w = date.dayOfWeek // 1=Mon ... 7=Sun
-        val csYear = if (!date.isBefore(LocalDate(date.year, 4, 16))) date.year - 638 else date.year - 639
+        val weekday = date.dayOfWeek // 1=Mon ... 7=Sun
+        val cutoverDate = getSongkranCutoverDate(date.year)
+        val csYear = if (!date.isBefore(cutoverDate)) date.year - 638 else date.year - 639
         val remainder = ((csYear % 7) + 7) % 7
         val rem = if (remainder == 0) 7 else remainder
 
-        if (w == kalayokTongchaiByCsRemainder[rem]) tags.add("ธงชัย")
-        if (w == kalayokAtipbadeeByCsRemainder[rem]) tags.add("อธิบดี")
-        if (w == kalayokUbathByCsRemainder[rem]) tags.add("อุบาทว์")
-        if (w == kalayokLokawinatByCsRemainder[rem]) tags.add("โลกาวินาศ")
+        if (weekday == kalayokTongchaiByCsRemainder[rem]) tags.add("ธงชัย")
+        if (weekday == kalayokAtipbadeeByCsRemainder[rem]) tags.add("อธิบดี")
+        if (weekday == kalayokUbathByCsRemainder[rem]) tags.add("อุบาทว์")
+        if (weekday == kalayokLokawinatByCsRemainder[rem]) tags.add("โลกาวินาศ")
 
         return tags
     }
@@ -455,6 +744,10 @@ object ThaiAstrologyLib {
         var d = dithiRaw
         if (d > 15) d -= 15
 
+        if (w == 5) {
+            res.add("ห้ามเผาผี")
+        }
+
         // Mapping from User's Table (Sun=7, Mon=1... Sat=6)
         val badMap = mapOf(
             "ทึกทึน" to mapOf(7 to 1, 1 to 4, 2 to 6, 3 to 9, 4 to 5, 5 to 3, 6 to 7),
@@ -487,6 +780,70 @@ object ThaiAstrologyLib {
 
 
         return res
+    }
+
+    /**
+     * MyHora primary bad dithi rules.
+     * Weekday uses Joda/ISO numbering: Mon=1 ... Sun=7.
+     */
+    fun queryMyHoraPrimaryBadTags(w: Int, dithiRaw: Int): List<String> {
+        var d = dithiRaw
+        if (d > 15) d -= 15
+
+        val badMap = linkedMapOf(
+            "ทักทิน" to mapOf(7 to 1, 1 to 4, 2 to 5, 3 to 9, 4 to 5, 5 to 3, 6 to 7),
+            "ยมขันธ์" to mapOf(7 to 12, 1 to 11, 2 to 7, 3 to 3, 4 to 6, 5 to 8, 6 to 9),
+            "ทัคธทิน" to mapOf(7 to 4, 1 to 6, 2 to 1, 3 to 3, 4 to 3, 5 to 9, 6 to 1),
+            "ทินกาล" to mapOf(7 to 12, 1 to 10, 2 to 15, 3 to 8, 4 to 5, 5 to listOf(3, 7), 6 to 8),
+            "ทินสูรย์" to mapOf(7 to 4, 1 to 6, 2 to 1, 3 to 3, 4 to listOf(3, 7), 5 to 9, 6 to 1),
+            "กาลโชค" to mapOf(7 to 4, 1 to 2, 2 to 7, 3 to 5, 4 to 8, 5 to 3, 6 to 6),
+            "กาลสูร" to mapOf(7 to 12, 1 to 11, 2 to 10, 3 to 9, 4 to 8, 5 to 7, 6 to 6),
+            "กาลทัณฑ์" to mapOf(7 to 4, 1 to 6, 2 to 10, 3 to 9, 4 to 8, 5 to 9, 6 to 1),
+            "โลกาวินาศ" to mapOf(7 to 4, 1 to 5, 2 to 6, 3 to 6, 4 to 8, 5 to 8, 6 to 9),
+            "วินาศ" to mapOf(7 to 6, 1 to 10, 2 to 8, 3 to 7, 4 to 12, 5 to 9, 6 to 12),
+            "พิลา" to mapOf(7 to 9, 1 to 1, 2 to 10, 3 to 9, 4 to 8, 5 to 7, 6 to 6),
+            "มฤตยู" to mapOf(7 to 7, 1 to 8, 2 to 4, 3 to 7, 4 to 1, 5 to 14, 6 to 11),
+            "บอด" to mapOf(7 to 5, 1 to 6, 2 to 10, 3 to 8, 4 to 11, 5 to 5, 6 to 7),
+            "กาลทิน" to mapOf(7 to 12, 1 to 11, 2 to 7, 3 to 3, 4 to 6, 5 to 8, 6 to 9),
+            "พิฆาต" to mapOf(7 to 12, 1 to 11, 2 to 7, 3 to 3, 4 to 6, 5 to 9, 6 to 8),
+            "กาลกรรณี" to mapOf(7 to 5, 1 to 6, 2 to 15, 3 to 8, 4 to 1, 5 to 2, 6 to 10)
+        )
+
+        fun matches(ruleValue: Any?): Boolean {
+            return when (ruleValue) {
+                is Int -> ruleValue == d
+                is List<*> -> ruleValue.filterIsInstance<Int>().contains(d)
+                else -> false
+            }
+        }
+
+        val matches = badMap
+            .filterValues { rule -> matches(rule[w]) }
+            .keys
+            .toList()
+
+        if ("พิฆาต" in matches) {
+            return listOf("พิฆาต", "ดิถีพิฆาต")
+        }
+
+        val priority = listOf(
+            "กาลกรรณี",
+            "พิฆาต",
+            "ทินสูรย์",
+            "กาลทิน",
+            "มฤตยู",
+            "บอด",
+            "วินาศ",
+            "โลกาวินาศ",
+            "กาลสูร",
+            "กาลโชค",
+            "ทินกาล",
+            "ทัคธทิน",
+            "ยมขันธ์",
+            "ทักทิน"
+        )
+
+        return priority.firstOrNull { it in matches }?.let(::listOf).orEmpty()
     }
 
     /**
@@ -534,8 +891,7 @@ object ThaiAstrologyLib {
      * dithiRaw: 1-15 (Waxing), 16-30 (Waning)
      */
     fun queryDithiCommonProhibitions(dithiRaw: Int): String? {
-        if (dithiRaw == 15 || dithiRaw == 30) return "ห้ามเผาผี" // ขึ้น 15 ค่ำ / แรม 15 ค่ำ
-        if (dithiRaw == 22) return "ห้ามแต่งงาน" // แรม 7 ค่ำ
+        if (dithiRaw == 7 || dithiRaw == 22) return "ห้ามแต่งงาน" // ขึ้น 7 ค่ำ / แรม 7 ค่ำ
         var d = dithiRaw
         if (d > 15) d -= 15
         

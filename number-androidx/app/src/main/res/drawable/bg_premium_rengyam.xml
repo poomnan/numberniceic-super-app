@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Main Background: Premium Metallic Gold Gradient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="0"
+                android:startColor="#FAF3CF"
+                android:centerColor="#F1D369"
+                android:endColor="#FAF3CF" />
+            <corners android:radius="12dp" />
+            <stroke
+                android:width="1dp"
+                android:color="#D4AF37" />
+        </shape>
+    </item>
+
+    <!-- Subtle Grain/Texture or Internal Shadow can be added later -->
+</layer-list>

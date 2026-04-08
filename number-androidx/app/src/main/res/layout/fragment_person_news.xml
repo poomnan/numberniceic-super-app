@@ -464,7 +464,7 @@
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
                                             android:fontFamily="@font/sarabun_regular"
-                                            android:textColor="#000000"
+                                            android:textColor="#0091EA"
                                             android:textSize="15sp"
                                             tools:text="วันศุกร์" />
 
@@ -483,7 +483,7 @@
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
                                             android:fontFamily="@font/sarabun_regular"
-                                            android:textColor="#000000"
+                                            android:textColor="#0091EA"
                                             android:textSize="15sp"
                                             tools:text="11" />
 
@@ -493,7 +493,7 @@
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
                                             android:fontFamily="@font/sarabun_regular"
-                                            android:textColor="#000000"
+                                            android:textColor="#0091EA"
                                             android:textSize="15sp"
                                             tools:text="มกราคม" />
 
@@ -503,7 +503,7 @@
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="4dp"
                                             android:fontFamily="@font/sarabun_regular"
-                                            android:textColor="#000000"
+                                            android:textColor="#0091EA"
                                             android:textSize="15sp"
                                             tools:text="2562" />
 

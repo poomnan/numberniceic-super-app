@@ -70,10 +70,10 @@ class _PaywallDialogContentState extends State<PaywallDialogContent> {
             colors: [Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460)],
           ),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.amber.withOpacity(0.3), width: 1.5),
+          border: Border.all(color: Colors.amber.withValues(alpha: 0.3), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.amber.withOpacity(0.1),
+              color: Colors.amber.withValues(alpha: 0.1),
               blurRadius: 30,
               spreadRadius: 5,
             ),
@@ -95,7 +95,7 @@ class _PaywallDialogContentState extends State<PaywallDialogContent> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.amber.withOpacity(0.4),
+                      color: Colors.amber.withValues(alpha: 0.4),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -174,7 +174,7 @@ class _PaywallDialogContentState extends State<PaywallDialogContent> {
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   "฿259 ครั้งเดียว ใช้ได้ตลอด",
@@ -292,7 +292,7 @@ class _PaywallDialogContentState extends State<PaywallDialogContent> {
           child: Text(
             text,
             style: GoogleFonts.sarabun(
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withValues(alpha: 0.85),
               fontSize: 15,
             ),
           ),

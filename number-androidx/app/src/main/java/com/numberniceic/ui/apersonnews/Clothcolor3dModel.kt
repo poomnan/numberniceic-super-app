@@ -34,8 +34,9 @@ class Clothcolor3dModel: ViewModel() {
         val presentDateTime = DateTime()
 
 
+        val dayEng = presentDateTime.dayOfWeek().getAsText(java.util.Locale.ENGLISH)
         val datex = PersonContextManager.convertDayThToEng(presentDateTime.dayOfWeek().asText)
-        val presentDateConvertToEng = if(datex != "") datex else presentDateTime.dayOfWeek().asText
+        val presentDateConvertToEng = if(datex != "") datex else dayEng
 
         return presentDateConvertToEng == "Wednesday"
 
@@ -315,8 +316,13 @@ class Clothcolor3dModel: ViewModel() {
 
     fun getCurrentDatePlus(daynum:Int):String {
         val dt = DateTime()
-        val day = if (PersonContextManager.toThaiDay(dt.plusDays(daynum).dayOfWeek().asText) == "") dt.plusDays(daynum).dayOfWeek().asText else PersonContextManager.toThaiDay(dt.plusDays(daynum).dayOfWeek().asText)
-        val month = if (PersonContextManager.toThaiMonth(dt.plusDays(daynum).monthOfYear().asText)[1] == "") PersonContextManager.monthTH2FullTH(dt.plusDays(daynum).monthOfYear().asText)[1] else PersonContextManager.toThaiMonth(dt.plusDays(daynum).monthOfYear().asText)[1]
+        val dtTarget = dt.plusDays(daynum)
+        val dayLabelEng = dtTarget.dayOfWeek().getAsText(java.util.Locale.ENGLISH)
+        val thaiDay = PersonContextManager.toThaiDay(dayLabelEng)
+        val day = if (thaiDay == "") dtTarget.dayOfWeek().asText else thaiDay
+        val dtWithOffset = dt.plusDays(daynum)
+        val monthLabelEng = dtWithOffset.monthOfYear().getAsText(java.util.Locale.ENGLISH)
+        val month = if (PersonContextManager.toThaiMonth(monthLabelEng)[1] == "") PersonContextManager.monthTH2FullTH(dtWithOffset.monthOfYear().asText)[1] else PersonContextManager.toThaiMonth(monthLabelEng)[1]
         val dayStringBuilder = StringBuilder()
 
         dayStringBuilder.append("สีเสื้อผ้า ")

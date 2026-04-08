@@ -4,6 +4,13 @@ apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 
+def songkranCutoverConfigFile = file('../../shared/rengyam/songkran_cutover_dates.json')
+def songkranCutoverJson = songkranCutoverConfigFile.text
+        .trim()
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+        .replace("\r", "")
+        .replace("\n", "\\n")
 
 android {
     namespace 'com.numberniceic'
@@ -12,9 +19,10 @@ android {
         applicationId "com.numberniceic"
         minSdk rootProject.min_sdk
         targetSdk rootProject.target_sdk
-        versionCode 65
-        versionName "5.9 vc50"
+        versionCode 96
+        versionName "5.9.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "SONGKRAN_CUTOVER_JSON", "\"${songkranCutoverJson}\""
     }
 
     signingConfigs {
@@ -56,7 +64,16 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "NumberNice_v${variant.versionName}_vc${variant.versionCode}.apk"
+            def safeVersionName = (variant.versionName ?: "unknown")
+                    .replaceAll(/[^A-Za-z0-9._-]+/, "_")
+                    .replaceAll(/_+/, "_")
+            outputFileName = "NumberNice_v${safeVersionName}_vc${variant.versionCode}.apk"
+        }
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs += file('../../shared')
         }
     }
 
