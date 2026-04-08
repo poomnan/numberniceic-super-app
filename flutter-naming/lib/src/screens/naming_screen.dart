@@ -42,7 +42,7 @@ class _NamingScreenState extends State<NamingScreen>
   int? _selectedExampleIndex; // Track which search idea is active
   String? _selectedDay;
   bool _filterSat = false;
-  bool _filterSha = false;
+  bool _filterSha = true;
   bool _filterKaki = false;
   List<MobileNameResult> _results = [];
   List<Map<String, dynamic>> _celebrities = [];
@@ -257,7 +257,7 @@ class _NamingScreenState extends State<NamingScreen>
       if (scrollToResults) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            scrollToSearchField();
+            scrollToBottom();
           }
         });
       }
@@ -772,6 +772,20 @@ class _NamingScreenState extends State<NamingScreen>
           duration: const Duration(milliseconds: 700),
           curve: Curves.easeInOutCubic,
           alignment: 0.04, // Keep the whole input card above the keyboard
+        );
+      }
+    });
+  }
+
+  void scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = _step2Key.currentContext;
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 700),
+          curve: Curves.easeInOutCubic,
+          alignment: 1.0, // Keep the footer anchor pinned near the bottom
         );
       }
     });
@@ -1445,7 +1459,7 @@ class _NamingScreenState extends State<NamingScreen>
                 onPressed: () {
                   setState(() {
                     _filterSat = false;
-                    _filterSha = false;
+                    _filterSha = true;
                     _filterKaki = false;
                   });
                 },
@@ -1902,7 +1916,7 @@ class _NamingScreenState extends State<NamingScreen>
                               _selectedExampleIndex = index;
                               _selectedCelebrityIndex = null;
                               _filterSat = false;
-                              _filterSha = false;
+                              _filterSha = true;
                             });
                             _search();
                             scrollToSearchField();
@@ -3089,7 +3103,7 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // ANCHOR: 3ButtonPremium (3ปุ่มพรีเมี่ยม)
+                  // ANCHOR: 2ButtonPremium (2ปุ่มพรีเมี่ยม)
                   Wrap(
                     spacing: 10,
                     runSpacing: 14, // Increased from 10
@@ -3120,6 +3134,7 @@ class _NamingScreenState extends State<NamingScreen>
                           }
                         },
                       ),
+                      // ANCHOR: ButtonShadow (ปุ่มพลังเงาดี)
                       FilterChipWidget(
                         label: "พลังเงาดี",
                         icon: Icons.shield_rounded,
