@@ -105,11 +105,30 @@ class ApiService {
       }
 
       if (response.statusCode == 200) {
-        final data = _decodeJsonBody(
+        final data = _decodeJsonBody<Map<String, dynamic>>(
           response,
           fallbackMessage: 'เซิร์ฟเวอร์ตอบกลับไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง',
         );
-        return MobileSearchResponse.fromJson(data);
+        var searchResponse = MobileSearchResponse.fromJson(data);
+
+        if (searchResponse.results.isEmpty && searchResponse.total > 0) {
+          final retryResponse = await _postJsonWithRetry(
+            url,
+            body,
+            retryOnEmptyBody: true,
+            timeout: timeout,
+          );
+          if (retryResponse.statusCode == 200) {
+            final retryData = _decodeJsonBody<Map<String, dynamic>>(
+              retryResponse,
+              fallbackMessage:
+                  'เซิร์ฟเวอร์ตอบกลับไม่สมบูรณ์ กรุณาลองใหม่อีกครั้ง',
+            );
+            searchResponse = MobileSearchResponse.fromJson(retryData);
+          }
+        }
+
+        return searchResponse;
       } else {
         throw ApiException(
           'ระบบขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง',
