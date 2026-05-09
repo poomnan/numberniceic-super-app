@@ -69,6 +69,7 @@ class _NamingScreenState extends State<NamingScreen>
   int _suggestionDebounceRequestId = 0;
   int _suggestionGuardRequestId = 0;
   int _celebsResumeRequestId = 0;
+  Timer? _filterDebounce;
   final FocusNode _searchFocusNode = FocusNode();
   late AnimationController _celebsAnimController;
   double _celebsScrollPos = 0.0;
@@ -975,6 +976,34 @@ class _NamingScreenState extends State<NamingScreen>
     _search(scrollToResults: false);
   }
 
+  void _onFilterToggled() {
+    _filterDebounce?.cancel();
+    _filterDebounce = Timer(const Duration(milliseconds: 500), () async {
+      if (!mounted) return;
+      try {
+        await _refreshResultsKeepingStep2Anchor();
+      } catch (e, stack) {
+        debugPrint('Error refreshing premium filters: $e');
+        debugPrint('Stack trace: $stack');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('เกิดข้อผิดพลาด: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSatLoading = false;
+            _isShaLoading = false;
+          });
+        }
+      }
+    });
+  }
+
   bool get _isSubmittingSearch => _isLoading || _isLoadingNameIntent;
 
   String _inputActionLabel({required bool isBusy}) {
@@ -994,6 +1023,7 @@ class _NamingScreenState extends State<NamingScreen>
 
   @override
   void dispose() {
+    _filterDebounce?.cancel();
     _flutterTts.stop();
     _searchFocusNode.dispose();
     _celebsAnimController.dispose();
@@ -4093,28 +4123,7 @@ class _NamingScreenState extends State<NamingScreen>
                             }
                             return;
                           }
-                          await Future.delayed(
-                            const Duration(milliseconds: 350),
-                          ); // Magic feel
-                          if (!mounted) return;
-                          try {
-                            await _refreshResultsKeepingStep2Anchor();
-                          } catch (e, stack) {
-                            debugPrint('Error in เลขศาสตร์ดี search: $e');
-                            debugPrint('Stack trace: $stack');
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'เกิดข้อผิดพลาด: ${e.toString()}',
-                                  ),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          } finally {
-                            if (mounted) setState(() => _isSatLoading = false);
-                          }
+                          _onFilterToggled();
                         },
                       ),
                       // ANCHOR: ButtonShadow (ปุ่มพลังเงาดี)
@@ -4171,14 +4180,7 @@ class _NamingScreenState extends State<NamingScreen>
                             }
                             return;
                           }
-                          await Future.delayed(
-                            const Duration(milliseconds: 350),
-                          ); // Magic feel
-                          try {
-                            await _refreshResultsKeepingStep2Anchor();
-                          } finally {
-                            if (mounted) setState(() => _isShaLoading = false);
-                          }
+                          _onFilterToggled();
                         },
                       ),
                     ],

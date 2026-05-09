@@ -124,6 +124,22 @@ var mobileSearchCache = struct {
 const mobileSearchCacheTTL = 45 * time.Second
 const mobileSearchCacheMaxEntries = 500
 
+type seedAnalysisCacheEntry struct {
+	targetSatSums []int
+	targetShaSums []int
+	expiresAt     time.Time
+}
+
+var seedAnalysisCache = struct {
+	sync.RWMutex
+	items map[string]seedAnalysisCacheEntry
+}{
+	items: map[string]seedAnalysisCacheEntry{},
+}
+
+const seedAnalysisCacheTTL = 2 * time.Minute
+const seedAnalysisCacheMaxEntries = 300
+
 type RetrievalStageMeta struct {
 	Stage            string `json:"stage"`
 	Pool             string `json:"pool"`
@@ -142,6 +158,13 @@ type doubleGoodStageConfig struct {
 	AllowEitherGood    bool
 	RelaxedNumerology  bool
 	DisableNumerology  bool
+}
+
+type poolResult struct {
+	Pool    string
+	Results []MobileNameResult
+	Stats   retrievalScanStats
+	Err     error
 }
 
 type RetrievalMeta struct {
@@ -241,6 +264,58 @@ func setCachedMobileSearchResponse(key string, resp MobileSearchResponse) {
 		expiresAt: now.Add(mobileSearchCacheTTL),
 	}
 	mobileSearchCache.Unlock()
+}
+
+func makeSeedAnalysisCacheKey(req MobileSearchRequest, lastnameSat int, lastnameSha int) string {
+	return strings.Join([]string{
+		strings.TrimSpace(req.Keyword),
+		strings.TrimSpace(req.SemanticMeaning),
+		strings.TrimSpace(req.Lastname),
+		fmt.Sprintf("ls=%d", lastnameSat),
+		fmt.Sprintf("lh=%d", lastnameSha),
+		fmt.Sprintf("sat=%t", req.FilterSat),
+		fmt.Sprintf("sha=%t", req.FilterSha),
+		fmt.Sprintf("sim=%t", req.SimilarMode),
+	}, "|")
+}
+
+func getCachedSeedAnalysis(key string) (seedAnalysisCacheEntry, bool) {
+	now := time.Now()
+	seedAnalysisCache.RLock()
+	entry, ok := seedAnalysisCache.items[key]
+	seedAnalysisCache.RUnlock()
+	if !ok || now.After(entry.expiresAt) {
+		return seedAnalysisCacheEntry{}, false
+	}
+	return seedAnalysisCacheEntry{
+		targetSatSums: append([]int(nil), entry.targetSatSums...),
+		targetShaSums: append([]int(nil), entry.targetShaSums...),
+		expiresAt:     entry.expiresAt,
+	}, true
+}
+
+func setCachedSeedAnalysis(key string, satSums []int, shaSums []int) {
+	now := time.Now()
+	seedAnalysisCache.Lock()
+	if len(seedAnalysisCache.items) >= seedAnalysisCacheMaxEntries {
+		for k, v := range seedAnalysisCache.items {
+			if now.After(v.expiresAt) {
+				delete(seedAnalysisCache.items, k)
+			}
+		}
+		if len(seedAnalysisCache.items) >= seedAnalysisCacheMaxEntries {
+			for k := range seedAnalysisCache.items {
+				delete(seedAnalysisCache.items, k)
+				break
+			}
+		}
+	}
+	seedAnalysisCache.items[key] = seedAnalysisCacheEntry{
+		targetSatSums: append([]int(nil), satSums...),
+		targetShaSums: append([]int(nil), shaSums...),
+		expiresAt:     now.Add(seedAnalysisCacheTTL),
+	}
+	seedAnalysisCache.Unlock()
 }
 
 // calculateBonus calculates the bonus score based on frontend ranking logic
@@ -1283,12 +1358,29 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	searchTimeout := 25 * time.Second
+	searchTimeout := 55 * time.Second
+	if req.FilterSat || req.FilterSha {
+		searchTimeout = 55 * time.Second
+	}
 	if req.FilterSat && req.FilterSha {
-		searchTimeout = 60 * time.Second
+		searchTimeout = 110 * time.Second
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), searchTimeout)
 	defer cancel()
+
+	_, err := database.DB.ExecContext(
+		ctx,
+		fmt.Sprintf(
+			"SET LOCAL statement_timeout = '%ds'",
+			int(searchTimeout.Seconds()),
+		),
+	)
+	if err != nil {
+		log.Printf("Failed to set statement_timeout: %v", err)
+	}
+	if _, err := database.DB.ExecContext(ctx, "SET LOCAL work_mem = '256MB'"); err != nil {
+		log.Printf("Failed to set work_mem: %v", err)
+	}
 
 	log.Printf("Search param: Keyword='%s', Meaning='%s'", req.Keyword, req.SemanticMeaning)
 	cacheKey := makeMobileSearchCacheKey(req)
@@ -1362,25 +1454,41 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	targetSatSums := []int{}
 	targetShaSums := []int{}
-
-	if req.SimilarMode && req.Lastname != "" {
-		for _, s := range goodSums {
-			if s > lastnameSat {
-				baseSat := s - lastnameSat
-				if !req.FilterSat || goodSumMap[baseSat] {
-					targetSatSums = append(targetSatSums, baseSat)
-				}
-			}
-			if s > lastnameSha {
-				baseSha := s - lastnameSha
-				if !req.FilterSha || goodSumMap[baseSha] {
-					targetShaSums = append(targetShaSums, baseSha)
-				}
-			}
+	seedCacheKey := ""
+	useSeedCache := strings.TrimSpace(req.Keyword) != "" && strings.TrimSpace(req.SemanticMeaning) != ""
+	if useSeedCache {
+		seedCacheKey = makeSeedAnalysisCacheKey(req, lastnameSat, lastnameSha)
+		if cachedSeed, ok := getCachedSeedAnalysis(seedCacheKey); ok {
+			targetSatSums = cachedSeed.targetSatSums
+			targetShaSums = cachedSeed.targetShaSums
+			log.Printf("[PERF] seed analysis cache hit sat=%d sha=%d", len(targetSatSums), len(targetShaSums))
 		}
-	} else {
-		targetSatSums = goodSums
-		targetShaSums = goodSums
+	}
+
+	if len(targetSatSums) == 0 || len(targetShaSums) == 0 {
+		if req.SimilarMode && req.Lastname != "" {
+			for _, s := range goodSums {
+				if s > lastnameSat {
+					baseSat := s - lastnameSat
+					if !req.FilterSat || goodSumMap[baseSat] {
+						targetSatSums = append(targetSatSums, baseSat)
+					}
+				}
+				if s > lastnameSha {
+					baseSha := s - lastnameSha
+					if !req.FilterSha || goodSumMap[baseSha] {
+						targetShaSums = append(targetShaSums, baseSha)
+					}
+				}
+			}
+		} else {
+			targetSatSums = goodSums
+			targetShaSums = goodSums
+		}
+		if useSeedCache {
+			setCachedSeedAnalysis(seedCacheKey, targetSatSums, targetShaSums)
+			log.Printf("[PERF] seed analysis cache store sat=%d sha=%d", len(targetSatSums), len(targetShaSums))
+		}
 	}
 
 	if len(targetSatSums) == 0 {
@@ -1463,6 +1571,84 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	buildQuery := func(relaxFilters bool, pool string, dgStage *doubleGoodStageConfig) (string, []interface{}) {
 		isBroadSearch := searchContext.IsBroadSearch
 		keywordLen := utf8.RuneCountInString(req.Keyword)
+
+		if pool == "spiritual" && doubleGoodMode && searchContext.HasKeywordSignal {
+			selectCols := "name_id, thname, meaning, gender, sat_sum, sha_sum, " +
+				searchContext.SelectProjection() +
+				"0.0 as bonus_calculated, phonetic_summary, phonetic_score, pronunciation_ease, euphony_score, rhythm_score"
+			commonWhere := "char_length(thname) BETWEEN 2 AND 8"
+			args := []interface{}{
+				formatVector(embedding),
+				searchContext.WordContext,
+				pq.Array(targetSatSums),
+				pq.Array(targetShaSums),
+			}
+			argCounter := 5
+			if req.FilterKaki && kakiColumn != "" {
+				commonWhere += fmt.Sprintf(" AND %s = false", kakiColumn)
+			}
+			if req.Lastname != "" {
+				commonWhere += fmt.Sprintf(" AND thname != $%d", argCounter)
+				args = append(args, req.Lastname)
+				argCounter++
+			}
+			exactBoost := ""
+			if req.Keyword != "" && !req.SimilarMode {
+				exactBoost = fmt.Sprintf(" OR thname = $%d", argCounter)
+				args = append(args, req.Keyword)
+				argCounter++
+			}
+			minTrigram := 0.002
+			if keywordLen <= 3 {
+				minTrigram = 0.0005
+			}
+			if dgStage != nil && dgStage.MinTrigram > 0 {
+				minTrigram = dgStage.MinTrigram
+			}
+			limitVal := searchContext.CandidateLimit
+			if limitVal < 500 {
+				limitVal = 500
+			}
+			if keywordLen <= 3 && limitVal < 600 {
+				limitVal = 600
+			}
+			branchLimit := 300
+			if keywordLen <= 3 {
+				branchLimit = 360
+			}
+			query := fmt.Sprintf(`
+				SELECT name_id, thname, meaning, gender, sat_sum, sha_sum,
+				       distance, root_score, semantic_score, hybrid_score,
+				       bonus_calculated, phonetic_summary, phonetic_score,
+				       pronunciation_ease, euphony_score, rhythm_score
+				FROM (
+					(SELECT %s, 2 AS _prio
+					 FROM names_miracle
+					 WHERE %s
+					   AND ((sat_sum = ANY($3::int[]) AND sha_sum = ANY($4::int[]))%s)
+					 LIMIT %d)
+					UNION ALL
+					(SELECT %s, 1 AS _prio
+					 FROM names_miracle
+					 WHERE %s
+					   AND GREATEST(COALESCE(similarity(thname, $2), 0), COALESCE(word_similarity(thname, $2), 0)) >= %g
+					 LIMIT %d)
+				) spiritual_union
+				ORDER BY _prio DESC, char_length(thname) ASC
+				LIMIT %d`,
+				selectCols,
+				commonWhere,
+				exactBoost,
+				branchLimit,
+				selectCols,
+				commonWhere,
+				minTrigram,
+				branchLimit,
+				limitVal,
+			)
+			log.Printf("DB Query pool=%s relax=%v union=true: %s, Args: %+v", pool, relaxFilters, query, args)
+			return query, args
+		}
 
 		query := `
 			SELECT name_id, thname, meaning, gender,
@@ -1668,9 +1854,9 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		return query, args
 	}
 
-	runAndScan := func(stage string, pool string, relax bool, dgStage *doubleGoodStageConfig) ([]MobileNameResult, retrievalScanStats, error) {
+	runAndScanWithContext := func(queryCtx context.Context, stage string, pool string, relax bool, dgStage *doubleGoodStageConfig) ([]MobileNameResult, retrievalScanStats, error) {
 		query, args := buildQuery(relax, pool, dgStage)
-		rows, err := database.DB.QueryContext(ctx, query, args...)
+		rows, err := database.DB.QueryContext(queryCtx, query, args...)
 		if err != nil {
 			return nil, retrievalScanStats{Stage: stage, Pool: pool}, err
 		}
@@ -1817,15 +2003,23 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			stats.Accepted++
 		}
 		if err := rows.Err(); err != nil {
-			if ctx.Err() != nil {
-				return out, stats, ctx.Err()
+			if queryCtx.Err() != nil {
+				log.Printf("[TIMEOUT] stage=%s pool=%s partial=%d", stage, pool, len(out))
+				if len(out) > 0 {
+					return out, stats, nil
+				}
+				return out, stats, queryCtx.Err()
 			}
 			return out, stats, err
 		}
 		return out, stats, nil
 	}
 
-	runDesperateSearch := func(stage string, relaxLevel int, strongSoftPenalty bool) ([]MobileNameResult, retrievalScanStats, error) {
+	runAndScan := func(stage string, pool string, relax bool, dgStage *doubleGoodStageConfig) ([]MobileNameResult, retrievalScanStats, error) {
+		return runAndScanWithContext(ctx, stage, pool, relax, dgStage)
+	}
+
+	runDesperateSearchWithContext := func(queryCtx context.Context, stage string, relaxLevel int, strongSoftPenalty bool) ([]MobileNameResult, retrievalScanStats, error) {
 		query := "SELECT name_id, thname, meaning, gender, sat_sum, sha_sum, " +
 			searchContext.SelectProjection() +
 			"0.0 as bonus_calculated, phonetic_summary, phonetic_score, pronunciation_ease, euphony_score, rhythm_score FROM names_miracle WHERE 1=1"
@@ -1869,7 +2063,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			limitVal,
 		)
 
-		rows, err := database.DB.QueryContext(ctx, query, args...)
+		rows, err := database.DB.QueryContext(queryCtx, query, args...)
 		if err != nil {
 			return nil, retrievalScanStats{Stage: stage, Pool: "fallback"}, err
 		}
@@ -1994,15 +2188,24 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			stats.Accepted++
 		}
 		if err := rows.Err(); err != nil {
-			if ctx.Err() != nil {
-				return out, stats, ctx.Err()
+			if queryCtx.Err() != nil {
+				log.Printf("[TIMEOUT] stage=%s pool=%s partial=%d", stage, stats.Pool, len(out))
+				if len(out) > 0 {
+					return out, stats, nil
+				}
+				return out, stats, queryCtx.Err()
 			}
 			return out, stats, err
 		}
 		return out, stats, nil
 	}
 
+	runDesperateSearch := func(stage string, relaxLevel int, strongSoftPenalty bool) ([]MobileNameResult, retrievalScanStats, error) {
+		return runDesperateSearchWithContext(ctx, stage, relaxLevel, strongSoftPenalty)
+	}
+
 	var results []MobileNameResult
+	targetUniqueResults := 0
 
 	appendRelaxedDoubleGoodTopUp := func(incoming []MobileNameResult, strongSoftPenalty bool) {
 		if len(incoming) == 0 {
@@ -2060,11 +2263,129 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		logRetrievalStage(stats, len(results))
 	}
 
+	runParallelPools := func(stage string, pools []string, relax bool, dgStage *doubleGoodStageConfig) error {
+		if len(pools) == 0 {
+			return nil
+		}
+		stageStart := time.Now()
+		poolCtx, poolCancel := context.WithCancel(ctx)
+		defer poolCancel()
+
+		resultCh := make(chan poolResult, len(pools))
+		var wg sync.WaitGroup
+		var dedupe sync.Map
+		var stateMu sync.Mutex
+		for _, item := range results {
+			dedupe.Store(item.Name, struct{}{})
+		}
+
+		for _, pool := range pools {
+			if pool == "semantic" {
+				stateMu.Lock()
+				alreadyEnough := len(results) >= 80
+				stateMu.Unlock()
+				if alreadyEnough {
+					log.Printf("[PERF] stage=%s pool=%s skipped current_results=%d", stage, pool, len(results))
+					continue
+				}
+			}
+			poolName := pool
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				poolStart := time.Now()
+				poolResults, stats, runErr := runAndScanWithContext(poolCtx, stage, poolName, relax, dgStage)
+				log.Printf(
+					"[PERF] stage=%s pool=%s duration=%s results=%d err=%v",
+					stage,
+					poolName,
+					time.Since(poolStart),
+					len(poolResults),
+					runErr,
+				)
+				resultCh <- poolResult{Pool: poolName, Results: poolResults, Stats: stats, Err: runErr}
+			}()
+		}
+
+		go func() {
+			wg.Wait()
+			close(resultCh)
+		}()
+
+		var timeoutErr error
+		for res := range resultCh {
+			if res.Err != nil {
+				if ctx.Err() != nil {
+					timeoutErr = res.Err
+					log.Printf("[TIMEOUT] stage=%s pool=%s err=%v partial=%d", stage, res.Pool, res.Err, len(results))
+					poolCancel()
+				} else {
+					log.Printf("%s pool=%s failed: %v", stage, res.Pool, res.Err)
+				}
+			}
+
+			added := 0
+			stateMu.Lock()
+			for _, item := range res.Results {
+				if _, exists := dedupe.LoadOrStore(item.Name, struct{}{}); exists {
+					continue
+				}
+				results = append(results, item)
+				added++
+			}
+			appendStage(res.Stats)
+			total := len(results)
+			if total >= targetUniqueResults {
+				poolCancel()
+			}
+			stateMu.Unlock()
+
+			log.Printf(
+				"[PERF] stage=%s pool=%s added=%d total=%d duration=%s",
+				stage,
+				res.Pool,
+				added,
+				total,
+				time.Since(stageStart),
+			)
+
+			if total >= targetUniqueResults {
+				log.Printf("[PERF] target hit, skipping remaining stages stage=%s total=%d target=%d", stage, total, targetUniqueResults)
+			}
+		}
+		if timeoutErr != nil && len(results) == 0 {
+			return timeoutErr
+		}
+		log.Printf("[PERF] stage=%s duration=%s results=%d", stage, time.Since(stageStart), len(results))
+		return nil
+	}
+
+	finalizeAfterTimeout := func(reason string) {
+		if len(results) > 0 {
+			log.Printf("[TIMEOUT] %s finalize with partial results=%d", reason, len(results))
+			return
+		}
+
+		log.Printf("[TIMEOUT] %s no results; running final 5s desperate search", reason)
+		shortCtx, shortCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shortCancel()
+		if _, err := database.DB.ExecContext(shortCtx, "SET LOCAL statement_timeout = '5s'"); err != nil {
+			log.Printf("Failed to set short statement_timeout: %v", err)
+		}
+		fallbackResults, stats, runErr := runDesperateSearchWithContext(shortCtx, "timeout_final_desperate", 2, true)
+		if runErr != nil {
+			log.Printf("[TIMEOUT] final desperate search failed: %v", runErr)
+			return
+		}
+		results, _ = mergeUniqueResultsWithCount(results, fallbackResults)
+		appendStage(stats)
+	}
+
 	minResults := 100
 	if req.Limit > minResults {
 		minResults = req.Limit
 	}
-	targetUniqueResults := minResults
+	targetUniqueResults = minResults
 	if doubleGoodMode && targetUniqueResults < 200 {
 		targetUniqueResults = 200
 	}
@@ -2093,6 +2414,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if doubleGoodMode {
+		dgStart := time.Now()
 		doubleGoodStages := []doubleGoodStageConfig{
 			{
 				Name:               "stage_1",
@@ -2106,26 +2428,22 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			stagePools = []string{"trigram"}
 		}
 		for idx, cfg := range doubleGoodStages {
+			if time.Since(dgStart) > searchTimeout-5*time.Second {
+				log.Printf(
+					"[PERF] cumulative timeout reached, break with %d results",
+					len(results),
+				)
+				break
+			}
 			stageCfg := cfg
-			stageStart := time.Now()
-			for _, pool := range stagePools {
-				if pool == "semantic" && len(results) >= 80 {
-					continue
+			if runErr := runParallelPools(stageCfg.Name, stagePools, stageCfg.PhoneticRelaxLevel > 0, &stageCfg); runErr != nil {
+				if ctx.Err() != nil {
+					finalizeAfterTimeout(stageCfg.Name)
+					goto finalizeResults
 				}
-				stageResults, stats, runErr := runAndScan(stageCfg.Name, pool, stageCfg.PhoneticRelaxLevel > 0, &stageCfg)
-				if runErr != nil {
-					if ctx.Err() != nil {
-						log.Printf("%s pool=%s timed out: %v", stageCfg.Name, pool, runErr)
-						goto finalizeResults
-					}
-					log.Printf("%s pool=%s failed: %v", stageCfg.Name, pool, runErr)
-					continue
-				}
-				results, _ = mergeUniqueResultsWithCount(results, stageResults)
-				appendStage(stats)
-				log.Printf("[PERF] stage=%s:%s results=%d time=%v", stageCfg.Name, pool, len(results), time.Since(stageStart))
 			}
 			if len(results) >= targetUniqueResults || (len(results) >= 80 && idx <= 1) {
+				log.Printf("[PERF] target hit, skipping remaining double-good stages results=%d target=%d", len(results), targetUniqueResults)
 				break
 			}
 		}
@@ -2135,6 +2453,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			if runErr != nil {
 				if ctx.Err() != nil {
 					log.Printf("double-good top-up timed out: %v", runErr)
+					finalizeAfterTimeout("double_good_topup")
 					goto finalizeResults
 				}
 				log.Printf("double-good top-up failed: %v", runErr)
@@ -2148,29 +2467,15 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		for _, pool := range strictPools {
-			if pool == "semantic" && len(results) >= 80 {
-				continue
-			}
-			poolStart := time.Now()
-			poolResults, stats, runErr := runAndScan("strict", pool, false, nil)
-			if runErr != nil {
-				if ctx.Err() != nil {
-					log.Printf("strict pool=%s timed out: %v", pool, runErr)
-					goto finalizeResults
-				}
-				log.Printf("strict pool=%s failed: %v", pool, runErr)
-				continue
-			}
-			results, _ = mergeUniqueResultsWithCount(results, poolResults)
-			appendStage(stats)
-			log.Printf("[PERF] stage=%s results=%d time=%v", "strict:"+pool, len(results), time.Since(poolStart))
-			if len(results) >= 100 {
+		if runErr := runParallelPools("strict", strictPools, false, nil); runErr != nil {
+			if ctx.Err() != nil {
+				finalizeAfterTimeout("strict")
 				goto finalizeResults
 			}
-			if len(results) >= targetUniqueResults {
-				break
-			}
+		}
+		if len(results) >= 100 {
+			log.Printf("[PERF] target hit, skipping remaining stages results=%d", len(results))
+			goto finalizeResults
 		}
 		log.Printf("Strict union results: %d", len(results))
 		if len(results) == 0 {
@@ -2179,6 +2484,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			if runErr != nil {
 				if ctx.Err() != nil {
 					log.Printf("strict fallback timed out: %v", runErr)
+					finalizeAfterTimeout("strict_fallback")
 					goto finalizeResults
 				}
 			}
@@ -2225,6 +2531,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			if runErr != nil {
 				if ctx.Err() != nil {
 					log.Printf("relaxed pool=%s timed out: %v", pool, runErr)
+					finalizeAfterTimeout("relaxed:" + pool)
 					goto finalizeResults
 				}
 				log.Printf("relaxed pool=%s failed: %v", pool, runErr)
@@ -2247,6 +2554,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		if runErr != nil {
 			if ctx.Err() != nil {
 				log.Printf("fallback timed out: %v", runErr)
+				finalizeAfterTimeout("fallback")
 				goto finalizeResults
 			}
 		}
@@ -2280,6 +2588,7 @@ finalizeResults:
 		if runErr != nil {
 			if ctx.Err() != nil {
 				log.Printf("post-filter top-up timed out: %v", runErr)
+				finalizeAfterTimeout("post_filter_topup")
 				goto finalizeAndRespond
 			}
 			log.Printf("post-filter top-up failed: %v", runErr)
@@ -2302,6 +2611,7 @@ finalizeResults:
 		if runErr != nil {
 			if ctx.Err() != nil {
 				log.Printf("safety fill timed out: %v", runErr)
+				finalizeAfterTimeout("safety_fill")
 				goto finalizeAndRespond
 			}
 			log.Printf("safety fill failed: %v", runErr)
