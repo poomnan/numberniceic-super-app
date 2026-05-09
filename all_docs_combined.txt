@@ -1,0 +1,1583 @@
+=== ROOT DOCS ===
+# AGENTS: Numberniceic Super Apps
+
+This repository hosts multiple apps/services that work together across mobile clients and backend APIs.
+
+## Project Structure
+- `number-androidx`: Android app (Kotlin, Retrofit, FCM).
+- `flutter-naming`: Flutter client for naming features.
+- `number-php`: PHP/Slim backend for core member/content/notification APIs.
+- `go-naming`: Go backend for naming, chat, astrology, and related APIs.
+- `.agents/skills`: Shared Codex skills for task-specific routing.
+
+## Frontend <-> Backend Interaction
+- Android (`number-androidx`) calls:
+  - PHP backend (`number-php`) for member/auth/content/notification flows.
+  - Go backend (`go-naming`) for naming/chat/astrology and outfit APIs.
+- Flutter (`flutter-naming`) calls:
+  - Go backend (`go-naming`) via `https://xn--b3cu8e7ah6h.com/api/v1/*`.
+- Cross-stack debugging should verify endpoint, host, method, payload, and response model consistency.
+
+## Skill Routing Rules
+Use the matching skill before editing code in that area:
+- `android-debug`: Android issues (`number-androidx`).
+- `php-backend`: PHP API and controller issues (`number-php`).
+- `go-service`: Go service/API/business logic (`go-naming`).
+- `flutter-app`: Flutter UI/client integration (`flutter-naming`).
+
+Skill locations:
+- `.agents/skills/android-debug/SKILL.md`
+- `.agents/skills/php-backend/SKILL.md`
+- `.agents/skills/go-service/SKILL.md`
+- `.agents/skills/flutter-app/SKILL.md`
+
+## Usage Examples
+- "trace login flow between android and backend"
+  - Start with `android-debug`, then `php-backend` for `/member/login` and `/member/info`.
+- "debug API failure"
+  - Choose `php-backend` or `go-service` based on endpoint host/path, then compare client contract.
+- "compare request between client and server"
+  - Use `android-debug` or `flutter-app` for client payload, then `php-backend`/`go-service` for server handler expectations.
+
+## Safety Rule
+Do not modify runtime business logic unless explicitly requested. Prefer documenting contracts, tracing flow, and making backward-compatible fixes.
+
+## Learned Context (Summary)
+- **RengYam Calendar**: 06:00 boundary, badge deduplication, day labels. Details in [rengyam-calendar-logic.md](file:///.agents/knowledge/rengyam-calendar-logic.md).
+- **Wedding Search**: Complex couples' inauspicious exclusions. Details in [thai-wedding-logic.md](file:///.agents/knowledge/thai-wedding-logic.md).
+- **Naming Ranking**: Numerology quality vs pairType/pairpoint prioritization. Details in [naming-ranking-logic.md](file:///.agents/knowledge/naming-ranking-logic.md).
+- **Premium Aesthetics**: High-end UI standards, modern typography, no placeholders. Details in [ui-ux-guidelines.md](file:///.agents/knowledge/ui-ux-guidelines.md).
+
+## Knowledge Base
+Domain-specific knowledge files for deeper context:
+- [.agents/knowledge/rengyam-calendar-logic.md](file:///.agents/knowledge/rengyam-calendar-logic.md) — RengYam calendar: kalagni logic, frozen header, badge deduplication, grid layout, gotchas.
+- [.agents/knowledge/thai-wedding-logic.md](file:///.agents/knowledge/thai-wedding-logic.md) — Thai Wedding search: Couples' criteria, Red days, fixed bad days mapping.
+- [.agents/knowledge/naming-ranking-logic.md](file:///.agents/knowledge/naming-ranking-logic.md) — Naming & ranking: logic for scores, ranking cards, similar mode filters.
+- [.agents/knowledge/ui-ux-guidelines.md](file:///.agents/knowledge/ui-ux-guidelines.md) — UI & Design: Style philosophy, color palette, premium aesthetics requirements.
+
+
+=== ARCHITECTURE ===
+# Architecture
+
+## System Overview
+
+The monorepo is organized as two clients and two backends:
+- `number-androidx`: broad mobile app experience
+- `flutter-naming`: naming-focused client
+- `number-php`: member/content/notification/admin backend
+- `go-naming`: naming/chat/astrology backend
+
+## High-Level Flow
+
+```mermaid
+flowchart LR
+  A[Android App] --> P[PHP Backend]
+  A --> G[Go Backend]
+  F[Flutter Naming App] --> G
+  P --> DB1[(MySQL via PDO)]
+  G --> DB2[(PostgreSQL)]
+  G --> DB3[(MySQL)]
+```
+
+## Client Responsibilities
+
+### Android
+- Handles auth/member profile, news/content, rengyam calendar UI, notifications, chat/product/admin screens.
+- Uses Retrofit with base URL `https://numberniceic.online/`.
+- Calls Go endpoints directly for naming/astrology/product-style APIs when needed.
+
+### Flutter Naming
+- Focuses on name search, ranking, numerology display, saved names, and premium/paywall UX.
+- Uses HTTP client code in `ApiService`.
+- Delegates core scoring and semantic ranking to Go.
+
+## Backend Responsibilities
+
+### PHP backend
+- Entry request flow:
+  1. `number-php/index.php`
+  2. Slim app bootstraps container, DB, renderer, middleware
+  3. `app/routes.php` maps route to closure or manager/controller method
+  4. `app/Managers/*` execute DB reads/writes and format response
+- Typical concerns:
+  - login/register/member info
+  - VIP code redemption
+  - lucky number and content/news flows
+  - notifications API v2
+  - web admin pages
+  - Thai calendar / auspicious-day response assembly
+
+### Go backend
+- Entry request flow:
+  1. `go-naming/main.go`
+  2. DB and FCM initialization
+  3. route registration with `http.HandleFunc`
+  4. handlers in `handlers/`
+  5. helper logic in `services/`, `astro/`, `database/`
+- Typical concerns:
+  - naming search and ranking
+  - decode / number meaning / name root
+  - semantic search and keyword expansion
+  - astrology endpoints
+  - wanpra and outfit APIs
+  - chat and product/payment endpoints
+
+## Data Flow Examples
+
+### Flutter naming search
+1. User enters a keyword/name in `NamingScreen`.
+2. `ApiService.searchNames()` sends `POST /api/v1/name-search`.
+3. Go handler `MobileSearchHandler`:
+   - reads filters and semantic context
+   - queries names from DB
+   - computes numerology and ranking bonuses
+   - returns `MobileSearchResponse`
+4. Flutter deserializes to `MobileNameResult` and renders result cards.
+
+### Android member login
+1. User submits credentials in Android auth UI.
+2. Retrofit calls `POST /member/login` on PHP.
+3. PHP `UserController::userLogin` validates user and returns user payload.
+4. Android stores and uses the returned member data, token state, and access privileges such as `rengyam_access`.
+
+### Android rengyam calendar
+1. Android asks PHP for `GET /member/lengyam` and related calendar data.
+2. PHP `ThaiCalendarHelper::getAuspiciousStatus()` merges multiple calendars/sources into display tags.
+3. Android `RengYamF.kt` interprets tags, filters activity-specific dates, and renders the calendar and bottom sheets.
+4. Android also calls Go astronomy/wanpra helper endpoints for supporting data such as kalagni, foo days, lokawinat, and wanpra calculations.
+
+## Important Architectural Constraints
+- Naming ranking source of truth is in Go, not Flutter.
+- Member/auth/notification source of truth is in PHP, not Android.
+- Rengyam UI behavior in Android depends heavily on PHP-produced tags and Android-side display/filter logic.
+- Some endpoints are duplicated in capability across stacks; avoid assuming one backend owns every astrology feature.
+
+## Operational Notes
+- `go-naming/main.go` currently contains production-like credentials/session constants directly in code; treat configuration carefully.
+- `number-php/index.php` logs requests and session debug information locally.
+- The repo contains many deploy/debug/temp artifacts; they are not the primary architecture.
+
+
+=== API CONTRACT ===
+# API Contract
+
+This document lists the main API surfaces that appear to be used by the clients in this repository.
+
+## Host Map
+- PHP content/member backend: `https://numberniceic.online`
+- Go naming backend: `https://xn--b3cu8e7ah6h.com`
+
+## Android → PHP Main APIs
+
+Defined in `number-androidx/app/src/main/java/com/numberniceic/https/ApiService.kt` and routed in `number-php/app/routes.php`.
+
+### Auth and member
+- `POST /member/login`
+- `POST /member/updateToken`
+- `POST /member/register/v2`
+- `POST /member/update`
+- `GET /member/info/{memberid}`
+- `POST /member/vipcode`
+- `GET /member/currenttime`
+
+Common request style:
+- JSON body via Retrofit `JsonObject`
+
+Common response style:
+- PHP-specific wrapper objects like `Serverx`, `ServerMessage`, `ServerVip`
+- `member/info` returns a `Serverx`-style payload that includes user data and may include `rengyam_access`
+
+### Notifications v2
+- `GET /api/v2/notifications`
+- `GET /api/v2/notifications/by-type`
+- `POST /api/v2/notifications/mark-read`
+- `GET /api/v2/notifications/unread-count`
+- `POST /api/v2/notifications/save`
+
+### Fortune/content
+- `GET /member/bagcolor/{memberid}/{age1}/{age2}`
+- `GET /member/wanpra/{wandate}`
+- `GET /member/wanspecial/{wandate}`
+- `GET /member/mirado/{activity}/{birthday}/{today}`
+- `GET /member/miradoV2/{activity}/{birthday}/{today}/{currentday}`
+- `GET /member/lengyam`
+- `GET /member/dresscolor/{days}`
+- `GET /vipcode/{vipcode}`
+- `GET /lucky/number`
+- `POST /lucky/number`
+- `POST /lucky/number/v2`
+
+### Guest/order/admin-support
+- `POST /guest/register`
+- `POST /guest/save-address`
+- `POST /guest/save-order`
+- `GET /admin/guest-addresses/{guestId}`
+- `GET /admin/guest-addresses/search/{searchTerm}`
+- `GET /admin/guest-addresses/stats`
+
+## Android → Go Main APIs
+
+Also defined in Android `ApiService.kt` using absolute URLs.
+
+### Astrology / rengyam support
+- `POST /api/v1/wanpra/calculate`
+- `GET /api/kalagni`
+- `GET /api/kalagni/age`
+- `GET /api/foo-days`
+- `GET /api/sitti-chok`
+- `GET /api/ubath`
+- `GET /api/lokawinat`
+
+### Outfit miracle
+- `POST /api/v1/outfit-miracle/color-sets`
+- `GET /api/v1/outfit-miracle/day-palettes`
+- `POST /api/v1/outfit-miracle/day-palettes`
+
+### Chat and commerce
+- `POST /api/v1/ninin/chat`
+- `POST /api/v1/ninin/redeem-access`
+- `POST /api/v1/naming/chat`
+- `GET /api/v1/products`
+- `GET /api/v1/product-categories`
+- `POST /api/v1/admin/products/add`
+- `POST /api/v1/payment/qr`
+- `GET /api/v1/payment/status`
+
+## Flutter → Go Main APIs
+
+Defined in `flutter-naming/lib/src/services/api_service.dart`.
+
+### `POST /api/v1/name-search`
+Request body fields from code:
+```json
+{
+  "keyword": "...",
+  "lastname": "...",
+  "day": "...",
+  "semantic_meaning": "...",
+  "filter_sat": true,
+  "filter_sha": true,
+  "filter_kaki": false,
+  "similar_mode": false,
+  "limit": 50
+}
+```
+
+Response shape from `MobileSearchResponse`:
+```json
+{
+  "success": true,
+  "results": ["MobileNameResult"],
+  "kaki_info": {
+    "day": "...",
+    "day_th": "...",
+    "description": "...",
+    "kaki_chars": ["..."]
+  },
+  "total": 123
+}
+```
+
+### Other naming endpoints
+- `GET /api/v1/name-suggestions?q=...&meaning=...`
+- `GET /api/v1/name-meaning?name=...`
+- `GET /decode?name=...&day=...`
+- `GET /api/v1/name-root?name=...&meaning=...`
+- `GET /api/v1/number-meaning?number=...`
+
+## Important Models
+
+### `MobileNameResult`
+Defined on the server in `go-naming/handlers/mobile_search_handler.go` and mirrored in Flutter at `flutter-naming/lib/src/models/name_model.dart`.
+
+Main fields:
+- identity: `name`, `meaning`, `gender`
+- numerology: `sat_sum`, `sha_sum`, `total_sat`, `total_sha`
+- similarity metrics: `distance`, `root_score`, `semantic_score`, `hybrid_score`
+- pass/fail flags: `is_sat_good`, `is_sha_good`, `is_total_sat_good`, `is_total_sha_good`
+- pair metadata: `sat_pair_type`, `sha_pair_type`, `total_sat_pair_type`, `total_sha_pair_type`
+- pair points: `sat_pair_point`, `sha_pair_point`, `total_sat_pair_point`, `total_sha_pair_point`
+- ranking: `final_rank_score`, `semantic_rank_score`, `numerology_rank_score`
+- explanation: `rank_reasons`
+- kaki breakdown: `kaki_highlight`
+
+### `MobileSearchResponse`
+Fields:
+- `success`
+- `error`
+- `results`
+- `kaki_info`
+- `total`
+
+### Notification payloads
+Android expects:
+- `NotificationListResponse`
+- `UnreadCountResponse`
+- `MarkReadRequest`
+These are PHP-backed APIs under `/api/v2/notifications*`.
+
+### Rengyam / calendar payloads
+Android expects PHP models such as:
+- `LengYamDao`
+- `WanpraDao`
+- `WanSpecialCollection`
+
+The PHP backend assembles these from `UserController` plus `ThaiCalendarHelper`.
+
+## Contract Risks
+- Many contracts are implicit rather than OpenAPI-defined.
+- Some Android Go calls are hardcoded absolute URLs, bypassing the default Retrofit base URL.
+- Flutter and Go naming ranking must stay in sync for fields like `final_rank_score`, pair-type bonuses, and `rank_reasons`.
+
+
+=== DOMAIN RULES ===
+# Domain Rules
+
+This document summarizes domain rules inferred from code only.
+
+## Naming / Numerology Rules
+
+Source files:
+- `go-naming/services/numerology_service.go`
+- `go-naming/handlers/mobile_search_handler.go`
+- `flutter-naming/lib/src/models/name_model.dart`
+
+## Name decoding
+- A name is split into Thai characters.
+- Each character is looked up in:
+  - `sat_nums` for `sat_value`
+  - `sha_nums` for `sha_value`
+- Totals are accumulated into `TotalSat` and `TotalSha`.
+
+## Kaki / inauspicious character rule
+- If a birth day is provided, the service loads inauspicious characters from `kakis_day`.
+- Character matches are flagged as `IsKaki`.
+- A result with no kaki hits can receive ranking bonus.
+
+## Pair generation rule
+From `CreatePairs(sum int)`:
+- sum `< 10` → zero-padded pair, example `1 -> ["01"]`
+- sum `10..99` → direct pair, example `41 -> ["41"]`
+- sum `>= 100` → sliding two-digit windows, example `641 -> ["64", "41"]`
+
+## Pair meaning rule
+From `analyzePairs()`:
+- pair data is read from the `numbers` table
+- if `pairtype` starts with `D`, the pair is treated as good
+- code comments explicitly describe:
+  - `D10`, `D8`, `D5` as good tiers
+  - `R10`, `R7`, `R5` as bad tiers
+
+## Ranking rule for naming search
+`MobileSearchHandler` calculates a normalized `final_rank_score`.
+
+### Similarity base
+- Similarity is derived from distance: `100 * (1 - distance)` and clamped to `0..100`.
+
+### Positive ranking components
+From server code:
+- SAT pass: `+20`
+- SHA pass: `+20`
+- both SAT and SHA pass: `+50`
+- no kaki characters: `+10`
+- pair-type bonus:
+  - `D10 -> +14`
+  - `D8 -> +8`
+  - `D5 -> +3`
+- pair-point bonus:
+  - `>= 80 -> +20`
+  - `>= 65 -> +14`
+  - `>= 50 -> +9`
+  - `>= 30 -> +5`
+  - `>= 10 -> +2`
+- length bonus:
+  - length `<= 4 -> +15`
+  - length `5 -> +10`
+  - length `6 -> +5`
+  - length `>= 9 -> -5`
+
+### Negative ranking components
+From pair-point bonus rule:
+- pairpoint `<= -20 -> -8`
+- pairpoint `< 0 -> -4`
+
+### Score normalization
+- Raw score is normalized with denominator `283`.
+- Final result is clamped to `0..100`.
+
+## Similar mode rule
+`MobileSearchHandler` changes ranking context when `similar_mode` is enabled:
+- semantic context may combine keyword and lastname
+- total SAT/SHA fields become relevant for matching/ranking display
+- Flutter model code also switches between base pair fields and total pair fields when `showMatching` is enabled
+
+## Rank explanation rule
+The API returns `rank_reasons` with human-readable explanations built from the actual scoring components, such as:
+- semantic similarity
+- SAT/SHA pass
+- pair-type bonus
+- pairpoint bonus
+- kaki-free bonus
+- length bonus
+
+## Auspicious / Rengyam Rules
+
+Source files:
+- `number-php/app/Managers/ThaiCalendarHelper.php`
+- `number-androidx/app/src/main/java/com/numberniceic/ui/renkyam/RengYamF.kt`
+
+## Calendar tag composition
+PHP `ThaiCalendarHelper::getAuspiciousStatus()`:
+- queries a base status bundle
+- computes `is_wanpra`
+- builds tag bundles from at least two sources:
+  - MyHora-style tags
+  - Mahamodo-style tags
+- merges tags and source-specific details into final display tags
+
+## Safe-day rule (`ปลอด`)
+From PHP code:
+- if merged tags contain no positive tags and no negative tags, `ปลอด` is appended
+- `ปลอด` is described as a general safe/neutral day
+
+From Android code:
+- Android also has `isPlainSafeDay(wp)` as a fallback interpretation
+- a day is treated as plain-safe when it has no hard negative tags, no positive auspicious tags, and is not wanpra, or already contains the `ปลอด` tag
+
+## Positive tag examples
+PHP exposes flags based on merged tags for items such as:
+- `วันธงชัย`
+- `วันอธิบดี`
+- `อำฤตโชค`
+- `มหาสิทธิโชค`
+- `สิทธิโชค`
+- `ราชาโชค`
+- `ชัยโชค`
+- `วันลอย`
+- `วันฟู`
+- `ดิถีเรียงหมอน`
+
+## Negative tag examples
+Tag meanings and Android-side hard-negative filtering include tags such as:
+- `วันอุบาทว์/อุบาสน`
+- `วันโลกาวินาศ`
+- `วันจม`
+- `พิฆาต`
+- `ดิถีพิฆาต`
+- `กาลกิณี` or legacy `กาลกรรณี`
+- `กาลสูร`
+- `กาลโชค`
+- `กาลทิน`
+- `กาลทัณฑ์`
+- `มฤตยู`
+- `ทินสูญ`
+- `ทักทินไฟ`
+- `ยมขันธ์`
+
+## Rengyam activity eligibility rule
+Android `RengYamF.kt` applies category-specific filtering.
+Examples from code:
+- marriage/engagement favor `ดิถีเรียงหมอน`, `อำฤตโชค`, `อมุตโชค`, `มหาสิทธิโชค`, `สิทธิโชค`, `ราชาโชค`, `ชัยโชค`, or plain-safe days
+- house/build/move favors `วันธงชัย`, `วันอธิบดี`, and major positive tags, while excluding warnings involving house/land/mountain keywords
+- ordination allows `วันพระ` in addition to positive tags and plain-safe days
+- many categories explicitly exclude warning keywords specific to that activity, such as `รถ`, `บ้าน`, `ป่า`, `น้ำ`, `สตรี`, `บุรุษ`
+
+## Important implementation note
+- Rengyam behavior is not purely backend-driven. PHP generates tags, but Android applies additional category filtering and fallback interpretation.
+
+
+=== AGENT RULES ===
+# Agent Rules
+
+These rules are for any future AI agent or new contributor working in this monorepo.
+
+## 1. Read Before Editing
+Always read these first:
+- `README.md`
+- `docs/PROJECT_MAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/API_CONTRACT.md`
+- `docs/DOMAIN_RULES.md`
+- `AGENTS.md`
+
+## 2. Work In The Correct Project
+Do not mix concerns across projects.
+- Android UI/network changes: `number-androidx`
+- Flutter naming UI/client contract changes: `flutter-naming`
+- Naming/chat/astrology backend changes: `go-naming`
+- Member/content/notification/admin backend changes: `number-php`
+
+## 3. Do Not Move Business Logic Across Stacks Without Explicit Request
+Examples:
+- Do not copy naming ranking logic from Go into Flutter as a new source of truth.
+- Do not rewrite PHP member logic inside Android.
+- Do not move rengyam rules from PHP to Android unless the task explicitly requires it.
+
+## 4. Preserve Existing Contracts
+Before changing any endpoint or response field:
+- inspect the client model
+- inspect the server struct/controller
+- verify whether another client also depends on that response
+
+Fields that are especially sensitive:
+- `final_rank_score`
+- pair type / pair point fields
+- `rank_reasons`
+- `rengyam_access`
+- notification payloads
+- `display_tags` and related auspicious calendar fields
+
+## 5. Safe Cross-Project Change Rule
+If a task touches more than one project, follow this order:
+1. Identify the source of truth
+2. Change the source of truth first
+3. Update dependent clients second
+4. Validate the contract shape after the change
+
+## 6. Treat These Files As High-Risk
+Read carefully before editing:
+- `go-naming/main.go`
+- `go-naming/handlers/mobile_search_handler.go`
+- `go-naming/services/numerology_service.go`
+- `number-php/app/routes.php`
+- `number-php/app/Managers/UserController.php`
+- `number-php/app/Managers/ThaiCalendarHelper.php`
+- `number-androidx/app/src/main/java/com/numberniceic/https/ApiService.kt`
+- `number-androidx/app/src/main/java/com/numberniceic/ui/renkyam/RengYamF.kt`
+- `flutter-naming/lib/src/services/api_service.dart`
+- `flutter-naming/lib/src/models/name_model.dart`
+
+## 7. Respect Existing Domain Behavior
+- Naming score calculations must stay aligned between Go and Flutter display assumptions.
+- Android rengyam screens depend on both backend tags and Android-side filters.
+- PHP login/member info responses may drive feature access in Android.
+
+## 8. Prefer Additive, Backward-Compatible Changes
+Good changes:
+- add a new response field while preserving old ones
+- add documentation
+- add admin tooling that reuses current data flow
+
+Risky changes:
+- renaming/removing JSON fields
+- changing score semantics
+- changing meaning of VIP/access flags
+- replacing backend-derived logic with client-only logic
+
+## 9. Validate In The Local Project You Touched
+Minimum expectation:
+- Android: run a Gradle build if code changed
+- Flutter: run `flutter analyze` or targeted build if changed
+- Go: run `go build` or the relevant package/server build if changed
+- PHP: run syntax or smoke check if possible
+
+## 10. Document Non-Obvious Decisions
+If you discover a hidden rule while fixing something:
+- update `docs/DOMAIN_RULES.md` or `docs/API_CONTRACT.md`
+- keep future agents from having to rediscover it from chat history
+
+
+=== BACKEND DOCS ===
+# Go Naming Backend
+
+This project connects to a remote PostgreSQL database.
+
+## Prerequisites
+- Go installed
+- Network access to the database server (43.228.85.200)
+
+## Setup
+1. Initialize dependencies:
+   ```bash
+   go mod tidy
+   ```
+
+## Running
+Run the main application to verify the database connection and list existing tables:
+```bash
+go run main.go
+```
+
+## Offline phonetic precompute
+Thai-name phonetic scoring worker docs:
+[`docs/PHONETIC_BATCH_WORKER.md`](/Users/tayap/Numberniceic-Super-Apps/go-naming/docs/PHONETIC_BATCH_WORKER.md)
+
+## Configuration
+The database credentials are currently hardcoded in `main.go` for testing purposes.
+
+
+=== PHP DEPLOYMENT ===
+# 🎉 Notification System - Ready to Deploy!
+
+## 📦 ไฟล์ที่พร้อม Deploy
+
+### 1. **notification_system_20260202_000439.zip** (17KB) ⭐
+**นี่คือไฟล์หลักที่คุณต้อง upload!**
+
+ประกอบด้วย:
+- ✅ `app/Managers/NotificationManager.php` (NEW)
+- ✅ `app/Managers/NotificationAPIController.php` (NEW)
+- ✅ `app/Managers/NotificationController.php` (UPDATED)
+- ✅ `app/routes.php` (UPDATED)
+- ✅ `create_notifications_table.sql` (PostgreSQL)
+- ✅ `README.txt` (คู่มือภาษาอังกฤษ)
+- ✅ `DEPLOY_TH.txt` (คู่มือภาษาไทย)
+
+### 2. **create_notifications_table_mysql.sql** (1.1KB)
+สำหรับ MySQL database (ถ้าคุณใช้ MySQL แทน PostgreSQL)
+
+---
+
+## 🚀 Quick Start - Deploy ใน 4 ขั้นตอน
+
+### Step 1: สำรองข้อมูล (BACKUP) ⚠️
+```bash
+# สำรอง database
+mysqldump -u username -p database_name > backup_$(date +%Y%m%d).sql
+
+# สำรองไฟล์สำคัญ
+cp app/routes.php app/routes.php.backup
+cp app/Managers/NotificationController.php app/Managers/NotificationController.php.backup
+```
+
+### Step 2: Upload & Extract 📤
+1. Upload `notification_system_20260202_000439.zip` ไปยัง hosting
+2. แตกไฟล์ที่ root directory (เช่น `/home/username/ananya-php`)
+3. ไฟล์จะถูก merge เข้ากับไฟล์เดิม
+
+### Step 3: Run Database Migration 🗄️
+
+**ถ้าใช้ PostgreSQL:**
+```bash
+psql -U username -d database_name -f create_notifications_table.sql
+```
+
+**ถ้าใช้ MySQL:**
+```bash
+mysql -u username -p database_name < create_notifications_table_mysql.sql
+```
+
+**หรือใช้ phpMyAdmin:**
+1. เข้า phpMyAdmin
+2. เลือก database
+3. คลิกแท็บ "SQL"
+4. Copy-paste SQL จากไฟล์
+5. คลิก "Go"
+
+### Step 4: ทดสอบ ✅
+```bash
+# ทดสอบ API
+curl "https://ananya.in.th/api/v2/notifications?memberid=TEST001&type=webview_merit"
+
+# ควรได้ response:
+# {"status":"success","data":[],"count":0}
+```
+
+---
+
+## 📋 Deployment Checklist
+
+- [ ] **สำรอง database แล้ว**
+- [ ] **สำรองไฟล์เดิมแล้ว**
+- [ ] **Upload zip file แล้ว**
+- [ ] **แตกไฟล์แล้ว**
+- [ ] **รัน database migration แล้ว**
+- [ ] **ทดสอบ API endpoint แล้ว**
+- [ ] **ส่งแจ้งเตือนทดสอบแล้ว**
+- [ ] **ตรวจสอบ error logs แล้ว**
+
+---
+
+## 🎯 API Endpoints ใหม่
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v2/notifications` | ดึงรายการแจ้งเตือนทั้งหมด |
+| GET | `/api/v2/notifications/by-type` | ดึงรายการตามประเภท |
+| POST | `/api/v2/notifications/mark-read` | ทำเครื่องหมายว่าอ่านแล้ว |
+| GET | `/api/v2/notifications/unread-count` | นับจำนวนที่ยังไม่อ่าน |
+| GET | `/api/v2/notifications/statistics` | ดู analytics |
+| POST | `/api/v2/notifications/save` | บันทึก (internal) |
+
+---
+
+## ✨ ฟีเจอร์ใหม่
+
+### 1. **Database-backed Notifications**
+- แจ้งเตือนทุกรายการถูกบันทึกลง database อัตโนมัติ
+- ไม่หายแม้ clear app data
+
+### 2. **Multi-device Sync**
+- Login ที่อุปกรณ์ไหนก็เห็นแจ้งเตือนเดียวกัน
+- ข้อมูล sync ผ่าน server
+
+### 3. **Read Status Tracking**
+- ติดตามว่าผู้ใช้อ่านแล้วหรือยัง
+- บันทึกเวลาที่อ่าน
+
+### 4. **Analytics**
+- ดูสถิติการอ่านแจ้งเตือน
+- แยกตามประเภท (Merit, Change, Spell, etc.)
+
+### 5. **Backward Compatible**
+- ระบบเก่า (SharedPreferences) ยังใช้งานได้
+- ไม่กระทบผู้ใช้ที่ยังไม่ update app
+
+---
+
+## 🔍 ตรวจสอบว่า Deploy สำเร็จ
+
+### 1. ตรวจสอบไฟล์
+```bash
+ls -la app/Managers/NotificationManager.php
+ls -la app/Managers/NotificationAPIController.php
+```
+
+### 2. ตรวจสอบ Database
+```sql
+-- ตรวจสอบว่า table ถูกสร้าง
+SHOW TABLES LIKE 'notifications';
+
+-- ดูโครงสร้าง table
+DESCRIBE notifications;
+```
+
+### 3. ทดสอบ API
+```bash
+# Test GET
+curl "https://ananya.in.th/api/v2/notifications/unread-count?memberid=TEST001"
+
+# Test POST (ส่งแจ้งเตือนทดสอบ)
+# ใช้ Admin Panel: https://ananya.in.th/admin/notifications/custom
+```
+
+### 4. ตรวจสอบ Logs
+```bash
+tail -f error_log
+tail -f fcm_log.txt
+```
+
+---
+
+## 🐛 แก้ไขปัญหา
+
+### ปัญหา: API ตอบกลับ 500 Error
+**วิธีแก้:**
+```bash
+# ตรวจสอบ error log
+tail -50 error_log
+
+# ตรวจสอบ permissions
+chmod 644 app/Managers/*.php
+chmod 644 app/routes.php
+```
+
+### ปัญหา: Class not found
+**วิธีแก้:**
+```bash
+# Regenerate autoloader (ถ้าใช้ Composer)
+composer dump-autoload
+```
+
+### ปัญหา: Database connection failed
+**วิธีแก้:**
+- ตรวจสอบ database credentials ใน `configs/database.php`
+- ตรวจสอบว่า database service ทำงานอยู่
+
+---
+
+## 📚 เอกสารเพิ่มเติม
+
+1. **DEPLOY_GUIDE.md** - คู่มือการ deploy แบบละเอียด
+2. **NOTIFICATION_API_DOCS.md** - API documentation
+3. **NOTIFICATION_SYSTEM_IMPLEMENTATION.md** - สถาปัตยกรรมระบบ
+4. **RENGYAM_ACCESS_DEBUG_NOTE.md** - บันทึกปัญหาและวิธีแก้ระบบคืนสิทธิ์ฤกษ์ยาม
+
+## 🔐 RengYam Access Recovery
+
+ถ้า user เคยกรอก secret code ดูฤกษ์ยามมาแล้ว แต่ระบบยัง lock อยู่:
+
+1. ตรวจสอบก่อนว่า live server ของ `numberniceic.online` ใช้ code ที่ `/var/www/html/app/...`
+2. ตรวจสอบว่า backend คืน `rengyam_access` จาก:
+   - `POST /member/login`
+   - `GET /member/info/{memberid}`
+3. ถ้าข้อมูลเก่าไม่มี row ใน `memberuse` ให้ใช้สคริปต์ restore นี้:
+
+```bash
+php scripts/rengyam_restore_member.php <memberid> [rengyam_yearly|rengyam_vip] [codename]
+```
+
+ตัวอย่าง:
+
+```bash
+php scripts/rengyam_restore_member.php 810 rengyam_yearly manual_restore_admin6
+```
+
+หมายเหตุสำคัญ:
+
+- ตาราง `memberuse` ของระบบจริงใช้ primary key ชื่อ `memuseid`
+- อย่าใช้ `ORDER BY id`
+- รายละเอียดบทเรียนเต็มดูที่ [RENGYAM_ACCESS_DEBUG_NOTE.md](./RENGYAM_ACCESS_DEBUG_NOTE.md)
+
+---
+
+## 🔄 Rollback (ถ้ามีปัญหา)
+
+```bash
+# 1. Restore database
+mysql -u username -p database_name < backup_YYYYMMDD.sql
+
+# 2. Restore ไฟล์
+cp app/routes.php.backup app/routes.php
+cp app/Managers/NotificationController.php.backup app/Managers/NotificationController.php
+
+# 3. ลบไฟล์ใหม่
+rm app/Managers/NotificationManager.php
+rm app/Managers/NotificationAPIController.php
+
+# 4. Restart web server
+sudo systemctl restart apache2  # หรือ nginx
+```
+
+---
+
+## 📞 Support
+
+ถ้ามีปัญหา:
+1. ✅ อ่าน DEPLOY_GUIDE.md
+2. ✅ ตรวจสอบ error logs
+3. ✅ ทดสอบ API ด้วย curl
+4. ✅ ตรวจสอบ database connection
+
+---
+
+## 🎉 ขั้นตอนต่อไป
+
+### Phase 1: Server-Side ✅ DONE
+- ✅ Database schema
+- ✅ API endpoints
+- ✅ FCM integration
+- ✅ Ready to deploy!
+
+### Phase 2: Client-Side ⏳ TODO
+- ⏳ Android API service
+- ⏳ Fetch from server
+- ⏳ Merge with local data
+- ⏳ Update UI
+
+### Phase 3: Testing & Monitoring
+- ⏳ End-to-end testing
+- ⏳ Performance monitoring
+- ⏳ User feedback
+
+---
+
+## 📍 ไฟล์อยู่ที่
+
+```
+/Users/tayap/project-number/number-php/
+├── notification_system_20260202_000439.zip  ← อัปโหลดไฟล์นี้!
+├── create_notifications_table_mysql.sql     ← สำหรับ MySQL
+├── DEPLOY_GUIDE.md                          ← อ่านคู่มือนี้
+└── notification_system_deploy/              ← ไฟล์ที่แตกแล้ว
+```
+
+---
+
+## ✅ สรุป
+
+**คุณพร้อม deploy แล้ว!** 🚀
+
+1. Upload `notification_system_20260202_000439.zip`
+2. Extract ที่ root directory
+3. Run database migration
+4. ทดสอบ API endpoints
+5. เสร็จสิ้น! ✨
+
+**Good luck!** 🍀
+
+
+=== FRONTEND DOCS ===
+# flutter_naming
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
+- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
+
+
+=== ANDROID RELEASE ===
+# 📦 ไฟล์สำหรับการอัปโหลดแอปขึ้น Google Play Store
+
+สร้างเมื่อ: 23 มกราคม 2026  
+เวอร์ชัน: 3.0.6 (1002)
+
+---
+
+## 📄 ไฟล์ที่สร้างขึ้น
+
+### 1. **QUICK_START.md** 🚀
+คู่มือแบบย่อสำหรับการอัปโหลดอย่างรวดเร็ว (5-10 นาที)
+- ขั้นตอนแบบย่อ
+- Timeline การทำงาน
+- Checklist แบบย่อ
+- แก้ปัญหาเบื้องต้น
+
+👉 **เริ่มต้นที่นี่ถ้าต้องการอัปโหลดเร็วๆ**
+
+---
+
+### 2. **GOOGLE_PLAY_RELEASE_GUIDE.md** 📚
+คู่มือฉบับเต็มสำหรับการอัปโหลดแอปขึ้น Google Play Store
+- ขั้นตอนละเอียดทุกขั้น
+- การเตรียมไฟล์ AAB
+- การใช้ Google Play Console
+- ปัญหาที่พบบ่อยและวิธีแก้ไข
+- ทรัพยากรเพิ่มเติม
+
+👉 **อ่านเพื่อความเข้าใจแบบละเอียด**
+
+---
+
+### 3. **RELEASE_CHECKLIST.md** ✅
+Checklist ครบถ้วนสำหรับการตรวจสอบทุกขั้นตอน
+- ก่อนการ Build
+- การ Build
+- เตรียมข้อมูลสำหรับ Google Play Console
+- Review และ Publish
+- หลังการเผยแพร่
+- ในกรณีฉุกเฉิน
+
+👉 **ใช้เป็น Checklist ขณะทำงาน**
+
+---
+
+### 4. **build_google_play_release.sh** 🔧
+สคริปต์อัตโนมัติสำหรับการ build AAB
+- Clean project
+- Build release AAB
+- สร้างโฟลเดอร์ release
+- คัดลอกไฟล์และสร้าง checksum
+- แสดงสรุปผลการ build
+
+**วิธีใช้:**
+```bash
+cd /Users/tayap/project-number/number-android
+./build_google_play_release.sh
+```
+
+👉 **รันสคริปต์นี้เพื่อสร้างไฟล์ AAB**
+
+---
+
+### 5. **release-notes-3.0.6.txt** 📝
+Release Notes สำหรับเวอร์ชัน 3.0.6
+- ภาษาไทย
+- ภาษาอังกฤษ
+- ฟีเจอร์ใหม่
+- การปรับปรุง
+- การแก้ไขบั๊ก
+
+👉 **คัดลอกไปใช้ใน Google Play Console**
+
+---
+
+### 6. **release-metadata.json** 📊
+ข้อมูล metadata ของ release
+- ข้อมูลแอป
+- ข้อมูลเวอร์ชัน
+- Release notes
+- ฟีเจอร์ต่างๆ
+- แผนการเผยแพร่
+- เวอร์ชันก่อนหน้า
+
+👉 **ใช้เป็นข้อมูลอ้างอิง**
+
+---
+
+### 7. **releases/README.md** 📁
+คู่มือสำหรับโฟลเดอร์ releases
+- โครงสร้างโฟลเดอร์
+- รูปแบบการตั้งชื่อ
+- วิธีใช้งาน
+- การจัดเก็บและ backup
+
+👉 **อ่านเพื่อเข้าใจโครงสร้างโฟลเดอร์**
+
+---
+
+## 🎯 เริ่มต้นอย่างไร?
+
+### สำหรับผู้ที่รีบ (5-10 นาที)
+1. อ่าน **QUICK_START.md**
+2. รัน `./build_google_play_release.sh`
+3. ทำตาม 5 ขั้นตอนใน Quick Start
+
+### สำหรับผู้ที่ต้องการความละเอียด
+1. อ่าน **GOOGLE_PLAY_RELEASE_GUIDE.md**
+2. ใช้ **RELEASE_CHECKLIST.md** เป็น Checklist
+3. รัน `./build_google_play_release.sh`
+4. ทำตามคู่มือฉบับเต็ม
+
+---
+
+## 📋 ขั้นตอนโดยสรุป
+
+```
+1. Build AAB
+   └─> ./build_google_play_release.sh
+
+2. ไปที่ Google Play Console
+   └─> https://play.google.com/console
+
+3. อัปโหลดไฟล์ AAB
+   └─> releases/v3.0.6_1002/app-release-v3.0.6.aab
+
+4. กรอก Release Notes
+   └─> คัดลอกจาก release-notes-3.0.6.txt
+
+5. Review และ Submit
+   └─> รอการอนุมัติจาก Google (1-7 วัน)
+```
+
+---
+
+## 🗂️ โครงสร้างไฟล์
+
+```
+number-android/
+├── QUICK_START.md                    ⭐ เริ่มต้นที่นี่
+├── GOOGLE_PLAY_RELEASE_GUIDE.md      📚 คู่มือฉบับเต็ม
+├── RELEASE_CHECKLIST.md              ✅ Checklist
+├── SUMMARY.md                        📄 ไฟล์นี้
+├── build_google_play_release.sh      🔧 สคริปต์ build
+├── release-notes-3.0.6.txt           📝 Release notes
+├── release-metadata.json             📊 Metadata
+└── releases/
+    ├── README.md                     📁 คู่มือโฟลเดอร์
+    └── v3.0.6_1002/                  (จะสร้างหลังรันสคริปต์)
+        ├── app-release-v3.0.6.aab
+        ├── app-release-v3.0.6.aab.sha256
+        └── release-notes-3.0.6.txt
+```
+
+---
+
+## ✅ สิ่งที่ต้องทำ
+
+- [ ] อ่าน QUICK_START.md หรือ GOOGLE_PLAY_RELEASE_GUIDE.md
+- [ ] รัน `./build_google_play_release.sh`
+- [ ] ตรวจสอบไฟล์ AAB ที่สร้างขึ้น
+- [ ] เข้า Google Play Console
+- [ ] อัปโหลดไฟล์ AAB
+- [ ] กรอก Release Notes
+- [ ] Submit for Review
+- [ ] รอการอนุมัติจาก Google
+
+---
+
+## 📞 ต้องการความช่วยเหลือ?
+
+### ปัญหาการ Build
+ดูที่: **GOOGLE_PLAY_RELEASE_GUIDE.md** > "ปัญหาที่พบบ่อยและวิธีแก้ไข"
+
+### ปัญหาการอัปโหลด
+ดูที่: **GOOGLE_PLAY_RELEASE_GUIDE.md** > "ขั้นตอนที่ 3: อัปโหลดไฟล์ AAB"
+
+### Checklist
+ใช้: **RELEASE_CHECKLIST.md**
+
+---
+
+## 🎉 เมื่อเสร็จสิ้น
+
+หลังจากอัปโหลดสำเร็จ:
+1. ✅ Monitor crash reports ใน Play Console
+2. ✅ ตอบกลับ user reviews
+3. ✅ ตรวจสอบ download statistics
+4. ✅ เตรียมพร้อมสำหรับ hotfix (ถ้าจำเป็น)
+
+---
+
+## 🔐 ข้อมูลสำคัญ
+
+### Application Info
+- **Package Name**: com.numberniceic
+- **Version Code**: 1002
+- **Version Name**: 3.0.6
+- **Min SDK**: 24 (Android 7.0)
+- **Target SDK**: 35 (Android 15)
+
+### Keystore
+- **Location**: `/Users/tayap/KeyStoreNumberniceIc.jks`
+- ⚠️ **เก็บไว้อย่างปลอดภัย!**
+
+### Google Play Console
+- **URL**: https://play.google.com/console
+- **App**: Number (com.numberniceic)
+
+---
+
+## 📅 Timeline
+
+| วัน | กิจกรรม |
+|-----|---------|
+| วันนี้ | Build และอัปโหลด AAB |
+| 1-7 วัน | รอการ Review จาก Google |
+| หลัง Approve | เริ่ม Staged Rollout (10% → 50% → 100%) |
+| ต่อเนื่อง | Monitor และตอบกลับ Reviews |
+
+---
+
+## 💡 Tips
+
+1. **Staged Rollout**: เริ่มที่ 10-20% เพื่อทดสอบก่อนเผยแพร่เต็มรูปแบบ
+2. **Monitor Crashes**: ตรวจสอบ Android Vitals ใน Play Console
+3. **User Feedback**: ตอบกลับรีวิวภายใน 24 ชั่วโมง
+4. **Backup**: เก็บไฟล์ AAB และ keystore ไว้อย่างปลอดภัย
+5. **Rollback Plan**: เตรียมแผน rollback ในกรณีพบปัญหาร้ายแรง
+
+---
+
+## 🚀 พร้อมแล้ว!
+
+คุณมีทุกอย่างที่จำเป็นสำหรับการอัปโหลดแอปขึ้น Google Play Store แล้ว!
+
+**เริ่มต้นเลย:**
+```bash
+cd /Users/tayap/project-number/number-android
+./build_google_play_release.sh
+```
+
+---
+
+**สร้างโดย**: Antigravity AI  
+**วันที่**: 23 มกราคม 2026  
+**เวอร์ชัน**: 3.0.6 (1002)  
+**สถานะ**: ✅ พร้อมอัปโหลด
+
+
+=== KNOWLEDGE BASE ===
+# Naming & Ranking Logic (ตั้งชื่อ) — Developer Knowledge Base
+
+> อัปเดตล่าสุด: มีนาคม 2569 / March 2526  
+> แหล่งที่มา: AGENTS.md / Flutter Naming Client / Go Service logic
+
+---
+
+## 1. เกณฑ์การจัดลำดับ (Ranking)
+
+ในการจัดลำดับชื่อที่แนะนำ ระบบต้องอาศัยปัจจัยหลายอย่างเพื่อความแม่นยำและไม่ทำให้ผู้ใช้สับสน:
+
+### 1.1 ลำดับความสำคัญ (Order of Importance)
+1. **คุณภาพของชื่อ (Numerology Quality):** คะแนนรวม `total` และคะแนน `เลขศาสตร์` / `พลังเงา` ต้องมาก่อน
+2. **ความสัมพันธ์ของเลขคู่ (Pairing Type):** หากชื่อมีคะแนนพื้นฐานเท่ากัน (คุณภาพโดยรวมใกล้เคียงกัน) ให้ดูที่ **`pairType` / `pairpoint`**
+   - ชื่อที่มาพร้อมคู่เลขที่ส่งผลดีกว่า (`Stronger PairType`) ต้องขึ้นมาอยู่ด้านบนก่อนตัวแปรอื่นเล็กๆ น้อยๆ
+3. **ระยะห่างความหมาย (Semantic Distance):** หากทุกปัจจัยข้างต้นเท่ากัน จึงค่อยนำระยะห่างของความหมาย (ความต่างเพียงเล็กน้อย) มาตัดสินลำดับสุดท้าย
+
+---
+
+## 2. การแสดงผล (UI Representation)
+
+### 2.1 ข้อมูลบนการ์ด (Ranking Card)
+- **Compact Proof:** บนฝาหลังของการ์ดลำดับชื่อ (Ranking Card) ควรแสดงข้อมูลพิสูจน์คะแนนแบบกะทัดรัด (Compact)
+- ตัวอย่าง: `เลขศาสตร์` / `พลังเงา` แสดงเป็น `24 (D10/80)` แทนการสร้าง Debug Box แยกที่ซ้ำซ้อน
+
+### 2.2 โหมดการค้นหา (Similar Mode)
+- เมื่อใช้โหมด **`similarMode` (`รวมให้เป็น "ชื่อดี"`)**:
+  - ต้องแสดงทั้งคะแนน **Base-name scores** และคะแนน **Combined Total scores** พร้อมกันบนการ์ด
+  - **Filter Logic:** เมื่อผู้ใช้กรองข้อมูล (เช่น `เลขศาสตร์ดี` / `พลังเงาดี`) สิ่งที่แสดงบนการ์ดต้องสอดคล้องกับฟิลเตอร์ที่เลือกโดยตรง เพื่อลดความสับสน (Confusion) ว่า "ฟิลเตอร์แล้วแต่ทำไมยังแดงอยู่"
+
+---
+
+## 3. กฎความสอดคล้อง (Consistency Rules)
+
+1. **ห้ามขัดแย้งกันเอง (No Self-Contradiction):** หาก 2 ชื่อมีพื้นฐานความหมายเดียวกัน (effectively the same meaning) ลำดับการจัดกลุ่มต้องไม่ทำให้ค่า Numerology ที่ผู้เห็นขัดแย้งกับลำดับที่ปรากฏ (เช่น ชื่อที่แย่กว่าไม่ควรอยู่หน้าชื่อที่ดีกว่า)
+2. **Backward-Compatibility:** การแก้ไขตรรกะ Ranking ต้องรักษาความเข้ากันได้กับข้อมูลชื่อเดิมที่มีอยู่ในระบบ (Legacy names)
+
+---
+
+## 4. โครงสร้างไฟล์ (Reference Files)
+
+| ระบบ | ไฟล์ / เส้นทาง |
+|------|---------------|
+| Client (Flutter) | `flutter-naming/lib/src/features/naming/...` |
+| Backend (Go) | `go-naming/naming/...` |
+| Knowledge Area | `flutter-app` skill |
+# RengYam (ดูฤกษ์ยาม) Calendar — Developer Knowledge Base
+
+> อัปเดตล่าสุด: เมษายน 2569 / April 2026  
+> แหล่งที่มา: Session pair-programming กับ AI (Antigravity)
+
+---
+
+## 1. โครงสร้างหลักของระบบ
+
+### ไฟล์สำคัญ
+
+| ไฟล์ | หน้าที่ |
+|------|---------|
+| `ui/renkyam/RengYamF.kt` | Fragment หลัก: โหลดข้อมูล, คำนวณ tag, แสดง calendar grid |
+| `adapters/WanpraAdapter.kt` | RecyclerView adapter: แสดง cell วัน, ป้ายอัปมงคล, Weekday header |
+| `data/rengyam/Wanpra.kt` | Data class วันหนึ่งๆ ในปฏิทิน |
+| `utils/ThaiAstrologyLib.kt` | Library คำนวณโหราศาสตร์ไทย (วันพระ, ฤกษ์ฯลฯ) |
+| `utils/RengYamTagCanonicalizer.kt` | Normalize ชื่อ tag ให้เป็นรูปแบบมาตรฐาน |
+| `res/layout/fragment_reng_yam.xml` | Layout หลักของ Fragment (ใช้ Data Binding `<layout>`) |
+| `res/layout/item_calendar_day.xml` | Layout ของ cell วันในปฏิทิน (grid) |
+| `res/layout/item_calendar_weekday_header.xml` | Layout ของ header วัน (จันทร์-อาทิตย์) ใน RecyclerView |
+
+---
+
+## 2. Logic อัปมงคล (Kalagni) — กฎสำคัญ
+
+### 2.1 ฟิลด์ใน `Wanpra.kt` ที่เกี่ยวข้อง
+
+```kotlin
+var isKalagni: Boolean = false          // true ถ้าวันนั้นเป็นอัปมงคลอย่างใดอย่างหนึ่ง
+var kalagniBirth: Boolean = false       // true ถ้าตรงกับวันอัปมงคลวันเกิด
+var kalagniAge: Boolean = false         // true ถ้าตรงกับวันอัปมงคลอายุย่าง
+var kalagniBirthLabel: String? = null   // ชื่อวันที่ match เช่น "อังคาร", "ศุกร์"
+var kalagniAgeLabel: String? = null     // ชื่อวันที่ match เช่น "พุธ (กลางคืน)"
+```
+
+> **หมายเหตุ**: `kalagniBirthLabel` และ `kalagniAgeLabel` ถูกเพิ่มมาเพื่อ display label แบบ specific เช่น "อัปมงคลอายุย่าง (พุธกลางคืน)" แทนที่จะเป็น generic "อัปมงคลอายุย่าง"
+
+---
+
+### 2.2 กฎการ match วัน: `isSameKalagniDay()`
+
+**ระบบนี้ใช้ 06:00 น. เป็นจุดเปลี่ยนวัน** (ไม่ใช่เที่ยงคืน 00:00)
+
+```
+วันพุธ = 06:00 น. พุธ ─────────────── 05:59 น. พฤหัส
+         └─── กลางวัน ───┘└─── กลางคืน ───┘
+                                   ↑
+                   "พุธกลางคืน" อยู่ใน "วันพุธ" ของระบบนี้
+```
+
+**กฎการ match:**
+- `"พุธ (กลางคืน)"` จาก kalagniAgeDays → match กับ **วันพุธ** (ไม่ใช่พฤหัส)
+- strip "กลางคืน", "(" และ ")" ออกก่อนเปรียบเทียบ base day name
+- label `"(พุธกลางคืน)"` ยังคงอยู่ใน `kalagniAgeLabel` เพื่อการแสดงผลที่ชัดเจน
+
+```kotlin
+// ใน RengYamF.kt
+private fun isSameKalagniDay(candidate: String, currentDay: String): Boolean {
+    val cRaw = normalizeKalagniDayName(candidate)
+    val dRaw = normalizeKalagniDayName(currentDay)
+    fun stripNight(s: String) = s.replace("กลางคืน", "").replace("(", "").replace(")", "").trim()
+    val cBase = stripNight(cRaw)
+    val dBase = stripNight(dRaw)
+    return cBase == dBase  // match วันเดียวกัน เพราะ 06:00 boundary
+}
+```
+
+---
+
+### 2.3 Tag ที่แสดงผล
+
+ฟังก์ชัน `applyPersonalizedKalagniTags(wp)` สร้าง tag โดยรวม label เฉพาะเจาะจง:
+
+| สถานการณ์ | Tag ที่แสดง |
+|-----------|------------|
+| kalagniAge เท่านั้น (ตรงกับ "ศุกร์") | `อัปมงคลอายุย่าง (ศุกร์)` |
+| kalagniAge เท่านั้น (ตรงกับ "พุธ (กลางคืน)") | `อัปมงคลอายุย่าง (พุธกลางคืน)` |
+| kalagniBirth เท่านั้น | `อัปมงคลวันเกิด (อังคาร)` |
+| ทั้ง birth และ age | `อัปมงคลอายุย่าง (xxx)` + `อัปมงคลวันเกิด (yyy)` |
+
+> **สำคัญ**: Filter tag ด้วย `startsWith("อัปมงคล")` ก่อนเพิ่ม tag ใหม่ เพื่อกันการซ้ำซ้อน
+
+---
+
+## 3. Frozen Weekday Header (ตรึงหัวคอลัมน์วัน)
+
+### 3.1 Layout
+
+ใน `fragment_reng_yam.xml` มี `LinearLayout` id = `layout_weekday_frozen` วางซ้อนอยู่บน RecyclerView:
+
+```xml
+<!-- fragment_reng_yam.xml — อยู่ภายใน <layout> tag (Data Binding) -->
+<LinearLayout
+    android:id="@+id/layout_weekday_frozen"
+    android:visibility="gone"
+    android:elevation="8dp"
+    app:layout_constraintTop_toTopOf="parent" ...>
+
+    <!-- แถวเดือน+ปี + ปุ่ม Prev/Next -->
+    <LinearLayout ...>
+        <TextView android:id="@+id/frozen_btn_month_dropdown" ... />
+        <ImageView android:id="@+id/frozen_btn_prev_month" ... />
+        <TextView android:id="@+id/frozen_txt_month" ... />
+        <TextView android:id="@+id/frozen_txt_year" ... />
+        <ImageView android:id="@+id/frozen_btn_next_month" ... />
+        <TextView android:id="@+id/frozen_btn_year_dropdown" ... />
+    </LinearLayout>
+
+    <!-- แถวหัววัน จันทร์-อาทิตย์ -->
+    <LinearLayout ...> ... </LinearLayout>
+</LinearLayout>
+```
+
+> **กฎสำคัญ**: frozen header **ต้องอยู่ภายใน `<layout>` tag** ของ Data Binding file  
+> ถ้าใช้ `<include>` ที่ชี้ไปยัง layout ที่ไม่มี `<layout>` tag จะ compile ไม่ผ่าน (Unresolved reference)
+
+### 3.2 Scroll Listener ใน `setupAdapterList()`
+
+```kotlin
+rengYamBinding.recyclerviewWanpra.clearOnScrollListeners()
+rengYamBinding.recyclerviewWanpra.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+    override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+        val lm = rv.layoutManager as? GridLayoutManager ?: return
+        val firstVisible = lm.findFirstVisibleItemPosition()
+        val viewAtPos1 = lm.findViewByPosition(1)
+        val shouldShow = if (viewAtPos1 != null) viewAtPos1.top <= 0 else firstVisible > 0
+        rengYamBinding.layoutWeekdayFrozen.visibility = if (shouldShow) View.VISIBLE else View.GONE
+    }
+})
+```
+
+> scroll listener ต้องอยู่ **นอก** `if (adapter == null)` block เพื่อให้ทำงานได้ทุกครั้ง
+
+### 3.3 Sync เดือน/ปี ให้ frozen header
+
+```kotlin
+// เรียกทุกครั้งที่ headerData เปลี่ยน
+private fun syncFrozenHeader() {
+    if (!isAdded) return
+    rengYamBinding.layoutWeekdayFrozen
+        .findViewById<TextView>(R.id.frozen_txt_month)?.text = headerData.monthStr
+    rengYamBinding.layoutWeekdayFrozen
+        .findViewById<TextView>(R.id.frozen_txt_year)?.text = toThaiNum(headerData.yearStr)
+}
+```
+
+Call chain: `initHeaderData()` → `updateRecyclerHeader()` → `syncFrozenHeader()`
+
+---
+
+## 4. Badge Deduplication (กฎกันป้ายซ้ำ)
+
+### 4.1 ใน `WanpraAdapter.kt` (CalendarDayHolder / WanparHolder)
+
+```kotlin
+val existingTags = buildString { addAll(wp.calendarDisplayTags.orEmpty()); ... }
+
+if (wp.kalagniBirth && wp.kalagniAge) {
+    // แสดงป้ายรวม ไม่แสดงแยก
+    if (!existingTags.contains("อัปมงคลอายุย่าง และวันเกิด")) {
+        addBadge("อัปมงคลอายุย่าง และวันเกิด", forbiddenColor)
+    }
+} else {
+    if (wp.kalagniBirth) addBadge(...)
+    if (wp.kalagniAge)   addBadge(...)
+    // wp.isKalagni && !birth && !age → "วันอัปมงคล" ทั่วไป
+}
+```
+
+> **กับดัก**: `wp.isKalagni` เป็น `true` เสมอถ้า `kalagniBirth` หรือ `kalagniAge` เป็น true  
+> อย่าใช้ `wp.isKalagni` คู่กับ `wp.kalagniAge` ในเงื่อนไขเดียวกัน จะทำให้ป้ายซ้ำ
+
+### 4.2 ใน `applyPersonalizedKalagniTags()` (RengYamF.kt)
+
+- filter ด้วย `startsWith("อัปมงคล")` ก่อนเพิ่ม tag ใหม่ทุกครั้ง
+- เพิ่ม tag ใหม่พร้อม label เฉพาะ เช่น `"อัปมงคลอายุย่าง (พุธกลางคืน)"`
+
+---
+
+## 5. ลำดับการ match และ inject tag
+
+```
+updateRecyclerWithData()
+  ├── reset: isKalagni/kalagniBirth/kalagniAge = false
+  ├── match: firstOrNull { isSameKalagniDay(...) } → populate kalagniAgeLabel/kalagniBirthLabel
+  ├── applyPersonalizedKalagniTags(wp) → สร้าง tag พร้อม label
+  ├── sanitizeAgniknirodTags(wp, dt)
+  └── RengYamTagCanonicalizer.normalize(wp)
+```
+
+---
+
+## 6. Grid Layout (7 คอลัมน์)
+
+```kotlin
+GridLayoutManager(context, 7).apply {
+    spanSizeLookup = object : SpanSizeLookup() {
+        override fun getSpanSize(position: Int): Int {
+            return when (adapter.getItemViewType(position)) {
+                TYPE_CALENDAR_DAY, TYPE_WEEKDAY_HEADER, TYPE_EMPTY_DAY -> 1  // 1/7 width
+                else -> 7  // full width (header, legend, list)
+            }
+        }
+    }
+}
+```
+
+- TopHeader (เดือน/ปี, ฤกษ์หมวดหมู่) → span 7
+- WeekdayHeader (จันทร์-อาทิตย์) → span 1 แต่มี 7 ตัว
+- CalendarDay → span 1
+- EmptyDay → span 1 (วันเดือนก่อน/หลัง, สีซีด)
+
+---
+
+## 7. สีป้ายอ้างอิง
+
+| ป้าย | สี |
+|------|-----|
+| อัปมงคลวันเกิด / อายุย่าง | `#D32F2F` (แดงเข้ม) |
+| วันอาทิตย์ (header) | `#FF9800` (ส้ม) |
+| วันอื่น (header) | `#E0D8B0` (เบจ) |
+| วันที่เลือก (ฤกษ์ดี) | `#E8F5E9` (เขียวอ่อน) |
+| Best Day (Marquee) | `bg_calendar_cell_best` |
+
+---
+
+## 8. ข้อควรระวังพิเศษ (Gotchas)
+
+1. **`<include>` vs inline** — ถ้าจะใช้ Data Binding กับ view ที่ include มา layout นั้นต้องมี `<layout>` ห่อด้วย ไม่งั้น binding property จะไม่ถูกสร้าง
+2. **Parcelable** — ถ้าเพิ่ม field ใหม่ใน `Wanpra.kt` ต้องเพิ่มทั้ง `constructor(source: Parcel)` และ `writeToParcel()` ให้ครบ
+3. **`isKalagni` trap** — `isKalagni = kalagniBirth || kalagniAge` ดังนั้นการเช็ค `isKalagni` จะ true ถ้ามีอย่างใดอย่างหนึ่ง อย่าใช้แทน `kalagniAge` โดยตรง
+4. **clearOnScrollListeners()** — ต้องเรียก clear ก่อน addOnScrollListener ทุกครั้งที่ `setupAdapterList()` ถูก call เพราะ method นี้อาจถูก call หลายครั้ง (เมื่อ refresh หรือเปลี่ยน permission)
+# Thai Wedding Date Logic (ฤกษ์แต่งงาน) — Developer Knowledge Base
+
+> อัปเดตล่าสุด: เมษายน 2569 / April 2026  
+> แหล่งที่มา: RengYamF.kt (Android)
+
+---
+
+## 1. เกณฑ์การคำนวณพื้นฐาน
+
+ระบบค้นหาฤกษ์แต่งงานจะพิจารณาจากข้อมูลวันเกิดและเวลาเกิดของทั้ง **เจ้าบ่าว** และ **เจ้าสาว** โดยมีหลักการสำคัญดังนี้:
+
+### 1.1 การนับวันทางโหราศาสตร์ไทย (Boundary)
+- **ตัดวันเวลา 06:00 น.** (ไม่ใช่เที่ยงคืน)
+- **วันพุธกลางคืน:** เริ่มตั้งแต่ 18:00 น. ถึง 05:59 น. ของเช้าวันพฤหัสบดี
+- ตัวอย่าง: เกิดวันที่ 1 เมษายน เวลา 02:00 น. ทางโหราศาสตร์ยังถือว่าเป็นวันก่อนหน้า
+
+### 1.2 การระบุวันเกิด (Birth Day Number)
+ใช้ฟังก์ชัน `calculateOutfitBirthDayNumber` เพื่อแมปวันเกิดเป็นตัวเลข 1-8:
+- 1: อาทิตย์
+- 2: จันทร์
+- 3: อังคาร
+- 4: พุธ (กลางวัน)
+- 5: พฤหัสบดี
+- 6: ศุกร์
+- 7: เสาร์
+- 8: พุธ (กลางคืน)
+
+---
+
+## 2. กฎวันอัปมงคล (Red Days)
+
+แต่ละวันเกิดจะมี "วันอัปมงคล" ประจำตัว ซึ่งระบบจะห้าม (Exclude) ไม่ให้แนะนำฤกษ์ที่ตรงกับวันเหล่านี้
+
+### 2.1 Fixed Bad Days (ตามวันเกิด)
+| วันเกิด (เลข) | วันอัปมงคลที่ห้าม (Fixed) |
+|-------------|-------------------------|
+| 1 (อาทิตย์) | ศุกร์, อังคาร |
+| 2 (จันทร์) | อาทิตย์, พฤหัสบดี |
+| 3 (อังคาร) | จันทร์, อาทิตย์ |
+| 4 (พุธ กลางวัน) | อังคาร, พุธ (กลางคืน) |
+| 5 (พฤหัสบดี) | เสาร์, จันทร์ |
+| 6 (ศุกร์) | พุธ (กลางคืน), เสาร์ |
+| 7 (เสาร์) | พุธ (กลางวัน), ศุกร์ |
+| 8 (พุธ กลางคืน) | พฤหัสบดี, พุธ (กลางวัน) |
+
+### 2.2 Transit Bad Days (กาลกิณีอายุย่าง)
+- คำนวณจาก **ทักษาปกรณ์** โดยพิจารณาตามอายุย่างของเจ้าบ่าว/เจ้าสาวในขณะนั้น
+- ระบบจะดึง "กาลกิณี" (Kalagni) ประจำวัยมาเป็นวันต้องห้ามเพิ่มเติม
+- ตัวอย่าง: เจ้าบ่าวเกิดวันอาทิตย์ อายุย่าง 45 ปี วันกาลกิณีคือ "พุธกลางคืน"
+
+---
+
+## 3. เกณฑ์การคัดเลือกวัน (Selection Criteria)
+
+ฟังก์ชัน `isEligibleForCategory(wp, "marriage")` ใช้เกณฑ์ดังนี้:
+
+1. **ไม่เป็นวันเสียส่วนรวม (Hard Negative):** ห้ามตรงกับ วันอุบาทว์, โลกาวินาศ, วันจม ฯลฯ
+2. **เป็นวันดีอย่างน้อยหนึ่งอย่าง:**
+   - เป็นวันมงคลทั่วไป (ธงชัย, อธิบดี, อำฤตโชค, ฯลฯ)
+   - **หรือ** เป็น "วันปลอด" (Plain Safe Day - วันที่ไม่เสียและไม่เด่น)
+   - **หรือ** เป็น "ดิถีเรียงหมอน" (Riang Mon)
+3. **ไม่มี Warning เฉพาะเจาะจง:** ห้ามมีคำเตือนที่ระบุว่าห้าม "สตรี" หรือ "บุรุษ" (เช่น อัคนิโรธบางหมวด)
+4. **ไม่ตรงกับ Red Days ของบ่าว-สาว:** (ตามข้อ 2.1 และ 2.2)
+
+---
+
+## 4. ขั้นตอนการค้นหา (Search Workflow)
+
+1. **Input:** รับวัน/เวลาเกิดบ่าวสาว → คำนับวันเกิด (1-8) และอายุย่าง
+2. **Generate Red Days:** รวมรายการวันห้ามของทั้งสองฝ่าย (เช่น ["ศุกร์", "อังคาร", "จันทร์"])
+3. **Scan Months:** ไล่ตรวจสอบทีละวันในปฏิทิน (สูงสุด 12 เดือน)
+4. **Validation:**
+   - เช็ค `isEligibleForCategory` ในระดับ Global
+   - เช็คว่าชื่อวันนั้นๆ (เช่น "ศุกร์") ไม่ติดอยู่ใน Red Days List
+5. **Collect:** เก็บวันแรกที่พบ 7 วันแรก
+6. **Result:** แสดงผลบน Bottom Sheet พร้อมหมายเหตุการคำนวณ (Calculated Note)
+
+---
+
+## 5. ข้อระวังสำหรับ Developer
+
+1. **isSameKalagniDay:** เวลาเปรียบเทียบชื่อวัน ต้อง Normalize ชื่อให้ตรงกัน (เช่น "พุธกลางคืน" vs "พุธ (กลางคืน)")
+2. **RengYam Access:** ระบบค้นหาฤกษ์แต่งงานต้องเช็ค Priority/Permission (VIP) ก่อนแสดงผลลัพธ์
+3. **Persistance:** ข้อมูลวันเกิดบ่าวสาวจะถูกบันทึกลง SharedPrefs (`last_marriage_groom_date` ฯลฯ) เพื่อให้ User ไม่ต้องกรอกใหม่
+4. **Marriage Note:** `marriageSearchNote` เป็น `SpannableStringBuilder` เพื่อแสดงไฮไลท์สีส้ม (มงคล) และสีแดง (อัปมงคล) ใน UI
+# UI/UX & Aesthetic Guidelines — Developer Knowledge Base
+
+> อัปเดตล่าสุด: เมษายน 2569 / April 2026
+
+---
+
+## 1. ปรัชญาการออกแบบ (Design Philosophy)
+
+"Rich Aesthetics & Premium Feel" (ความสวยฉ่ำระดับพรีเมียม) คือหัวใจหลักของประสบการณ์ผู้ใช้ (UX) ของแอปในเครือ Numberniceic
+
+### 1.1 หลักการออกแบบพื้นฐาน
+1. **ไม่ใช่แค่ MVP (More than MVP):** หลีกเลี่ยงการสร้าง UI เบื้องต้นหรือรูปแบบเรียบง่าย ต้องสร้างความประทับใจตั้งแต่แรกจำ (Stunning First Impression)
+2. **สีสันและอารมณ์ (Colors & Mood):**
+   - หลีกเลี่ยงสีพื้นฐาน (Pure Red, Pure Blue)
+   - ใช้พาเลทสีที่ได้รับการคัดมาแล้ว (Curated Palettes), HSL tailored colors
+   - ใช้ **Vibrant Colors**, **Dark Mode**, และ **Glassmorphism**
+   - ใช้ **Gradients** ที่นุ่มนวล (Smooth Gradients) แทนสีทึบบางตำแหน่ง
+3. **Typography:** ใช้ฟอนต์สมัยใหม่จาก Google Fonts (เช่น *Inter*, *Roboto*, หรือ *Outfit*) แทนฟอนต์พื้นฐานของเบราว์เซอร์หรือ OS
+
+---
+
+## 2. การเคลื่อนไหวและการโต้ตอบ (Dynamics)
+
+- **Micro-animations:** ใส่การเคลื่อนไหวเล็กๆ น้อยๆ เมื่อมีการโต้ตอบ (Hover effects, Button scaling, Subtle transitions)
+- **Responsive & Alive:** อินเทอร์เฟซต้องทำให้ผู้ใช้รู้สึกว่าเข้าถึงและมีชีวิตชีวา (Reactive UI)
+
+### 2.1 ตัวอย่างที่นำไปใช้แล้ว
+- **RengYam Buttons:** การแทนที่แอนิเมชั่นพื้นฐานด้วยดีไซน์ที่ดูพรีเมียมและเป็นมืออาชีพมากขึ้น
+- **Ranking Cards:** การจัดวางข้อมูลบนการ์ดที่ดูกระชับและน่าเชื่อถือ
+- **Marquee Badge:** การใช้แบดจ์แบบ Marquee (วิ่งวน) หรือพื้นหลังสีเขียวอ่อน (`#E8F5E9`) สำหรับวันที่ดีที่สุด (Best Day)
+
+---
+
+## 3. กฎทางเทคนิคสำหรับ UI (Technical Constraints)
+
+- **Don't use Placeholders:** ห้ามใช้ภาพ Placeholder ให้ใช้วิธี Generate ภาพจริงที่มีคุณภาพสูง
+- **Data Binding Context:** ใน Android (number-androidx) ต้องระวังเรื่อง `<layout>` tag หากมีการใช้ `<include>` ต้องหุ้มด้วย `<layout>` เสมอเพื่อไม่ให้ Data Binding พัง
+
+---
+
+## 4. แหล่งข้อมูลสำหรับดีไซน์
+
+- **Google Fonts:** Inter, Outfit, Roboto
+- **Icons:** Premium 3D Icons (เช่น ชุดไอคอนหมวดหมู่มงคลที่สร้างขึ้นใหม่)
+- **Color Palette Reference:**
+  - `forbiddenColor`: `#D32F2F` (แดงเข้มขรึม)
+  - `auspiciousColor`: `#F57C00` (ส้มทอง)
+  - `safeDayColor`: `#E8F5E9` (เขียวอ่อนสะอาด)

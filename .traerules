@@ -1,0 +1,336 @@
+# Numberniceic Super Apps - Codex Agent Rules
+
+## PURPOSE
+This document provides comprehensive business logic, technical guidelines, and project structure information for Codex App Agents working within the Numberniceic Super Apps monorepo. Agents should reference this document to understand domain logic, implementation rules, and project conventions.
+
+## TABLE OF CONTENTS
+- [Project Structure Overview](#project-structure-overview)
+- [Skill Routing Rules](#skill-routing-rules)
+- [Business Logic](#business-logic)
+  - [Thai Wedding Date Selection Logic](#1-thai-wedding-date-selection-logic)
+  - [RengYam Calendar Logic](#2-rengyam-auspicious-time-calendar-logic)
+  - [Naming & Ranking Logic](#3-naming--ranking-logic)
+  - [UI/UX & Premium Aesthetics](#4-uiux--premium-aesthetics)
+- [Coding Standards](#coding-standards)
+- [State Management Guidelines](#state-management-guidelines)
+- [Deployment & DevOps](#deployment--devops)
+- [Security Best Practices](#security-best-practices)
+- [Debugging & Troubleshooting](#debugging--troubleshooting)
+- [Known Issues & Solutions](#known-issues--solutions)
+- [Workflow Guidelines](#workflow-guidelines)
+
+## PROJECT STRUCTURE OVERVIEW
+The repository is a monorepo containing multiple apps/services:
+- `number-androidx`: Android app (Kotlin, Retrofit, FCM)
+- `flutter-naming`: Flutter client for naming features
+- `number-php`: PHP/Slim backend for core member/auth/content/notification APIs
+- `go-naming`: Go backend for naming, chat, astrology, and outfit APIs
+- `.agents/skills`: Shared Codex skills for task-specific routing
+
+## SKILL ROUTING RULES
+Before editing code, use the appropriate skill:
+- `android-debug`: Android issues (`number-androidx`)
+- `php-backend`: PHP API and controller issues (`number-php`)
+- `go-service`: Go service/API/business logic (`go-naming`)
+- `flutter-app`: Flutter UI/client integration (`flutter-naming`)
+
+### Frontend-Backend Interaction
+- Android (`number-androidx`) calls:
+  - PHP backend (`number-php`) for member/auth/content/notification flows
+  - Go backend (`go-naming`) for naming/chat/astrology and outfit APIs
+- Flutter (`flutter-naming`) calls Go backend (`go-naming`) via `https://xn--b3cu8e7ah6h.com/api/v1/*`
+- Cross-stack debugging must verify endpoint, host, method, payload, and response model consistency
+
+## BUSINESS LOGIC
+
+### 1. Thai Wedding Date Selection Logic
+**Time Boundary Rules:**
+- Thai astrology uses 06:00 AM as day boundary (not midnight)
+- Wednesday night: 18:00 - 05:59 Thursday morning
+- Example: Born April 1 at 02:00 AM is considered previous day astrologically
+
+**Birth Day Number Mapping (1-8):**
+- 1: Sunday (อาทิตย์)
+- 2: Monday (จันทร์)
+- 3: Tuesday (อังคาร)
+- 4: Wednesday daytime (พุธกลางวัน)
+- 5: Thursday (พฤหัสบดี)
+- 6: Friday (ศุกร์)
+- 7: Saturday (เสาร์)
+- 8: Wednesday night (พุธกลางคืน)
+
+**Fixed Bad Days Table:**
+| Birth Day | Forbidden Days |
+|-----------|----------------|
+| 1 (Sunday) | Friday, Tuesday |
+| 2 (Monday) | Sunday, Thursday |
+| 3 (Tuesday) | Monday, Sunday |
+| 4 (Wed day) | Tuesday, Wednesday night |
+| 5 (Thursday) | Saturday, Monday |
+| 6 (Friday) | Wednesday night, Saturday |
+| 7 (Saturday) | Wednesday day, Friday |
+| 8 (Wed night) | Thursday, Wednesday day |
+
+**Transit Bad Days (Kalagni):**
+- Calculated from "ทักษาปกรณ์" based on age progression
+- System pulls Kalagni days for current age as additional forbidden days
+- Example: Sunday-born person at age 45 has "Wednesday night" as Kalagni day
+
+**Eligibility Criteria for Marriage Dates:**
+1. NOT a hard negative day (อุบาทว์, โลกาวินาศ, วันจม, etc.)
+2. Must be at least one of:
+   - General auspicious day (ธงชัย, อธิบดี, อำฤตโชค, etc.)
+   - OR "Plain Safe Day" (not bad and not outstanding)
+   - OR "ดิถีเรียงหมอน" (Riang Mon)
+3. No gender-specific warnings (e.g., forbidding "สตรี" or "บุรุษ")
+4. Not matching Red Days list for both bride and groom
+
+**Search Workflow:**
+1. Input: Bride/groom birth dates/times → calculate birth day numbers (1-8) and ages
+2. Generate Red Days: Combine forbidden days for both persons
+3. Scan Months: Check each day in calendar (max 12 months)
+4. Validation: Check global eligibility + not in Red Days list
+5. Collect: First 7 eligible days
+6. Result: Display on Bottom Sheet with calculation notes
+
+### 2. RengYam (Auspicious Time) Calendar Logic
+**Key Files:**
+- `ui/renkyam/RengYamF.kt`: Main Fragment (loads data, calculates tags, shows calendar grid)
+- `adapters/WanpraAdapter.kt`: RecyclerView adapter (day cells, auspicious badges, weekday header)
+- `data/rengyam/Wanpra.kt`: Data class for a single calendar day
+- `utils/ThaiAstrologyLib.kt`: Thai astrology calculation library
+- `utils/RengYamTagCanonicalizer.kt`: Normalizes tag names to canonical form
+
+**Kalagni (Auspicious) Day Matching:**
+- Uses 06:00 AM day boundary (same as Thai astrology)
+- `isSameKalagniDay()` function normalizes day names before comparison
+- Strips "กลางคืน", "(" and ")" for base day comparison
+- Example: "พุธ (กลางคืน)" matches "พุธ" (not Thursday)
+- Labels like "(พุธกลางคืน)" remain in `kalagniAgeLabel` for display clarity
+
+**Kalagni Fields in Wanpra.kt:**
+- `isKalagni: Boolean`: True if day has any auspicious marker
+- `kalagniBirth: Boolean`: True if matches birth auspicious day
+- `kalagniAge: Boolean`: True if matches age progression auspicious day
+- `kalagniBirthLabel: String?`: Specific match name (e.g., "อังคาร")
+- `kalagniAgeLabel: String?`: Specific match name (e.g., "พุธ (กลางคืน)")
+
+**Badge Deduplication Rules:**
+- When both `kalagniBirth` and `kalagniAge` are true: Show combined badge "อัปมงคลอายุย่าง และวันเกิด"
+- Otherwise: Show separate badges if applicable
+- **Trap**: `isKalagni` is true if either `kalagniBirth` or `kalagniAge` is true
+- Always filter with `startsWith("อัปมงคล")` before adding new tags
+
+**Frozen Weekday Header Implementation:**
+- Layout: `layout_weekday_frozen` LinearLayout inside Data Binding `<layout>` tag
+- Scroll listener in `setupAdapterList()` shows/hides based on first visible position
+- **Critical**: Must be inside `<layout>` tag for Data Binding to work
+- Must call `clearOnScrollListeners()` before adding new listener
+
+**Grid Layout:**
+- 7-column GridLayoutManager
+- Span sizes: CalendarDay, WeekdayHeader, EmptyDay → 1; TopHeader → 7
+
+**Developer Gotchas:**
+1. **Data Binding**: Included layouts must have `<layout>` tag wrapper
+2. **Parcelable**: New fields in Wanpra.kt require updates to Parcelable implementation
+3. **isKalagni trap**: Don't use `isKalagni` in conditions with `kalagniAge`/`kalagniBirth`
+4. **Scroll listeners**: Always call `clearOnScrollListeners()` in `setupAdapterList()`
+
+### 3. Naming & Ranking Logic
+**Priority Order for Name Ranking:**
+1. **Name Quality (Numerology)**: Total score and "เลขศาสตร์"/"พลังเงา" scores come first
+2. **Number Pair Relationship**: If basic quality similar, check `pairType`/`pairpoint`
+   - Names with stronger pair types should rank higher
+3. **Semantic Distance**: Only use meaning difference as final tie-breaker
+
+**UI Representation Rules:**
+- **Compact Proof**: Show proof scores compactly on ranking card (e.g., "24 (D10/80)")
+- **Similar Mode**: When using `similarMode` ("รวมให้เป็น 'ชื่อดี'"):
+  - Display both Base-name scores AND Combined Total scores on cards
+  - Filter display must match selected filter (e.g., only show relevant scores)
+
+**Consistency Rules:**
+1. **No Self-Contradiction**: Names with effectively same meaning must not show contradictory numerology ranking
+2. **Backward-Compatibility**: Ranking logic changes must maintain compatibility with legacy names
+
+### 4. UI/UX & Premium Aesthetics
+**Design Philosophy**: "Rich Aesthetics & Premium Feel"
+- More than MVP: Avoid basic/simple UI patterns
+- Stunning first impression required
+
+**Color & Typography:**
+- Avoid pure basic colors (Pure Red, Pure Blue)
+- Use curated color palettes, HSL tailored colors
+- Use Vibrant Colors, Dark Mode, and Glassmorphism
+- Use smooth gradients instead of flat colors
+- Use modern Google Fonts (Inter, Roboto, Outfit) not default OS fonts
+
+**Dynamics & Interaction:**
+- Micro-animations for hover effects, button scaling, subtle transitions
+- Responsive, alive interface feeling
+
+**Technical Constraints:**
+- **No Placeholders**: Generate high-quality actual images
+- **Data Binding Context**: In Android, `<include>` layouts must be wrapped in `<layout>` tag
+
+**Reference Color Palette:**
+- `forbiddenColor`: `#D32F2F` (dark red)
+- `auspiciousColor`: `#F57C00` (golden orange)
+- `safeDayColor`: `#E8F5E9` (light green)
+
+## CODING STANDARDS
+
+### Go (go-naming)
+- Use PostgreSQL `pg_trgm` extension with `word_similarity` for phonetic name matching
+- Implement hybrid search: trigram similarity (0.7 weight) + semantic vector similarity (0.3 weight)
+- Add phonetic scoring: `phonetic_score`, `pronunciation_ease`, `syllable_balance`
+- For `doubleGoodMode` (both premium filters active):
+  - Increase candidate limits
+  - Lower trigram similarity thresholds (0.002 general, 0.0005 short keywords)
+  - Add pool-specific limits for short keywords
+  - Target 3600 unique results for 100+ final results
+
+### PHP (number-php)
+- Follow Slim framework patterns
+- Maintain consistent response structures
+- Implement proper error handling and logging
+
+### Flutter/Dart (flutter-naming)
+- Use singleton pattern for shared resources (e.g., TTS instance)
+- Add defensive `mounted` checks in async callbacks
+- Implement exclusive filter logic: "เลขศาสตร์ดี" shows only names with that badge, "พลังเงาดี" shows only names with that badge
+- Fix TTS race conditions with static `Completer` and single initialization
+- Call `_search()` when `willKeepRankingCriteria` is false to restore similar results
+
+### Android/Kotlin (number-androidx)
+- Follow MVVM architecture with Data Binding
+- Implement proper Parcelable for all data classes
+- Use RecyclerView with appropriate adapters
+- Handle 06:00 AM day boundary consistently
+
+## STATE MANAGEMENT GUIDELINES
+
+### Flutter
+- Use Provider or Riverpod for state management
+- Separate business logic from UI components
+- Implement proper error states and loading indicators
+
+### Android
+- Use ViewModel with LiveData/StateFlow
+- Handle configuration changes properly
+- Manage RecyclerView state preservation
+
+### Backend (Go/PHP)
+- Stateless API design
+- Use connection pooling for database
+- Implement proper caching strategies
+
+## DEPLOYMENT & DEVOPS
+
+### Go-naming Deployment
+- Server: 43.228.85.200 (domain: ชื่อดี.com)
+- Username: root
+- Use `deploy.sh` script with SSH password authentication flags:
+  `-o PubkeyAuthentication=no -o PasswordAuthentication=yes`
+- Cross-compile: `GOOS=linux GOARCH=amd64`
+- Service: `systemctl restart go-naming`
+- Nginx reverse proxy to port 8095
+
+### General Deployment Rules
+- Always test builds locally before deployment
+- Maintain backward compatibility during updates
+- Monitor logs for errors after deployment
+
+## SECURITY BEST PRACTICES
+- Never commit secrets or API keys to repository
+- Use environment variables for sensitive configuration
+- Validate all user inputs on backend
+- Implement proper authentication and authorization
+- Use HTTPS for all API communications
+
+## DEBUGGING & TROUBLESHOOTING
+- Check AGENTS.md for skill routing guidance
+- Verify endpoint consistency between client and server
+- Trace complete request/response flow
+- Use logging strategically to identify issues
+- Test on actual devices, not just emulators
+
+## KNOWN ISSUES & SOLUTIONS
+
+### Thai TTS on Android Emulator
+- **Issue**: Garbled/unintelligible Thai speech on Android emulator
+- **Cause**: Missing Thai TTS engine on emulator
+- **Solution**: 
+  - Use Google TTS engine if available: `flutter_tts` with language 'th-TH', speech rate 0.35, pitch 1.0
+  - Test on physical device with proper Thai TTS support
+  - Add debug logging to check available engines and voices
+
+### App Name Display Issues
+- **Issue**: App shows "flutter_naming" instead of "ชื่อดี" under icon
+- **Solution**: Update all platform configuration files:
+  - Android: `android/app/src/main/AndroidManifest.xml` (android:label)
+  - iOS: `ios/Runner/Info.plist` (CFBundleDisplayName)
+  - Web: `web/index.html` (title tag)
+  - macOS: `macos/Runner/Config/AppInfo.xcconfig`
+- **Note**: Rebuild app after changes
+
+### TTS Race Condition Crash
+- **Issue**: App crashes with `java.lang.IllegalStateException: Reply already submitted` when pressing "เลขศาสตร์ดี" button
+- **Cause**: Multiple concurrent TTS initializations causing race condition
+- **Solution**: Use singleton pattern with static `Completer` in `name_list_item.dart`
+  - Implement static shared `FlutterTts` instance
+  - Use static `Completer` to manage initialization
+  - Prevent multiple concurrent `initialize()` calls
+
+### Premium Filter Logic Issues
+- **Issue**: "พลังเงาดี" filter showing names with "เลขศาสตร์ดี" badge
+- **Solution**: Implement exclusive filter logic:
+  - "พลังเงาดี" shows only names with that badge AND WITHOUT "เลขศาสตร์ดี"
+  - "เลขศาสตร์ดี" shows only names with that badge AND WITHOUT "พลังเงาดี"
+
+### Similar Results Disappearance
+- **Issue**: "รายชื่อที่มีความหมายใกล้เคียง" disappears when cancelling both premium filters
+- **Solution**: Ensure `_search()` is called when `willKeepRankingCriteria` is false in filter toggle handlers
+
+### SSH Authentication in Deployment
+- **Issue**: `deploy.sh` script fails with public key authentication errors
+- **Solution**: Add SSH flags to all `ssh` and `scp` commands:
+  `-o PubkeyAuthentication=no -o PasswordAuthentication=yes`
+
+### Premium Feature Testing Bypass
+- **For testing only**: Set `_bypassForTesting = true` in `premium_manager.dart`
+- **Effect**: `PremiumManager().isPremium` and `canUsePremiumFeature` return true
+- **Warning**: Disable in production; users can use premium features without purchase
+
+
+
+
+
+
+
+## WORKFLOW GUIDELINES
+
+### Simple Workflow Rule
+- **User provides task** → AI directly analyzes and modifies relevant files
+- **No multi-step approval or agent switching**
+- **Focus on speed and correctness**
+- **Directly modify code when asked**
+
+### Optimization for Codex App
+- **Do not over-explain. Prioritize implementation.**
+- **Provide direct answers with minimal explanation**
+- **Immediate code changes over lengthy reasoning**
+- **Minimize token usage by focusing on actionable output**
+
+### Essential Rules to Maintain
+1. **Coding style consistency** (follow language-specific standards in CODING STANDARDS section)
+2. **Naming conventions** (adhere to project naming patterns)
+3. **File structure awareness** (respect project organization in PROJECT STRUCTURE OVERVIEW)
+4. **Business logic compliance** (implement domain rules from BUSINESS LOGIC section)
+
+---
+*Last Updated: 2026-04-15*  
+*Document Version: 3.0*  
+*Changes: Simplified for solo developer - removed over-complex agent collaboration rules, added direct workflow guidelines*  
+*For Codex App Agent Use in Numberniceic Super Apps Monorepo*
