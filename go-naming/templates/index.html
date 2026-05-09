@@ -4,13 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ชื่อดี.com (ชื่อดี.com) - ดีสมบูรณ์แบบทั้ง 4 มิติ</title>
+    <title>ชื่อดี.com - ตั้งชื่อมงคลด้วย AI | วิเคราะห์ชื่อ เลขศาสตร์ และพลังเงา</title>
+    <meta name="description"
+        content="ค้นหาชื่อมงคลจากความหมาย วิเคราะห์เลขศาสตร์ชื่อและพลังเงา ช่วยตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง และหาชื่อความหมายดีได้ในที่เดียว">
+    <meta name="keywords"
+        content="ชื่อมงคล, ตั้งชื่อมงคล, ตั้งชื่อลูก, ตั้งชื่อลูกชาย, ตั้งชื่อลูกสาว, เปลี่ยนชื่อเสริมดวง, ชื่อเสริมดวง, ชื่อเสริมดวงการเงิน, วิเคราะห์ชื่อ, เลขศาสตร์ชื่อ, พลังเงา, ชื่อตามความหมาย">
+    <meta property="og:title" content="ชื่อดี.com - ตั้งชื่อมงคลด้วย AI | วิเคราะห์ชื่อ เลขศาสตร์ และพลังเงา">
+    <meta property="og:description"
+        content="ค้นหาชื่อมงคลจากความหมาย วิเคราะห์เลขศาสตร์ชื่อและพลังเงา ช่วยตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง และหาชื่อความหมายดีได้ในที่เดียว">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/1024x500.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css?v=4">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -33,7 +42,6 @@
                 <a href="#knowledge">ความรู้คู่ชื่อมงคล</a>
                 <a href="/how-ranking">วิธีจัดอันดับ</a>
                 <a href="/astro-api" class="nav-link">🌌 ดวงดาว</a>
-                <a href="#download" class="btn-primary">ดาวน์โหลดเลย</a>
             </div>
         </div>
 
@@ -46,7 +54,6 @@
                 <a href="#knowledge" class="mobile-link">ความรู้คู่ชื่อมงคล</a>
                 <a href="/how-ranking" class="mobile-link">วิธีจัดอันดับ</a>
                 <a href="/astro-api" class="mobile-link">🌌 ดวงดาว</a>
-                <a href="#download" class="btn-primary-mobile">ดาวน์โหลดเลย</a>
             </div>
         </div>
     </nav>
@@ -56,7 +63,8 @@
             {{range $index, $item := .Highlights}}
             {{if eq $index 0}}
             <a href="/article/{{$item.Slug}}" class="grid-item large">
-                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else}}1024x500.png{{end}}" alt="{{$item.Title}}">
+                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else}}1024x500.png{{end}}"
+                    alt="บทความแรงบันดาลใจสำหรับการตั้งชื่อมงคลและวิเคราะห์ชื่อ {{$item.Title}}">
                 <div class="item-content">
                     <span class="category-tag">{{$item.Category}}</span>
                     <h3>{{$item.Title}}</h3>
@@ -66,7 +74,7 @@
             {{else}}
             <a href="/article/{{$item.Slug}}" class="grid-item small">
                 <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else}}Screenshot_1772810719.png{{end}}"
-                    alt="{{$item.Title}}">
+                    alt="แรงบันดาลใจค้นหาชื่อมงคลจากบทความ {{$item.Title}}">
                 <div class="item-content">
                     <span class="category-tag">{{$item.Category}}</span>
                     <h3>{{if $item.TitleShort}}{{$item.TitleShort}}{{else}}{{$item.Title}}{{end}}</h3>
@@ -76,12 +84,12 @@
             {{else}}
             <!-- Fallback Static Content -->
             <a href="#" class="grid-item large">
-                <img src="1024x500.png" alt="Main Highlight">
+                <img src="1024x500.png" alt="ชื่อดี.com ระบบตั้งชื่อมงคลด้วย AI">
                 <div class="item-content">
-                    <span class="category-tag">Feature</span>
-                    <h3>ค้นพบชื่อที่มงคล ดีสมบูรณ์แบบทั้ง 4 มิติ</h3>
-                    <p>ครั้งแรกของโลก! ที่นำศาสตร์ความเชื่อโบราณมาผสานกับพลัง AI อัจฉริยะ
-                        เพื่อค้นหาชื่อที่ดีที่สุดสำหรับชีวิตคุณ</p>
+                    <span class="category-tag">AI Search Inspiration</span>
+                    <h3>แรงบันดาลใจในการค้นหาชื่อมงคลจากความหมายและคนต้นแบบที่คุณชื่นชอบ</h3>
+                    <p>ใช้บทความและตัวอย่างชื่อเป็นจุดเริ่มต้น แล้วให้ AI ช่วยค้นหาชื่อตามความหมาย วิเคราะห์ชื่อ
+                        เลขศาสตร์ชื่อ และพลังเงาอย่างเป็นธรรมชาติ</p>
                 </div>
             </a>
             <a href="#" class="grid-item small">
@@ -90,7 +98,7 @@
                 </div>
                 <div class="item-content">
                     <span class="category-tag">Numerology</span>
-                    <h3>เลขศาสตร์ ศาสตร์แห่งตัวเลขมงคล</h3>
+                    <h3>แรงบันดาลใจจากเลขศาสตร์ชื่อที่ดี</h3>
                 </div>
             </a>
             <a href="#" class="grid-item small">
@@ -99,7 +107,7 @@
                 </div>
                 <div class="item-content">
                     <span class="category-tag">Shadow Power</span>
-                    <h3>พลังเงา (Shadow Power) เบื้องหลังความสำเร็จ</h3>
+                    <h3>พลังเงาที่ช่วยมองชื่อได้ลึกกว่าความไพเราะ</h3>
                 </div>
             </a>
             <a href="#" class="grid-item small">
@@ -108,7 +116,7 @@
                 </div>
                 <div class="item-content">
                     <span class="category-tag">Expert Tips</span>
-                    <h3>เคล็ดลับการตั้งชื่อให้รุ่งเรือง</h3>
+                    <h3>เคล็ดลับตั้งชื่อมงคลและเปลี่ยนชื่อเสริมดวง</h3>
                 </div>
             </a>
             {{end}}
@@ -138,19 +146,16 @@
         <div class="container hero-content">
             <div class="hero-text">
                 <div class="badge-vip">✨ Exclusive VIP Feature</div>
-                <h1>ค้นพบชื่อที่มงคล <br><span class="highlight">ดีสมบูรณ์แบบทั้ง 4 มิติ</span></h1>
-                <p>ครั้งแรกของโลก! ที่นำศาสตร์ความเชื่อโบราณมาผสานกับพลัง AI อัจฉริยะ
-                    เพื่อค้นหาชื่อที่ดีที่สุดสำหรับชีวิตคุณ ทั้งความหมาย เลขศาสตร์ พลังเงา และคู่สมพงษ์</p>
+                <h1>ตั้งชื่อมงคลด้วย AI <br><span class="highlight">ค้นหาชื่อดีจากความหมาย เลขศาสตร์ และพลังเงา</span></h1>
+                <p>ช่วยตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง และวิเคราะห์ชื่อเดิม เพื่อค้นหาชื่อที่เหมาะกับชีวิตคุณมากขึ้น
+                    ทั้งความหมาย เลขศาสตร์ชื่อ พลังเงา และความเหมาะสมโดยรวม</p>
                 <div class="hero-cta">
-                    <a href="#download" class="btn-download">
-                        <i data-lucide="download"></i> เริ่มค้นหาชื่อดี
-                    </a>
-                    <a href="#features" class="btn-secondary">เรียนรู้ศาสตร์มงคล</a>
+                    <a href="#knowledge" class="btn-secondary">เรียนรู้ศาสตร์การตั้งชื่อ</a>
                 </div>
             </div>
             <div class="hero-visual">
                 <div class="hero-image-container">
-                    <img src="1024x500.png" alt="ชื่อดี.com App Mockup" class="main-mockup">
+                    <img src="1024x500.png" alt="ชื่อดี.com แอปค้นหาชื่อมงคลและวิเคราะห์ชื่อด้วย AI" class="main-mockup">
                     <div class="hero-glow-sphere"></div>
                 </div>
             </div>
@@ -160,37 +165,42 @@
     <section id="features" class="features">
         <div class="container">
             <div class="section-header">
-                <h2>นิยามความสำเร็จ <br><span>"ดีสมบูรณ์แบบทั้ง 4 มิติ"</span></h2>
-                <p>เราไม่ได้แค่หาชื่อที่ไพเราะ แต่เราหาชื่อที่ "เขียวทั้งระบบ" เพื่อความรุ่งเรืองในทุกด้านของชีวิต</p>
+                <h2>ค้นพบชื่อมงคล <br><span>"ดีสมบูรณ์แบบทั้ง 4 มิติ"</span></h2>
+                <p>เราไม่ได้ดูแค่ชื่อเพราะหรือความหมายดี แต่ช่วยคัดชื่อที่เหมาะจาก 4 มิติสำคัญคือ ความหมาย
+                    เลขศาสตร์ พลังเงา และความเหมาะสมโดยรวม เพื่อใช้ตั้งชื่อลูก เปลี่ยนชื่อใหม่ หรือวิเคราะห์ชื่อเดิม</p>
             </div>
             <div class="feature-grid">
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <img src="Screenshot_1772810719.png" alt="ค้นหาอัจฉริยะ (AI Search)">
+                        <img src="Screenshot_1772810719.png" alt="ค้นหาชื่อตามความหมายด้วย AI Search">
                     </div>
-                    <h3>1. ค้นหาอัจฉริยะ (AI Search)</h3>
-                    <p>เลือกค้นหาจากความหมาย หรือตาม "บุคคลที่ประสบความสำเร็จ" เพื่อสแกนความโชคดีมาถึงตัวคุณ</p>
+                    <h3>1. ค้นหาชื่อตามความหมายด้วย AI</h3>
+                    <p>พิมพ์ความหมายที่คุณต้องการ แล้วระบบจะช่วยค้นหาชื่อมงคล ชื่อตามความหมาย
+                        และชื่อเสริมดวงที่ใกล้เคียงที่สุด เหมาะทั้งคนที่กำลังตั้งชื่อลูกและคนที่อยากเปลี่ยนชื่อใหม่</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <img src="Screenshot_1772810728.png" alt="เลขศาสตร์เป็นเลิศ (SAT)">
+                        <img src="Screenshot_1772810728.png" alt="วิเคราะห์เลขศาสตร์ชื่อและค้นหาชื่อเสริมดวง">
                     </div>
-                    <h3>2. เลขศาสตร์เป็นเลิศ (SAT)</h3>
-                    <p>ถอดรหัสพยัญชนะและสระให้ได้ผลรวมที่เป็นคู่เลขมงคลระดับ Double Bonus เพื่อส่งเสริมโชคลาภ</p>
+                    <h3>2. วิเคราะห์เลขศาสตร์ชื่ออย่างละเอียด</h3>
+                    <p>ช่วยเช็กว่าชื่อเดิมดีไหม หรือคัดชื่อใหม่ที่มีเลขศาสตร์ชื่อดี เหมาะกับเป้าหมายชีวิต การงาน การเงิน
+                        และชื่อเสริมดวงในแบบที่คุณต้องการ</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <img src="Screenshot_1772810752.png" alt="พลังเงาทรงพลัง (SHA)">
+                        <img src="Screenshot_1772810752.png" alt="วิเคราะห์พลังเงาของชื่อเพื่อคัดชื่อที่เหมาะสม">
                     </div>
-                    <h3>3. พลังเงาทรงพลัง (SHA)</h3>
-                    <p>ตรวจสอบพลังแฝงที่ซ่อนอยู่หลังชื่อ (Shadow Power) เพื่อความมั่นคงและบารมีที่ยั่งยืน</p>
+                    <h3>3. อ่านพลังเงาเพื่อมองชื่อให้ลึกขึ้น</h3>
+                    <p>นอกจากความหมายและเลขศาสตร์ ระบบยังวิเคราะห์พลังเงาเพื่อช่วยมองพลังแฝงของชื่อ
+                        เหมาะสำหรับคนที่อยากวิเคราะห์ชื่ออย่างรอบด้านก่อนตัดสินใจใช้จริง</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <img src="Screenshot_1772810777.png" alt="คัดกรองขั้นสูง (VIP Zone)">
+                        <img src="Screenshot_1772810777.png" alt="คัดกรองชื่อมงคล 4 มิติและวิเคราะห์ชื่อแบบครบระบบ">
                     </div>
-                    <h3>4. คัดกรองขั้นสูง (VIP Zone)</h3>
-                    <p>คัดออกอักขระกาลกิณีอัตโนมัติ พร้อมระบบกรองเฉพาะชื่อระดับ "ดีเยี่ยม" ที่ผ่านเกณฑ์มงคลสูงสุด</p>
+                    <h3>4. คัดชื่อที่เหมาะกับคุณมากขึ้นแบบครบระบบ</h3>
+                    <p>รวมผลจากความหมาย เลขศาสตร์ พลังเงา และเกณฑ์คัดกรองสำคัญไว้ในที่เดียว
+                        เพื่อช่วยหาชื่อมงคลที่เหมาะกับคุณมากขึ้นอย่างเป็นระบบ</p>
                 </div>
             </div>
         </div>
@@ -206,12 +216,12 @@
             </div>
             <div class="ai-text">
                 <h2>นวัตกรรม AI <br>เพื่อศาสตร์การตั้งชื่อ</h2>
-                <p>เราใช้ระบบ <strong>Hybrid AI Algorithm</strong> ที่วิเคราะห์เจาะลึกถึงรากศัพท์ (Root Word Analysis)
-                    เพื่อให้ได้ชื่อที่ความหมายลึกซึ้งและไพเราะที่สุด</p>
+                <p>เราใช้ระบบ <strong>Hybrid AI Algorithm</strong> เพื่อช่วยค้นหาชื่อจากความหมาย วิเคราะห์ชื่อเดิม
+                    และเชื่อมคำค้นกับแรงบันดาลใจจากชื่อคนต้นแบบหรือบทความที่เกี่ยวข้องอย่างเป็นธรรมชาติ</p>
                 <ul class="ai-list">
-                    <li><i data-lucide="check"></i> วิเคราะห์รากอักษรและความหมายเชิงลึก</li>
-                    <li><i data-lucide="check"></i> ระบบแนะนำชื่อที่ความหมายใกล้เคียงอัตโนมัติ</li>
-                    <li><i data-lucide="check"></i> การันตีความหมายถูกต้องตามพจนานุกรมและตำรา</li>
+                    <li><i data-lucide="check"></i> วิเคราะห์รากศัพท์และความหมายเชิงลึกเพื่อค้นหาชื่อตามความหมาย</li>
+                    <li><i data-lucide="check"></i> semantic search ช่วยแนะนำชื่อที่ความหมายใกล้เคียงอัตโนมัติ</li>
+                    <li><i data-lucide="check"></i> รองรับทั้งตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง และวิเคราะห์ชื่อเดิม</li>
                 </ul>
             </div>
         </div>
@@ -223,12 +233,12 @@
             <div class="showcase-text">
                 <div class="badge-vip">🛡️ แม่นยำ & ละเอียดที่สุด</div>
                 <h2>วิเคราะห์ผลลัพธ์ <br><span class="highlight">Triple Lucky x3</span></h2>
-                <p>ไม่ใช่แค่ชื่อดี แต่ต้องดีทั้งระบบ! เราวิเคราะห์เจาะลึกทั้งเลขศาสตร์ ชื่อของคุณ และผลรวมกับนามสกุล
-                    เพื่อเป้าหมายสูงสุดคือความมงคลที่สมบูรณ์แบบ</p>
+                <p>ไม่ใช่แค่ชื่อดี แต่ต้องช่วยตัดสินใจได้จริง เราวิเคราะห์ทั้งชื่อเดิม ชื่อใหม่ เลขศาสตร์ชื่อ
+                    และพลังเงา เพื่อช่วยคัดชื่อมงคลที่เหมาะกับชีวิตคุณมากขึ้น</p>
             </div>
             <div class="showcase-visual">
                 <div class="visual-glow"></div>
-                <img src="Screenshot_1772810777.png" alt="วิเคราะห์ชื่อ Triple Lucky">
+                <img src="Screenshot_1772810777.png" alt="หน้าจอวิเคราะห์ชื่อ เลขศาสตร์ และพลังเงาแบบ Triple Lucky">
             </div>
         </div>
     </section>
@@ -238,7 +248,8 @@
         <div class="container">
             <div class="section-header">
                 <h2 style="color: var(--text-light);">ความรู้คู่ชื่อมงคล</h2>
-                <p style="color: var(--text-gray);">บทความแนะนำและเคล็ดลับการตั้งชื่อให้รุ่งเรือง</p>
+                <p style="color: var(--text-gray);">บทความสำหรับคนที่อยากตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง
+                    หรือเช็กว่าชื่อเดิมดีไหมก่อนตัดสินใจ</p>
             </div>
             <div style="display: flex; justify-content: center;">
                 <a href="/guide-change-name" class="feature-card"
@@ -249,8 +260,8 @@
                     <h3 style="color: var(--text-light); margin-bottom: 12px; font-size: 1.6rem; font-weight: 700;">
                         ขั้นตอนการเปลี่ยนชื่อที่อำเภอ</h3>
                     <p style="color: var(--text-gray); font-size: 1rem; line-height: 1.7;">เตรียมตัวให้พร้อมก่อนไปอำเภอ
-                        ทั้งเอกสารที่ต้องใช้ และขั้นตอนสำคัญที่เจ้าหน้าที่จะตรวจสอบ
-                        เพื่อให้การเปลี่ยนชื่อใหม่ของคุณเป็นไปอย่างราบรื่นและเป็นสิริมงคลที่สุด...</p>
+                        ทั้งเอกสารที่ต้องใช้ ขั้นตอนสำคัญที่เจ้าหน้าที่จะตรวจสอบ
+                        และแนวคิดก่อนเปลี่ยนชื่อเสริมดวงให้เหมาะกับเป้าหมายชีวิตของคุณ...</p>
                     <div
                         style="margin-top: 24px; color: var(--secondary); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
                         อ่านบทความฉบับเต็ม <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i></div>
@@ -261,13 +272,13 @@
 
     <section id="download" class="cta-section">
         <div class="container text-center">
-            <h2>พร้อมเริ่มต้นชีวิตใหม่ด้วย <span class="highlight">"ชื่อดี"</span> หรือยัง?</h2>
-            <p>ร่วมเป็นหนึ่งในผู้คนนับแสนที่พบชื่อที่ "ดีสมบูรณ์แบบทั้ง 4 มิติ" กับเรา</p>
+            <h2>พร้อมเริ่มค้นหาชื่อมงคลที่ <span class="highlight">เหมาะกับคุณ</span> หรือยัง?</h2>
+            <p>ดาวน์โหลดแอปเพื่อค้นหาชื่อตามความหมาย ตั้งชื่อลูก วิเคราะห์ชื่อ และเปลี่ยนชื่อเสริมดวงได้ในที่เดียว</p>
             <div class="download-btns">
 
                 <a href="/download" style="display: inline-block;">
                     <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-                        alt="Get it on Google Play" style="height: 64px;">
+                        alt="ดาวน์โหลดแอปชื่อดี.com บน Google Play" style="height: 64px;">
                 </a>
             </div>
         </div>
@@ -276,7 +287,8 @@
     <footer>
         <div class="container footer-content">
             <div class="footer-logo">ชื่อดี.com</div>
-            <p>&copy; 2026 ชื่อดี.com - All Rights Reserved. <br>แอปพลิเคชันเพื่อการตั้งชื่อมงคลที่ดีที่สุด | <a
+            <p>&copy; 2026 ชื่อดี.com - All Rights Reserved. <br>แอปพลิเคชันสำหรับตั้งชื่อมงคล ตั้งชื่อลูก วิเคราะห์ชื่อ
+                เลขศาสตร์ชื่อ และพลังเงา | <a
                     href="/privacy-policy" style="color: inherit; text-decoration: underline;">นโยบายความเป็นส่วนตัว</a>
             </p>
             <div class="footer-dev-menu">

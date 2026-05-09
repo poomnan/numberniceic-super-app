@@ -3,8 +3,8 @@
 ## ก่อนการ Build
 
 ### ข้อมูลเวอร์ชัน
-- [ ] เพิ่ม `versionCode` ใน `app/build.gradle` (ปัจจุบัน: 1002)
-- [ ] อัปเดต `versionName` ใน `app/build.gradle` (ปัจจุบัน: 3.0.6)
+- [ ] เพิ่ม `versionCode` ใน `app/build.gradle` (ปัจจุบัน: 1004)
+- [ ] อัปเดต `versionName` ใน `app/build.gradle` (ปัจจุบัน: 3.0.8)
 - [ ] ตรวจสอบว่า versionCode สูงกว่าเวอร์ชันก่อนหน้า
 
 ### การทดสอบ
@@ -101,7 +101,7 @@
 - [ ] ตรวจสอบ App Bundle Explorer
 
 ### กรอกข้อมูล
-- [ ] Release name: "3.0.6 (1002)"
+- [ ] Release name: "3.0.8 (1004)"
 - [ ] Release notes: คัดลอกจากไฟล์ที่เตรียมไว้
 - [ ] ตรวจสอบ countries/regions
 - [ ] เลือก rollout percentage (แนะนำเริ่มที่ 10-20%)
@@ -186,8 +186,8 @@
 
 ### Application Info
 - **Package Name**: com.numberniceic
-- **Current Version Code**: 1002
-- **Current Version Name**: 3.0.6
+- **Current Version Code**: 1004
+- **Current Version Name**: 3.0.8
 - **Min SDK**: 24 (Android 7.0)
 - **Target SDK**: 35 (Android 15)
 
@@ -201,4 +201,4 @@
 - ⚠️ = ต้องระวัง
 
 **วันที่สร้าง**: 23 มกราคม 2026
-**สำหรับเวอร์ชัน**: 3.0.6 (1002)
+**สำหรับเวอร์ชัน**: 3.0.8 (1004)

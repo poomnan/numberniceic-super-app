@@ -5,9 +5,9 @@
     "application_id": "com.numberniceic"
   },
   "current_release": {
-    "version_code": 1003,
-    "version_name": "3.0.7",
-    "release_date": "2026-01-23",
+    "version_code": 1004,
+    "version_name": "3.0.8",
+    "release_date": "2026-04-09",
     "build_type": "release",
     "min_sdk": 24,
     "target_sdk": 35,
@@ -20,7 +20,7 @@
   },
   "build_output": {
     "aab_path": "app/build/outputs/bundle/release/app-release.aab",
-    "release_folder": "releases/v3.0.6_1002/"
+    "release_folder": "releases/v3.0.8_1004/"
   },
   "google_play": {
     "console_url": "https://play.google.com/console",
@@ -96,6 +96,11 @@
     ]
   },
   "previous_versions": [
+    {
+      "version_code": 1003,
+      "version_name": "3.0.7",
+      "release_date": "2026-01-23"
+    },
     {
       "version_code": 1002,
       "version_name": "3.0.6",

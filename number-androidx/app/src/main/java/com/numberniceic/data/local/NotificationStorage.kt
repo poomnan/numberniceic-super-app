@@ -97,6 +97,13 @@ object NotificationStorage {
     }
 
     fun getNotifications(context: Context): List<NotiModel> {
+        val currentUser = UserContextManager.userX(context)
+        // Privacy hard stop: logged-out state must not display any cached/member/global notifications.
+        if (currentUser == null || currentUser.userId.isNullOrBlank()) {
+            Log.d(TAG, "getNotifications: no logged-in user, returning empty list")
+            return emptyList()
+        }
+
         val userKey = getUserKey(context)
         migrateOldKeys(context)
         
@@ -137,6 +144,19 @@ object NotificationStorage {
         
         // Filter out blacklisted items
         return result.filter { !isBlacklisted(context, getBlacklistKey(it)) }
+    }
+
+    fun clearAllStoredNotifications(context: Context) {
+        val prefs = getPrefs(context)
+        val editor = prefs.edit()
+        val keys = prefs.all.keys
+        keys.forEach { key ->
+            if (key.startsWith(KEY_LIST) || key.startsWith(KEY_GLOBAL) || key.startsWith(KEY_BLACKLIST)) {
+                editor.remove(key)
+            }
+        }
+        editor.apply()
+        Log.d(TAG, "clearAllStoredNotifications: removed ${keys.size} keys candidates")
     }
 
     private fun migrateOldKeys(context: Context) {

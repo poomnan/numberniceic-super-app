@@ -145,6 +145,10 @@ func main() {
 	// Handler: Root (Serve Landing Page)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
+			if r.URL.Path == "/search" || r.URL.Path == "/lab" {
+				http.NotFound(w, r)
+				return
+			}
 			// Try serving from templates if not root (fallback for other static assets)
 			filePath := filepath.Join(templatesDir, strings.TrimPrefix(r.URL.Path, "/"))
 			if _, err := os.Stat(filePath); err == nil {
@@ -195,6 +199,7 @@ func main() {
 	http.HandleFunc("/api/demo/search", handlers.DemoSearchHandler)
 	http.HandleFunc("/api/v1/name-search", handlers.MobileSearchHandler)
 	http.HandleFunc("/api/v1/name-intent", handlers.NameIntentHandler)
+	http.HandleFunc("/api/v1/name-input/resolve", handlers.GetNameInputResolveHandler)
 	http.HandleFunc("/api/v1/name-root", handlers.GetNameRootHandler)
 	http.HandleFunc("/api/v1/name-keywords", handlers.GetNameKeywordsHandler)
 	http.HandleFunc("/api/v1/number-meaning", handlers.GetNumberMeaningHandler)
@@ -209,12 +214,6 @@ func main() {
 	})
 	http.HandleFunc("/naming-demo", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "templates/demo_naming.html")
-	})
-	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "templates/search.html")
-	})
-	http.HandleFunc("/lab", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "templates/search.html")
 	})
 	http.HandleFunc("/tester", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "templates/test_app.html")

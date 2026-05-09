@@ -8,12 +8,14 @@ class MagicLoadingView extends StatefulWidget {
   final String? subtitle;
   final double height;
   final Color textColor;
+  final bool minimal;
   const MagicLoadingView({
     super.key,
     this.message,
     this.subtitle,
     this.height = 120,
     this.textColor = Colors.white,
+    this.minimal = false,
   });
 
   @override
@@ -82,12 +84,127 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
             ? math.min(widget.height * 0.62, constraints.maxHeight * 0.40)
             : widget.height;
         final double scale = baseSize / 120.0;
+        final bool minimal = widget.minimal;
         final subtitle = compact
             ? null
             : widget.subtitle ??
                   (widget.message == null
                       ? null
                       : "AI กำลังคัดสรรชื่อมงคลที่เหมาะกับพลังของคุณ");
+
+        if (minimal) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 72 * scale,
+                height: 72 * scale,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            const Color(0xFFFFF4CC).withValues(alpha: 0.55),
+                            const Color(0xFFFFF4CC).withValues(alpha: 0.08),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: 72 * scale,
+                        height: 72 * scale,
+                      ),
+                    ),
+                    RotationTransition(
+                      turns: _rotationController,
+                      child: CustomPaint(
+                        painter: _MagicCirclePainter(
+                          color: AppColors.secondary.withValues(alpha: 0.42),
+                          strokeWidth: 1.6 * scale,
+                          dashCount: 6,
+                        ),
+                        size: Size(58 * scale, 58 * scale),
+                      ),
+                    ),
+                    RotationTransition(
+                      turns: ReverseAnimation(_rotationController),
+                      child: CustomPaint(
+                        painter: _MagicCirclePainter(
+                          color: AppColors.accent.withValues(alpha: 0.42),
+                          strokeWidth: 1.2 * scale,
+                          dashCount: 5,
+                        ),
+                        size: Size(42 * scale, 42 * scale),
+                      ),
+                    ),
+                    ScaleTransition(
+                      scale: Tween<double>(begin: 0.94, end: 1.04).animate(
+                        CurvedAnimation(
+                          parent: _pulseController,
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
+                      child: Container(
+                        width: 20 * scale,
+                        height: 20 * scale,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const LinearGradient(
+                            colors: [AppColors.secondary, AppColors.accent],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accent.withValues(alpha: 0.22),
+                              blurRadius: 10 * scale,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.auto_awesome_rounded,
+                          color: Colors.white,
+                          size: 10 * scale,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (widget.message != null) ...[
+                SizedBox(height: 10 * scale),
+                Text(
+                  widget.message!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.sarabun(
+                    color: widget.textColor,
+                    fontSize: 13 * (scale < 0.8 ? 0.92 : 1.0),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+              if (subtitle != null) ...[
+                SizedBox(height: 4 * scale),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 220 * scale),
+                  child: Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.sarabun(
+                      color: widget.textColor.withValues(alpha: 0.62),
+                      fontSize: 11 * (scale < 0.8 ? 0.9 : 1.0),
+                      fontWeight: FontWeight.w500,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          );
+        }
 
         return Column(
           mainAxisSize: MainAxisSize.min,

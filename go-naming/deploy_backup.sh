@@ -1,9 +1,9 @@
-# Configuration
-SERVER_IP="numberniceic.online"
+# Configuration สำหรับโดเมน ชื่อดี.com
+SERVER_IP="43.228.85.200"  # IP สำหรับโดเมน ชื่อดี.com
 USER="tayap"
 REMOTE_DIR="/home/tayap/go-naming" # Updated to correct service path
 
-echo "🚀 Starting Deployment to $SERVER_IP..."
+echo "🚀 Starting Deployment to ชื่อดี.com ($SERVER_IP)..."
 
 # 0. Cross-Compile for Linux (amd64)
 echo "🔨 Building binary for Linux..."

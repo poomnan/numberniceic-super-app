@@ -32,6 +32,7 @@ type MeaningSearchContext struct {
 	WordWeight        float64
 	CandidateLimit    int
 	IsBroadSearch     bool
+	HasKeywordSignal  bool
 }
 
 func BuildMeaningSearchContext(input MeaningSearchPipelineInput, fallbackMeaning string) MeaningSearchContext {
@@ -69,9 +70,10 @@ func BuildMeaningSearchContext(input MeaningSearchPipelineInput, fallbackMeaning
 			MeaningContext:    meaningContext,
 			RetrievalStrategy: "semantic_primary_then_numerology",
 			SemanticWeight:    2.8,
-			WordWeight:        0.2,
+			WordWeight:        0.15,
 			CandidateLimit:    resolvedCandidateLimit(input.Limit, input.SimilarMode, true),
 			IsBroadSearch:     keyword == "" && input.SimilarMode && lastname != "",
+			HasKeywordSignal:  keyword != "",
 		}
 	}
 
@@ -84,10 +86,11 @@ func BuildMeaningSearchContext(input MeaningSearchPipelineInput, fallbackMeaning
 			WordContext:       wordContext,
 			MeaningContext:    meaningContext,
 			RetrievalStrategy: "hybrid_name_plus_semantic",
-			SemanticWeight:    2.5,
-			WordWeight:        0.5,
+			SemanticWeight:    2.2,
+			WordWeight:        0.85,
 			CandidateLimit:    resolvedCandidateLimit(input.Limit, input.SimilarMode, false),
 			IsBroadSearch:     keyword == "" && input.SimilarMode && lastname != "",
+			HasKeywordSignal:  keyword != "",
 		}
 	}
 
@@ -100,10 +103,11 @@ func BuildMeaningSearchContext(input MeaningSearchPipelineInput, fallbackMeaning
 		WordContext:       wordContext,
 		MeaningContext:    meaningContext,
 		RetrievalStrategy: "default_hybrid",
-		SemanticWeight:    2.5,
-		WordWeight:        0.5,
+		SemanticWeight:    2.2,
+		WordWeight:        0.8,
 		CandidateLimit:    resolvedCandidateLimit(input.Limit, input.SimilarMode, false),
 		IsBroadSearch:     keyword == "" && input.SimilarMode && lastname != "",
+		HasKeywordSignal:  keyword != "",
 	}
 }
 
@@ -111,12 +115,21 @@ func (c MeaningSearchContext) SelectProjection() string {
 	if c.IsBroadSearch {
 		return `0.0 as distance, 0.0 as root_score, 1.0 as semantic_score, 1.0 as hybrid_score, `
 	}
+	if !c.HasKeywordSignal {
+		return fmt.Sprintf(
+			`COALESCE((meaning_vector <=> $1), 0) as distance,
+	       0.0 as root_score,
+	       GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) as semantic_score,
+	       (GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) * %.2f) as hybrid_score, `,
+			c.SemanticWeight,
+		)
+	}
 
 	return fmt.Sprintf(
 		`COALESCE((meaning_vector <=> $1), 0) as distance,
-	       COALESCE(word_similarity(thname, $2), 0) as root_score,
+	       GREATEST(COALESCE(similarity(thname, $2), 0), COALESCE(word_similarity(thname, $2), 0)) as root_score,
 	       GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) as semantic_score,
-	       (COALESCE(word_similarity(thname, $2), 0) * %.2f + GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) * %.2f) as hybrid_score, `,
+	       (GREATEST(COALESCE(similarity(thname, $2), 0), COALESCE(word_similarity(thname, $2), 0)) * %.2f + GREATEST(0, COALESCE(1 - (meaning_vector <=> $1), 0)) * %.2f) as hybrid_score, `,
 		c.WordWeight,
 		c.SemanticWeight,
 	)
@@ -126,8 +139,14 @@ func (c MeaningSearchContext) OrderByExpression() string {
 	if c.IsBroadSearch {
 		return "name_id DESC"
 	}
+	if !c.HasKeywordSignal {
+		return fmt.Sprintf(
+			"((1 - COALESCE(meaning_vector <=> $1, 1)) * %.2f) DESC",
+			c.SemanticWeight,
+		)
+	}
 	return fmt.Sprintf(
-		"(COALESCE(word_similarity(thname, $2), 0) * %.2f + (1 - COALESCE(meaning_vector <=> $1, 1)) * %.2f) DESC",
+		"(GREATEST(COALESCE(similarity(thname, $2), 0), COALESCE(word_similarity(thname, $2), 0)) * %.2f + (1 - COALESCE(meaning_vector <=> $1, 1)) * %.2f) DESC",
 		c.WordWeight,
 		c.SemanticWeight,
 	)

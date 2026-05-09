@@ -30,7 +30,7 @@ flutter pub get
 flutter build appbundle --release
 
 AAB_SOURCE="$OUTPUT_DIR/app-release.aab"
-AAB_TARGET="$PROJECT_ROOT/Chuedee_v${VERSION_NAME}_${VERSION_CODE}_signed.aab"
+AAB_TARGET="$PROJECT_ROOT/flutter-naming-v${VERSION_NAME}-${VERSION_CODE}.aab"
 
 if [[ ! -f "$AAB_SOURCE" ]]; then
   echo "Expected bundle not found at $AAB_SOURCE"

@@ -23,7 +23,7 @@ flutter pub get
 flutter build appbundle --release
 
 SOURCE_AAB="$OUTPUT_DIR/app-release.aab"
-TARGET_AAB="$PROJECT_DIR/Chuedee_v${VERSION_NAME}_${VERSION_CODE}_signed.aab"
+TARGET_AAB="$PROJECT_DIR/flutter-naming-v${VERSION_NAME}-${VERSION_CODE}.aab"
 
 if [[ ! -f "$SOURCE_AAB" ]]; then
   echo "ไม่พบไฟล์ AAB ที่ $SOURCE_AAB"

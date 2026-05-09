@@ -1,15 +1,15 @@
 #!/bin/bash
-# Naming App Deployment Script v2
+# Naming App Deployment Script v2 สำหรับโดเมน ชื่อดี.com
 # Usage: ./deploy_v2.sh
 
 set -e
 
-SERVER_IP="numberniceic.online"
+SERVER_IP="43.228.85.200"  # IP สำหรับโดเมน ชื่อดี.com
 USER="root"
 PASS="Lydh@58LTG"
 REMOTE_DIR="/home/tayap/go-naming"
 
-echo "🚀 Starting Deployment to $SERVER_IP as $USER..."
+echo "🚀 Starting Deployment to ชื่อดี.com ($SERVER_IP) as $USER..."
 
 # 1. Build for Linux
 echo "📦 Building for Linux (amd64)..."

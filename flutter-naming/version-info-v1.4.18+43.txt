@@ -1,0 +1,34 @@
+# Flutter Naming App - Version Information
+
+## App Details
+- **App Name**: Flutter Naming
+- **Version**: 1.4.18+43
+- **Build Date**: 2026-04-09
+- **Target Platform**: Android/iOS
+
+## Version History
+- 1.4.18+43: Prepared for Play Store deployment with updated release package
+- 1.3.0+24: Previous version
+
+## Build Information
+- **Flutter Version**: Check with `flutter --version`
+- **Dart Version**: Included with Flutter
+- **Android**: API level from flutter.compileSdkVersion
+- **iOS**: Minimum deployment target from Podfile
+
+## Deployment Files
+- **Android**: build/app/outputs/bundle/release/app-release.aab
+- **iOS**: build/ios/Release-iphoneos/Runner.app
+
+## Key Features in This Version
+- Play Store release prep
+- Updated release metadata and package version
+
+## Play Store Requirements
+- App Bundle: app-release.aab (version 1.4.18+43)
+- Screenshots: Multiple resolutions required
+- Feature graphic: 1024x500 px
+- App icon: 512x512 px
+
+---
+Generated for deployment tracking

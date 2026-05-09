@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-REMOTE_HOST="numberniceic.online"
+# Configuration สำหรับโดเมน ชื่อดี.com
+REMOTE_HOST="43.228.85.200"  # IP สำหรับโดเมน ชื่อดี.com
 REMOTE_USER="root"
 REMOTE_PASS='Lydh@58LTG'
 REMOTE_DIR="/home/tayap/go-naming"

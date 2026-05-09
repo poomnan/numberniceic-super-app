@@ -971,6 +971,7 @@ class UserLogoutF : Fragment() {
             try {
                 val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
                 notificationManager.cancelAll()
+                com.numberniceic.data.local.NotificationStorage.clearAllStoredNotifications(context)
                 Log.d("LOGOUT", "All notifications cleared")
             } catch (e: Exception) {
                 Log.e("LOGOUT", "Failed to clear notifications: ${e.message}")

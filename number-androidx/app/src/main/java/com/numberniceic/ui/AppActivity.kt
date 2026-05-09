@@ -232,9 +232,14 @@ class AppActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelected
         
         // Save to storage if clicked from a background notification
         if (title.isNotEmpty() || body.isNotEmpty()) {
-            NotificationStorage.saveNotification(this, title, body, null, type, url)
-            // Show badge update immediately
-            invalidateOptionsMenu()
+            val currentUser = UserContextManager.userX(this)
+            if (currentUser?.userId.isNullOrBlank()) {
+                Log.w("AppActivity", "Skip saving intent notification: no logged-in user")
+            } else {
+                NotificationStorage.saveNotification(this, title, body, currentUser?.userId, type, url)
+                // Show badge update immediately
+                invalidateOptionsMenu()
+            }
         }
         
         if (type == "custom" || type == "order_success") {

@@ -1238,48 +1238,53 @@ class RengYamF : Fragment() {
             container?.addView(item)
         }
 
-        val goodTimes = dayOfWeek?.let { getGoodTimesForDayOfWeek(it) } ?: emptyList()
         val travelDirectionInfo = travelDirectionInfoForDay(dayOfWeek)
 
-        if (goodTimes.isNotEmpty()) {
-            val divider = View(requireContext()).apply {
-                setBackgroundColor(android.graphics.Color.parseColor("#EEEEEE"))
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    (resources.displayMetrics.density * 1).toInt()
-                ).apply {
-                    topMargin = (resources.displayMetrics.density * 12).toInt()
-                    bottomMargin = (resources.displayMetrics.density * 12).toInt()
-                    marginStart = (resources.displayMetrics.density * 20).toInt()
-                    marginEnd = (resources.displayMetrics.density * 20).toInt()
-                }
+        val divider = View(requireContext()).apply {
+            setBackgroundColor(android.graphics.Color.parseColor("#EEEEEE"))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (resources.displayMetrics.density * 1).toInt()
+            ).apply {
+                topMargin = (resources.displayMetrics.density * 12).toInt()
+                bottomMargin = (resources.displayMetrics.density * 12).toInt()
+                marginStart = (resources.displayMetrics.density * 20).toInt()
+                marginEnd = (resources.displayMetrics.density * 20).toInt()
             }
-            container?.addView(divider)
+        }
+        container?.addView(divider)
 
-            val headerContainer = LinearLayout(requireContext()).apply {
+        val goodTimes = dayOfWeek?.let { getGoodTimesForDayOfWeek(it) } ?: emptyList()
+
+        if (goodTimes.isNotEmpty()) {
+            val headerBar = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.HORIZONTAL
                 setBackgroundColor(android.graphics.Color.parseColor("#FFF176"))
-                setPadding((resources.displayMetrics.density * 20).toInt(), (resources.displayMetrics.density * 8).toInt(), (resources.displayMetrics.density * 20).toInt(), (resources.displayMetrics.density * 8).toInt())
+                setPadding(
+                    (resources.displayMetrics.density * 20).toInt(),
+                    (resources.displayMetrics.density * 8).toInt(),
+                    (resources.displayMetrics.density * 20).toInt(),
+                    (resources.displayMetrics.density * 8).toInt()
+                )
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    bottomMargin = (resources.displayMetrics.density * 12).toInt()
+                    bottomMargin = (resources.displayMetrics.density * 8).toInt()
                 }
-                
-                val header = TextView(requireContext()).apply {
+
+                addView(TextView(requireContext()).apply {
                     text = "ทิศและยามดีประจำวัน"
                     setTextColor(android.graphics.Color.parseColor("#1B5E20"))
                     textSize = 15f
                     typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.sarabun_semibold)
-                }
-                addView(header)
+                })
             }
-            container?.addView(headerContainer)
+            container?.addView(headerBar)
 
             val tableWrap = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(12, 10, 12, 10)
+                setPadding(12, 8, 12, 8)
                 background = android.graphics.drawable.GradientDrawable().apply {
                     setColor(android.graphics.Color.parseColor("#FFFFFF"))
                     setStroke(2, android.graphics.Color.parseColor("#E0E0E0"))
@@ -1289,8 +1294,7 @@ class RengYamF : Fragment() {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    marginStart = (resources.displayMetrics.density * 20).toInt()
-                    marginEnd = (resources.displayMetrics.density * 20).toInt()
+                    topMargin = (resources.displayMetrics.density * 4).toInt()
                 }
             }
 
@@ -1304,12 +1308,12 @@ class RengYamF : Fragment() {
                 val row = LinearLayout(requireContext()).apply {
                     orientation = LinearLayout.HORIZONTAL
                     weightSum = 3f
-                    setPadding(6, 6, 6, 6)
+                    setPadding(6, 4, 6, 4)
                 }
                 val leftView = TextView(requireContext()).apply {
                     text = left
-                    textSize = if (isHeader) 14f else 13.5f
-                    setTextColor(android.graphics.Color.parseColor(if (isHeader) "#1B5E20" else "#1B5E20"))
+                    textSize = if (isHeader) 13.5f else 12.5f
+                    setTextColor(android.graphics.Color.parseColor("#1B5E20"))
                     typeface = if (isHeader) {
                         androidx.core.content.res.ResourcesCompat.getFont(context, R.font.sarabun_semibold)
                     } else {
@@ -1319,8 +1323,8 @@ class RengYamF : Fragment() {
                 }
                 val rightView = TextView(requireContext()).apply {
                     text = right
-                    textSize = if (isHeader) 14f else 13.5f
-                    setTextColor(android.graphics.Color.parseColor(if (isHeader) "#1B5E20" else "#1B5E20"))
+                    textSize = if (isHeader) 13.5f else 12.5f
+                    setTextColor(android.graphics.Color.parseColor("#1B5E20"))
                     typeface = if (isHeader) {
                         androidx.core.content.res.ResourcesCompat.getFont(context, R.font.sarabun_semibold)
                     } else {
@@ -1400,7 +1404,7 @@ class RengYamF : Fragment() {
             2 -> listOf("ยามศุกร์ 09.00-10.30 (เหนือ)", "ยามพุธ 10.30-12.00 (ตะวันตก)", "ยามจันทร์ 12.00-13.30 (ตะวันออก)", "ยามเสาร์ 13.30-15.00 (เหนือ)", "ยามพฤหัส 15.00-16.30 (ทุกทิศ)")
             3 -> listOf("ยามพุธ 06.00-07.30 (ทุกทิศ)", "ยามจันทร์ 07.30-09.00 (ทุกทิศ)", "ยามพฤหัส 10.30-12.00 (ทิศเหนือ)", "ยามศุกร์ 15.00-16.30 (ทิศตะวันออก)", "ยามพุธ 16.30-18.00 (ทุกทิศ)")
             4 -> listOf("ยามพฤหัส 06.00-07.30 (ทุกทิศ)", "ยามอาทิตย์ 09.00-10.30 (ทุกทิศ)", "ยามศุกร์ 10.30-12.00 (ทุกทิศ)", "ยามพุธ 12.00-13.30 (ทุกทิศ)", "ยามจันทร์ 13.30-15.00 (ทุกทิศ)", "ยามพฤหัส 16.30-18.00 (ทิศอุดร)")
-            5 -> listOf("ยามศุกร์ 06.00-07.30 (ทุกทิศ)", " ยามพุธ 07.30-09.00 (ทุกทิศ)", "ยามจันทร์ 09.00-10.30 (ทิศตะวันออก)", "ยามเสาร์ 10.30-12.00 (ทุกทิศ)", "ยามพฤหัส 12.00-13.30 (ทุกทิศ)", "ยามอังคาร 13.30-15.00 (ทิศเหนือ)", "ยามศุกร์ 16.30-18.00 (ทุกทิศ)")
+            5 -> listOf("ยามศุกร์ 06.00-07.30 (ทุกทิศ)", "ยามพุธ 07.30-09.00 (ทุกทิศ)", "ยามจันทร์ 09.00-10.30 (ทิศตะวันออก)", "ยามเสาร์ 10.30-12.00 (ทุกทิศ)", "ยามพฤหัส 12.00-13.30 (ทุกทิศ)", "ยามอังคาร 13.30-15.00 (ทิศเหนือ)", "ยามศุกร์ 16.30-18.00 (ทุกทิศ)")
             6 -> listOf("ยามพฤหัส 07.30-09.00 (ทุกทิศ)", "ยามศุกร์ 12.00-13.30 (ทุกทิศ)", "ยามพุธ 13.30-15.00 (ทุกทิศ)")
             else -> emptyList()
         }
@@ -3582,81 +3586,37 @@ class RengYamF : Fragment() {
                 val bestTimesContainer = itemView.findViewById<View>(R.id.layout_best_times_container)
                 val txtDirectionGood = itemView.findViewById<TextView>(R.id.txt_direction_good)
                 val txtDirectionBad = itemView.findViewById<TextView>(R.id.txt_direction_bad)
-                val layoutTimesTable = itemView.findViewById<LinearLayout>(R.id.layout_times_table)
                 
                 if (dt != null) {
                     val dayOfWeekIdx = dt.dayOfWeek // Joda: 1=Mon, 7=Sun
-                    val times = getGoodTimesForDayOfWeek(dayOfWeekIdx)
                     val directions = travelDirectionInfoForDay(dayOfWeekIdx)
                     
-                    if (times.isNotEmpty() || directions != null) {
+                    if (directions != null) {
                         bestTimesContainer?.visibility = View.VISIBLE
-                        
-                        // Set directions (Underlined Style)
-                        if (directions != null) {
-                            txtDirectionGood?.apply {
-                                text = "ทิศมงคล: ${directions.deityDirection}"
-                                setTextColor(android.graphics.Color.parseColor("#2E7D32"))
-                                paintFlags = paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
-                                background = null
-                                visibility = View.VISIBLE
-                            }
-                            txtDirectionBad?.apply {
-                                text = "ทิศห้าม: ${directions.ghostDirection}"
-                                setTextColor(android.graphics.Color.parseColor("#C62828"))
-                                paintFlags = paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
-                                background = null
-                                visibility = View.VISIBLE
-                            }
-                        } else {
-                            txtDirectionGood?.visibility = View.GONE
-                            txtDirectionBad?.visibility = View.GONE
+                        txtDirectionGood?.apply {
+                            text = "ทิศมงคล: ${directions.deityDirection}"
+                            setTextColor(android.graphics.Color.parseColor("#2E7D32"))
+                            paintFlags = paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                            background = null
+                            visibility = View.VISIBLE
+                        }
+                        txtDirectionBad?.apply {
+                            text = "ทิศห้าม: ${directions.ghostDirection}"
+                            setTextColor(android.graphics.Color.parseColor("#C62828"))
+                            paintFlags = paintFlags or android.graphics.Paint.UNDERLINE_TEXT_FLAG
+                            background = null
+                            visibility = View.VISIBLE
                         }
                         
-                        // Build times table
-                        layoutTimesTable?.removeAllViews()
-                        if (times.isNotEmpty()) {
-                            layoutTimesTable?.visibility = View.VISIBLE
-                            val density = resources.displayMetrics.density
-                            times.forEachIndexed { i, timeStr ->
-                                val row = android.widget.LinearLayout(requireContext()).apply {
-                                    orientation = android.widget.LinearLayout.HORIZONTAL
-                                    val px8 = (8 * density).toInt()
-                                    val px6 = (6 * density).toInt()
-                                    setPadding(px8, px6, px8, px6)
-                                    if (i % 2 == 1) setBackgroundColor(android.graphics.Color.parseColor("#F5F5F5"))
-                                }
-                                val clean = timeStr.trim()
-                                val timePart = clean.substringBefore(" (")
-                                val dirPart = if (clean.contains(" (")) clean.substringAfter(" (").replace(")", "") else ""
-                                
-                                val txtTimeColumn = android.widget.TextView(requireContext()).apply {
-                                    text = timePart
-                                    textSize = 12f
-                                    setTextColor(android.graphics.Color.parseColor("#424242"))
-                                    typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.sarabun_regular)
-                                    layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 2f)
-                                }
-                                val txtDirColumn = android.widget.TextView(requireContext()).apply {
-                                    text = dirPart
-                                    textSize = 12f
-                                    setTextColor(android.graphics.Color.parseColor("#2E7D32"))
-                                    typeface = androidx.core.content.res.ResourcesCompat.getFont(context, R.font.sarabun_semibold)
-                                    gravity = android.view.Gravity.END
-                                    layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-                                }
-                                row.addView(txtTimeColumn)
-                                row.addView(txtDirColumn)
-                                layoutTimesTable?.addView(row)
-                            }
-                        } else {
-                            layoutTimesTable?.visibility = View.GONE
-                        }
                     } else {
                         bestTimesContainer?.visibility = View.GONE
+                        txtDirectionGood?.visibility = View.GONE
+                        txtDirectionBad?.visibility = View.GONE
                     }
                 } else {
                     bestTimesContainer?.visibility = View.GONE
+                    txtDirectionGood?.visibility = View.GONE
+                    txtDirectionBad?.visibility = View.GONE
                 }
 
                 if (category == "marriage" && dt != null) {

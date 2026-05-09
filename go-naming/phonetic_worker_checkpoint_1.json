@@ -1,0 +1,14 @@
+{
+  "claimed": 400,
+  "processed": 385,
+  "failed": 15,
+  "retried": 12,
+  "skipped": 0,
+  "last_name_id": 25000,
+  "last_name": "ก้องพิชิต",
+  "updated_at": "2026-04-09T01:11:10.549851Z",
+  "worker_id": "phonetic-live-1",
+  "version": "typhoon_v2_name_euphony_json",
+  "dry_run": false,
+  "limit_reached": false
+}

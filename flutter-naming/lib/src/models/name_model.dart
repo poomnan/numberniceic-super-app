@@ -2,6 +2,11 @@ class MobileNameResult {
   final String name;
   final String meaning;
   final String gender;
+  final String phoneticSummary;
+  final int? phoneticScore;
+  final int? pronunciationEase;
+  final int? euphonyScore;
+  final int? rhythmScore;
   final int satSum;
   final int shaSum;
   final int totalSat;
@@ -40,6 +45,11 @@ class MobileNameResult {
     required this.name,
     required this.meaning,
     required this.gender,
+    this.phoneticSummary = '',
+    this.phoneticScore,
+    this.pronunciationEase,
+    this.euphonyScore,
+    this.rhythmScore,
     required this.satSum,
     required this.shaSum,
     required this.totalSat,
@@ -95,6 +105,11 @@ class MobileNameResult {
               .replaceAll(RegExp(r'\s*\(含[^\)]+\)'), '') ??
           '',
       gender: json['gender'] ?? '',
+      phoneticSummary: json['phonetic_summary'] ?? '',
+      phoneticScore: json['phonetic_score'] as int?,
+      pronunciationEase: json['pronunciation_ease'] as int?,
+      euphonyScore: json['euphony_score'] as int?,
+      rhythmScore: json['rhythm_score'] as int?,
       satSum: json['sat_sum'] ?? 0,
       shaSum: json['sha_sum'] ?? 0,
       totalSat: json['total_sat'] ?? 0,
@@ -415,11 +430,23 @@ class SuggestionNameItem {
   final int id;
   final String name;
   final String meaning;
+  final String phoneticSummary;
+  final int? phoneticScore;
+  final int? pronunciationEase;
+  final int? euphonyScore;
+  final int? rhythmScore;
+  final int rankScore;
 
   SuggestionNameItem({
     required this.id,
     required this.name,
     required this.meaning,
+    required this.phoneticSummary,
+    this.phoneticScore,
+    this.pronunciationEase,
+    this.euphonyScore,
+    this.rhythmScore,
+    required this.rankScore,
   });
 
   factory SuggestionNameItem.fromJson(Map<String, dynamic> json) {
@@ -427,6 +454,12 @@ class SuggestionNameItem {
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       meaning: json['meaning'] ?? '',
+      phoneticSummary: json['phonetic_summary'] ?? '',
+      phoneticScore: json['phonetic_score'] as int?,
+      pronunciationEase: json['pronunciation_ease'] as int?,
+      euphonyScore: json['euphony_score'] as int?,
+      rhythmScore: json['rhythm_score'] as int?,
+      rankScore: json['rank_score'] ?? 0,
     );
   }
 }

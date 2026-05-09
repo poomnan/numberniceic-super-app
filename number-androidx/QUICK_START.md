@@ -14,14 +14,14 @@ cd /Users/tayap/project-number/number-android
 ### 3️⃣ สร้าง Release ใหม่
 1. เลือกแอป **"Number"** หรือ **"numberniceic"**
 2. คลิก **Production** > **Create new release**
-3. อัปโหลดไฟล์ AAB จาก: `releases/v3.0.6_1002/app-release-v3.0.6.aab`
+3. อัปโหลดไฟล์ AAB จาก: `releases/v3.0.8_1004/app-release-v3.0.8.aab`
 
 ### 4️⃣ กรอก Release Notes
-คัดลอกจากไฟล์: `release-notes-3.0.6.txt`
+คัดลอกจากไฟล์: `release-notes-3.0.8.txt`
 
 **ภาษาไทย:**
 ```
-เวอร์ชัน 3.0.6 - อัปเดตใหม่
+เวอร์ชัน 3.0.8 - อัปเดตใหม่
 
 ✨ ฟีเจอร์ใหม่
 • เพิ่มระบบแนะนำชื่อเล่นอัจฉริยะ - แนะนำชื่อที่คล้ายกันขณะพิมพ์
@@ -64,7 +64,7 @@ cd /Users/tayap/project-number/number-android
 - [ ] Build AAB สำเร็จ
 - [ ] อัปโหลดไฟล์ AAB
 - [ ] กรอก Release Notes
-- [ ] ตรวจสอบ Version (3.0.6 / 1002)
+- [ ] ตรวจสอบ Version (3.0.8 / 1004)
 - [ ] Submit for Review
 
 ---
@@ -82,7 +82,7 @@ cd /Users/tayap/project-number/number-android
 ตรวจสอบที่: `app/build/outputs/bundle/release/app-release.aab`
 
 ### ❌ Version Code ซ้ำ
-เพิ่ม `versionCode` ใน `app/build.gradle` (ปัจจุบัน: 1002)
+เพิ่ม `versionCode` ใน `app/build.gradle` (ปัจจุบัน: 1004)
 
 ### ❌ Signing Error
 ตรวจสอบว่าไฟล์ keystore อยู่ที่: `/Users/tayap/KeyStoreNumberniceIc.jks`
@@ -93,7 +93,7 @@ cd /Users/tayap/project-number/number-android
 
 - **คู่มือฉบับเต็ม**: `GOOGLE_PLAY_RELEASE_GUIDE.md`
 - **Checklist ละเอียด**: `RELEASE_CHECKLIST.md`
-- **Release Notes**: `release-notes-3.0.6.txt`
+- **Release Notes**: `release-notes-3.0.8.txt`
 - **Metadata**: `release-metadata.json`
 
 ---
@@ -117,5 +117,5 @@ cd /Users/tayap/project-number/number-android
 ---
 
 **สร้างเมื่อ**: 23 มกราคม 2026  
-**เวอร์ชัน**: 3.0.6 (1002)  
+**เวอร์ชัน**: 3.0.8 (1004)  
 **สถานะ**: พร้อมอัปโหลด ✅

@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/name_intent_model.dart';
 import '../models/name_model.dart';
@@ -11,6 +12,7 @@ import '../models/number_meaning_model.dart';
 import '../services/api_service.dart';
 import '../services/premium_manager.dart';
 import '../utils/colors.dart';
+import '../utils/numerology_format.dart';
 import '../widgets/gold_effect.dart';
 import '../widgets/name_list_item.dart';
 import '../widgets/paywall_dialog.dart';
@@ -27,17 +29,20 @@ class NamingScreen extends StatefulWidget {
   State<NamingScreen> createState() => _NamingScreenState();
 }
 
+enum SpeechButtonVariant { primary, secondary }
+
+enum _TtsStatus { unavailable, noThaiVoice, ready }
+
 class _NamingScreenState extends State<NamingScreen>
     with TickerProviderStateMixin {
-  // Release default: keep premium-ranked names locked for non-VIP users.
-  static const bool _temporaryShowAllRankedNames = false;
-
   final ApiService _apiService = ApiService();
+  final FlutterTts _flutterTts = FlutterTts();
   final TextEditingController _keywordController = TextEditingController();
   String? _selectedNameMeaningName;
   String? _selectedNameMeaning;
   bool _isLoadingSelectedNameMeaning = false;
   NameAnalysisResult? _selectedNameAnalysis;
+  bool _hasRankableNameTemplate = false;
   int? _selectedCelebrityIndex; // Track which celebrity avatar is selected
   int? _selectedExampleIndex; // Track which search idea is active
   String? _selectedDay;
@@ -49,7 +54,7 @@ class _NamingScreenState extends State<NamingScreen>
   bool _isLoading = false;
   bool _isPivotingIdea = false;
   String? _errorMessage;
-  final ScrollController _scrollController = ScrollController();
+  bool _isSearchTimeoutPending = false;
   final GlobalKey _resultsKey = GlobalKey();
   final GlobalKey _step2Key = GlobalKey();
   final GlobalKey _searchFieldKey = GlobalKey();
@@ -60,12 +65,13 @@ class _NamingScreenState extends State<NamingScreen>
   bool _isSatLoading = false;
   bool _isShaLoading = false;
   int _searchRequestId = 0;
+  int _suggestionRequestId = 0;
+  int _suggestionDebounceRequestId = 0;
+  int _suggestionGuardRequestId = 0;
+  int _celebsResumeRequestId = 0;
   final FocusNode _searchFocusNode = FocusNode();
-  final ScrollController _celebsScrollController = ScrollController();
-  Timer? _celebsAutoScrollTimer;
-  Ticker? _marqueeTicker;
-  bool _isCelebsAutoScrolling = true;
-  double _lastTickerElapsedMs = 0;
+  late AnimationController _celebsAnimController;
+  double _celebsScrollPos = 0.0;
 
   String? _relaxedFiltersNotice; // Labels of filters that were turned off
 
@@ -73,11 +79,27 @@ class _NamingScreenState extends State<NamingScreen>
   bool _loadingSuggestions = false;
   NameIntentResult? _nameIntentResult;
   bool _isLoadingNameIntent = false;
+  bool _ignoreNextSearchInputChange = false;
+  bool _hideSelectedMeaningCard = false;
+  Map<String, dynamic>? _cachedStats;
+  List? _cachedResults;
+  bool? _cachedSat, _cachedSha;
+  String? _speakingKey;
+  _TtsStatus _ttsStatus = _TtsStatus.unavailable;
+  bool _suppressNextGlobalUnfocus = false;
+
+  void _invalidateStatsCache() {
+    _cachedStats = null;
+    _cachedResults = null;
+  }
 
   bool get _hasRankingCriteria => _filterSat || _filterSha;
+  bool get _hasCachedSuggestions => _nameSuggestions?.names.isNotEmpty ?? false;
 
-  int _pairTypeRank(String pairType) {
-    switch (pairType.toUpperCase().trim()) {
+  int _pairTypeRank(String? pairType) {
+    final trimmed = pairType?.toUpperCase().trim() ?? '';
+    if (trimmed.isEmpty) return 0;
+    switch (trimmed) {
       case 'D10':
         return 3;
       case 'D8':
@@ -89,8 +111,9 @@ class _NamingScreenState extends State<NamingScreen>
     }
   }
 
-  bool _isRedPairType(String pairType) {
-    final normalized = pairType.toUpperCase().trim();
+  // ignore: unused_element
+  bool _isRedPairType(String? pairType) {
+    final normalized = pairType?.toUpperCase().trim() ?? '';
     return normalized == 'R10' || normalized == 'R7' || normalized == 'R5';
   }
 
@@ -144,9 +167,20 @@ class _NamingScreenState extends State<NamingScreen>
     bool showInputSnack = true,
     bool reloadSelectedName = true,
     String? overrideKeyword,
+    bool preserveScrollPosition = false,
+    bool allowWhileLoading = false,
   }) async {
+    final Stopwatch searchWatch = Stopwatch()..start();
+    _suggestionDebounceRequestId++;
     final int requestId = ++_searchRequestId;
-    FocusScope.of(context).unfocus();
+    debugPrint(
+      '[_search] requestId=$requestId, filterSat=$_filterSat, filterSha=$_filterSha',
+    );
+    if (!mounted) return;
+    if (_isLoading && !allowWhileLoading) return;
+    if (!preserveScrollPosition) {
+      FocusScope.of(context).unfocus();
+    }
     final keyword = (overrideKeyword ?? _keywordController.text).trim();
     if (keyword.isEmpty) {
       if (mounted && showInputSnack) {
@@ -186,11 +220,11 @@ class _NamingScreenState extends State<NamingScreen>
       return;
     }
 
-    final bool shouldFetchRankedResults = _hasRankingCriteria;
-
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _isSearchTimeoutPending = false;
       _hasSearched = true;
       _isLoadingNameIntent = true;
     });
@@ -217,6 +251,16 @@ class _NamingScreenState extends State<NamingScreen>
       finalKeyword = detectedTarget;
     }
 
+    final bool isNameOrHybridIntent =
+        detectedIntent != null &&
+        (detectedIntent.isName || detectedIntent.isHybrid);
+    final bool looksLikeTypedName = _looksLikeTypedThaiName(originalInput);
+    final bool isSemanticIntent = !isNameOrHybridIntent && !looksLikeTypedName;
+    debugPrint(
+      '[semantic-search] keyword="$originalInput" finalKeyword="$finalKeyword" '
+      'isSemanticIntent=$isSemanticIntent',
+    );
+
     setState(() {
       _nameIntentResult = detectedIntent;
       _isLoadingNameIntent = false;
@@ -224,12 +268,23 @@ class _NamingScreenState extends State<NamingScreen>
 
     // Always attempt to load numerology/meaning for the search query if it's not a long example phrase
     if (reloadSelectedName && _selectedExampleIndex == null) {
-      await loadSelectedNameMeaning(
-        originalInput,
-        forceDecode:
-            detectedIntent != null &&
-            (detectedIntent.isName || detectedIntent.isHybrid),
-      );
+      if (_hasRankableNameTemplate) {
+        // Seed name is already resolved from DB suggestion/avatar.
+      } else if (isSemanticIntent && !looksLikeTypedName) {
+        setState(() {
+          _hideSelectedMeaningCard = false;
+          _selectedNameMeaningName = originalInput;
+          _selectedNameMeaning = originalInput;
+          _selectedNameAnalysis = null;
+          _hasRankableNameTemplate = true;
+          _isLoadingSelectedNameMeaning = false;
+        });
+      } else {
+        await loadSelectedNameMeaning(
+          originalInput,
+          forceDecode: isNameOrHybridIntent,
+        );
+      }
     } else if (reloadSelectedName) {
       setState(() {
         _selectedNameAnalysis = null;
@@ -242,6 +297,23 @@ class _NamingScreenState extends State<NamingScreen>
     String actualTarget = overrideKeyword ?? finalKeyword;
     const String finalLastname = "";
     final String apiSearchKeyword = actualTarget;
+    final bool shouldFetchMeaningSuggestions =
+        isSemanticIntent ||
+        (_selectedNameAnalysis == null &&
+            (_selectedNameMeaning?.trim().isNotEmpty ?? false));
+    final String suggestionMeaning =
+        (_selectedNameMeaning?.trim().isNotEmpty ?? false)
+        ? _selectedNameMeaning!.trim()
+        : originalInput;
+    final bool shouldUsePgTrgmSuggestions =
+        _looksLikeTypedThaiName(originalInput) && !_hasRankableNameTemplate;
+    debugPrint(
+      '[semantic-search] shouldFetchMeaningSuggestions=$shouldFetchMeaningSuggestions '
+      'suggestionMeaning="$suggestionMeaning" selectedMeaning="${_selectedNameMeaning ?? ''}" '
+      'pgTrgmFallback=$shouldUsePgTrgmSuggestions',
+    );
+    final bool shouldFetchRankedResults =
+        _hasRankingCriteria && _hasRankableNameTemplate;
 
     if (!shouldFetchRankedResults) {
       if (!mounted || requestId != _searchRequestId) return;
@@ -249,11 +321,18 @@ class _NamingScreenState extends State<NamingScreen>
         _isLoading = false;
         _errorMessage = null;
         _hasSearched = true;
-        _results = [];
         _isRelaxedSearch = false;
         _relaxedFiltersNotice = null;
       });
-      await fetchNameSuggestions(originalInput, meaning: _selectedNameMeaning);
+      if (!_hasCachedSuggestions) {
+        await fetchNameSuggestions(
+          originalInput,
+          meaning:
+              (!shouldUsePgTrgmSuggestions && shouldFetchMeaningSuggestions)
+              ? suggestionMeaning
+              : null,
+        );
+      }
       if (scrollToResults) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -266,10 +345,12 @@ class _NamingScreenState extends State<NamingScreen>
 
     try {
       // --- 2. SUGGESTION PIVOT (For long sentences/ideas) ---
-      if (_selectedExampleIndex != null && overrideKeyword == null) {
-        setState(() => _isPivotingIdea = true);
+      if (_selectedExampleIndex != null &&
+          overrideKeyword == null &&
+          !isSemanticIntent) {
+        if (mounted) setState(() => _isPivotingIdea = true);
         final suggRes = await _apiService.getNameSuggestions(finalKeyword);
-        setState(() => _isPivotingIdea = false);
+        if (mounted) setState(() => _isPivotingIdea = false);
 
         if (suggRes != null && suggRes.names.isNotEmpty) {
           final bestName = suggRes.names[0].name;
@@ -277,6 +358,7 @@ class _NamingScreenState extends State<NamingScreen>
             await _search(
               scrollToResults: scrollToResults,
               overrideKeyword: bestName,
+              allowWhileLoading: true,
             );
           }
           return;
@@ -284,6 +366,9 @@ class _NamingScreenState extends State<NamingScreen>
       }
 
       // --- 3. PRIMARY API CALL ---
+      debugPrint('[_search] calling API with filterSat=$_filterSat');
+      final int searchLimit = (_filterSat && _filterSha) ? 200 : 100;
+      final Stopwatch apiWatch = Stopwatch()..start();
       var response = await _apiService.searchNames(
         keyword: apiSearchKeyword,
         lastname: finalLastname,
@@ -293,7 +378,10 @@ class _NamingScreenState extends State<NamingScreen>
         filterSha: _filterSha,
         filterKaki: _filterKaki,
         similarMode: false,
-        limit: 100, // Fetch a large pool to ensure we find variety
+        limit: searchLimit, // Fetch a large pool to ensure we find variety
+      );
+      debugPrint(
+        '[_search] API response received in ${apiWatch.elapsedMilliseconds}ms, count=${response.results.length}',
       );
 
       // --- 4. DATA PROCESSING & FILTERING ---
@@ -304,39 +392,15 @@ class _NamingScreenState extends State<NamingScreen>
           final name = r.name.trim();
           if (englishRegex.hasMatch(name)) return false;
           if (name.runes.length <= 1) return false;
+          if (!(_filterSat || _filterSha)) return false;
 
-          // In combine mode, users still see the base-name scores on the card.
-          // If a "good numerology/shadow" chip is active, require both the
-          // combined result and the visible base score to pass so no red score
-          // slips into ranked results.
           final bool passesSatFilter = r.isSatGood;
           final bool passesShaFilter = r.isShaGood;
-          final bool satIsExplicitlyBad =
-              !r.isSatGood || _isRedPairType(r.satPairType);
-          final bool shaIsExplicitlyBad =
-              !r.isShaGood || _isRedPairType(r.shaPairType);
-
-          // 🛡️ VIP Exclusive Gate:
-          // ป้องกันชื่อที่ "ดีเยี่ยมด้วยตัวเอง" (เขียวคู่แบบเดี่ยว) หลุดมา
-          // ถ้า User ไม่ได้เปิดฟิลเตอร์ไว้ทั้ง 2 ตัว
-          // หมายเหตุ: ชื่อที่ "รวมแล้วดี" (Total Green) แต่ตัวชื่อเองไม่เขียวคู่ จะยังคงแสดงผลได้
-          // ยกเว้นใน "รวมให้เป็นชื่อดี" (_similarMode) ซึ่งเป็นฟีเจอร์พรีเมียมอยู่แล้ว ให้แสดงได้ทั้งหมด
-          // Keep excellent names in the result set.
-          // Non‑VIP restriction is handled by UI blur/lock overlay, not by skipping rows.
-
-          // 🎯 Standard Inclusive Filters:
-          if (_filterSat && !_filterSha) {
-            if (!passesSatFilter) return false;
-            if (!shaIsExplicitlyBad) return false;
-          }
-
-          if (_filterSha && !_filterSat) {
-            if (!passesShaFilter) return false;
-            if (!satIsExplicitlyBad) return false;
-          }
-
           if (_filterSat && _filterSha) {
+            if (!passesSatFilter || !passesShaFilter) return false;
+          } else if (_filterSat) {
             if (!passesSatFilter) return false;
+          } else if (_filterSha) {
             if (!passesShaFilter) return false;
           }
 
@@ -351,64 +415,106 @@ class _NamingScreenState extends State<NamingScreen>
 
       setState(() {
         _isRelaxedSearch = false; // Reset state
+        _isSearchTimeoutPending = false;
+        if (_filterSat || _filterSha) {
+          const int maxDisplayedResults = 100;
+          if (results.length > maxDisplayedResults) {
+            results = results.take(maxDisplayedResults).toList();
+          }
+        }
+        _invalidateStatsCache();
         _results = results;
 
-        // Note: Filters (Sat, Sha, Gender) are ALREADY applied at database level by the API.
-        // We do NOT need to filter them out again on the client side,
-        // especially avoiding 'exclusive' filters that hide excellent names.
+        try {
+          results.sort((a, b) {
+            if (!(_filterSat || _filterSha)) return 0;
 
-        results.sort((a, b) {
-          if (!_filterSat && !_filterSha) return 0;
+            if (_filterSat && _filterSha) {
+              if (a.finalRankScore != b.finalRankScore) {
+                return b.finalRankScore.compareTo(a.finalRankScore);
+              }
+              double score(MobileNameResult item) {
+                return item.calculateScore(showMatching: false).toDouble();
+              }
 
-          if (_filterSat && !_filterSha) {
-            final int satGoodCompare =
-                (b.isSatGood ? 1 : 0) - (a.isSatGood ? 1 : 0);
-            if (satGoodCompare != 0) return satGoodCompare;
+              return score(
+                b,
+              ).compareTo(score(a)); // Sort High Score -> Low Score
+            }
 
-            final int pairTypeCompare = _pairTypeRank(
-              b.satPairType,
-            ).compareTo(_pairTypeRank(a.satPairType));
-            if (pairTypeCompare != 0) return pairTypeCompare;
+            if (_filterSat && !_filterSha) {
+              final int satGoodCompare =
+                  (b.isSatGood ? 1 : 0) - (a.isSatGood ? 1 : 0);
+              if (satGoodCompare != 0) return satGoodCompare;
 
-            final int pairPointCompare = b.satPairPoint.compareTo(
-              a.satPairPoint,
-            );
-            if (pairPointCompare != 0) return pairPointCompare;
+              final int pairTypeCompare = _pairTypeRank(
+                b.satPairType,
+              ).compareTo(_pairTypeRank(a.satPairType));
+              if (pairTypeCompare != 0) return pairTypeCompare;
 
-            return b.semanticScore.compareTo(a.semanticScore);
-          }
+              final int pairPointCompare = b.satPairPoint.compareTo(
+                a.satPairPoint,
+              );
+              if (pairPointCompare != 0) return pairPointCompare;
 
-          if (_filterSha && !_filterSat) {
-            final int shaGoodCompare =
-                (b.isShaGood ? 1 : 0) - (a.isShaGood ? 1 : 0);
-            if (shaGoodCompare != 0) return shaGoodCompare;
+              return (b.semanticScore).compareTo(a.semanticScore);
+            }
 
-            final int pairTypeCompare = _pairTypeRank(
-              b.shaPairType,
-            ).compareTo(_pairTypeRank(a.shaPairType));
-            if (pairTypeCompare != 0) return pairTypeCompare;
+            if (_filterSha && !_filterSat) {
+              final int shaGoodCompare =
+                  (b.isShaGood ? 1 : 0) - (a.isShaGood ? 1 : 0);
+              if (shaGoodCompare != 0) return shaGoodCompare;
 
-            final int pairPointCompare = b.shaPairPoint.compareTo(
-              a.shaPairPoint,
-            );
-            if (pairPointCompare != 0) return pairPointCompare;
+              final int pairTypeCompare = _pairTypeRank(
+                b.shaPairType,
+              ).compareTo(_pairTypeRank(a.shaPairType));
+              if (pairTypeCompare != 0) return pairTypeCompare;
 
-            return b.semanticScore.compareTo(a.semanticScore);
-          }
+              final int pairPointCompare = b.shaPairPoint.compareTo(
+                a.shaPairPoint,
+              );
+              if (pairPointCompare != 0) return pairPointCompare;
 
-          if (a.finalRankScore != b.finalRankScore) {
-            return b.finalRankScore.compareTo(a.finalRankScore);
-          }
-          double score(MobileNameResult item) {
-            return item.calculateScore(showMatching: false).toDouble();
-          }
+              return (b.semanticScore).compareTo(a.semanticScore);
+            }
 
-          return score(b).compareTo(score(a)); // Sort High Score -> Low Score
-        });
+            if (a.finalRankScore != b.finalRankScore) {
+              return b.finalRankScore.compareTo(a.finalRankScore);
+            }
+            double score(MobileNameResult item) {
+              return item.calculateScore(showMatching: false).toDouble();
+            }
 
+            return score(b).compareTo(score(a)); // Sort High Score -> Low Score
+          });
+        } catch (e, stack) {
+          debugPrint('Error sorting results: $e');
+          debugPrint('Stack trace: $stack');
+          // Keep results unsorted rather than crash
+        }
+
+        _invalidateStatsCache();
         _results = results;
         _isLoading = false;
       });
+
+      if ((shouldFetchMeaningSuggestions || shouldFetchRankedResults) &&
+          mounted &&
+          requestId == _searchRequestId) {
+        final Stopwatch suggestionWatch = Stopwatch()..start();
+        if (!_hasCachedSuggestions) {
+          await fetchNameSuggestions(originalInput, meaning: suggestionMeaning);
+        }
+        debugPrint(
+          '[_search] fetchNameSuggestions completed in ${suggestionWatch.elapsedMilliseconds}ms',
+        );
+      }
+
+      if (mounted &&
+          requestId == _searchRequestId &&
+          _shouldRunCelebsAutoScroll) {
+        _resetAndRestartCelebsAnimation();
+      }
 
       if (_results.isNotEmpty && scrollToResults) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -416,66 +522,97 @@ class _NamingScreenState extends State<NamingScreen>
           scrollToResults0();
         });
       }
+      debugPrint(
+        '[_search] total elapsed ${searchWatch.elapsedMilliseconds}ms (requestId=$requestId)',
+      );
     } catch (e) {
       if (!mounted || requestId != _searchRequestId) return;
+      final bool isTimeout =
+          e is TimeoutException ||
+          (e is ApiException && e.message.contains('การเชื่อมต่อล่าช้าเกินไป'));
       if (mounted) {
         setState(() {
-          _errorMessage = e is ApiException
+          _errorMessage = isTimeout
+              ? null
+              : e is ApiException
               ? e.message
               : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
+          _isSearchTimeoutPending = isTimeout;
           _isLoading = false;
-          _results = []; // Clear old results on error
+          if (!isTimeout) {
+            _invalidateStatsCache();
+            _results = []; // Clear old results on error
+          }
         });
       }
+      debugPrint(
+        '[_search] failed after ${searchWatch.elapsedMilliseconds}ms (requestId=$requestId)',
+      );
     }
   }
 
   Map<String, dynamic> computeStatistics() {
-    bool satPassesCurrentMode(MobileNameResult r) => r.isSatGood;
-    bool shaPassesCurrentMode(MobileNameResult r) => r.isShaGood;
-    int totalNames = _results.length;
+    if (_results.isEmpty) {
+      final stats = {
+        'totalNames': 0,
+        'excellentNames': 0,
+        'numerologyGood': 0,
+        'shadowGood': 0,
+        'recommendedDays': null,
+      };
+      _cachedStats = stats;
+      _cachedResults = [];
+      _cachedSat = _filterSat;
+      _cachedSha = _filterSha;
+      return stats;
+    }
 
-    // Logic updated: Always count the actual good names in the current results
-    int excellentNames = _results.where((r) {
-      final satPass = satPassesCurrentMode(r);
-      final shaPass = shaPassesCurrentMode(r);
-      return satPass && shaPass;
-    }).length;
+    if (_cachedStats != null &&
+        _cachedResults != null &&
+        listEquals(_cachedResults, _results) &&
+        _cachedSat == _filterSat &&
+        _cachedSha == _filterSha) {
+      return _cachedStats!;
+    }
 
-    int numerologyGood = _results.where((r) => satPassesCurrentMode(r)).length;
+    final int totalNames = _results.length;
+    int excellentNames = 0;
+    int numerologyGood = 0;
+    int shadowGood = 0;
 
-    int shadowGood = _results.where((r) => shaPassesCurrentMode(r)).length;
+    for (final r in _results) {
+      final sat = r.isSatGood;
+      final sha = r.isShaGood;
+
+      if (sat && sha) excellentNames++;
+      if (sat) numerologyGood++;
+      if (sha) shadowGood++;
+    }
 
     String? recommendedDays;
-    return {
+    final stats = {
       'totalNames': totalNames,
       'excellentNames': excellentNames,
       'numerologyGood': numerologyGood,
       'shadowGood': shadowGood,
       'recommendedDays': recommendedDays,
     };
+    _cachedStats = stats;
+    _cachedResults = List.from(_results);
+    _cachedSat = _filterSat;
+    _cachedSha = _filterSha;
+    return stats;
   }
 
   @override
   void initState() {
     super.initState();
+    _celebsAnimController = AnimationController(vsync: this)
+      ..addListener(_handleCelebsAnimationTick);
+    unawaited(_initTts());
     _keywordController.addListener(onSearchInputChanged);
     _searchFocusNode.addListener(() {
       if (mounted) setState(() {});
-      if (_searchFocusNode.hasFocus) {
-        Future.delayed(const Duration(milliseconds: 450), () {
-          if (mounted && _searchFocusNode.hasFocus) {
-            scrollToSearchField();
-          }
-        });
-      }
-    });
-    _scrollController.addListener(() {
-      if (_scrollController.offset > 400 && !_showBackToTop) {
-        setState(() => _showBackToTop = true);
-      } else if (_scrollController.offset <= 400 && _showBackToTop) {
-        setState(() => _showBackToTop = false);
-      }
     });
 
     // Prefetch cached saved names so list items know if they are saved automatically
@@ -488,12 +625,19 @@ class _NamingScreenState extends State<NamingScreen>
   }
 
   void onSearchInputChanged() {
+    if (_ignoreNextSearchInputChange) {
+      _ignoreNextSearchInputChange = false;
+      return;
+    }
+
     final text = _keywordController.text.trim();
     debugPrint("Search input changed: '$text'");
 
     // Reset ranking results and handle active states
     if (mounted) {
       setState(() {
+        _hideSelectedMeaningCard = false;
+        _invalidateStatsCache();
         _results = [];
         _hasSearched = false;
         _isRelaxedSearch = false;
@@ -526,9 +670,11 @@ class _NamingScreenState extends State<NamingScreen>
     // Handle suggestion based on search mode
     if (text.isEmpty) {
       setState(() {
+        _hideSelectedMeaningCard = false;
         _selectedNameMeaningName = null;
         _selectedNameMeaning = null;
         _selectedNameAnalysis = null;
+        _hasRankableNameTemplate = false;
         _isLoadingSelectedNameMeaning = false;
         _nameSuggestions = null;
         _loadingSuggestions = false;
@@ -538,11 +684,52 @@ class _NamingScreenState extends State<NamingScreen>
       return;
     }
 
+    setState(() {
+      _nameSuggestions = null;
+      _loadingSuggestions = false;
+    });
+
     // Always fetch suggestions since Backend now handles both pg_trgm & semantic
     // It will also load the meaning/analysis of the currently typed text inside the debouncer
     fetchNameSuggestionsDebounced(text);
 
     if (mounted) setState(() {});
+  }
+
+  void _setKeywordWithoutTriggeringListener(String value) {
+    _ignoreNextSearchInputChange = true;
+    _keywordController.text = value;
+  }
+
+  bool _looksLikeTypedThaiName(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty || trimmed.contains(RegExp(r'\s'))) return false;
+    final runes = trimmed.runes.length;
+    if (runes < 2 || runes > 12) return false;
+    return RegExp(r'^[ก-๙]+$').hasMatch(trimmed);
+  }
+
+  void _resolveSeedName(String name, {String? meaningHint}) {
+    setState(() {
+      _selectedNameMeaningName = name;
+      _selectedNameMeaning = meaningHint;
+      _selectedNameAnalysis = null;
+      _nameSuggestions = null;
+      _hasRankableNameTemplate = true;
+      _isLoadingSelectedNameMeaning = false;
+    });
+    unawaited(_loadSeedNameAnalysis(name));
+    unawaited(fetchNameSuggestions(name, meaning: meaningHint));
+  }
+
+  Future<void> _loadSeedNameAnalysis(String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    final analysis = await _apiService.decodeName(trimmed, day: _selectedDay);
+    if (!mounted || _selectedNameMeaningName?.trim() != trimmed) return;
+    setState(() {
+      _selectedNameAnalysis = analysis;
+    });
   }
 
   Future<void> loadSelectedNameMeaning(
@@ -556,69 +743,82 @@ class _NamingScreenState extends State<NamingScreen>
       _selectedNameMeaningName = trimmed;
       _selectedNameMeaning = meaning; // Use provided meaning if available
       _selectedNameAnalysis = null;
+      _hasRankableNameTemplate = false;
       _isLoadingSelectedNameMeaning = true;
     });
 
     try {
-      NameIntentResult? previewIntent = _nameIntentResult;
-      if (!forceDecode) {
-        previewIntent = await _apiService.detectNameIntent(trimmed);
-      }
+      final resolved = await _apiService.resolveNameInput(
+        trimmed,
+        day: _selectedDay,
+      );
 
-      final bool shouldDecodeFromIntent =
-          forceDecode ||
-          (previewIntent != null &&
-              (previewIntent.isName || previewIntent.isHybrid));
+      final bool useResolve = resolved != null;
+      final bool shouldUsePgTrgmSuggestions =
+          resolved?.shouldUsePgTrgmSuggestions ??
+          (_looksLikeTypedThaiName(trimmed) && meaning == null);
+      final bool canRankFromCurrentInput =
+          resolved?.canRankFromTemplate ??
+          (meaning != null && meaning.trim().isNotEmpty);
+      final bool isSemanticQuery =
+          resolved?.isMeaning ?? !_looksLikeTypedThaiName(trimmed);
+      final String? resolvedMeaning = meaning?.trim().isNotEmpty == true
+          ? meaning!.trim()
+          : (resolved?.dbMeaning?.trim().isNotEmpty == true
+                ? resolved!.dbMeaning!.trim()
+                : (isSemanticQuery ? trimmed : null));
+      NameAnalysisResult? analysis = resolved?.decode;
 
-      final String? fetchedMeaning =
-          meaning ?? await _apiService.getNameMeaning(trimmed);
-
-      final String? resolvedMeaning =
-          (fetchedMeaning != null && fetchedMeaning.trim().isNotEmpty)
-          ? fetchedMeaning.trim()
-          : meaning?.trim();
-
-      NameAnalysisResult? analysis;
-      if (resolvedMeaning != null || shouldDecodeFromIntent) {
+      if (!useResolve && (forceDecode || _looksLikeTypedThaiName(trimmed))) {
         analysis = await _apiService.decodeName(trimmed);
       }
 
       if (!mounted) return;
       if (_selectedNameMeaningName != trimmed) return;
       setState(() {
-        if (previewIntent != null) {
-          _nameIntentResult = previewIntent;
+        if (resolved?.intent != null) {
+          _nameIntentResult = resolved!.intent;
         }
-        _selectedNameMeaning = resolvedMeaning;
+        _selectedNameMeaning = canRankFromCurrentInput ? resolvedMeaning : null;
         _selectedNameAnalysis = analysis;
+        _hasRankableNameTemplate = canRankFromCurrentInput;
         _isLoadingSelectedNameMeaning = false;
       });
 
-      // If the input is not a real name in the database, treat it as a
-      // semantic search idea and do not show decode/numerology preview.
-      if (resolvedMeaning != null &&
+      // Names that are not in DB must use q-only pg_trgm suggestions.
+      if (shouldUsePgTrgmSuggestions) {
+        fetchNameSuggestions(trimmed);
+      } else if (canRankFromCurrentInput &&
+          resolvedMeaning != null &&
           resolvedMeaning.isNotEmpty &&
-          resolvedMeaning != name) {
-        fetchNameSuggestions(name, meaning: _selectedNameMeaning);
+          (isSemanticQuery || resolvedMeaning != name)) {
+        fetchNameSuggestions(trimmed, meaning: resolvedMeaning);
       } else {
-        fetchNameSuggestions(name);
+        fetchNameSuggestions(trimmed);
       }
     } catch (e) {
       debugPrint("Error loading selected name meaning: $e");
       if (mounted && _selectedNameMeaningName == trimmed) {
         setState(() {
+          _selectedNameMeaning = meaning;
+          _selectedNameAnalysis = null;
+          _hasRankableNameTemplate =
+              meaning != null && meaning.trim().isNotEmpty;
           _isLoadingSelectedNameMeaning = false;
         });
-        fetchNameSuggestions(name);
+        fetchNameSuggestions(trimmed, meaning: meaning);
       }
     }
   }
 
   void scrollToTop() {
-    _scrollController.animateTo(
-      0,
+    final context = _searchFieldKey.currentContext;
+    if (context == null) return;
+    Scrollable.ensureVisible(
+      context,
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
+      alignment: 0.0,
     );
   }
 
@@ -627,6 +827,7 @@ class _NamingScreenState extends State<NamingScreen>
     if (mounted) setState(() {});
   }
 
+  // ANCHOR: Celebrity Avatar (รายชื่อตัวอย่างดารา)
   Future<void> loadCelebrities() async {
     try {
       debugPrint("Fetching naming examples...");
@@ -644,18 +845,10 @@ class _NamingScreenState extends State<NamingScreen>
         setState(() {
           _celebrities = finalItems;
         });
-        // Start auto-scroll after data is loaded and rendered
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          // Give it a tiny bit more time for the ScrollController to attach and lay out
           Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted && _celebsScrollController.hasClients) {
-              final double max =
-                  _celebsScrollController.position.maxScrollExtent;
-              if (max > 10) {
-                _celebsScrollController.jumpTo(max * 0.5);
-              }
-            }
-            startCelebsAutoScroll();
+            if (!mounted) return;
+            _updateAutoScrollBasedOnFilters();
           });
         });
       } else {
@@ -663,91 +856,72 @@ class _NamingScreenState extends State<NamingScreen>
         // Clear celebrities if API fails or returns empty, do not use fallbacks
         setState(() {
           _celebrities = [];
+          _celebsScrollPos = 0.0;
         });
+        _updateAutoScrollBasedOnFilters();
       }
     } catch (e) {
       debugPrint("Error loading celebs: $e");
       // Clear celebrities on error
       setState(() {
         _celebrities = [];
+        _celebsScrollPos = 0.0;
       });
+      _updateAutoScrollBasedOnFilters();
     }
   }
 
   void startCelebsAutoScroll() {
-    startMarqueeTicker();
+    if (!mounted || !_shouldRunCelebsAutoScroll) return;
+    final double seconds = (_celebrities.length * 70) / 25;
+    _celebsAnimController
+      ..stop()
+      ..duration = Duration(
+        milliseconds: (seconds * 1000).round().clamp(1000, 60000),
+      )
+      ..repeat();
   }
 
-  void startMarqueeTicker() {
-    _marqueeTicker ??= createTicker(onTickerTick);
-    if (!_marqueeTicker!.isActive) {
-      _lastTickerElapsedMs = 0;
-      _marqueeTicker!.start();
-    }
-  }
-
-  void onTickerTick(Duration elapsed) {
-    if (!mounted ||
-        !_isCelebsAutoScrolling ||
-        !_celebsScrollController.hasClients) {
-      _lastTickerElapsedMs = elapsed.inMilliseconds.toDouble();
-      return;
-    }
-
-    final double currentMs = elapsed.inMilliseconds.toDouble();
-    if (_lastTickerElapsedMs == 0) {
-      _lastTickerElapsedMs = currentMs;
-      return;
-    }
-
-    final double dt = (currentMs - _lastTickerElapsedMs) / 1000.0;
-    _lastTickerElapsedMs = currentMs;
-
-    if (dt <= 0) return;
-
-    final double max = _celebsScrollController.position.maxScrollExtent;
-    if (max <= 100) return;
-
-    final int itemCount = _celebrities.length;
-    final double baseSpeed = 25.0;
-    final double speedMultiplier = itemCount > 20 ? 1.5 : 1.0;
-    final double dynamicSpeed = baseSpeed * speedMultiplier;
-
-    final double current = _celebsScrollController.offset;
-    double next = current + (dynamicSpeed * dt);
-
-    if (next >= max - 2) {
-      next = max * 0.5;
-    } else if (next <= 2) {
-      next = max * 0.5;
-    }
-
-    _celebsScrollController.jumpTo(next);
-  }
-
-  void _normalizeCelebsOffsetIfNeeded() {
-    if (!mounted || !_celebsScrollController.hasClients) return;
-    if (_celebrities.isEmpty) return;
-
-    final double max = _celebsScrollController.position.maxScrollExtent;
-    if (max <= 100) return;
-    final double current = _celebsScrollController.offset;
-    if (current <= 2 || current >= max - 2) {
-      _celebsScrollController.jumpTo(max * 0.5);
-    }
-  }
+  bool get _shouldRunCelebsAutoScroll => _celebrities.isNotEmpty;
 
   void stopMarqueeTicker() {
-    _isCelebsAutoScrolling = false;
-    _marqueeTicker?.stop();
+    _celebsAnimController.stop();
+  }
+
+  void _updateAutoScrollBasedOnFilters() {
+    if (!mounted) return;
+
+    if (_shouldRunCelebsAutoScroll) {
+      startCelebsAutoScroll();
+    } else {
+      stopMarqueeTicker();
+      if (_celebsScrollPos != 0.0) {
+        setState(() => _celebsScrollPos = 0.0);
+      }
+    }
+  }
+
+  void _resetAndRestartCelebsAnimation() {
+    if (!mounted) return;
+    _celebsAnimController.reset();
+    setState(() => _celebsScrollPos = 0.0);
+    _updateAutoScrollBasedOnFilters();
+  }
+
+  void _handleCelebsAnimationTick() {
+    if (!mounted || !_shouldRunCelebsAutoScroll) return;
+    final double maxScroll = _celebrities.length * 70.0;
+    if (maxScroll <= 0) return;
+    setState(() {
+      _celebsScrollPos = _celebsAnimController.value * maxScroll;
+    });
   }
 
   void resumeCelebsAutoScrollAfterDelay() {
-    _celebsAutoScrollTimer?.cancel();
-    _celebsAutoScrollTimer = Timer(const Duration(seconds: 2), () {
-      if (mounted) {
-        startCelebsAutoScroll();
-      }
+    final int resumeRequestId = ++_celebsResumeRequestId;
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted || resumeRequestId != _celebsResumeRequestId) return;
+      _updateAutoScrollBasedOnFilters();
     });
   }
 
@@ -775,6 +949,11 @@ class _NamingScreenState extends State<NamingScreen>
         );
       }
     });
+  }
+
+  void maybeScrollToSearchField() {
+    if (!(_filterSat || _filterSha)) return;
+    scrollToSearchField();
   }
 
   void scrollToBottom() {
@@ -815,34 +994,328 @@ class _NamingScreenState extends State<NamingScreen>
 
   @override
   void dispose() {
+    _flutterTts.stop();
     _searchFocusNode.dispose();
-    _celebsAutoScrollTimer?.cancel();
-    _celebsScrollController.dispose();
+    _celebsAnimController.dispose();
     _keywordController.removeListener(onSearchInputChanged);
-    _celebsAutoScrollTimer?.cancel();
-    _marqueeTicker?.dispose();
     _keywordController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
-  Timer? suggestionsDebounceTimer;
-  void fetchNameSuggestionsDebounced(String query) {
-    debugPrint("Debounced suggestion call for: '$query'");
-    suggestionsDebounceTimer?.cancel();
-    suggestionsDebounceTimer = Timer(
-      const Duration(milliseconds: 300),
-      () async {
-        await loadSelectedNameMeaning(query);
-      },
+  Future<void> _initTts() async {
+    bool basicSetupOk = false;
+    bool thaiLanguageOk = false;
+    bool thaiVoiceFound = false;
+
+    try {
+      await _flutterTts.setLanguage('th-TH');
+      debugPrint('Set TTS language to: th-TH');
+      await _flutterTts.setSpeechRate(0.35);
+      await _flutterTts.setPitch(1.0);
+      await _flutterTts.setVolume(1.0);
+      await _flutterTts.awaitSpeakCompletion(true);
+      basicSetupOk = true;
+      thaiLanguageOk = true;
+    } catch (e) {
+      debugPrint('TTS th-TH setup error: $e');
+    }
+
+    if (!basicSetupOk) {
+      try {
+        await _flutterTts.setLanguage('en-US');
+        debugPrint('Fallback TTS to en-US');
+        await _flutterTts.setSpeechRate(0.35);
+        await _flutterTts.setPitch(1.0);
+        await _flutterTts.setVolume(1.0);
+        await _flutterTts.awaitSpeakCompletion(true);
+        basicSetupOk = true;
+      } catch (e) {
+        debugPrint('TTS en-US fallback error: $e');
+      }
+    }
+
+    if (basicSetupOk) {
+      try {
+        final engines = await _flutterTts.getEngines;
+        debugPrint('TTS engines available: $engines');
+        if (engines is List && engines.isNotEmpty) {
+          final dynamic preferredEngine = engines.cast<dynamic>().firstWhere(
+            (engine) => '$engine'.toLowerCase().contains('google'),
+            orElse: () => engines.first,
+          );
+          debugPrint('Selected TTS engine: $preferredEngine');
+          await _flutterTts.setEngine('$preferredEngine');
+        }
+      } catch (_) {
+        debugPrint('getEngines/setEngine not supported on this platform');
+      }
+
+      try {
+        final voices = await _flutterTts.getVoices;
+        debugPrint('Available voices: $voices');
+        if (voices is List) {
+          final dynamic thaiVoice = voices.cast<dynamic>().firstWhere(
+            (voice) =>
+                voice is Map && '${voice['locale'] ?? ''}'.startsWith('th'),
+            orElse: () => null,
+          );
+          if (thaiVoice is Map) {
+            debugPrint('Selected Thai voice: $thaiVoice');
+            await _flutterTts.setVoice(
+              Map<String, String>.from(
+                thaiVoice.map((key, value) => MapEntry('$key', '$value')),
+              ),
+            );
+            thaiVoiceFound = true;
+          } else {
+            debugPrint('No Thai voice found in voice list');
+          }
+        }
+      } catch (_) {
+        debugPrint('getVoices/setVoice not supported on this platform');
+        if (thaiLanguageOk) {
+          thaiVoiceFound = true;
+        }
+      }
+    }
+
+    final _TtsStatus status;
+    if (!basicSetupOk) {
+      status = _TtsStatus.unavailable;
+    } else if (!thaiLanguageOk && !thaiVoiceFound) {
+      status = _TtsStatus.noThaiVoice;
+    } else if (thaiLanguageOk && !thaiVoiceFound) {
+      status = _TtsStatus.noThaiVoice;
+    } else {
+      status = _TtsStatus.ready;
+    }
+
+    if (mounted) {
+      setState(() => _ttsStatus = status);
+    }
+    debugPrint('TTS initialization completed, status: ${status.name}');
+
+    _flutterTts.setCompletionHandler(() {
+      if (!mounted) return;
+      setState(() {
+        _speakingKey = null;
+      });
+    });
+    _flutterTts.setCancelHandler(() {
+      if (!mounted) return;
+      setState(() {
+        _speakingKey = null;
+      });
+    });
+    _flutterTts.setErrorHandler((_) {
+      if (!mounted) return;
+      setState(() {
+        _speakingKey = null;
+      });
+    });
+  }
+
+  void _showTtsHelpSnackBar() {
+    final isIOS = Platform.isIOS;
+
+    String message;
+    if (_ttsStatus == _TtsStatus.unavailable) {
+      message = 'อุปกรณ์นี้ไม่รองรับการอ่านออกเสียง';
+    } else if (isIOS) {
+      message =
+          'กรุณาติดตั้งเสียงภาษาไทย:\nSettings > Accessibility > Spoken Content > Voices > Thai';
+    } else {
+      message =
+          'กรุณาติดตั้งเสียงภาษาไทย:\nSettings > Language & Input > Text-to-Speech > ติดตั้งข้อมูลเสียง > Thai';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontSize: 13)),
+        backgroundColor: _ttsStatus == _TtsStatus.unavailable
+            ? Colors.red.shade700
+            : Colors.deepOrange,
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'ตกลง',
+          textColor: Colors.white,
+          onPressed: () {},
+        ),
+      ),
     );
+  }
+
+  // ignore: unused_element
+  String _getSpeakTooltip() {
+    switch (_ttsStatus) {
+      case _TtsStatus.ready:
+        return 'อ่านออกเสียงภาษาไทย';
+      case _TtsStatus.noThaiVoice:
+        return 'ยังไม่มีเสียงไทย — แตะเพื่ออ่านด้วยเสียงที่มี';
+      case _TtsStatus.unavailable:
+        return 'TTS ไม่พร้อมใช้งาน';
+    }
+  }
+
+  Future<void> _speakText(String text, {required String speakingKey}) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+
+    if (_ttsStatus != _TtsStatus.ready &&
+        _ttsStatus != _TtsStatus.noThaiVoice) {
+      if (!mounted) return;
+      _showTtsHelpSnackBar();
+      return;
+    }
+
+    if (_speakingKey == speakingKey) {
+      await _flutterTts.stop();
+      if (!mounted) return;
+      setState(() {
+        _speakingKey = null;
+      });
+      return;
+    }
+
+    await _flutterTts.stop();
+    if (!mounted) return;
+    setState(() {
+      _speakingKey = speakingKey;
+    });
+    await _flutterTts.speak(_prepareSpeakableThaiName(trimmed));
+    if (!mounted) return;
+    setState(() {
+      _speakingKey = null;
+    });
+  }
+
+  Future<void> _speakNameAndMeaning(SuggestionNameItem item) async {
+    final name = _prepareSpeakableThaiName(item.name);
+    final meaning = item.meaning.trim();
+    if (name.isEmpty) return;
+
+    final speakingKey = 'name+meaning:${item.id}';
+
+    if (_speakingKey == speakingKey) {
+      await _flutterTts.stop();
+      if (!mounted) return;
+      setState(() => _speakingKey = null);
+      return;
+    }
+
+    await _flutterTts.stop();
+    if (!mounted) return;
+    setState(() => _speakingKey = speakingKey);
+
+    try {
+      await _flutterTts.speak(name);
+      if (meaning.isNotEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        if (!mounted) return;
+        await _flutterTts.speak(_prepareSpeakableThaiName(meaning));
+      }
+      if (!mounted) return;
+      setState(() => _speakingKey = null);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _speakingKey = null);
+    }
+  }
+
+  Future<void> _speakPhonetic(SuggestionNameItem item) async {
+    final phonetic = (item.phoneticSummary.trim().isNotEmpty)
+        ? item.phoneticSummary.trim()
+        : item.name;
+    await _speakText(phonetic, speakingKey: 'phonetic:${item.id}');
+  }
+
+  Future<void> _speakSelectedMeaning() async {
+    final meaning = _selectedNameMeaning?.trim() ?? '';
+    final name = _selectedNameMeaningName?.trim() ?? '';
+    if (meaning.isEmpty) return;
+
+    final speakingKey = name.isEmpty
+        ? 'selected-meaning'
+        : 'selected-meaning:$name';
+    if (name.isEmpty) {
+      await _speakText(meaning, speakingKey: speakingKey);
+      return;
+    }
+
+    if (_speakingKey == speakingKey) {
+      await _flutterTts.stop();
+      if (!mounted) return;
+      setState(() {
+        _speakingKey = null;
+      });
+      return;
+    }
+
+    await _flutterTts.stop();
+    if (!mounted) return;
+    setState(() {
+      _speakingKey = speakingKey;
+    });
+
+    try {
+      await _flutterTts.speak(_prepareSpeakableThaiName(name));
+      await Future<void>.delayed(const Duration(milliseconds: 650));
+      if (!mounted) return;
+      await _flutterTts.speak(_prepareSpeakableThaiName(meaning));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _speakingKey = null;
+      });
+    }
+  }
+
+  bool _isSpeakingKey(String key) => _speakingKey == key;
+
+  String _prepareSpeakableThaiName(String name) {
+    final normalized = name
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll('-', ' ')
+        .replaceAll('_', ' ')
+        .replaceAll('/', ' ')
+        .trim();
+
+    if (normalized.isEmpty) return name;
+
+    // Read the name itself so the user hears the pronunciation directly,
+    // not an explanatory sentence around it.
+    return normalized;
+  }
+
+  void fetchNameSuggestionsDebounced(String query, {String? meaning}) {
+    debugPrint("Debounced suggestion call for: '$query'");
+    final int requestId = ++_suggestionDebounceRequestId;
+    Future.delayed(const Duration(milliseconds: 300), () async {
+      if (!mounted || requestId != _suggestionDebounceRequestId) return;
+      await loadSelectedNameMeaning(query, meaning: meaning);
+    });
   }
 
   Future<void> fetchNameSuggestions(String query, {String? meaning}) async {
     if (!mounted) return;
+    final int requestId = ++_suggestionRequestId;
 
     debugPrint("Fetching name suggestions for: '$query' (meaning: $meaning)");
-    setState(() => _loadingSuggestions = true);
+    debugPrint(
+      '[semantic-search] requestId=$requestId fetch query="$query" meaning="${meaning ?? ''}"',
+    );
+    setState(() {
+      _loadingSuggestions = true;
+      _nameSuggestions = null;
+    });
+    final int guardRequestId = ++_suggestionGuardRequestId;
+    Future.delayed(const Duration(seconds: 12), () {
+      if (!mounted || guardRequestId != _suggestionGuardRequestId) return;
+      if (requestId != _suggestionRequestId) return;
+      setState(() {
+        _loadingSuggestions = false;
+      });
+    });
 
     try {
       var suggestions = await _apiService.getNameSuggestions(
@@ -888,13 +1361,12 @@ class _NamingScreenState extends State<NamingScreen>
         );
       }
 
-      if (mounted) {
-        // Prevent race condition: ignore results for an old query if the user has moved on to a new name
-        if (_selectedNameMeaningName != null &&
-            _selectedNameMeaningName != query.trim()) {
-          return;
-        }
+      debugPrint(
+        '[semantic-search] requestId=$requestId response names=${suggestions?.names.length ?? 0}',
+      );
 
+      if (mounted && requestId == _suggestionRequestId) {
+        _suggestionGuardRequestId++;
         setState(() {
           _nameSuggestions = suggestions;
           _loadingSuggestions = false;
@@ -902,12 +1374,9 @@ class _NamingScreenState extends State<NamingScreen>
       }
     } catch (e) {
       debugPrint("Error fetching name suggestions: $e");
-      if (mounted) {
-        if (_selectedNameMeaningName != null &&
-            _selectedNameMeaningName != query.trim()) {
-          return;
-        }
-
+      debugPrint('[semantic-search] requestId=$requestId error=$e');
+      if (mounted && requestId == _suggestionRequestId) {
+        _suggestionGuardRequestId++;
         setState(() {
           _nameSuggestions = null;
           _loadingSuggestions = false;
@@ -920,6 +1389,7 @@ class _NamingScreenState extends State<NamingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgDark,
+      resizeToAvoidBottomInset: false,
       floatingActionButton: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -937,275 +1407,222 @@ class _NamingScreenState extends State<NamingScreen>
             : const SizedBox.shrink(key: ValueKey('no_back_to_top')),
       ),
       body: Listener(
-        onPointerDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        onPointerDown: (_) {
+          if (_suppressNextGlobalUnfocus) {
+            _suppressNextGlobalUnfocus = false;
+            return;
+          }
+        },
         behavior: HitTestBehavior.translucent,
         child: SafeArea(
-          child: CustomScrollView(
-            controller: _scrollController,
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      buildHeader(),
-                      buildSearchForm(),
-                      const SizedBox(height: 16),
-                      if (_results.isNotEmpty)
-                        Padding(
-                          key: _resultsKey,
-                          padding: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            bottom: 16,
-                          ),
-                          child: Builder(
-                            builder: (context) {
-                              final stats = computeStatistics();
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  DashboardSummary(
-                                    totalNames: stats['totalNames'] as int,
-                                    excellentNames: stats['excellentNames']
-                                        .toString(),
-                                    numerologyGood: stats['numerologyGood']
-                                        .toString(),
-                                    shadowGood: stats['shadowGood'].toString(),
-                                    isSatActive: _filterSat,
-                                    isShaActive: _filterSha,
-                                    recommendedDays:
-                                        stats['recommendedDays'] as String?,
-                                    onInfoTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              InformationScreen(
-                                                initialTabIndex: 2,
-                                              ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              if (_errorMessage != null)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: buildErrorState(_errorMessage!),
-                  ),
-                ),
-              // Show Magic Loading when searching (Global)
-              if (_isLoading)
-                SliverToBoxAdapter(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Center(
-                      child: MagicLoadingView(
-                        message: "กำลังค้นหาและจัดลำดับด้วยมนตรา...",
-                        subtitle:
-                            "ระบบ AI กำลังวิเคราะห์พลังชื่อและรากศัพท์ที่เหมาะกับคุณ",
-                        textColor: AppColors.textLight,
-                      ),
-                    ),
-                  ),
-                )
-              else if (_results.isEmpty &&
-                  _hasSearched &&
-                  _errorMessage == null)
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              final bool shouldShow = notification.metrics.pixels > 400;
+              if (shouldShow != _showBackToTop) {
+                setState(() => _showBackToTop = shouldShow);
+              }
+              return false;
+            },
+            child: CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
+                      horizontal: 0,
+                      vertical: 0,
                     ),
-                    child: buildResultsEmptyState(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        buildHeader(),
+                        buildSearchForm(),
+                        const SizedBox(height: 16),
+                        if ((_results.isNotEmpty || _isLoading) &&
+                            _hasRankingCriteria)
+                          Padding(
+                            key: _resultsKey,
+                            padding: const EdgeInsets.only(
+                              left: 20,
+                              right: 20,
+                              bottom: 16,
+                            ),
+                            child: Builder(
+                              builder: (context) {
+                                final stats = computeStatistics();
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    DashboardSummary(
+                                      isLoading: _isLoading,
+                                      totalNames: _isLoading
+                                          ? 0
+                                          : stats['totalNames'] as int,
+                                      excellentNames: _isLoading
+                                          ? '0'
+                                          : stats['excellentNames'].toString(),
+                                      numerologyGood: _isLoading
+                                          ? '0'
+                                          : stats['numerologyGood'].toString(),
+                                      shadowGood: _isLoading
+                                          ? '0'
+                                          : stats['shadowGood'].toString(),
+                                      isSatActive: _filterSat,
+                                      isShaActive: _filterSha,
+                                      recommendedDays: _isLoading
+                                          ? null
+                                          : stats['recommendedDays'] as String?,
+                                      onInfoTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                InformationScreen(
+                                                  initialTabIndex: 2,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                )
-              else if (_results.isNotEmpty) ...[
-                if (_isRelaxedSearch && _relaxedFiltersNotice != null)
+                ),
+                if (_errorMessage != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: buildErrorState(_errorMessage!),
+                    ),
+                  ),
+                if (_isSearchTimeoutPending)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: buildSearchTimeoutState(),
+                    ),
+                  ),
+                // Show Magic Loading when searching (Global)
+                if (_isLoading)
                   SliverToBoxAdapter(
                     child: Container(
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: MagicLoadingView(
+                          message: "กำลังค้นหาและจัดลำดับด้วยมนตรา...",
+                          subtitle:
+                              "ระบบ AI กำลังวิเคราะห์พลังชื่อและรากศัพท์ที่เหมาะกับคุณ",
+                          textColor: AppColors.textLight,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.info_outline_rounded,
-                            color: Color(0xFFFBBF24),
-                            size: 18,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              _relaxedFiltersNotice!,
-                              style: GoogleFonts.sarabun(
-                                color: const Color(0xFFFBBF24),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final item = _results[index];
-                    final bool isDoubleGreen = item.isSatGood && item.isShaGood;
-                    // Release behavior: lock premium names for non-VIP users.
-                    final bool isLockedForNonVip =
-                        isDoubleGreen &&
-                        !PremiumManager().isPremium &&
-                        !_temporaryShowAllRankedNames;
-
-                    final card = NameListItem(
-                      key: ValueKey(
-                        'matching_${_keywordController.text.hashCode}_${item.name}',
+                  )
+                else if (_results.isEmpty &&
+                    _hasSearched &&
+                    _errorMessage == null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
                       ),
-                      rank: index + 1,
-                      result: item,
-                      comparisonName: "",
-                      comparisonAnalysis: null,
-                      showMatching: false,
-                      isFilterSatActive: _filterSat,
-                      isFilterShaActive: _filterSha,
-                      isFilterKakiActive: _filterKaki,
-                      onTap: () {
-                        final name = item.name;
-                        setState(() {
-                          _keywordController.text = name;
-                          _keywordController.selection =
-                              TextSelection.collapsed(offset: name.length);
-
-                          // Once a specific name is selected, the "Idea" highlight has served its discovery purpose.
-                          _selectedExampleIndex = null;
-                          _selectedCelebrityIndex = null;
-                        });
-
-                        // Perform re-analysis by searching for this name
-                        loadSelectedNameMeaning(name, meaning: item.meaning);
-                        _search(scrollToResults: false, showInputSnack: false);
-                        scrollToSearchField();
-                      },
-                    );
-
-                    if (!isLockedForNonVip) return card;
-
-                    return Stack(
-                      children: [
-                        IgnorePointer(ignoring: true, child: card),
-                        Positioned(
-                          left: 20,
-                          top: 45,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(999),
-                              onTap: () async {
-                                final purchased = await showPaywallDialog(
-                                  context,
-                                );
-
-                                if (!mounted) return;
-                                if (purchased == true) {
-                                  setState(() {});
-                                }
-                              },
-                              child: Container(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 340,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(999),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.32,
-                                      ),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      "ชื่อพรีเมียม",
-                                      style: GoogleFonts.prompt(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      width: 1,
-                                      height: 14,
-                                      color: Colors.white24,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Icon(
-                                      Icons.visibility_off_rounded,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      "กดปิดป้าย",
-                                      style: GoogleFonts.prompt(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
+                      child: buildResultsEmptyState(),
+                    ),
+                  )
+                else if (_results.isNotEmpty && _hasRankingCriteria) ...[
+                  if (_isRelaxedSearch && _relaxedFiltersNotice != null)
+                    SliverToBoxAdapter(
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFF59E0B,
+                          ).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFF59E0B,
+                            ).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              color: Color(0xFFFBBF24),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _relaxedFiltersNotice!,
+                                style: GoogleFonts.sarabun(
+                                  color: const Color(0xFFFBBF24),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    );
-                  }, childCount: _results.length),
-                ),
+                      ),
+                    ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final item = _results[index];
+
+                      final card = NameListItem(
+                        key: ValueKey(
+                          'matching_${_keywordController.text.hashCode}_${item.name}',
+                        ),
+                        rank: index + 1,
+                        result: item,
+                        comparisonName: "",
+                        comparisonAnalysis: null,
+                        showMatching: false,
+                        isFilterSatActive: _filterSat,
+                        isFilterShaActive: _filterSha,
+                        isFilterKakiActive: _filterKaki,
+                        onTap: () {
+                          final name = item.name;
+                          setState(() {
+                            _setKeywordWithoutTriggeringListener(name);
+                            _keywordController.selection =
+                                TextSelection.collapsed(offset: name.length);
+
+                            // Once a specific name is selected, the "Idea" highlight has served its discovery purpose.
+                            _selectedExampleIndex = null;
+                            _selectedCelebrityIndex = null;
+                          });
+
+                          // Perform re-analysis by searching for this name
+                          _search(
+                            scrollToResults: false,
+                            showInputSnack: false,
+                          );
+                          maybeScrollToSearchField();
+                        },
+                      );
+
+                      return card;
+                    }, childCount: _results.length),
+                  ),
+                ],
+                SliverToBoxAdapter(child: buildFooter()),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 60),
+                ), // Space for FAB/BottomNav
               ],
-              SliverToBoxAdapter(child: buildFooter()),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 60),
-              ), // Space for FAB/BottomNav
-            ],
+            ),
           ),
         ),
       ),
@@ -1282,33 +1699,75 @@ class _NamingScreenState extends State<NamingScreen>
                 if (selectedName is Map) {
                   final dynamic nameValue = selectedName['name'];
                   final dynamic modeValue = selectedName['mode'];
+                  final dynamic meaningValue = selectedName['meaning'];
                   final name = nameValue is String ? nameValue : null;
                   final mode = modeValue is String ? modeValue : null;
+                  final meaning = meaningValue is String ? meaningValue : null;
                   if (name == null) return;
 
                   if (mode == 'keyword') {
                     setState(() {
-                      _keywordController.text = name;
+                      _hideSelectedMeaningCard = false;
+                      _setKeywordWithoutTriggeringListener(name);
                     });
-                    loadSelectedNameMeaning(name);
-                    fetchNameSuggestionsDebounced(name);
-                    _search(scrollToResults: true);
+                    _search(scrollToResults: false);
+                    return;
+                  }
+
+                  if (mode == 'decode') {
+                    setState(() {
+                      _hideSelectedMeaningCard = false;
+                      _setKeywordWithoutTriggeringListener(name);
+                    });
+                    _search(scrollToResults: false);
+                    return;
+                  }
+
+                  if (mode == 'semantic') {
+                    final semanticQuery = meaning ?? name;
+                    setState(() {
+                      _hideSelectedMeaningCard = true;
+                      _setKeywordWithoutTriggeringListener(semanticQuery);
+                      _selectedExampleIndex = null;
+                      _selectedCelebrityIndex = null;
+                      _selectedNameMeaningName = semanticQuery;
+                      _selectedNameMeaning = meaning;
+                      _selectedNameAnalysis = null;
+                      _isLoadingSelectedNameMeaning = false;
+                      _nameSuggestions = null;
+                      _loadingSuggestions = true;
+                    });
+                    fetchNameSuggestions(semanticQuery, meaning: meaning);
+                    _search(
+                      scrollToResults: false,
+                      reloadSelectedName: false,
+                      overrideKeyword: semanticQuery,
+                    );
+                    return;
+                  }
+
+                  if (mode == 'analyze') {
+                    setState(() {
+                      _hideSelectedMeaningCard = false;
+                      _setKeywordWithoutTriggeringListener(name);
+                      _selectedExampleIndex = null;
+                      _selectedCelebrityIndex = null;
+                    });
+                    _search(scrollToResults: false);
                     return;
                   }
 
                   setState(() {
-                    _keywordController.text = name;
+                    _hideSelectedMeaningCard = false;
+                    _setKeywordWithoutTriggeringListener(name);
                   });
-                  loadSelectedNameMeaning(name);
-                  fetchNameSuggestionsDebounced(name);
-                  _search(scrollToResults: true);
+                  _search(scrollToResults: false);
                 } else if (selectedName != null && selectedName is String) {
                   setState(() {
-                    _keywordController.text = selectedName;
+                    _hideSelectedMeaningCard = false;
+                    _setKeywordWithoutTriggeringListener(selectedName);
                   });
-                  loadSelectedNameMeaning(selectedName);
-                  fetchNameSuggestionsDebounced(selectedName);
-                  _search(scrollToResults: true);
+                  _search(scrollToResults: false);
                 }
               },
               child: Container(
@@ -1337,7 +1796,9 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                   ],
                 ),
-                child: const SparklingGoldHeart(),
+                child: SparklingGoldHeart(
+                  savedCount: ApiService.savedNamesCache.length,
+                ),
               ),
             ),
           ),
@@ -1381,10 +1842,76 @@ class _NamingScreenState extends State<NamingScreen>
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _search(scrollToResults: false),
+              onPressed: _isLoading
+                  ? null
+                  : () => _search(scrollToResults: false),
               icon: const Icon(Icons.refresh),
               label: Text(
                 "ลองเชื่อมต่ออีกครั้ง",
+                style: GoogleFonts.sarabun(fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSearchTimeoutState() {
+    final bool isDoubleGoodMode = _filterSat && _filterSha;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFF4C95D).withValues(alpha: 0.45),
+        ),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.hourglass_top_rounded,
+            color: Color(0xFFD4A017),
+            size: 32,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            isDoubleGoodMode
+                ? "ระบบกำลังประมวลผลชื่อคุณภาพสูง กรุณารอสักครู่..."
+                : "กำลังค้นหาชื่อเพิ่มเติม...",
+            style: GoogleFonts.sarabun(
+              color: AppColors.textLight,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "หากต้องการให้ระบบลองค้นหาอีกครั้ง สามารถกดปุ่มด้านล่างได้เลย",
+            style: GoogleFonts.sarabun(color: AppColors.textGray, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isLoading
+                  ? null
+                  : () => _search(scrollToResults: false),
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text(
+                "ค้นหาอีกครั้ง",
                 style: GoogleFonts.sarabun(fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
@@ -1451,38 +1978,6 @@ class _NamingScreenState extends State<NamingScreen>
               height: 1.5,
             ),
           ),
-          if (!needsRankingCriteria) ...[
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _filterSat = false;
-                    _filterSha = true;
-                    _filterKaki = false;
-                  });
-                },
-                icon: Icon(Icons.tune_rounded, color: AppColors.secondary),
-                label: Text(
-                  "ล้างเงื่อนไข",
-                  style: GoogleFonts.sarabun(
-                    color: AppColors.secondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -1491,6 +1986,7 @@ class _NamingScreenState extends State<NamingScreen>
   Widget buildSelectedNameMeaningUnderKeyword() {
     if (_isPivotingIdea) return const SizedBox.shrink();
     if (_selectedNameMeaningName == null) return const SizedBox.shrink();
+    if (_hideSelectedMeaningCard) return const SizedBox.shrink();
 
     if (_isLoadingSelectedNameMeaning) return const SizedBox.shrink();
     if (_selectedNameMeaning == null && _selectedNameAnalysis == null) {
@@ -1547,27 +2043,51 @@ class _NamingScreenState extends State<NamingScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text.rich(
-                              TextSpan(
-                                text: "ความหมายของชื่อ ",
-                                style: GoogleFonts.sarabun(
-                                  color: const Color(
-                                    0xFF3D2600,
-                                  ).withValues(alpha: 0.6),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: " $_selectedNameMeaningName",
-                                    style: GoogleFonts.prompt(
-                                      color: const Color(0xFF3D2600),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text.rich(
+                                    TextSpan(
+                                      text: "ความหมายของชื่อ ",
+                                      style: GoogleFonts.sarabun(
+                                        color: const Color(
+                                          0xFF3D2600,
+                                        ).withValues(alpha: 0.6),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: " $_selectedNameMeaningName",
+                                          style: GoogleFonts.prompt(
+                                            color: const Color(0xFF3D2600),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 10),
+                                _buildSpeechIconButton(
+                                  icon:
+                                      _isSpeakingKey(
+                                        _selectedNameMeaningName
+                                                    ?.trim()
+                                                    .isNotEmpty ??
+                                                false
+                                            ? 'selected-meaning:${_selectedNameMeaningName!.trim()}'
+                                            : 'selected-meaning',
+                                      )
+                                      ? Icons.volume_up_rounded
+                                      : Icons.record_voice_over_rounded,
+                                  onTap: _speakSelectedMeaning,
+                                  tooltip: 'ฟังความหมายของชื่อ',
+                                  variant: SpeechButtonVariant.secondary,
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 12),
                             Padding(
@@ -1660,6 +2180,60 @@ class _NamingScreenState extends State<NamingScreen>
               ),
             ),
           ),
+        if (_selectedNameMeaning == null &&
+            _selectedNameAnalysis != null &&
+            !_hasRankableNameTemplate)
+          Padding(
+            padding: const EdgeInsets.only(top: 18, bottom: 8),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.bgDarker,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppColors.accent.withValues(alpha: 0.24),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.fact_check_rounded,
+                    color: AppColors.secondary.withValues(alpha: 0.9),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        text: "วิเคราะห์ชื่อที่คุณพิมพ์แล้ว แต่ ",
+                        style: GoogleFonts.sarabun(
+                          color: AppColors.textGray,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: _selectedNameMeaningName ?? '',
+                            style: GoogleFonts.prompt(
+                              color: AppColors.textLight,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: " ยังไม่มีความหมายในฐานข้อมูล 3 แสนรายชื่อ",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         if (_selectedNameAnalysis != null) ...[
           const SizedBox(height: 10),
           _MagicSummaryWrapper(
@@ -1693,8 +2267,10 @@ class _NamingScreenState extends State<NamingScreen>
                   child: Tooltip(
                     message: "อ่านคำอธิบายเลขศาสตร์และพลังเงา",
                     child: Material(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: const Color(0xFF111827).withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(8),
+                      elevation: 2,
+                      shadowColor: Colors.black.withValues(alpha: 0.12),
                       child: InkWell(
                         onTap: () {
                           Navigator.push(
@@ -1716,16 +2292,16 @@ class _NamingScreenState extends State<NamingScreen>
                             children: [
                               Icon(
                                 Icons.info_outline_rounded,
-                                color: Colors.white.withValues(alpha: 0.4),
+                                color: Colors.white.withValues(alpha: 0.85),
                                 size: 12,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 "หมายเหตุ",
                                 style: GoogleFonts.prompt(
-                                  color: Colors.white.withValues(alpha: 0.4),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -1803,7 +2379,7 @@ class _NamingScreenState extends State<NamingScreen>
                           return;
                         }
                         setState(() => _filterKaki = !_filterKaki);
-                        _refreshResultsKeepingStep2Anchor();
+                        unawaited(_refreshResultsKeepingStep2Anchor());
                       },
                     ),
                   ],
@@ -1912,14 +2488,14 @@ class _NamingScreenState extends State<NamingScreen>
                         child: InkWell(
                           onTap: () {
                             setState(() {
-                              _keywordController.text = text;
+                              _setKeywordWithoutTriggeringListener(text);
                               _selectedExampleIndex = index;
                               _selectedCelebrityIndex = null;
                               _filterSat = false;
-                              _filterSha = true;
+                              _filterSha = false;
                             });
                             _search();
-                            scrollToSearchField();
+                            maybeScrollToSearchField();
                           },
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
@@ -1996,245 +2572,212 @@ class _NamingScreenState extends State<NamingScreen>
     if (_celebrities.isEmpty) return const SizedBox.shrink();
 
     const double celebItemWidth = 70;
-    const double celebStride = celebItemWidth;
-    final int totalCount = _celebrities.length * 400;
+    final double loopWidth = _celebrities.length * celebItemWidth;
+    final double visualOffset = loopWidth <= 0
+        ? 0.0
+        : _celebsScrollPos % loopWidth;
+    final double initialScrollOffset = visualOffset;
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (notification is UserScrollNotification) {
-          if (notification.direction != ScrollDirection.idle) {
-            _isCelebsAutoScrolling = false;
-          } else {
-            _normalizeCelebsOffsetIfNeeded();
+    Widget buildCelebrityItem(int virtualIndex) {
+      final int modIndex = virtualIndex % _celebrities.length;
+      final Map<String, dynamic> c = _celebrities[modIndex];
+      final String name = c['name'] ?? '';
+      final String initial = c['initial'] ?? '';
+      final String avatarUrl = c['avatar_url'] ?? '';
+
+      Color bgColor =
+          AppColors.avatarBorders[modIndex % AppColors.avatarBorders.length];
+      if (c['color'] != null) {
+        try {
+          String hex = c['color'].replaceAll('#', '');
+          if (hex.length == 6) hex = 'FF$hex';
+          bgColor = Color(int.parse(hex, radix: 16));
+        } catch (_) {}
+      }
+
+      final bool isSelected = _selectedCelebrityIndex == modIndex;
+
+      return Padding(
+        padding: const EdgeInsets.only(top: 4, bottom: 4),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (_) {
+            stopMarqueeTicker();
+            _celebsResumeRequestId++;
+          },
+          onTapCancel: resumeCelebsAutoScrollAfterDelay,
+          onTap: () {
+            stopMarqueeTicker();
+            setState(() {
+              _setKeywordWithoutTriggeringListener(name);
+              _selectedCelebrityIndex = modIndex;
+              _selectedExampleIndex = null;
+            });
+            _resolveSeedName(name);
             resumeCelebsAutoScrollAfterDelay();
-          }
-        } else if (notification is ScrollEndNotification) {
-          _normalizeCelebsOffsetIfNeeded();
-        }
-        return false;
-      },
-      child: SizedBox(
-        height: 98,
-        child: ListView.builder(
-          controller: _celebsScrollController,
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.zero,
-          primary: false,
-          physics: const ClampingScrollPhysics(),
-          itemCount: totalCount,
-          itemBuilder: (context, virtualIndex) {
-            final int modIndex = virtualIndex % _celebrities.length;
-            final Map<String, dynamic> c = _celebrities[modIndex];
-            final String name = c['name'] ?? '';
-            final String initial = c['initial'] ?? '';
-            final String avatarUrl = c['avatar_url'] ?? '';
 
-            Color bgColor = AppColors
-                .avatarBorders[modIndex % AppColors.avatarBorders.length];
-            if (c['color'] != null) {
-              try {
-                String hex = c['color'].replaceAll('#', '');
-                if (hex.length == 6) hex = 'FF$hex';
-                bgColor = Color(int.parse(hex, radix: 16));
-              } catch (_) {}
-            }
-
-            final bool isSelected = _selectedCelebrityIndex == virtualIndex;
-
-            return Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 4),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (_) {
-                  // Stop marquee immediately on touch down
-                  stopMarqueeTicker();
-                  _celebsAutoScrollTimer?.cancel();
-
-                  if (_celebsScrollController.hasClients) {
-                    _celebsScrollController.jumpTo(
-                      _celebsScrollController.offset,
-                    );
-                  }
-                },
-                onTapCancel: () {
-                  // Resume auto-scroll if it was a drag gesture
-                  resumeCelebsAutoScrollAfterDelay();
-                },
-                onTap: () {
-                  // Execute selection logic ONLY on actual tap
-                  setState(() {
-                    _keywordController.text = name;
-                    _selectedCelebrityIndex = virtualIndex;
-                    _selectedExampleIndex = null;
-                  });
-
-                  // Trigger Analysis immediately
-                  loadSelectedNameMeaning(name);
-                  fetchNameSuggestionsDebounced(name);
-
-                  // Centering with animation
-                  if (context.mounted) {
-                    final double screenWidth = MediaQuery.of(
-                      context,
-                    ).size.width;
-                    final double avatarCenterInList =
-                        (virtualIndex * celebStride) + (celebItemWidth / 2.0);
-                    final double targetOffset =
-                        avatarCenterInList - (screenWidth / 2.0);
-
-                    _celebsScrollController
-                        .animateTo(
-                          targetOffset.clamp(
-                            0.0,
-                            _celebsScrollController.position.maxScrollExtent,
-                          ),
-                          duration: const Duration(milliseconds: 800),
-                          curve: Curves.easeOutCubic,
-                        )
-                        .then((_) {
-                          _celebsAutoScrollTimer?.cancel();
-                          _celebsAutoScrollTimer = Timer(
-                            const Duration(seconds: 7),
-                            () {
-                              if (mounted) {
-                                startCelebsAutoScroll();
-                              }
-                            },
-                          );
-                        });
-                  }
-
-                  // Execute search results
-                  Future.delayed(const Duration(milliseconds: 600), () {
-                    if (mounted) {
-                      _search(scrollToResults: false);
-                      scrollToSearchField();
-                    }
-                  });
-                },
-                child: SizedBox(
-                  width: celebItemWidth,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+            Future.delayed(const Duration(milliseconds: 600), () {
+              if (mounted) {
+                _search(scrollToResults: false);
+                maybeScrollToSearchField();
+              }
+            });
+          },
+          child: SizedBox(
+            width: celebItemWidth,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: bgColor.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: isSelected ? AppColors.accent : bgColor,
+                      width: isSelected ? 3.5 : 2.5,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: const Color(
+                                0xFFD4AF37,
+                              ).withValues(alpha: 0.4),
+                              blurRadius: 15,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Container(
-                        width: 58,
-                        height: 58,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: bgColor.withValues(alpha: 0.15),
-                          border: Border.all(
-                            color: isSelected ? AppColors.accent : bgColor,
-                            width: isSelected ? 3.5 : 2.5,
-                          ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFFD4AF37,
-                                    ).withValues(alpha: 0.4),
-                                    blurRadius: 15,
-                                    spreadRadius: 2,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (avatarUrl.isEmpty)
-                              Text(
-                                initial,
-                                style: GoogleFonts.prompt(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textLight,
-                                  fontSize: 14,
-                                ),
-                              )
-                            else
-                              ClipOval(
-                                child: Image.network(
-                                  avatarUrl.startsWith('http')
-                                      ? avatarUrl
-                                      : "${ApiService.baseUrl}$avatarUrl",
-                                  fit: BoxFit.cover,
-                                  width: 58,
-                                  height: 58,
-                                  headers: const {
-                                    "User-Agent":
-                                        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                                    "Accept":
-                                        "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    debugPrint(
-                                      "Failed to load tablet image: $error for URL: $avatarUrl",
-                                    );
-                                    return Container(
-                                      color: bgColor,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        initial,
-                                        style: GoogleFonts.prompt(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontSize: 24,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            if (_isLoadingSelectedNameMeaning && isSelected)
-                              Container(
-                                width: 58,
-                                height: 58,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                ),
-                                child: const Center(
-                                  child: SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 3,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        AppColors.accent,
-                                      ),
-                                      backgroundColor: Colors.white30,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        width: celebItemWidth,
-                        child: Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.sarabun(
-                            color: const Color(0xFF4F8FE8),
+                      if (avatarUrl.isEmpty)
+                        Text(
+                          initial,
+                          style: GoogleFonts.prompt(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textLight,
                             fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            height: 1.15,
+                          ),
+                        )
+                      else
+                        ClipOval(
+                          child: Image.network(
+                            avatarUrl.startsWith('http')
+                                ? avatarUrl
+                                : "${ApiService.baseUrl}$avatarUrl",
+                            fit: BoxFit.cover,
+                            width: 58,
+                            height: 58,
+                            headers: const {
+                              "User-Agent":
+                                  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                              "Accept":
+                                  "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              debugPrint(
+                                "Failed to load tablet image: $error for URL: $avatarUrl",
+                              );
+                              return Container(
+                                color: bgColor,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  initial,
+                                  style: GoogleFonts.prompt(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
-                      ),
+                      if (_isLoadingSelectedNameMeaning && isSelected)
+                        Container(
+                          width: 58,
+                          height: 58,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withValues(alpha: 0.4),
+                          ),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.accent,
+                                ),
+                                backgroundColor: Colors.white30,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
-              ),
-            );
-          },
+                const SizedBox(height: 6),
+                SizedBox(
+                  width: celebItemWidth,
+                  child: Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.sarabun(
+                      color: const Color(0xFF4F8FE8),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double viewportWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.of(context).size.width;
+        final int repeatCount = math.max(
+          3,
+          (viewportWidth / loopWidth).ceil() + 3,
+        );
+
+        return SizedBox(
+          height: 98,
+          width: double.infinity,
+          child: ClipRect(
+            child: Stack(
+              clipBehavior: Clip.hardEdge,
+              children: List.generate(_celebrities.length * repeatCount, (
+                virtualIndex,
+              ) {
+                final double left =
+                    (virtualIndex * celebItemWidth) - initialScrollOffset;
+                return Positioned(
+                  left: left,
+                  top: 0,
+                  width: celebItemWidth,
+                  height: 98,
+                  child: buildCelebrityItem(virtualIndex),
+                );
+              }),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -2353,7 +2896,7 @@ class _NamingScreenState extends State<NamingScreen>
                             ),
                           ),
                           scrollPadding: const EdgeInsets.only(bottom: 260),
-                          onTap: scrollToSearchField,
+                          onTap: maybeScrollToSearchField,
                           onSubmitted: (_) {
                             commitSearchInput();
                           },
@@ -2492,10 +3035,10 @@ class _NamingScreenState extends State<NamingScreen>
                 (_nameIntentResult?.candidates.isNotEmpty ?? false);
             final showApiSuggestions =
                 isTyping &&
-                (hasNames ||
-                    _loadingSuggestions ||
+                ((hasNames || _loadingSuggestions) ||
                     hasIntentCandidates ||
-                    _isLoadingNameIntent);
+                    _isLoadingNameIntent ||
+                    _hasSearched);
 
             if (!showApiSuggestions) {
               return const SizedBox.shrink();
@@ -2589,18 +3132,14 @@ class _NamingScreenState extends State<NamingScreen>
                         ) {
                           return InkWell(
                             onTap: () {
-                              _keywordController.text = candidate;
+                              _setKeywordWithoutTriggeringListener(candidate);
                               _keywordController.selection =
                                   TextSelection.collapsed(
                                     offset: candidate.length,
                                   );
                               FocusScope.of(context).unfocus();
-                              loadSelectedNameMeaning(
-                                candidate,
-                                forceDecode: true,
-                              );
                               _search();
-                              scrollToSearchField();
+                              maybeScrollToSearchField();
                             },
                             borderRadius: BorderRadius.circular(999),
                             child: Container(
@@ -2664,107 +3203,276 @@ class _NamingScreenState extends State<NamingScreen>
                             child: MagicLoadingView(
                               height: 64,
                               message: "กำลังค้นหาไอเดีย...",
+                              subtitle:
+                                  "AI กำลังคัดชื่อที่มีความหมายใกล้เคียงให้คุณ",
                               textColor: AppColors.textGray,
+                              minimal: true,
                             ),
                           ),
                         )
                       else
                         // ANCHOR: LikeName (ชื่อที่มีความหมายใกล้เคียง)
                         Column(
-                          children: _nameSuggestions!.names.map((item) {
-                            return Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  _keywordController.text = item.name;
-                                  _keywordController.selection =
-                                      TextSelection.collapsed(
-                                        offset: item.name.length,
-                                      );
-                                  // Close keyboard first
-                                  FocusScope.of(context).unfocus();
-
-                                  loadSelectedNameMeaning(
-                                    item.name,
-                                    meaning: item.meaning,
-                                  );
-                                  _search();
-                                  // Scroll to show the search field and result
-                                  scrollToSearchField();
-                                },
-                                borderRadius: BorderRadius.circular(8),
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.fromLTRB(
+                                12,
+                                10,
+                                12,
+                                10,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.secondary.withValues(alpha: 0.1),
+                                    AppColors.accent.withValues(alpha: 0.08),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: AppColors.secondary.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 34,
+                                    height: 34,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.secondary.withValues(
+                                        alpha: 0.14,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.graphic_eq_rounded,
+                                      color: AppColors.secondary,
+                                      size: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'คัดจากความหมายและพลังเสียงอ่าน',
+                                          style: GoogleFonts.sarabun(
+                                            color: AppColors.textLight,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'ระบบดูทั้งความหมายที่ใกล้เคียง และคุณภาพการออกเสียงเพื่อให้ชื่อที่ฟังดีเด่นขึ้นมา',
+                                          style: GoogleFonts.sarabun(
+                                            color: AppColors.textGray,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ..._nameSuggestions!.names.map((item) {
+                              return Material(
+                                color: Colors.transparent,
                                 child: Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 8,
+                                    vertical: 12,
+                                    horizontal: 10,
                                   ),
-                                  margin: const EdgeInsets.only(bottom: 4),
+                                  margin: const EdgeInsets.only(bottom: 8),
                                   decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: AppColors.textGray.withValues(
-                                          alpha: 0.1,
-                                        ),
+                                    color: Colors.white.withValues(alpha: 0.92),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.12,
                                       ),
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.04,
+                                        ),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
-                                  child: Row(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Expanded(
-                                        child: Column(
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        item.name,
+                                                        style:
+                                                            GoogleFonts.sarabun(
+                                                              color: AppColors
+                                                                  .textLight,
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    _buildSpeechIconButton(
+                                                      icon:
+                                                          _isSpeakingKey(
+                                                            'name+meaning:${item.id}',
+                                                          )
+                                                          ? Icons
+                                                                .volume_up_rounded
+                                                          : Icons.mic_rounded,
+                                                      onTap: () =>
+                                                          _speakNameAndMeaning(
+                                                            item,
+                                                          ),
+                                                      tooltip:
+                                                          'ฟังชื่อและความหมาย',
+                                                      variant:
+                                                          SpeechButtonVariant
+                                                              .primary,
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 3),
+                                                Text(
+                                                  item.meaning,
+                                                  style: GoogleFonts.sarabun(
+                                                    color: AppColors.textGray,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          _buildActionIconButton(
+                                            icon: Icons.chevron_right_rounded,
+                                            onTap: () {
+                                              _setKeywordWithoutTriggeringListener(
+                                                item.name,
+                                              );
+                                              _keywordController.selection =
+                                                  TextSelection.collapsed(
+                                                    offset: item.name.length,
+                                                  );
+                                              _resolveSeedName(
+                                                item.name,
+                                                meaningHint: item.meaning,
+                                              );
+                                              FocusScope.of(context).unfocus();
+                                              _search();
+                                              maybeScrollToSearchField();
+                                            },
+                                            tooltip: 'เลือกชื่อนี้',
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: item.phoneticScore != null
+                                              ? AppColors.secondary.withValues(
+                                                  alpha: 0.08,
+                                                )
+                                              : AppColors.primary.withValues(
+                                                  alpha: 0.06,
+                                                ),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          border: Border.all(
+                                            color: item.phoneticScore != null
+                                                ? AppColors.secondary
+                                                      .withValues(alpha: 0.12)
+                                                : AppColors.primary.withValues(
+                                                    alpha: 0.12,
+                                                  ),
+                                          ),
+                                        ),
+                                        child: Row(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              item.name,
-                                              style: GoogleFonts.sarabun(
-                                                color: AppColors.textLight,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
+                                            Expanded(
+                                              child: Text(
+                                                item.phoneticScore != null
+                                                    ? _buildPhoneticHighlight(
+                                                        item,
+                                                      )
+                                                    : _buildSuggestionTrustLine(
+                                                        item,
+                                                      ),
+                                                style: GoogleFonts.sarabun(
+                                                  color:
+                                                      item.phoneticScore != null
+                                                      ? const Color(0xFF1E4D47)
+                                                      : AppColors.textLight,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  height: 1.3,
+                                                ),
                                               ),
                                             ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              item.meaning,
-                                              style: GoogleFonts.sarabun(
-                                                color: AppColors.textGray,
-                                                fontSize: 13,
-                                              ),
+                                            const SizedBox(width: 8),
+                                            _buildSpeechIconButton(
+                                              icon:
+                                                  _isSpeakingKey(
+                                                    'phonetic:${item.id}',
+                                                  )
+                                                  ? Icons.volume_up_rounded
+                                                  : Icons
+                                                        .record_voice_over_rounded,
+                                              onTap: () => _speakPhonetic(item),
+                                              tooltip: 'ฟังการออกเสียงชื่อ',
+                                              variant:
+                                                  SpeechButtonVariant.secondary,
                                             ),
                                           ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      // Professional Action Indicator
-                                      Container(
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.1,
-                                          ),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: AppColors.primary.withValues(
-                                              alpha: 0.2,
-                                            ),
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.chevron_right_rounded,
-                                          size: 20,
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.8,
-                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            }),
+                          ],
                         ),
                     ],
                   ],
@@ -2775,6 +3483,136 @@ class _NamingScreenState extends State<NamingScreen>
         ),
       ],
     );
+  }
+
+  // ignore: unused_element
+  Widget _buildSuggestionMetricChip(String label, int value, {Color? color}) {
+    final chipColor = color ?? AppColors.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: chipColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: chipColor.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        '$label $value',
+        style: GoogleFonts.sarabun(
+          color: chipColor,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  String _buildPhoneticHighlight(SuggestionNameItem item) {
+    if (item.phoneticSummary.trim().isNotEmpty) {
+      return item.phoneticSummary.trim();
+    }
+
+    final score = item.phoneticScore ?? 0;
+    final ease = item.pronunciationEase ?? score;
+    final euphony = item.euphonyScore ?? score;
+    final rhythm = item.rhythmScore ?? score;
+
+    if (score >= 94 && euphony >= 92 && rhythm >= 90) {
+      return 'โทนเสียงละมุน นุ่มลึก และจังหวะลงตัว ฟังแล้วติดหูมาก';
+    }
+    if (ease >= 92 && euphony >= 88) {
+      return 'ออกเสียงลื่น ปากเปิดง่าย และน้ำเสียงฟังนุ่มละมุน';
+    }
+    if (rhythm >= 90 && score >= 88) {
+      return 'น้ำหนักเสียงแน่น จังหวะดี เรียกแล้วฟังชัดและมีพลัง';
+    }
+    if (euphony >= 88) {
+      return 'เสียงค่อนข้างหวาน ละมุนหู และฟังราบรื่นต่อเนื่อง';
+    }
+    if (ease >= 86) {
+      return 'ออกเสียงง่าย ฟังลื่น และเรียกใช้ได้สบายในชีวิตประจำวัน';
+    }
+    if (rhythm >= 84) {
+      return 'จังหวะเสียงดี โทนค่อนข้างแน่น เรียกแล้วจำง่าย';
+    }
+    return 'โทนเสียงค่อนข้างเรียบลื่น ฟังง่าย และใช้งานได้ดี';
+  }
+
+  Widget _buildSpeechIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required String tooltip,
+    SpeechButtonVariant variant = SpeechButtonVariant.primary,
+  }) {
+    final bool isPrimary = variant == SpeechButtonVariant.primary;
+    final Color backgroundColor = isPrimary
+        ? AppColors.secondary.withValues(alpha: 0.1)
+        : AppColors.primary.withValues(alpha: 0.05);
+    final Color borderColor = isPrimary
+        ? AppColors.secondary.withValues(alpha: 0.18)
+        : AppColors.primary.withValues(alpha: 0.1);
+    final Color iconColor = isPrimary
+        ? AppColors.secondary
+        : AppColors.textGray.withValues(alpha: 0.9);
+
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: borderColor),
+            ),
+            child: Icon(icon, size: 18, color: iconColor),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionIconButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required String tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: AppColors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: AppColors.primary.withValues(alpha: 0.8),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _buildSuggestionTrustLine(SuggestionNameItem item) {
+    if (item.phoneticScore != null) {
+      return 'คัดจากความหมายใกล้เคียง พร้อมตรวจการอ่านออกเสียงของชื่อนี้แล้ว';
+    }
+    return 'คัดจากความหมายใกล้เคียงของชื่อ และเตรียมพร้อมสำหรับการวิเคราะห์ต่อ';
   }
 
   Widget buildTextField({
@@ -2868,7 +3706,7 @@ class _NamingScreenState extends State<NamingScreen>
                 style: style.copyWith(
                   fontSize: style.fontSize! * 0.9,
                   fontWeight: FontWeight.w600,
-                  color: style.color?.withOpacity(0.8),
+                  color: style.color?.withValues(alpha: 0.8),
                   height: 1.2,
                 ),
               ),
@@ -2885,7 +3723,7 @@ class _NamingScreenState extends State<NamingScreen>
               style: style.copyWith(
                 fontSize: style.fontSize! * 0.9,
                 fontWeight: FontWeight.w600,
-                color: style.color?.withOpacity(0.8),
+                color: style.color?.withValues(alpha: 0.8),
                 height: 1.1,
               ),
             ),
@@ -3040,7 +3878,7 @@ class _NamingScreenState extends State<NamingScreen>
                       _filterKaki = true;
                     }
                   });
-                  _refreshResultsKeepingStep2Anchor();
+                  unawaited(_refreshResultsKeepingStep2Anchor());
                 },
               ),
             ),
@@ -3051,6 +3889,11 @@ class _NamingScreenState extends State<NamingScreen>
   }
 
   Widget buildFilterChipsSection() {
+    final bool canUseRankingTemplate =
+        _keywordController.text.trim().isNotEmpty && _hasRankableNameTemplate;
+    final bool needsSeedName =
+        _keywordController.text.trim().isNotEmpty && !_hasRankableNameTemplate;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3094,14 +3937,100 @@ class _NamingScreenState extends State<NamingScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ANCHOR: 3 book miracle (หาชื่อตามตำราที่ดีที่สุดจาก 3 แสนรายชื่อ)
-                  Text(
-                    "หาชื่อตามตำราที่ดีที่สุดจาก 3 แสนรายชื่อ",
-                    style: GoogleFonts.prompt(
-                      color: AppColors.textLight,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "หาชื่อตามตำราที่ดีที่สุดจาก 3 แสนรายชื่อ",
+                          style: GoogleFonts.prompt(
+                            color: AppColors.textLight,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  if (_hasRankingCriteria && _hasRankableNameTemplate)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome_rounded,
+                            color: const Color(
+                              0xFFD4AF37,
+                            ).withValues(alpha: 0.9),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: RichText(
+                              text: TextSpan(
+                                style: GoogleFonts.prompt(
+                                  color: AppColors.textLight.withValues(
+                                    alpha: 0.55,
+                                  ),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                children: [
+                                  const TextSpan(text: "✨ ใช้ชื่อต้นแบบ "),
+                                  TextSpan(
+                                    text:
+                                        _selectedNameMeaningName ??
+                                        _keywordController.text.trim(),
+                                    style: GoogleFonts.prompt(
+                                      color: const Color(0xFFD4AF37),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                      shadows: [
+                                        Shadow(
+                                          color: const Color(
+                                            0xFFD4AF37,
+                                          ).withValues(alpha: 0.25),
+                                          blurRadius: 8,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const TextSpan(text: " จาก 3 แสนรายชื่อ"),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (needsSeedName)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.touch_app_rounded,
+                            color: AppColors.secondary.withValues(alpha: 0.9),
+                            size: 15,
+                          ),
+                          const SizedBox(width: 7),
+                          Expanded(
+                            child: Text(
+                              "เลือกชื่อใกล้เคียงจาก LikeName เพื่อใช้เป็นชื่อต้นแบบในการค้นชื่อที่ดีที่สุด",
+                              style: GoogleFonts.sarabun(
+                                color: AppColors.textLight.withValues(
+                                  alpha: 0.62,
+                                ),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   const SizedBox(height: 10),
                   // ANCHOR: 2ButtonPremium (2ปุ่มพรีเมี่ยม)
                   Wrap(
@@ -3111,24 +4040,78 @@ class _NamingScreenState extends State<NamingScreen>
                       FilterChipWidget(
                         label: "เลขศาสตร์ดี",
                         icon: Icons.auto_awesome_rounded,
-                        isActive: _filterSat,
+                        isActive: canUseRankingTemplate && _filterSat,
                         isLoading: _isSatLoading,
+                        disabled: !canUseRankingTemplate,
+                        disabledTooltip:
+                            "เลือกชื่อต้นแบบจาก LikeName หรือ Celebrity Avatar ก่อน",
+                        onTapDown: (_) {
+                          _suppressNextGlobalUnfocus = true;
+                        },
                         activeChipColor: const Color(0xFF8B5CF6),
                         activeTextColor: Colors.white,
                         onTap: () async {
+                          if (!canUseRankingTemplate) {
+                            return;
+                          }
+                          final bool willBeDoubleGood =
+                              !_filterSat && _filterSha;
+                          if (willBeDoubleGood) {
+                            if (!PremiumManager().canUseDoubleGood) {
+                              final purchased = await showPaywallDialog(
+                                context,
+                              );
+                              if (!mounted) return;
+                              if (purchased != true) return;
+                            }
+                          }
+
+                          final bool nextFilterSat = !_filterSat;
+                          final bool willKeepRankingCriteria =
+                              nextFilterSat || _filterSha;
+                          debugPrint(
+                            '[เลขศาสตร์ดี] toggle filterSat from $_filterSat to $nextFilterSat',
+                          );
                           setState(() {
                             _isSatLoading = true;
-                            _filterSat = !_filterSat;
+                            _invalidateStatsCache();
+                            _filterSat = nextFilterSat;
                           });
+                          if (willBeDoubleGood && !PremiumManager().isPremium) {
+                            unawaited(PremiumManager().markDoubleGoodUsed());
+                          }
+                          _updateAutoScrollBasedOnFilters();
+                          if (!willKeepRankingCriteria) {
+                            if (mounted) {
+                              setState(() {
+                                _isSatLoading = false;
+                                _invalidateStatsCache();
+                                _results = [];
+                                _hasSearched = true;
+                                _relaxedFiltersNotice = null;
+                              });
+                            }
+                            return;
+                          }
                           await Future.delayed(
                             const Duration(milliseconds: 350),
                           ); // Magic feel
+                          if (!mounted) return;
                           try {
-                            await _search(
-                              scrollToResults: false,
-                              showInputSnack: false,
-                              reloadSelectedName: false,
-                            );
+                            await _refreshResultsKeepingStep2Anchor();
+                          } catch (e, stack) {
+                            debugPrint('Error in เลขศาสตร์ดี search: $e');
+                            debugPrint('Stack trace: $stack');
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'เกิดข้อผิดพลาด: ${e.toString()}',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           } finally {
                             if (mounted) setState(() => _isSatLoading = false);
                           }
@@ -3138,24 +4121,61 @@ class _NamingScreenState extends State<NamingScreen>
                       FilterChipWidget(
                         label: "พลังเงาดี",
                         icon: Icons.shield_rounded,
-                        isActive: _filterSha,
+                        isActive: canUseRankingTemplate && _filterSha,
                         isLoading: _isShaLoading,
+                        disabled: !canUseRankingTemplate,
+                        disabledTooltip:
+                            "เลือกชื่อต้นแบบจาก LikeName หรือ Celebrity Avatar ก่อน",
+                        onTapDown: (_) {
+                          _suppressNextGlobalUnfocus = true;
+                        },
                         activeChipColor: const Color(0xFF8B5CF6),
                         activeTextColor: Colors.white,
                         onTap: () async {
+                          if (!canUseRankingTemplate) {
+                            return;
+                          }
+                          final bool willBeDoubleGood =
+                              !_filterSha && _filterSat;
+                          if (willBeDoubleGood) {
+                            if (!PremiumManager().canUseDoubleGood) {
+                              final purchased = await showPaywallDialog(
+                                context,
+                              );
+                              if (!mounted) return;
+                              if (purchased != true) return;
+                            }
+                          }
+
+                          final bool nextFilterSha = !_filterSha;
+                          final bool willKeepRankingCriteria =
+                              _filterSat || nextFilterSha;
                           setState(() {
                             _isShaLoading = true;
-                            _filterSha = !_filterSha;
+                            _invalidateStatsCache();
+                            _filterSha = nextFilterSha;
                           });
+                          if (willBeDoubleGood && !PremiumManager().isPremium) {
+                            unawaited(PremiumManager().markDoubleGoodUsed());
+                          }
+                          _updateAutoScrollBasedOnFilters();
+                          if (!willKeepRankingCriteria) {
+                            if (mounted) {
+                              setState(() {
+                                _isShaLoading = false;
+                                _invalidateStatsCache();
+                                _results = [];
+                                _hasSearched = true;
+                                _relaxedFiltersNotice = null;
+                              });
+                            }
+                            return;
+                          }
                           await Future.delayed(
                             const Duration(milliseconds: 350),
                           ); // Magic feel
                           try {
-                            await _search(
-                              scrollToResults: false,
-                              showInputSnack: false,
-                              reloadSelectedName: false,
-                            );
+                            await _refreshResultsKeepingStep2Anchor();
                           } finally {
                             if (mounted) setState(() => _isShaLoading = false);
                           }
@@ -3174,13 +4194,11 @@ class _NamingScreenState extends State<NamingScreen>
 
   bool isScoreTrulyGood(int score, bool apiGood) {
     if (score < 100) return apiGood;
-    String s = score.toString();
-    if (s.length < 3) return apiGood;
+    final pairs = toPairList(score);
+    if (pairs.length < 2) return apiGood;
 
     // For split scores, we check if ALL resulting pairs are lucky
-    int n1 = int.tryParse(s.substring(0, 2)) ?? 0;
-    int n2 = int.tryParse(s.substring(1, 3)) ?? 0;
-    return isLuckyNumber(n1) && isLuckyNumber(n2);
+    return pairs.every((pair) => isLuckyNumber(int.tryParse(pair) ?? 0));
   }
 
   bool isLuckyNumber(int n) {
@@ -3230,37 +4248,33 @@ class _NamingScreenState extends State<NamingScreen>
   }
 
   Widget buildAnalysisScoreWithSmart(String label, int score, bool isGood) {
-    if (score >= 100) {
-      String s = score.toString();
-      if (s.length >= 3) {
-        String p1 = s.substring(0, 2);
-        String p2 = s.substring(1, 3);
-
-        int n1 = int.tryParse(p1) ?? 0;
-        int n2 = int.tryParse(p2) ?? 0;
-
-        return Column(
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildAnalysisScoreCircle(p1, isLuckyNumber(n1)),
-                const SizedBox(width: 4),
-                buildAnalysisScoreCircle(p2, isLuckyNumber(n2)),
+    final pairs = toPairList(score);
+    if (pairs.length > 1) {
+      return Column(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (int i = 0; i < pairs.length; i++) ...[
+                if (i > 0) const SizedBox(width: 4),
+                buildAnalysisScoreCircle(
+                  pairs[i],
+                  isLuckyNumber(int.tryParse(pairs[i]) ?? 0),
+                ),
               ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: GoogleFonts.prompt(
+              color: const Color(0xFF3D2600),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: GoogleFonts.prompt(
-                color: const Color(0xFF3D2600),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        );
-      }
+          ),
+        ],
+      );
     }
     return buildAnalysisScore(label, score, isGood);
   }
@@ -3440,7 +4454,7 @@ class _NamingScreenState extends State<NamingScreen>
   Widget buildAnalysisScore(String label, int score, bool isGood) {
     return Column(
       children: [
-        buildAnalysisScoreCircle(score.toString(), isGood),
+        buildAnalysisScoreCircle(zeroPad(score), isGood),
         const SizedBox(height: 6),
         Text(
           label,
@@ -3561,12 +4575,10 @@ class _NamingScreenState extends State<NamingScreen>
                 ],
               ),
               content: SingleChildScrollView(
-                child: Text(
-                  data.detail.replaceAll("\\n", "\n"),
-                  style: const TextStyle(
-                    color: AppColors.textGray,
-                    height: 1.6,
-                    fontSize: 14,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _buildVipDetailParts(
+                    data.detail.replaceAll("\\n", "\n"),
                   ),
                 ),
               ),
@@ -3584,6 +4596,77 @@ class _NamingScreenState extends State<NamingScreen>
         );
       },
     );
+  }
+
+  List<Widget> _buildVipDetailParts(String detailText) {
+    final generalStyle = const TextStyle(
+      color: AppColors.textGray,
+      height: 1.6,
+      fontSize: 14,
+    );
+    final goodColor = const Color(0xFF16A34A);
+    final badColor = const Color(0xFFDC2626);
+
+    final parts = detailText.split(RegExp(r'ด้านดี\s*คือ'));
+    final List<Widget> widgets = [];
+
+    if (parts[0].trim().isNotEmpty) {
+      widgets.add(Text(parts[0].trim(), style: generalStyle));
+    }
+
+    if (parts.length > 1) {
+      final goodBadParts = parts[1].split(RegExp(r'ด้านเสีย\s*คือ'));
+      if (goodBadParts[0].trim().isNotEmpty) {
+        if (widgets.isNotEmpty) {
+          widgets.add(const SizedBox(height: 16));
+        }
+        widgets.add(
+          Text(
+            '📗 ด้านดี',
+            style: GoogleFonts.prompt(
+              color: goodColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+        );
+        widgets.add(const SizedBox(height: 4));
+        widgets.add(
+          Text(
+            goodBadParts[0].trim(),
+            style: TextStyle(color: goodColor, height: 1.6, fontSize: 14),
+          ),
+        );
+      }
+      if (goodBadParts.length > 1 && goodBadParts[1].trim().isNotEmpty) {
+        if (widgets.isNotEmpty) {
+          widgets.add(const SizedBox(height: 16));
+        }
+        widgets.add(
+          Text(
+            '📕 ด้านเสีย',
+            style: GoogleFonts.prompt(
+              color: badColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+        );
+        widgets.add(const SizedBox(height: 4));
+        widgets.add(
+          Text(
+            goodBadParts[1].trim(),
+            style: TextStyle(color: badColor, height: 1.6, fontSize: 14),
+          ),
+        );
+      }
+    }
+
+    if (widgets.isEmpty) {
+      widgets.add(Text(detailText, style: generalStyle));
+    }
+
+    return widgets;
   }
 
   Widget buildToggle(
@@ -3951,6 +5034,7 @@ class _NamingScreenState extends State<NamingScreen>
                         onPressed: dialogSaving
                             ? null
                             : () async {
+                                final navigator = Navigator.of(dialogContext);
                                 setDialogState(() => dialogSaving = true);
                                 try {
                                   final deviceId = await ApiService()
@@ -3978,8 +5062,8 @@ class _NamingScreenState extends State<NamingScreen>
                                     Future.delayed(
                                       const Duration(milliseconds: 1000),
                                       () {
-                                        if (Navigator.canPop(dialogContext)) {
-                                          Navigator.pop(dialogContext);
+                                        if (navigator.canPop()) {
+                                          navigator.pop();
                                         }
                                       },
                                     );
@@ -4076,27 +5160,15 @@ class _NamingScreenState extends State<NamingScreen>
     });
   }
 
-  void _refreshResultsKeepingStep2Anchor() {
+  Future<void> _refreshResultsKeepingStep2Anchor() async {
     final hasQuery = _keywordController.text.trim().isNotEmpty;
     if (hasQuery) {
-      final double? lockedOffset = _scrollController.hasClients
-          ? _scrollController.offset
-          : null;
-
-      _search(
+      await _search(
         scrollToResults: false,
         showInputSnack: false,
         reloadSelectedName: false,
-      ).then((_) {
-        if (!mounted || lockedOffset == null || !_scrollController.hasClients) {
-          return;
-        }
-        final maxScroll = _scrollController.position.maxScrollExtent;
-        final target = lockedOffset.clamp(0.0, maxScroll);
-        if ((_scrollController.offset - target).abs() > 1) {
-          _scrollController.jumpTo(target);
-        }
-      });
+        preserveScrollPosition: true,
+      );
     }
   }
 
@@ -4595,7 +5667,9 @@ class _MagicSummaryParticlePainter extends CustomPainter {
 
 /// A premium, sparkling gold heart icon for the saved names button
 class SparklingGoldHeart extends StatefulWidget {
-  const SparklingGoldHeart({super.key});
+  final int savedCount;
+
+  const SparklingGoldHeart({super.key, required this.savedCount});
 
   @override
   State<SparklingGoldHeart> createState() => _SparklingGoldHeartState();
@@ -4628,16 +5702,16 @@ class _SparklingGoldHeartState extends State<SparklingGoldHeart>
       animation: controller,
       builder: (context, child) {
         return SizedBox(
-          width: 32,
-          height: 32,
+          width: 40,
+          height: 40,
           child: Stack(
             alignment: Alignment.center,
             clipBehavior: Clip.none, // Allow sparkles to fly slightly out
             children: [
               // Subtle background pulse
               Container(
-                width: 24,
-                height: 24,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
@@ -4653,7 +5727,46 @@ class _SparklingGoldHeartState extends State<SparklingGoldHeart>
                 ),
               ),
               // Main Heart (Gold)
-              const Icon(Icons.favorite_rounded, size: 24, color: heartColor),
+              const Icon(Icons.favorite_rounded, size: 26, color: heartColor),
+              if (widget.savedCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEA580C),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: Colors.white, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFFEA580C,
+                          ).withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '${widget.savedCount}',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.prompt(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ),
               // Sparkles - improved visibility and movement
               ...List.generate(3, (index) {
                 final progress = (controller.value + (index / 3)) % 1.0;
@@ -4666,8 +5779,8 @@ class _SparklingGoldHeartState extends State<SparklingGoldHeart>
                 final distance = 8.0 + (6.0 * progress);
 
                 return Positioned(
-                  left: 16 + math.cos(angle) * distance - 5,
-                  top: 16 + math.sin(angle) * distance - 5,
+                  left: 20 + math.cos(angle) * distance - 5,
+                  top: 20 + math.sin(angle) * distance - 5,
                   child: Transform.scale(
                     scale: scale,
                     child: Opacity(

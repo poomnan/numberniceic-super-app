@@ -1,11 +1,20 @@
+import 'dart:async';
+import 'dart:io' show File, Platform;
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/name_model.dart';
 import '../models/name_root_result.dart';
 import '../models/number_meaning_model.dart';
 import '../services/api_service.dart';
 import '../utils/colors.dart';
+import '../utils/numerology_format.dart';
 import 'gold_effect.dart';
 
 class NameListItem extends StatefulWidget {
@@ -37,9 +46,12 @@ class NameListItem extends StatefulWidget {
   State<NameListItem> createState() => _NameListItemState();
 }
 
+enum _TtsStatus { unavailable, noThaiVoice, ready }
+
 class _NameListItemState extends State<NameListItem>
     with TickerProviderStateMixin {
   bool _isSaving = false;
+  bool _isSharing = false;
   bool _isSaved = false;
   bool _isFlipped = false;
   String _flipType = 'score'; // 'score' or 'luck'
@@ -48,6 +60,16 @@ class _NameListItemState extends State<NameListItem>
   late AnimationController _controller;
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
+  static FlutterTts? _sharedTts;
+  static Completer<void>? _ttsInitCompleter;
+  static _TtsStatus _globalTtsStatus = _TtsStatus.unavailable;
+  FlutterTts get _flutterTts => _sharedTts ??= FlutterTts();
+  final GlobalKey _sharePosterKey = GlobalKey();
+  NumberMeaningResult? _shareSatMeaning;
+  NumberMeaningResult? _shareShaMeaning;
+  _TtsStatus _ttsStatus = _TtsStatus.unavailable;
+  String? _speakingKey;
+  bool _isChainedSpeech = false;
 
   @override
   void initState() {
@@ -71,14 +93,293 @@ class _NameListItemState extends State<NameListItem>
       parent: _flipController,
       curve: Curves.easeInOut,
     );
+    unawaited(_initTts());
   }
 
   @override
   void dispose() {
+    _flutterTts.stop();
     _controller.dispose();
     _flipController.dispose();
     super.dispose();
   }
+
+  Future<void> _initTts() async {
+    // Use a static completer to ensure TTS is initialized only once
+    if (_ttsInitCompleter != null) {
+      await _ttsInitCompleter!.future;
+      if (mounted) {
+        setState(() => _ttsStatus = _globalTtsStatus);
+      }
+      return;
+    }
+
+    _ttsInitCompleter = Completer<void>();
+
+    bool basicSetupOk = false;
+    bool thaiLanguageOk = false;
+    bool thaiVoiceFound = false;
+
+    try {
+      await _flutterTts.setLanguage('th-TH');
+      debugPrint('Set TTS language to: th-TH');
+      await _flutterTts.setSpeechRate(0.35);
+      await _flutterTts.setPitch(1.0);
+      await _flutterTts.setVolume(1.0);
+      await _flutterTts.awaitSpeakCompletion(true);
+      basicSetupOk = true;
+      thaiLanguageOk = true;
+    } catch (e) {
+      debugPrint('TTS th-TH setup error: $e');
+    }
+
+    if (!basicSetupOk) {
+      try {
+        await _flutterTts.setLanguage('en-US');
+        debugPrint('Fallback TTS to en-US');
+        await _flutterTts.setSpeechRate(0.35);
+        await _flutterTts.setPitch(1.0);
+        await _flutterTts.setVolume(1.0);
+        await _flutterTts.awaitSpeakCompletion(true);
+        basicSetupOk = true;
+      } catch (e) {
+        debugPrint('TTS en-US fallback error: $e');
+      }
+    }
+
+    if (basicSetupOk) {
+      try {
+        final engines = await _flutterTts.getEngines;
+        debugPrint('TTS engines available: $engines');
+        if (engines is List && engines.isNotEmpty) {
+          final dynamic preferredEngine = engines.cast<dynamic>().firstWhere(
+            (engine) => '$engine'.toLowerCase().contains('google'),
+            orElse: () => engines.first,
+          );
+          debugPrint('Selected TTS engine: $preferredEngine');
+          await _flutterTts.setEngine('$preferredEngine');
+        }
+      } catch (_) {
+        debugPrint('getEngines/setEngine not supported on this platform');
+      }
+
+      try {
+        final voices = await _flutterTts.getVoices;
+        debugPrint('Available voices: $voices');
+        if (voices is List) {
+          final dynamic thaiVoice = voices.cast<dynamic>().firstWhere(
+            (voice) =>
+                voice is Map && '${voice['locale'] ?? ''}'.startsWith('th'),
+            orElse: () => null,
+          );
+          if (thaiVoice is Map) {
+            debugPrint('Selected Thai voice: $thaiVoice');
+            await _flutterTts.setVoice(
+              Map<String, String>.from(
+                thaiVoice.map((key, value) => MapEntry('$key', '$value')),
+              ),
+            );
+            thaiVoiceFound = true;
+          } else {
+            debugPrint('No Thai voice found in voice list');
+          }
+        }
+      } catch (_) {
+        debugPrint('getVoices/setVoice not supported on this platform');
+        // On platforms without getVoices (e.g. some Android), if th-TH setLanguage worked,
+        // assume the system will use the default Thai voice
+        if (thaiLanguageOk) {
+          thaiVoiceFound = true;
+        }
+      }
+
+      _flutterTts.setCompletionHandler(() {
+        if (!mounted) return;
+        if (_isChainedSpeech) return;
+        setState(() => _speakingKey = null);
+      });
+      _flutterTts.setCancelHandler(() {
+        if (!mounted) return;
+        if (_isChainedSpeech) return;
+        setState(() => _speakingKey = null);
+      });
+      _flutterTts.setErrorHandler((_) {
+        if (!mounted) return;
+        if (_isChainedSpeech) return;
+        setState(() => _speakingKey = null);
+      });
+    }
+
+    final _TtsStatus status;
+    if (!basicSetupOk) {
+      status = _TtsStatus.unavailable;
+    } else if (!thaiLanguageOk && !thaiVoiceFound) {
+      status = _TtsStatus.noThaiVoice;
+    } else if (thaiLanguageOk && !thaiVoiceFound) {
+      status = _TtsStatus.noThaiVoice;
+    } else {
+      status = _TtsStatus.ready;
+    }
+
+    _globalTtsStatus = status;
+    if (mounted) {
+      setState(() => _ttsStatus = status);
+    }
+    debugPrint('TTS initialization completed, status: ${status.name}');
+    _ttsInitCompleter!.complete();
+  }
+
+  void _showTtsHelpSnackBar() {
+    final isIOS = Platform.isIOS;
+
+    String message;
+    if (_ttsStatus == _TtsStatus.unavailable) {
+      message = 'อุปกรณ์นี้ไม่รองรับการอ่านออกเสียง';
+    } else if (isIOS) {
+      message =
+          'กรุณาติดตั้งเสียงภาษาไทย:\nSettings > Accessibility > Spoken Content > Voices > Thai';
+    } else {
+      message =
+          'กรุณาติดตั้งเสียงภาษาไทย:\nSettings > Language & Input > Text-to-Speech > ติดตั้งข้อมูลเสียง > Thai';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(fontSize: 13)),
+        backgroundColor: _ttsStatus == _TtsStatus.unavailable
+            ? Colors.red.shade700
+            : Colors.deepOrange,
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'ตกลง',
+          textColor: Colors.white,
+          onPressed: () {},
+        ),
+      ),
+    );
+  }
+
+  String _getSpeakTooltip() {
+    switch (_ttsStatus) {
+      case _TtsStatus.ready:
+        return 'อ่านออกเสียงภาษาไทย';
+      case _TtsStatus.noThaiVoice:
+        return Platform.isIOS
+            ? 'ยังไม่มีเสียงไทย — แตะเพื่ออ่านด้วยเสียงที่มี'
+            : 'ยังไม่มีเสียงไทย — แตะเพื่ออ่านด้วยเสียงที่มี';
+      case _TtsStatus.unavailable:
+        return 'TTS ไม่พร้อมใช้งาน';
+    }
+  }
+
+  String _prepareSpeakableThaiText(String text) {
+    final normalized = text
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll('-', ' ')
+        .replaceAll('_', ' ')
+        .replaceAll('/', ' ')
+        .trim();
+    return normalized.isEmpty ? text : normalized;
+  }
+
+  Future<void> _speakSectionText(String text, String speakingKey) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+
+    if (_ttsStatus != _TtsStatus.ready &&
+        _ttsStatus != _TtsStatus.noThaiVoice) {
+      if (!mounted) return;
+      _showTtsHelpSnackBar();
+      return;
+    }
+
+    if (_speakingKey == speakingKey) {
+      await _flutterTts.stop();
+      if (!mounted) return;
+      setState(() => _speakingKey = null);
+      return;
+    }
+
+    await _flutterTts.stop();
+    if (!mounted) return;
+    setState(() => _speakingKey = speakingKey);
+
+    try {
+      await _flutterTts.speak(trimmed);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _speakingKey = null);
+    }
+  }
+
+  Future<void> _speakNameOnly() async {
+    await _speakNameAndMeaning();
+  }
+
+  Future<void> _speakMeaningOnly() async {
+    await _speakSectionText(
+      _prepareSpeakableThaiText(widget.result.meaning),
+      'meaning:${widget.result.name}',
+    );
+  }
+
+  Future<void> _speakPhoneticOnly() async {
+    await _speakSectionText(
+      _prepareSpeakableThaiText(_buildPhoneticInsightText()),
+      _phoneticSpeakingKey(),
+    );
+  }
+
+  Future<void> _speakNameAndMeaning() async {
+    if (_ttsStatus != _TtsStatus.ready &&
+        _ttsStatus != _TtsStatus.noThaiVoice) {
+      if (!mounted) return;
+      _showTtsHelpSnackBar();
+      return;
+    }
+
+    final speakingKey = _nameMeaningSpeakingKey();
+
+    if (_speakingKey == speakingKey) {
+      await _flutterTts.stop();
+      if (!mounted) return;
+      setState(() => _speakingKey = null);
+      return;
+    }
+
+    final name = _prepareSpeakableThaiText(widget.result.name);
+    final meaning = _prepareSpeakableThaiText(widget.result.meaning);
+    if (name.isEmpty && meaning.isEmpty) return;
+
+    await _flutterTts.stop();
+    if (!mounted) return;
+    setState(() => _speakingKey = speakingKey);
+    _isChainedSpeech = true;
+
+    try {
+      if (name.isNotEmpty) {
+        await _flutterTts.speak(name);
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      if (meaning.isNotEmpty) {
+        await _flutterTts.speak(meaning);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _speakingKey = null);
+    } finally {
+      _isChainedSpeech = false;
+      if (mounted) {
+        setState(() => _speakingKey = null);
+      }
+    }
+  }
+
+  bool _isSpeaking(String speakingKey) => _speakingKey == speakingKey;
+
+  String _nameMeaningSpeakingKey() => 'name-meaning:${widget.result.name}';
+
+  String _phoneticSpeakingKey() => 'phonetic:${widget.result.name}';
 
   Future<void> _saveName() async {
     if (_isSaved) return;
@@ -139,6 +440,411 @@ class _NameListItemState extends State<NameListItem>
     } else {
       setState(() => _isFlipped = false);
     }
+  }
+
+  bool get _canShareRank => widget.rank >= 1 && widget.rank <= 13;
+
+  Future<void> _shareRankingCard() async {
+    if (!_canShareRank || _isSharing) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      await _ensureShareMeaningLoaded();
+      final imageBytes = await _captureSharePoster();
+      if (!mounted) return;
+      await _showSharePreview(imageBytes);
+    } catch (error, stackTrace) {
+      debugPrint('Share ranking failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      await Clipboard.setData(ClipboardData(text: _buildShareCaption()));
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('แชร์รูปภาพไม่สำเร็จ ระบบคัดลอกข้อความไว้ให้แล้ว'),
+          backgroundColor: Colors.deepOrange,
+        ),
+      );
+    }
+  }
+
+  Future<void> _ensureShareMeaningLoaded() async {
+    final futures = <Future<void>>[];
+
+    if (_shareSatMeaning == null) {
+      futures.add(
+        ApiService().getNumberMeaning(zeroPad(widget.result.satSum)).then((
+          value,
+        ) {
+          _shareSatMeaning = value;
+        }),
+      );
+    }
+
+    if (_shareShaMeaning == null) {
+      futures.add(
+        ApiService().getNumberMeaning(zeroPad(widget.result.shaSum)).then((
+          value,
+        ) {
+          _shareShaMeaning = value;
+        }),
+      );
+    }
+
+    if (futures.isNotEmpty) {
+      await Future.wait(futures);
+    }
+  }
+
+  Future<void> _showSharePreview(Uint8List imageBytes) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9F7FF),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.14),
+                    blurRadius: 28,
+                    offset: const Offset(0, 18),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Preview ก่อนแชร์',
+                              style: GoogleFonts.prompt(
+                                color: AppColors.textLight,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'ภาพนี้คือ card อันดับจริงที่จะถูกแชร์ไปยัง social',
+                        style: GoogleFonts.sarabun(
+                          color: AppColors.textGray,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight:
+                              MediaQuery.of(sheetContext).size.height * 0.48,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.memory(imageBytes, fit: BoxFit.contain),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () async {
+                                Navigator.pop(sheetContext);
+                                await _sharePreviewImage(imageBytes);
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ),
+                              icon: const Icon(Icons.ios_share_rounded),
+                              label: const Text('แชร์เลย'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                await Clipboard.setData(
+                                  ClipboardData(text: _buildShareCaption()),
+                                );
+                                if (!sheetContext.mounted) return;
+                                Navigator.pop(sheetContext);
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('คัดลอกข้อความแชร์ไว้แล้ว'),
+                                    backgroundColor: AppColors.success,
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.textLight,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                side: BorderSide(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                              ),
+                              icon: const Icon(Icons.content_copy_rounded),
+                              label: const Text('คัดลอกข้อความ'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _sharePreviewImage(Uint8List imageBytes) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final shareBox = context.findRenderObject() as RenderBox?;
+    setState(() => _isSharing = true);
+
+    try {
+      final fileName = _sharePosterFileName;
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/$fileName');
+      await file.writeAsBytes(imageBytes, flush: true);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'image/png')],
+        subject: 'อันดับชื่อมงคล #${widget.rank} ${widget.result.name}',
+        sharePositionOrigin: shareBox == null
+            ? null
+            : shareBox.localToGlobal(Offset.zero) & shareBox.size,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Share preview image failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      await Clipboard.setData(ClipboardData(text: _buildShareCaption()));
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('แชร์รูปภาพไม่สำเร็จ ระบบคัดลอกข้อความไว้ให้แล้ว'),
+          backgroundColor: Colors.deepOrange,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSharing = false);
+      }
+    }
+  }
+
+  String get _sharePosterFileName {
+    final safeName = widget.result.name
+        .replaceAll(RegExp(r'[^\wก-๙]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
+    return 'ranking_${widget.rank}_$safeName.png';
+  }
+
+  Future<Uint8List> _captureSharePoster() async {
+    final overlay = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlay == null) {
+      throw StateError('Overlay not available for share poster capture');
+    }
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) {
+        return IgnorePointer(
+          child: Material(
+            color: Colors.transparent,
+            child: Center(
+              child: Opacity(
+                opacity: 0.01,
+                child: RepaintBoundary(
+                  key: _sharePosterKey,
+                  child: _buildSharePoster(),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    overlay.insert(entry);
+    await WidgetsBinding.instance.endOfFrame;
+    await WidgetsBinding.instance.endOfFrame;
+    await Future.delayed(const Duration(milliseconds: 30));
+
+    try {
+      RenderRepaintBoundary? boundary;
+      for (var i = 0; i < 10; i++) {
+        boundary =
+            _sharePosterKey.currentContext?.findRenderObject()
+                as RenderRepaintBoundary?;
+        if (boundary != null &&
+            boundary.debugNeedsPaint == false &&
+            boundary.debugNeedsLayout == false) {
+          break;
+        }
+        await Future.delayed(const Duration(milliseconds: 20));
+      }
+
+      if (boundary == null ||
+          boundary.debugNeedsPaint ||
+          boundary.debugNeedsLayout) {
+        throw StateError('Share poster boundary not ready');
+      }
+
+      final image = await boundary.toImage(pixelRatio: 3);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        throw StateError('Share poster bytes unavailable');
+      }
+      return byteData.buffer.asUint8List();
+    } finally {
+      entry.remove();
+    }
+  }
+
+  String _buildShareCaption() {
+    return 'อันดับ #${widget.rank} "${widget.result.name}"\n'
+        '${widget.result.meaning}\n'
+        'เลขศาสตร์ ${widget.result.satSum} คือสัญลักษณ์ที่สะท้อนพลังตัวเลขของชื่อ\n'
+        'พลังเงา ${widget.result.shaSum} คือสัญลักษณ์ที่บอกแรงดึงดูดและอิทธิพลของชื่อ\n'
+        'เปลี่ยนชีวิตด้วยแรงดึงดูด --ชื่อดี.com';
+  }
+
+  Widget _buildSharePoster() {
+    final bool hasMatching =
+        widget.showMatching && (widget.result.totalSat != widget.result.satSum);
+
+    return Container(
+      width: 430,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFFBF2), Color(0xFFF8F5FF), Color(0xFFF2FBF8)],
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.12),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: Colors.white,
+                    size: 17,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ชื่อดี.com',
+                        style: GoogleFonts.prompt(
+                          color: AppColors.textLight,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        'เปลี่ยนชีวิตด้วยแรงดึงดูดจากชื่อดี',
+                        style: GoogleFonts.sarabun(
+                          color: AppColors.textGray,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: _buildFrontCardContent(
+                hasMatching: hasMatching,
+                showShareAction: false,
+                margin: EdgeInsets.zero,
+                isSharePreview: true,
+                satMeaning: _shareSatMeaning,
+                shaMeaning: _shareShaMeaning,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   _LuckyBreakdown _computeLuckyBreakdown() {
@@ -224,13 +930,6 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildFrontSide(bool hasMatching) {
-    final bool isEvenRow = widget.rank > 0 ? widget.rank.isEven : false;
-    final Color rowBackground = isEvenRow
-        ? const Color(0xFFFFFCF4)
-        : const Color(0xFFFFFFFF);
-    const bool showSatScore = true;
-    const bool showShaScore = true;
-
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: (_) => _onTapCancel(),
@@ -239,114 +938,177 @@ class _NameListItemState extends State<NameListItem>
         scale: _scale,
         duration: const Duration(milliseconds: 100),
         curve: Curves.easeOut,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: rowBackground,
-            borderRadius: BorderRadius.circular(18),
-            border: Border(
-              bottom: BorderSide(
-                color: AppColors.textGray.withValues(alpha: 0.12),
-                width: 0.8,
-              ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(
-                  alpha: isEvenRow ? 0.06 : 0.03,
-                ),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+        child: _buildFrontCardContent(
+          hasMatching: hasMatching,
+          showShareAction: true,
+          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFrontCardContent({
+    required bool hasMatching,
+    required bool showShareAction,
+    required EdgeInsets margin,
+    bool isSharePreview = false,
+    NumberMeaningResult? satMeaning,
+    NumberMeaningResult? shaMeaning,
+  }) {
+    final bool isEvenRow = widget.rank > 0 ? widget.rank.isEven : false;
+    final Color rowBackground = isEvenRow
+        ? const Color(0xFFFFFCF4)
+        : const Color(0xFFFFFFFF);
+    const bool showSatScore = true;
+    const bool showShaScore = true;
+
+    return Container(
+      margin: margin,
+      decoration: BoxDecoration(
+        color: rowBackground,
+        borderRadius: BorderRadius.circular(18),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.textGray.withValues(alpha: 0.12),
+            width: 0.8,
           ),
-          child: Column(
-            children: [
-              // Top info row for Rank and Lucky status - Centered as requested
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    if (widget.rank > 0) ...[
-                      _buildRankBadge(widget.rank),
-                      const SizedBox(width: 12),
-                    ],
-                    Builder(
-                      builder: (context) {
-                        final lucky = _computeLuckyBreakdown();
-                        String luckText;
-                        List<Color> gradientColors;
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: isEvenRow ? 0.06 : 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                if (widget.rank > 0) ...[
+                  _buildRankBadge(
+                    widget.rank,
+                    showShareAction: showShareAction,
+                    isSharePreview: isSharePreview,
+                  ),
+                  if (!isSharePreview) ...[
+                    const SizedBox(width: 10),
+                    _buildBookmarkButton(compact: true),
+                    const SizedBox(width: 12),
+                  ] else
+                    const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Builder(
+                        builder: (context) {
+                          final lucky = _computeLuckyBreakdown();
+                          String luckText;
+                          List<Color> gradientColors;
 
-                        if (lucky.isLucky) {
-                          // ANCHOR: Lucky Badge (โชคดี)
-                          if (lucky.multiplier <= 1) {
-                            luckText = 'Lucky ✨';
+                          if (lucky.isLucky) {
+                            if (lucky.multiplier <= 1) {
+                              luckText = 'Lucky ✨';
+                            } else {
+                              String prefix = lucky.multiplier >= 4
+                                  ? 'Super'
+                                  : (lucky.multiplier == 3
+                                        ? 'Triple'
+                                        : 'Double');
+                              luckText = '$prefix Lucky x${lucky.multiplier}';
+                            }
+
+                            if (lucky.multiplier >= 4) {
+                              gradientColors = [
+                                const Color(0xFFDBB632),
+                                const Color(0xFFFF8C00),
+                                const Color(0xFFFF4FA3),
+                                const Color(0xFFB517FF),
+                              ];
+                            } else if (lucky.multiplier == 3) {
+                              gradientColors = [
+                                const Color(0xFFDBB632),
+                                const Color(0xFFFF8C00),
+                                const Color(0xFFFF4FA3),
+                              ];
+                            } else {
+                              gradientColors = [
+                                const Color(0xFFDBB632),
+                                const Color(0xFFFF8C00),
+                              ];
+                            }
                           } else {
-                            String prefix = lucky.multiplier >= 4
-                                ? 'Super'
-                                : (lucky.multiplier == 3 ? 'Triple' : 'Double');
-                            luckText = '$prefix Lucky x${lucky.multiplier}';
+                            luckText = 'น่าเสียดาย!?';
+                            gradientColors = [
+                              const Color(0xFF71717A),
+                              const Color(0xFF3F3F46),
+                            ];
                           }
 
-                          if (lucky.multiplier >= 4) {
-                            gradientColors = [
-                              const Color(0xFFDBB632),
-                              const Color(0xFFFF8C00),
-                              const Color(0xFFFF4FA3),
-                              const Color(0xFFB517FF),
-                            ];
-                          } else if (lucky.multiplier == 3) {
-                            gradientColors = [
-                              const Color(0xFFDBB632),
-                              const Color(0xFFFF8C00),
-                              const Color(0xFFFF4FA3),
-                            ];
-                          } else {
-                            gradientColors = [
-                              const Color(0xFFDBB632),
-                              const Color(0xFFFF8C00),
-                            ];
-                          }
-                        } else {
-                          // ANCHOR: UnLucky Badge (โชคไม่ดี)
-                          luckText = 'น่าเสียดาย!?';
-                          gradientColors = [
-                            const Color(0xFF71717A),
-                            const Color(0xFF3F3F46),
-                          ];
-                        }
-
-                        return _MagicLuckyBadge(
-                          isLucky: lucky.isLucky,
-                          text: luckText,
-                          gradientColors: gradientColors,
-                          onTap: () => _toggleFlip('luck'),
-                        );
-                      },
+                          return _MagicLuckyBadge(
+                            isLucky: lucky.isLucky,
+                            text: luckText,
+                            gradientColors: gradientColors,
+                            onTap: showShareAction
+                                ? () => _toggleFlip('luck')
+                                : () {},
+                          );
+                        },
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
-                child: Row(
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+            child: Column(
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ซ้าย: ข้อมูลชื่อทั้งหมด
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () {
-                                  if (widget.onTap != null) widget.onTap!();
-                                },
-                                child: _buildNameText(context),
+                              Expanded(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      if (showShareAction &&
+                                          widget.onTap != null) {
+                                        widget.onTap!();
+                                      }
+                                    },
+                                    child: _buildNameText(context),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              _buildSectionSpeakButton(
+                                compact: true,
+                                isSpeaking: _isSpeaking(
+                                  _nameMeaningSpeakingKey(),
+                                ),
+                                onTap: _speakNameAndMeaning,
+                                tooltip: _getSpeakTooltip(),
+                                icon: _isSpeaking(_nameMeaningSpeakingKey())
+                                    ? Icons.volume_up_rounded
+                                    : Icons.mic_rounded,
                               ),
                             ],
                           ),
@@ -367,32 +1129,36 @@ class _NameListItemState extends State<NameListItem>
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            widget.result.meaning,
-                            style: const TextStyle(
-                              color: AppColors.textGray,
-                              fontSize: 15,
-                              height: 1.5,
-                              fontFamily: 'Sarabun',
-                            ),
-                          ),
-                          const SizedBox(height: 16),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Transform.scale(
-                                scale: 0.9,
-                                alignment: Alignment.centerLeft,
-                                child: _buildRootWordButton(context),
+                              Expanded(
+                                child: Text(
+                                  widget.result.meaning,
+                                  style: const TextStyle(
+                                    color: AppColors.textGray,
+                                    fontSize: 15,
+                                    height: 1.5,
+                                    fontFamily: 'Sarabun',
+                                  ),
+                                ),
                               ),
-                              const SizedBox(width: 8),
-                              _buildBookmarkButton(),
                             ],
                           ),
+                          if (isSharePreview &&
+                              ((satMeaning?.description.isNotEmpty ?? false) ||
+                                  (shaMeaning?.description.isNotEmpty ??
+                                      false))) ...[
+                            const SizedBox(height: 12),
+                            _buildShareMiracleDetails(
+                              satMeaning: satMeaning,
+                              shaMeaning: shaMeaning,
+                            ),
+                          ],
                         ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // ขวา: คะแนน
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -400,83 +1166,119 @@ class _NameListItemState extends State<NameListItem>
                           _buildSmartScoreDisplay(
                             widget.result.satSum,
                             widget.result.isSatGood,
-                            "",
+                            showShareAction ? "" : "เลขศาสตร์",
+                            description: showShareAction ? "" : "",
                             isActive: widget.isFilterSatActive,
-                            labelOnLeft: true,
+                            labelOnLeft: showShareAction,
+                            size: isSharePreview
+                                ? 38
+                                : (showShareAction ? 29.1 : 44),
                             pairType: widget.result.satPairType,
                           ),
                         if (showSatScore && showShaScore)
-                          const SizedBox(height: 12),
+                          SizedBox(height: isSharePreview ? 10 : 12),
                         if (showShaScore)
                           _buildSmartScoreDisplay(
                             widget.result.shaSum,
                             widget.result.isShaGood,
-                            "",
+                            showShareAction ? "" : "พลังเงา",
+                            description: showShareAction ? "" : "",
                             isActive: widget.isFilterShaActive,
-                            labelOnLeft: true,
+                            labelOnLeft: showShareAction,
+                            size: isSharePreview
+                                ? 38
+                                : (showShareAction ? 29.1 : 44),
                             pairType: widget.result.shaPairType,
                           ),
                       ],
                     ),
                   ],
                 ),
-              ),
-              if (hasMatching)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 0, 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                if (_shouldShowPhoneticInsight()) ...[
+                  const SizedBox(height: 12),
+                  _buildPhoneticInsightCard(),
+                ],
+                if (showShareAction) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Icon(
-                        Icons.subdirectory_arrow_right_rounded,
-                        color: Color(0xFF8B6B04),
-                        size: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [_buildMatchingNameText(context)],
+                      Flexible(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: _buildRootWordButton(context, compact: true),
+                          ),
                         ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (showSatScore)
-                            _buildSmartScoreDisplay(
-                              widget.result.totalSat,
-                              widget.result.isTotalSatGood,
-                              "",
-                              isActive: widget.isFilterSatActive,
-                              size: 34,
-                              labelOnLeft: true,
-                              pairType: widget.result.totalSatPairType,
-                            ),
-                          if (showSatScore && showShaScore)
-                            const SizedBox(height: 4),
-                          if (showShaScore)
-                            _buildSmartScoreDisplay(
-                              widget.result.totalSha,
-                              widget.result.isTotalShaGood,
-                              "",
-                              isActive: widget.isFilterShaActive,
-                              size: 34,
-                              labelOnLeft: true,
-                              pairType: widget.result.totalShaPairType,
-                            ),
-                        ],
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _buildShareCornerButton(compact: true),
+                        ),
                       ),
                     ],
                   ),
-                ),
-            ],
+                ],
+              ],
+            ),
           ),
-        ),
+          if (hasMatching)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 8, 0, 10),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.subdirectory_arrow_right_rounded,
+                    color: Color(0xFF8B6B04),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [_buildMatchingNameText(context)],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (showSatScore)
+                        _buildSmartScoreDisplay(
+                          widget.result.totalSat,
+                          widget.result.isTotalSatGood,
+                          "",
+                          isActive: widget.isFilterSatActive,
+                          size: 34,
+                          labelOnLeft: true,
+                          pairType: widget.result.totalSatPairType,
+                        ),
+                      if (showSatScore && showShaScore)
+                        const SizedBox(height: 4),
+                      if (showShaScore)
+                        _buildSmartScoreDisplay(
+                          widget.result.totalSha,
+                          widget.result.isTotalShaGood,
+                          "",
+                          isActive: widget.isFilterShaActive,
+                          size: 34,
+                          labelOnLeft: true,
+                          pairType: widget.result.totalShaPairType,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -797,7 +1599,168 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
-  Widget _buildRankBadge(int rank) {
+  bool _shouldShowPhoneticInsight() {
+    return widget.result.phoneticSummary.trim().isNotEmpty ||
+        widget.result.phoneticScore != null;
+  }
+
+  String _buildPhoneticInsightText() {
+    if (widget.result.phoneticSummary.trim().isNotEmpty) {
+      return widget.result.phoneticSummary.trim();
+    }
+
+    final score = widget.result.phoneticScore ?? 0;
+    final ease = widget.result.pronunciationEase ?? score;
+    final euphony = widget.result.euphonyScore ?? score;
+    final rhythm = widget.result.rhythmScore ?? score;
+
+    if (score >= 94 && euphony >= 92 && rhythm >= 90) {
+      return "โทนเสียงละมุน นุ่มลึก และจังหวะลงตัว ฟังแล้วติดหูมาก";
+    }
+    if (ease >= 92 && euphony >= 88) {
+      return "ออกเสียงลื่น ปากเปิดง่าย และน้ำเสียงฟังนุ่มละมุน";
+    }
+    if (rhythm >= 90 && score >= 88) {
+      return "น้ำหนักเสียงแน่น จังหวะดี เรียกแล้วฟังชัดและมีพลัง";
+    }
+    if (euphony >= 88) {
+      return "เสียงค่อนข้างหวาน ละมุนหู และฟังราบรื่นต่อเนื่อง";
+    }
+    if (ease >= 86) {
+      return "ออกเสียงง่าย ฟังลื่น และเรียกใช้ได้สบายในชีวิตประจำวัน";
+    }
+    if (rhythm >= 84) {
+      return "จังหวะเสียงดี โทนค่อนข้างแน่น เรียกแล้วจำง่าย";
+    }
+    return "โทนเสียงค่อนข้างเรียบลื่น ฟังง่าย และใช้งานได้ดี";
+  }
+
+  Widget _buildPhoneticInsightCard() {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF9F8),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFBDE8E3), width: 1.2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 54),
+            child: Text(
+              _buildPhoneticInsightText(),
+              style: GoogleFonts.sarabun(
+                color: const Color(0xFF245A57),
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 0,
+          bottom: 0,
+          right: 10,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _buildPhoneticSpeakButton(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhoneticSpeakButton() {
+    final isSpeaking = _isSpeaking(_phoneticSpeakingKey());
+    return Tooltip(
+      message: _getSpeakTooltip(),
+      child: GestureDetector(
+        onTap: _speakPhoneticOnly,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFEFF6FF), Color(0xFFBFDBFE)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSpeaking
+                  ? const Color(0xFF16A34A)
+                  : const Color(0xFF93C5FD),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    (isSpeaking
+                            ? const Color(0xFF22C55E)
+                            : const Color(0xFF60A5FA))
+                        .withValues(alpha: 0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.record_voice_over_rounded,
+            color: isSpeaking ? Colors.white : const Color(0xFF1D4ED8),
+            size: 16,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionSpeakButton({
+    required bool compact,
+    required bool isSpeaking,
+    required VoidCallback onTap,
+    required String tooltip,
+    required IconData icon,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: compact ? 7 : 8,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isSpeaking
+                ? [const Color(0xFF22C55E), const Color(0xFF16A34A)]
+                : [const Color(0xFFEFF6FF), const Color(0xFFBFDBFE)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: isSpeaking
+                ? const Color(0xFF16A34A)
+                : const Color(0xFF93C5FD),
+            width: 1,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: compact ? 14 : 16,
+          color: isSpeaking ? Colors.white : const Color(0xFF1D4ED8),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRankBadge(
+    int rank, {
+    bool showShareAction = true,
+    bool isSharePreview = false,
+  }) {
     final bool useTotal =
         widget.showMatching && (widget.result.totalSat != widget.result.satSum);
     final score = widget.result.calculateScore(showMatching: useTotal);
@@ -832,20 +1795,29 @@ class _NameListItemState extends State<NameListItem>
             onLongPress: () => _showScoreBreakdown(context, rank, score),
             onTap: () => _toggleFlip('score'),
             child: Container(
-              padding: const EdgeInsets.fromLTRB(0, 12, 16, 0),
+              padding: EdgeInsets.fromLTRB(
+                0,
+                isSharePreview ? 12 : 12,
+                isSharePreview ? 16 : 16,
+                0,
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (icon != null && rank <= 3) ...[
-                    Icon(icon, size: 16, color: textColor),
-                    const SizedBox(width: 6),
+                    Icon(
+                      icon,
+                      size: isSharePreview ? 18 : 16,
+                      color: textColor,
+                    ),
+                    SizedBox(width: isSharePreview ? 7 : 6),
                   ],
-                  //ANCHOR: RanKNO1 (อันดับ)
+                  //ANCHOR: RanKingStartNO1 (อันดับ)
                   Text(
                     'อันดับ #$rank',
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 14,
+                      fontSize: isSharePreview ? 16 : 14,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0.5,
                     ),
@@ -856,6 +1828,58 @@ class _NameListItemState extends State<NameListItem>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildShareCornerButton({bool compact = false}) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _shareRankingCard,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: compact ? 7 : 8,
+        ),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFBAE6FD), Color(0xFF7DD3FC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF7DD3FC).withValues(alpha: 0.22),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.ios_share_rounded,
+              size: compact ? 14 : 15,
+              color: const Color(
+                0xFF0F4C81,
+              ).withValues(alpha: _isSharing ? 0.75 : 1),
+            ),
+            SizedBox(width: compact ? 5 : 6),
+            Text(
+              'แชร์',
+              style: GoogleFonts.sarabun(
+                color: const Color(
+                  0xFF0F4C81,
+                ).withValues(alpha: _isSharing ? 0.75 : 1),
+                fontSize: compact ? 12 : 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -985,6 +2009,7 @@ class _NameListItemState extends State<NameListItem>
     dynamic score,
     bool isGood,
     String label, {
+    String description = '',
     bool isActive = true,
     double size = 44,
     bool labelOnLeft = false,
@@ -1049,11 +2074,97 @@ class _NameListItemState extends State<NameListItem>
               fontWeight: FontWeight.w500,
             ),
           ),
+          if (description.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            SizedBox(
+              width: size + 18,
+              child: Text(
+                description,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textGray.withValues(alpha: 0.8),
+                  fontSize: 8,
+                  height: 1.2,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
         ],
       );
     }
 
     return circle;
+  }
+
+  Widget _buildShareMiracleDetails({
+    NumberMeaningResult? satMeaning,
+    NumberMeaningResult? shaMeaning,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (satMeaning?.description.isNotEmpty ?? false)
+          Expanded(
+            child: _buildShareMiracleChip(
+              title: 'เลขศาสตร์ ${widget.result.satSum}',
+              detail: satMeaning!.description,
+              accent: const Color(0xFF16A34A),
+            ),
+          ),
+        if ((satMeaning?.description.isNotEmpty ?? false) &&
+            (shaMeaning?.description.isNotEmpty ?? false))
+          const SizedBox(width: 8),
+        if (shaMeaning?.description.isNotEmpty ?? false)
+          Expanded(
+            child: _buildShareMiracleChip(
+              title: 'พลังเงา ${widget.result.shaSum}',
+              detail: shaMeaning!.description,
+              accent: const Color(0xFF0EA5E9),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildShareMiracleChip({
+    required String title,
+    required String detail,
+    required Color accent,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accent.withValues(alpha: 0.14)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.prompt(
+              color: accent,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            detail.replaceAll("\\n", " "),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.sarabun(
+              color: AppColors.textGray,
+              fontSize: 10.5,
+              height: 1.25,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTripleDigitScores(
@@ -1064,32 +2175,23 @@ class _NameListItemState extends State<NameListItem>
     bool renderNeutral = false,
     String pairType = '',
   }) {
-    String s = score.toString();
-    String p1 = s.substring(0, 2);
-    String p2 = s.substring(1, 3);
+    final pairs = toPairList(score);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildScoreCircle(
-          p1,
-          isGood,
-          "",
-          size: size,
-          isActive: isActive,
-          renderNeutral: renderNeutral,
-          pairType: pairType,
-        ),
-        const SizedBox(width: 4),
-        _buildScoreCircle(
-          p2,
-          isGood,
-          "",
-          size: size,
-          isActive: isActive,
-          renderNeutral: renderNeutral,
-          pairType: pairType,
-        ),
+        for (int i = 0; i < pairs.length; i++) ...[
+          if (i > 0) const SizedBox(width: 4),
+          _buildScoreCircle(
+            pairs[i],
+            isGood,
+            "",
+            size: size,
+            isActive: isActive,
+            renderNeutral: renderNeutral,
+            pairType: pairType,
+          ),
+        ],
       ],
     );
   }
@@ -1153,7 +2255,8 @@ class _NameListItemState extends State<NameListItem>
     return Builder(
       builder: (context) => InkWell(
         onTap: () {
-          _showNumberMeaningDialog(context, score.toString(), isGood);
+          final displayScore = score is int ? zeroPad(score) : score.toString();
+          _showNumberMeaningDialog(context, displayScore, isGood);
         },
         borderRadius: BorderRadius.circular(50),
         child: Column(
@@ -1219,13 +2322,13 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
-  Widget _buildRootWordButton(BuildContext context) {
+  Widget _buildRootWordButton(BuildContext context, {bool compact = false}) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.secondary, AppColors.accent],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(compact ? 16 : 20),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondary.withValues(alpha: 0.3),
@@ -1244,24 +2347,27 @@ class _NameListItemState extends State<NameListItem>
           onTap: () {
             _showRootWordDialog(context);
           },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(compact ? 16 : 20),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 10 : 14,
+              vertical: compact ? 7 : 8,
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.auto_stories_rounded,
-                  size: 16,
+                  size: compact ? 14 : 16,
                   color: Colors.white,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: compact ? 6 : 8),
                 // ANCHOR: WordOriginItem (รากศัพท์รายการ)
                 Text(
                   "รากศัพท์",
                   style: GoogleFonts.prompt(
                     color: Colors.white,
-                    fontSize: 13,
+                    fontSize: compact ? 12 : 13,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.5,
                   ),
@@ -1274,7 +2380,7 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
-  Widget _buildBookmarkButton() {
+  Widget _buildBookmarkButton({bool compact = false}) {
     final Color savedColor = const Color(
       0xFFD946EF,
     ); // Purple-Pink (ม่วงอมชมพู)
@@ -1282,12 +2388,12 @@ class _NameListItemState extends State<NameListItem>
     return GestureDetector(
       onTap: _isSaved ? null : _saveName,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: compact ? const EdgeInsets.all(6) : const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: _isSaved
               ? savedColor.withValues(alpha: 0.08)
               : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(compact ? 10 : 12),
           border: Border.all(
             color: _isSaved
                 ? savedColor.withValues(alpha: 0.3)
@@ -1305,13 +2411,17 @@ class _NameListItemState extends State<NameListItem>
               )
             : Icon(
                 _isSaved ? Icons.favorite : Icons.favorite_border,
-                size: 20,
+                size: compact ? 18 : 20,
                 color: _isSaved
                     ? savedColor
                     : Colors.black.withValues(alpha: 0.3),
               ),
       ),
     );
+  }
+
+  Widget _buildVoiceButton() {
+    return const SizedBox.shrink();
   }
 
   Widget _buildNoKakiBadge() {
@@ -1981,16 +3091,12 @@ class _NameListItemState extends State<NameListItem>
                 ),
                 child: SingleChildScrollView(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Divider(color: Colors.white12, height: 24),
-                      Text(
+                      ..._buildVipDetailParts(
                         data.detail.replaceAll("\\n", "\n"),
-                        style: GoogleFonts.sarabun(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          height: 1.7,
-                          fontSize: 15,
-                          letterSpacing: 0.1,
-                        ),
+                        isDark: true,
                       ),
                     ],
                   ),
@@ -2010,6 +3116,100 @@ class _NameListItemState extends State<NameListItem>
         );
       },
     );
+  }
+
+  List<Widget> _buildVipDetailParts(String detailText, {bool isDark = false}) {
+    final generalStyle = GoogleFonts.sarabun(
+      color: (isDark ? Colors.white : AppColors.textGray).withValues(
+        alpha: isDark ? 0.8 : 1.0,
+      ),
+      height: 1.7,
+      fontSize: 15,
+      letterSpacing: 0.1,
+    );
+    final goodHeaderColor = isDark
+        ? const Color(0xFF4ADE80)
+        : const Color(0xFF16A34A);
+    final badHeaderColor = isDark
+        ? const Color(0xFFF87171)
+        : const Color(0xFFDC2626);
+    final goodBodyColor = isDark
+        ? const Color(0xFF4ADE80).withValues(alpha: 0.85)
+        : const Color(0xFF16A34A);
+    final badBodyColor = isDark
+        ? const Color(0xFFF87171).withValues(alpha: 0.85)
+        : const Color(0xFFDC2626);
+
+    final parts = detailText.split(RegExp(r'ด้านดี\s*คือ'));
+    final List<Widget> widgets = [];
+
+    if (parts[0].trim().isNotEmpty) {
+      widgets.add(Text(parts[0].trim(), style: generalStyle));
+    }
+
+    if (parts.length > 1) {
+      final goodBadParts = parts[1].split(RegExp(r'ด้านเสีย\s*คือ'));
+      if (goodBadParts[0].trim().isNotEmpty) {
+        if (widgets.isNotEmpty) {
+          widgets.add(const SizedBox(height: 16));
+        }
+        widgets.add(
+          Text(
+            '📗 ด้านดี',
+            style: GoogleFonts.prompt(
+              color: goodHeaderColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+        );
+        widgets.add(const SizedBox(height: 4));
+        widgets.add(
+          Text(
+            goodBadParts[0].trim(),
+            style: GoogleFonts.sarabun(
+              color: goodBodyColor,
+              height: 1.7,
+              fontSize: 15,
+              letterSpacing: 0.1,
+            ),
+          ),
+        );
+      }
+      if (goodBadParts.length > 1 && goodBadParts[1].trim().isNotEmpty) {
+        if (widgets.isNotEmpty) {
+          widgets.add(const SizedBox(height: 16));
+        }
+        widgets.add(
+          Text(
+            '📕 ด้านเสีย',
+            style: GoogleFonts.prompt(
+              color: badHeaderColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+        );
+        widgets.add(const SizedBox(height: 4));
+        widgets.add(
+          Text(
+            goodBadParts[1].trim(),
+            style: GoogleFonts.sarabun(
+              color: badBodyColor,
+              height: 1.7,
+              fontSize: 15,
+              letterSpacing: 0.1,
+            ),
+          ),
+        );
+      }
+    }
+
+    if (widgets.isEmpty) {
+      widgets.add(Text(detailText, style: generalStyle));
+    }
+
+    return widgets;
   }
 }
 

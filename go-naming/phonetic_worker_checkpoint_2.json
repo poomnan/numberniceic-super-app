@@ -1,0 +1,14 @@
+{
+  "claimed": 450,
+  "processed": 415,
+  "failed": 0,
+  "retried": 9,
+  "skipped": 0,
+  "last_name_id": 20861,
+  "last_name": "กิรติกุล",
+  "updated_at": "2026-04-09T01:11:12.797895Z",
+  "worker_id": "phonetic-live-2",
+  "version": "typhoon_v2_name_euphony_json",
+  "dry_run": false,
+  "limit_reached": false
+}

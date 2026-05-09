@@ -19,8 +19,8 @@ android {
         applicationId "com.numberniceic"
         minSdk rootProject.min_sdk
         targetSdk rootProject.target_sdk
-        versionCode 96
-        versionName "5.9.1"
+        versionCode 1005
+        versionName "3.0.9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "SONGKRAN_CUTOVER_JSON", "\"${songkranCutoverJson}\""
     }

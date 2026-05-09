@@ -8,6 +8,7 @@ class DashboardSummary extends StatelessWidget {
   final String excellentNames;
   final String numerologyGood;
   final String shadowGood;
+  final bool isLoading;
   final bool isSatActive;
   final bool isShaActive;
   final String? recommendedDays;
@@ -19,6 +20,7 @@ class DashboardSummary extends StatelessWidget {
     required this.excellentNames,
     required this.numerologyGood,
     required this.shadowGood,
+    this.isLoading = false,
     this.isSatActive = true,
     this.isShaActive = true,
     this.recommendedDays,
@@ -27,53 +29,25 @@ class DashboardSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<({String label, String value, Color accent})> stats = [];
-
-    if (isSatActive && isShaActive) {
-      stats.add((
-        label: 'ดีเยี่ยม',
-        value: excellentNames,
+    final String displayedNumerologyGood = isSatActive ? numerologyGood : '0';
+    final String displayedShadowGood = isShaActive ? shadowGood : '0';
+    final List<({String label, String value, Color accent})> stats = [
+      (
+        label: 'ทั้งหมด',
+        value: totalNames.toString(),
         accent: const Color(0xFFDBB632),
-      ));
-      stats.add((
+      ),
+      (
         label: 'เลขศาสตร์',
-        value: numerologyGood,
+        value: displayedNumerologyGood,
         accent: const Color(0xFF10B981),
-      ));
-      stats.add((
+      ),
+      (
         label: 'พลังเงา',
-        value: shadowGood,
+        value: displayedShadowGood,
         accent: const Color(0xFF6366F1),
-      ));
-    } else if (isSatActive) {
-      stats.add((
-        label: 'ทั้งหมด',
-        value: totalNames.toString(),
-        accent: const Color(0xFFDBB632),
-      ));
-      stats.add((
-        label: 'เลขศาสตร์',
-        value: numerologyGood,
-        accent: const Color(0xFF10B981),
-      ));
-    } else if (isShaActive) {
-      stats.add((
-        label: 'ทั้งหมด',
-        value: totalNames.toString(),
-        accent: const Color(0xFFDBB632),
-      ));
-      stats.add((
-        label: 'พลังเงา',
-        value: shadowGood,
-        accent: const Color(0xFF6366F1),
-      ));
-    } else {
-      stats.add((
-        label: 'ทั้งหมด',
-        value: totalNames.toString(),
-        accent: const Color(0xFFDBB632),
-      ));
-    }
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,8 +55,10 @@ class DashboardSummary extends StatelessWidget {
         // Header
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 10),
+          // ANCHOR: Count by Ranking (แสดงรายชื่อที่ผ่านเกณฑ์ดีที่สุดตามเงื่อนไข)
+
           child: Text(
-            'พบรายชื่อวิเคราะห์ได้ตามเงื่อนไข',
+            'แสดงรายชื่อที่ผ่านเกณฑ์ดีที่สุดตามเงื่อนไข',
             style: GoogleFonts.sarabun(
               color: AppColors.textGray.withValues(alpha: 0.6),
               fontSize: 12,
@@ -92,7 +68,6 @@ class DashboardSummary extends StatelessWidget {
           ),
         ),
         // ANCHOR: Count by Ranking (รายชื่อวิเคราะห์ได้ตามเงื่อนไข)
-        // Premium Stat Row - ดีไซน์ใหม่ให้พรีเมียมและโดดเด่นเสมอ
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: stats
@@ -102,6 +77,7 @@ class DashboardSummary extends StatelessWidget {
                     label: stat.label,
                     value: stat.value,
                     accent: stat.accent,
+                    isLoading: isLoading,
                   ),
                 ),
               )
@@ -109,7 +85,7 @@ class DashboardSummary extends StatelessWidget {
         ),
 
         // Recommended Days (if provided)
-        if (recommendedDays != null && recommendedDays!.isNotEmpty) ...[
+        if (!isLoading && recommendedDays != null && recommendedDays!.isNotEmpty) ...[
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -160,6 +136,7 @@ class DashboardSummary extends StatelessWidget {
     required String label,
     required String value,
     required Color accent,
+    bool isLoading = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -174,14 +151,24 @@ class DashboardSummary extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: GoogleFonts.prompt(
-            color: AppColors.textLight,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
+        if (isLoading)
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.4,
+              valueColor: AlwaysStoppedAnimation<Color>(accent),
+            ),
+          )
+        else
+          Text(
+            value,
+            style: GoogleFonts.prompt(
+              color: AppColors.textLight,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
           ),
-        ),
       ],
     );
   }

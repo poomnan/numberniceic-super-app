@@ -7,8 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// ระบบ Premium:
 /// - Free: ค้นหาชื่อได้ไม่จำกัด (toggle ปิดทั้งสอง)
-/// - Free Trial: ใช้ toggle "เลขศาสตร์ดี" / "พลังเงาดี" ได้ 10 ครั้ง
-/// - Premium: ซื้อขาดครั้งเดียว → ใช้ได้ตลอดไป
+/// - Premium: ซื้อขาดครั้งเดียว → ใช้ตัวกรองที่ล็อกไว้ได้ตลอดไป
 class PremiumManager extends ChangeNotifier {
   // Singleton
   static final PremiumManager _instance = PremiumManager._internal();
@@ -16,11 +15,12 @@ class PremiumManager extends ChangeNotifier {
   PremiumManager._internal();
 
   // Constants
-  static const int trialLimit = 3;
+  static const int trialLimit = 0;
   static const bool _isTest = bool.fromEnvironment('FLUTTER_TEST');
   static const String _keyTrialCount = 'premium_trial_count';
   static const String _keyIsPremium = 'is_premium';
   static const String _keyPurchaseDate = 'premium_purchase_date';
+  static const String _keyDoubleGoodUsed = 'premium_double_good_used';
 
   static const String productId = 'premium_lifetime';
   static const Set<String> _kIds = <String>{productId};
@@ -28,6 +28,7 @@ class PremiumManager extends ChangeNotifier {
   // In-memory state
   bool _isPremium = false;
   int _trialUsed = 0;
+  bool _doubleGoodUsed = false;
   bool _isInitialized = false;
   bool _isPurchasePending = false;
   String? _purchaseError;
@@ -48,6 +49,10 @@ class PremiumManager extends ChangeNotifier {
   bool get isPurchasePending => _isPurchasePending;
   String? get purchaseError => _purchaseError;
 
+  bool get doubleGoodUsed => _doubleGoodUsed;
+  bool get canUseDoubleGood =>
+      _bypassForTesting ? true : (_isPremium || !_doubleGoodUsed);
+
   /// Check if user can use premium features (toggle filters)
   /// Returns true if user is premium OR still has trial left
   bool get canUsePremiumFeature =>
@@ -59,6 +64,7 @@ class PremiumManager extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     _isPremium = prefs.getBool(_keyIsPremium) ?? false;
     _trialUsed = prefs.getInt(_keyTrialCount) ?? 0;
+    _doubleGoodUsed = prefs.getBool(_keyDoubleGoodUsed) ?? false;
 
     if (_isTest) {
       _isInitialized = true;
@@ -209,14 +215,25 @@ class PremiumManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Mark double-good (both SAT+SHA filters) as used — one free shot per user.
+  Future<void> markDoubleGoodUsed() async {
+    if (_isPremium) return; // Premium users unlimited
+    _doubleGoodUsed = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyDoubleGoodUsed, true);
+    notifyListeners();
+  }
+
   /// Reset trial (for testing only — remove in production)
   Future<void> resetForTesting() async {
     _isPremium = false;
     _trialUsed = 0;
+    _doubleGoodUsed = false;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyIsPremium);
     await prefs.remove(_keyTrialCount);
     await prefs.remove(_keyPurchaseDate);
+    await prefs.remove(_keyDoubleGoodUsed);
     notifyListeners();
   }
 }

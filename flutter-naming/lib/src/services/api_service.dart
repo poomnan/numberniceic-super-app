@@ -22,6 +22,12 @@ class ApiException implements Exception {
 class ApiService {
   static const Duration _timeout = Duration(seconds: 60);
 
+  Duration _getTimeout(bool filterSat, bool filterSha) {
+    return (filterSat && filterSha)
+        ? Duration(seconds: 120)
+        : Duration(seconds: 60);
+  }
+
   static String get baseUrl {
     return 'https://xn--b3cu8e7ah6h.com';
   }
@@ -68,11 +74,35 @@ class ApiService {
     };
 
     try {
-      final response = await _postJsonWithRetry(
-        url,
-        body,
-        retryOnEmptyBody: true,
-      );
+      final isDoubleGoodMode = filterSat && filterSha;
+      final timeout = _getTimeout(filterSat, filterSha);
+      final maxRetries = isDoubleGoodMode ? 2 : 1;
+      http.Response? response;
+      TimeoutException? lastTimeout;
+
+      for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          response = await _postJsonWithRetry(
+            url,
+            body,
+            retryOnEmptyBody: true,
+            timeout: timeout,
+          );
+          lastTimeout = null;
+          break;
+        } on TimeoutException catch (e) {
+          lastTimeout = e;
+          if (attempt == maxRetries) {
+            rethrow;
+          }
+          await Future.delayed(Duration(seconds: attempt * 2));
+        }
+      }
+
+      if (response == null) {
+        throw lastTimeout ??
+            TimeoutException('name-search timeout without response');
+      }
 
       if (response.statusCode == 200) {
         final data = _decodeJsonBody(
@@ -117,6 +147,34 @@ class ApiService {
         fallbackMessage: 'ไม่สามารถวิเคราะห์รูปแบบคำค้นได้ในขณะนี้',
       );
       return NameIntentResult.fromJson(data);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<NameInputResolveResult?> resolveNameInput(
+    String input, {
+    String? day,
+  }) async {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return null;
+
+    final queryParams = {'input': trimmed};
+    if (day != null && day.isNotEmpty) {
+      queryParams['day'] = day;
+    }
+    final url = Uri.parse(
+      '$baseUrl/api/v1/name-input/resolve',
+    ).replace(queryParameters: queryParams);
+
+    try {
+      final response = await http.get(url).timeout(_timeout);
+      if (response.statusCode != 200) return null;
+      final Map<String, dynamic> data = _decodeJsonBody(
+        response,
+        fallbackMessage: 'ไม่สามารถวิเคราะห์คำค้นได้ในขณะนี้',
+      );
+      return NameInputResolveResult.fromJson(data);
     } catch (e) {
       return null;
     }
@@ -385,14 +443,16 @@ class ApiService {
     Uri url,
     Map<String, dynamic> body, {
     bool retryOnEmptyBody = false,
+    Duration? timeout,
   }) async {
+    final requestTimeout = timeout ?? _timeout;
     http.Response response = await http
         .post(
           url,
           headers: {"Content-Type": "application/json"},
           body: jsonEncode(body),
         )
-        .timeout(_timeout);
+        .timeout(requestTimeout);
 
     if (retryOnEmptyBody &&
         response.statusCode == 200 &&
@@ -404,7 +464,7 @@ class ApiService {
             headers: {"Content-Type": "application/json"},
             body: jsonEncode(body),
           )
-          .timeout(_timeout);
+          .timeout(requestTimeout);
     }
 
     return response;
