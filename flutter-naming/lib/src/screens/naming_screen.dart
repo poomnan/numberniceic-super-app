@@ -928,7 +928,7 @@ class _NamingScreenState extends State<NamingScreen>
         if (result.type == "single_name" ||
             result.type == "full_name" ||
             result.type == "meaning") {
-          _search(scrollToResults: false);
+          _search(scrollToResults: false, preserveScrollPosition: true);
         }
       }
     });
@@ -1027,8 +1027,8 @@ class _NamingScreenState extends State<NamingScreen>
 
   String _getThaiInputType(String type) {
     if (type == "single_name") return "ชื่อ";
-    if (type == "full_name") return "ชื่อ + นามสกุล";
-    return "ความหมายชื่อที่ต้องการ";
+    if (type == "full_name") return "ชื่อ + สกุล";
+    return "ความหมายของชื่อ";
   }
 
   Color _getThaiInputTypeColor(String type) {
@@ -3573,15 +3573,25 @@ class _NamingScreenState extends State<NamingScreen>
             width: double.infinity,
             decoration: BoxDecoration(
               color: AppColors.bgDark,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
+                color: AppColors.primary.withValues(alpha: 0.2),
+                width: 1.5,
+              ),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.bgDark,
+                  AppColors.bgDarker.withValues(alpha: 0.5),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  spreadRadius: -2,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -3603,20 +3613,42 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.auto_awesome_rounded,
-                          color: AppColors.secondary,
-                          size: 16,
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.secondary.withValues(alpha: 0.8),
+                                AppColors.secondary,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.secondary.withValues(alpha: 0.25),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Text(
                           hasNames
                               ? "รายชื่อที่มีความหมายใกล้เคียง (${_nameSuggestions!.names.length})"
                               : "รายชื่อที่มีความหมายใกล้เคียง",
                           style: GoogleFonts.sarabun(
                             color: AppColors.secondary,
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
+                            letterSpacing: 0.15,
                           ),
                         ),
                         if (_loadingSuggestions) ...[
@@ -3633,12 +3665,19 @@ class _NamingScreenState extends State<NamingScreen>
                           ),
                         ],
                         const Spacer(),
-                        Icon(
-                          _isSuggestionBoxExpanded
-                              ? Icons.keyboard_arrow_up_rounded
-                              : Icons.keyboard_arrow_down_rounded,
-                          color: AppColors.secondary,
-                          size: 20,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary.withValues(alpha: 0.08),
+                            shape: BoxShape.circle,
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(
+                            _isSuggestionBoxExpanded
+                                ? Icons.keyboard_arrow_up_rounded
+                                : Icons.keyboard_arrow_down_rounded,
+                            color: AppColors.secondary,
+                            size: 18,
+                          ),
                         ),
                       ],
                     ),

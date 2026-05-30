@@ -418,7 +418,8 @@ func IsLikelyGibberishThai(input string) bool {
 }
 
 // HasThaiNameRhyme returns true when two Thai name parts share a simple ending
-// sound. It is intentionally permissive only for two non-empty Thai tokens.
+// sound or when the last syllable of part1 rhymes with the first syllable of part2.
+// It is intentionally permissive only for two non-empty Thai tokens.
 func HasThaiNameRhyme(part1, part2 string) bool {
 	part1 = strings.TrimSpace(part1)
 	part2 = strings.TrimSpace(part2)
@@ -437,7 +438,135 @@ func HasThaiNameRhyme(part1, part2 string) bool {
 		}
 	}
 
-	return thaiRhymeTail(r1) == thaiRhymeTail(r2)
+	// Extract Rhyme Key of the last syllable of part1
+	v1, f1 := extractLastSyllableRhymeKey(r1)
+	if v1 == "" {
+		return false
+	}
+
+	// 1. Check Tail-to-Head Rhyme (Last syllable of part1 rhymes with first syllable of part2)
+	if checkFirstSyllableRhyme(r2, v1, f1) {
+		return true
+	}
+
+	// 2. Check Tail-to-Tail Rhyme (Last syllable of part1 rhymes with last syllable of part2)
+	v2, f2 := extractLastSyllableRhymeKey(r2)
+	if v2 != "" && normalizeVowel(v1) == normalizeVowel(v2) && f1 == f2 {
+		return true
+	}
+
+	return false
+}
+
+func isThaiVowel(r rune, idx int, runes []rune) bool {
+	// Leading vowels
+	if r == 0x0E40 || r == 0x0E41 || r == 0x0E42 || r == 0x0E43 || r == 0x0E44 {
+		return true
+	}
+	// Non-leading vowels
+	if r == 0x0E30 || r == 0x0E31 || r == 0x0E32 || r == 0x0E33 || r == 0x0E34 || r == 0x0E35 || r == 0x0E36 || r == 0x0E37 || r == 0x0E38 || r == 0x0E39 || r == 0x0E47 {
+		return true
+	}
+	// Semi-vowels (อ U+0E2D, ว U+0E27) if not the first character of the word/syllable
+	if (r == 0x0E2D || r == 0x0E27) && idx > 0 {
+		return true
+	}
+	return false
+}
+
+func normalizeVowel(v string) string {
+	if v == string(rune(0x0E43)) { // Normalize ใ to ไ
+		return string(rune(0x0E44))
+	}
+	return v
+}
+
+func isLeadingVowelRune(r rune) bool {
+	return r == 0x0E40 || r == 0x0E41 || r == 0x0E42 || r == 0x0E43 || r == 0x0E44
+}
+
+func extractLastSyllableRhymeKey(runes []rune) (string, string) {
+	vIdx := -1
+	for i := len(runes) - 1; i >= 0; i-- {
+		if isThaiVowel(runes[i], i, runes) {
+			vIdx = i
+			break
+		}
+	}
+	if vIdx == -1 {
+		return "", ""
+	}
+
+	vowel := string(runes[vIdx])
+	var cList []rune
+	for i := vIdx + 1; i < len(runes); i++ {
+		r := runes[i]
+		if r >= 0x0E01 && r <= 0x0E2E {
+			cList = append(cList, r)
+		}
+	}
+
+	finalConsonant := ""
+	if isLeadingVowelRune(runes[vIdx]) {
+		if len(cList) >= 2 {
+			finalConsonant = string(cList[len(cList)-1])
+		}
+	} else {
+		if len(cList) >= 1 {
+			finalConsonant = string(cList[len(cList)-1])
+		}
+	}
+	return vowel, finalConsonant
+}
+
+func checkFirstSyllableRhyme(runes []rune, targetVowel, targetFinal string) bool {
+	if len(runes) == 0 {
+		return false
+	}
+
+	targetVowel = normalizeVowel(targetVowel)
+
+	if isLeadingVowelRune([]rune(targetVowel)[0]) {
+		// Target vowel is leading, so runes[0] must be targetVowel
+		if normalizeVowel(string(runes[0])) != targetVowel {
+			return false
+		}
+		if targetFinal == "" {
+			if len(runes) > 1 && runes[1] >= 0x0E01 && runes[1] <= 0x0E2E {
+				return true
+			}
+			return false
+		} else {
+			if len(runes) > 2 && string(runes[2]) == targetFinal {
+				return true
+			}
+			if len(runes) > 3 && runes[2] >= 0x0E01 && runes[2] <= 0x0E2E && string(runes[3]) == targetFinal {
+				return true
+			}
+			return false
+		}
+	} else {
+		// Target vowel is non-leading.
+		vIdx := -1
+		if len(runes) > 1 && normalizeVowel(string(runes[1])) == targetVowel {
+			vIdx = 1
+		} else if len(runes) > 2 && runes[1] >= 0x0E01 && runes[1] <= 0x0E2E && normalizeVowel(string(runes[2])) == targetVowel {
+			vIdx = 2
+		}
+
+		if vIdx == -1 {
+			return false
+		}
+
+		if targetFinal == "" {
+			return true
+		} else {
+			if len(runes) > vIdx+1 && string(runes[vIdx+1]) == targetFinal {
+				return true
+			}
+			return false
+		}
+	}
 }
 
 func thaiRhymeTail(runes []rune) string {

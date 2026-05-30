@@ -53,3 +53,26 @@ func TestMeaningPhraseSignals(t *testing.T) {
 		})
 	}
 }
+
+func TestThaiNameRhymes(t *testing.T) {
+	tests := []struct {
+		part1 string
+		part2 string
+		want  bool
+	}{
+		{"หอยแครง", "แสงตะวัน", true},  // tail-to-head (แครง + แสง)
+		{"ลำไย", "ไหทองคำ", true},     // tail-to-head (ไย + ไห)
+		{"สมศรี", "ดีพร้อม", true},     // tail-to-head (ศรี + ดี)
+		{"ทองดี", "มีชัย", true},       // tail-to-head (ดี + มี)
+		{"ณัฐพล", "พลรบ", false},      // no rhyme
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.part1+"_"+tt.part2, func(t *testing.T) {
+			got := HasThaiNameRhyme(tt.part1, tt.part2)
+			if got != tt.want {
+				t.Errorf("HasThaiNameRhyme(%q, %q) = %v, want %v", tt.part1, tt.part2, got, tt.want)
+			}
+		})
+	}
+}
