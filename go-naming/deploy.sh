@@ -20,13 +20,13 @@ GOOS=linux GOARCH=amd64 go build -o server-linux main.go
 
 # Step 2: Copy new binary to remote server as a temporary file
 echo "Copying new binary to temporary path on server..."
-sshpass -p "$SERVER_PASSWORD" scp -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -o PasswordAuthentication=yes \
+sshpass -p "$SERVER_PASSWORD" scp -o StrictHostKeyChecking=no -o PreferredAuthentications=password \
     server-linux \
     "$SERVER_USER@$DEPLOY_SSH_HOST:$REMOTE_DIR/server-linux-tmp"
 
 # Step 3: Replace binary and restart service immediately (Downtime: < 0.1s)
 echo "Replacing binary and restarting service..."
-sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -o PasswordAuthentication=yes -T \
+sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -T \
     "$SERVER_USER@$DEPLOY_SSH_HOST" "systemctl stop $SERVICE_NAME && mv -f $REMOTE_DIR/server-linux-tmp $REMOTE_DIR/server && chmod +x $REMOTE_DIR/server && systemctl start $SERVICE_NAME && sleep 2 && systemctl status $SERVICE_NAME --no-pager | head -5"
 
 echo "Deployment completed successfully with near-zero downtime!"

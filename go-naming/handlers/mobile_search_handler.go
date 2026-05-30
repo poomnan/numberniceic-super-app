@@ -1006,19 +1006,10 @@ func passesRequestedFiltersWithStage(result MobileNameResult, req MobileSearchRe
 
 	switch {
 	case req.FilterSat && req.FilterSha:
-		if !(satPass && shaPass) {
-			log.Printf("[VALIDATION] mode=double name=%s satPass=%v shaPass=%v valid=false", result.Name, satPass, shaPass)
-		}
 		return satPass && shaPass
 	case req.FilterSat:
-		if !(satPass && !shaPass) {
-			log.Printf("[VALIDATION] mode=sat_only name=%s satPass=%v shaPass=%v valid=false", result.Name, satPass, shaPass)
-		}
 		return satPass && !shaPass
 	case req.FilterSha:
-		if !(!satPass && shaPass) {
-			log.Printf("[VALIDATION] mode=sha_only name=%s satPass=%v shaPass=%v valid=false", result.Name, satPass, shaPass)
-		}
 		return !satPass && shaPass
 	default:
 		return true

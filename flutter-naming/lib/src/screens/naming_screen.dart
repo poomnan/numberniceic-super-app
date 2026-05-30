@@ -393,13 +393,13 @@ class _NamingScreenState extends State<NamingScreen>
         _relaxedFiltersNotice = null;
       });
       if (!_hasCachedSuggestions) {
-        await fetchNameSuggestions(
+        unawaited(fetchNameSuggestions(
           originalInput,
           meaning:
               (!shouldUsePgTrgmSuggestions && shouldFetchMeaningSuggestions)
               ? suggestionMeaning
               : null,
-        );
+        ));
       }
       if (scrollToResults) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -597,10 +597,10 @@ class _NamingScreenState extends State<NamingScreen>
           requestId == _searchRequestId) {
         final Stopwatch suggestionWatch = Stopwatch()..start();
         if (!_hasCachedSuggestions) {
-          await fetchNameSuggestions(originalInput, meaning: suggestionMeaning);
+          unawaited(fetchNameSuggestions(originalInput, meaning: suggestionMeaning));
         }
         debugPrint(
-          '[_search] fetchNameSuggestions completed in ${suggestionWatch.elapsedMilliseconds}ms',
+          '[_search] fetchNameSuggestions initiated concurrently in ${suggestionWatch.elapsedMilliseconds}ms',
         );
       }
 
