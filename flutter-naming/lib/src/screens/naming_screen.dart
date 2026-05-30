@@ -2134,9 +2134,7 @@ class _NamingScreenState extends State<NamingScreen>
                 }
               },
               child: Container(
-                padding: const EdgeInsets.all(
-                  8,
-                ), // Perfectly sized for the sparkling icon
+                padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -2159,8 +2157,22 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                   ],
                 ),
-                child: SparklingGoldHeart(
-                  savedCount: ApiService.savedNamesCache.length,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SparklingGoldHeart(
+                      savedCount: ApiService.savedNamesCache.length,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "ทำเนียบมงคล",
+                      style: GoogleFonts.prompt(
+                        color: const Color(0xFFC026D3),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
