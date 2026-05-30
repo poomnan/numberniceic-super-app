@@ -913,64 +913,64 @@ class _NameListItemState extends State<NameListItem>
     final bool isSha = widget.isFilterShaActive;
 
     if (isSat && isSha) {
-      // Shimmering Gold LV (Double-Good)
+      // Shimmering Gold LV (Double-Good) - Bright Champagne Gold
       return (
         bgGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3D270A), Color(0xFF1E1103)],
+          colors: [Color(0xFFFFFDF0), Color(0xFFFEF3C7)],
         ),
-        patternColor: const Color(0xFFFFD700),
-        borderColor: const Color(0xFFFFD700).withValues(alpha: 0.35),
-        nameColor: const Color(0xFFFFFDF2),
-        meaningColor: const Color(0xFFE6D6B8),
-        accentColor: const Color(0xFFFFD700),
-        glowColor: const Color(0xFFFFD700).withValues(alpha: 0.12),
+        patternColor: const Color(0xFFB45309),
+        borderColor: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+        nameColor: const Color(0xFF78350F),
+        meaningColor: const Color(0xFF92400E),
+        accentColor: const Color(0xFFF59E0B),
+        glowColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
       );
     } else if (isSat) {
-      // Emerald Green LV (เลขศาสตร์ดี ONLY)
+      // Emerald Green LV (เลขศาสตร์ดี ONLY) - Bright Mint Green
       return (
         bgGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0F3223), Color(0xFF071B12)],
+          colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
         ),
-        patternColor: const Color(0xFFD4AF37),
-        borderColor: const Color(0xFFD4AF37).withValues(alpha: 0.28),
-        nameColor: const Color(0xFFF0FDF4),
-        meaningColor: const Color(0xFFBBE5CA),
-        accentColor: const Color(0xFF4ADE80),
-        glowColor: const Color(0xFF4ADE80).withValues(alpha: 0.08),
+        patternColor: const Color(0xFF047857),
+        borderColor: const Color(0xFF10B981).withValues(alpha: 0.4),
+        nameColor: const Color(0xFF064E3B),
+        meaningColor: const Color(0xFF065F46),
+        accentColor: const Color(0xFF10B981),
+        glowColor: const Color(0xFF10B981).withValues(alpha: 0.12),
       );
     } else if (isSha) {
-      // Royal Amethyst/Purple LV (พลังเงาดี ONLY)
+      // Royal Amethyst/Purple LV (พลังเงาดี ONLY) - Bright Lavender Purple
       return (
         bgGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF22113A), Color(0xFF100720)],
+          colors: [Color(0xFFF5F3FF), Color(0xFFEDE9FE)],
         ),
-        patternColor: const Color(0xFFE2C485),
-        borderColor: const Color(0xFFE2C485).withValues(alpha: 0.28),
-        nameColor: const Color(0xFFFAF5FF),
-        meaningColor: const Color(0xFFD4C7EC),
-        accentColor: const Color(0xFF818CF8),
-        glowColor: const Color(0xFF818CF8).withValues(alpha: 0.08),
+        patternColor: const Color(0xFF6D28D9),
+        borderColor: const Color(0xFF7C3AED).withValues(alpha: 0.4),
+        nameColor: const Color(0xFF4C1D95),
+        meaningColor: const Color(0xFF5B21B6),
+        accentColor: const Color(0xFF7C3AED),
+        glowColor: const Color(0xFF7C3AED).withValues(alpha: 0.12),
       );
     } else {
-      // Classic Chocolate LV (No filters/Default)
+      // Classic Chocolate LV (No filters/Default) - Bright Cream Beige Leather
       return (
         bgGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF2C1E15), Color(0xFF1A0F0A)],
+          colors: [Color(0xFFFFFDF5), Color(0xFFF9F3E6)],
         ),
-        patternColor: const Color(0xFFC49C5E),
-        borderColor: const Color(0xFFC49C5E).withValues(alpha: 0.25),
-        nameColor: const Color(0xFFFFF8EE),
-        meaningColor: const Color(0xFFD8C7B0),
-        accentColor: const Color(0xFFC49C5E),
-        glowColor: const Color(0xFFC49C5E).withValues(alpha: 0.06),
+        patternColor: const Color(0xFF795548),
+        borderColor: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+        nameColor: const Color(0xFF3D2600),
+        meaningColor: const Color(0xFF5D4037),
+        accentColor: const Color(0xFFD4AF37),
+        glowColor: const Color(0xFFD4AF37).withValues(alpha: 0.1),
       );
     }
   }
