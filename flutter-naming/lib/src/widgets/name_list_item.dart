@@ -900,6 +900,81 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
+  ({
+    Gradient bgGradient,
+    Color patternColor,
+    Color borderColor,
+    Color nameColor,
+    Color meaningColor,
+    Color accentColor,
+    Color glowColor,
+  }) _getDynamicCardStyle() {
+    final bool isSat = widget.isFilterSatActive;
+    final bool isSha = widget.isFilterShaActive;
+
+    if (isSat && isSha) {
+      // Shimmering Gold LV (Double-Good)
+      return (
+        bgGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF3D270A), Color(0xFF1E1103)],
+        ),
+        patternColor: const Color(0xFFFFD700),
+        borderColor: const Color(0xFFFFD700).withValues(alpha: 0.35),
+        nameColor: const Color(0xFFFFFDF2),
+        meaningColor: const Color(0xFFE6D6B8),
+        accentColor: const Color(0xFFFFD700),
+        glowColor: const Color(0xFFFFD700).withValues(alpha: 0.12),
+      );
+    } else if (isSat) {
+      // Emerald Green LV (เลขศาสตร์ดี ONLY)
+      return (
+        bgGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0F3223), Color(0xFF071B12)],
+        ),
+        patternColor: const Color(0xFFD4AF37),
+        borderColor: const Color(0xFFD4AF37).withValues(alpha: 0.28),
+        nameColor: const Color(0xFFF0FDF4),
+        meaningColor: const Color(0xFFBBE5CA),
+        accentColor: const Color(0xFF4ADE80),
+        glowColor: const Color(0xFF4ADE80).withValues(alpha: 0.08),
+      );
+    } else if (isSha) {
+      // Royal Amethyst/Purple LV (พลังเงาดี ONLY)
+      return (
+        bgGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF22113A), Color(0xFF100720)],
+        ),
+        patternColor: const Color(0xFFE2C485),
+        borderColor: const Color(0xFFE2C485).withValues(alpha: 0.28),
+        nameColor: const Color(0xFFFAF5FF),
+        meaningColor: const Color(0xFFD4C7EC),
+        accentColor: const Color(0xFF818CF8),
+        glowColor: const Color(0xFF818CF8).withValues(alpha: 0.08),
+      );
+    } else {
+      // Classic Chocolate LV (No filters/Default)
+      return (
+        bgGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2C1E15), Color(0xFF1A0F0A)],
+        ),
+        patternColor: const Color(0xFFC49C5E),
+        borderColor: const Color(0xFFC49C5E).withValues(alpha: 0.25),
+        nameColor: const Color(0xFFFFF8EE),
+        meaningColor: const Color(0xFFD8C7B0),
+        accentColor: const Color(0xFFC49C5E),
+        glowColor: const Color(0xFFC49C5E).withValues(alpha: 0.06),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Sync local state with cache to handle delayed loading or deletions
@@ -955,10 +1030,7 @@ class _NameListItemState extends State<NameListItem>
     NumberMeaningResult? satMeaning,
     NumberMeaningResult? shaMeaning,
   }) {
-    final bool isEvenRow = widget.rank > 0 ? widget.rank.isEven : false;
-    final Color rowBackground = isEvenRow
-        ? const Color(0xFFFFFCF4)
-        : const Color(0xFFFFFFFF);
+    final style = _getDynamicCardStyle();
     const bool showSatScore = true;
     const bool showShaScore = true;
 
@@ -967,32 +1039,27 @@ class _NameListItemState extends State<NameListItem>
       child: Container(
         margin: margin,
         decoration: BoxDecoration(
-          color: rowBackground,
+          gradient: style.bgGradient,
           borderRadius: BorderRadius.circular(18),
-          border: Border(
-            bottom: BorderSide(
-              color: AppColors.textGray.withValues(alpha: 0.12),
-              width: 0.8,
-            ),
+          border: Border.all(
+            color: style.borderColor,
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: isEvenRow ? 0.06 : 0.03),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: style.glowColor,
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Stack(
           children: [
-            // Thai Kanok pattern overlay
+            // Premium Louis Vuitton pattern overlay
             Positioned.fill(
               child: CustomPaint(
-                painter: _ThaiKanokPatternPainter(
-                  color: widget.rank <= 3
-                      ? AppColors.accent.withValues(alpha: 0.06)
-                      : AppColors.primary.withValues(alpha: 0.04),
-                  rank: widget.rank,
+                painter: _LVMonogramPatternPainter(
+                  color: style.patternColor,
                 ),
               ),
             ),
@@ -1153,8 +1220,8 @@ class _NameListItemState extends State<NameListItem>
                               Expanded(
                                 child: Text(
                                   widget.result.meaning,
-                                  style: const TextStyle(
-                                    color: AppColors.textGray,
+                                  style: TextStyle(
+                                    color: style.meaningColor,
                                     fontSize: 15,
                                     height: 1.5,
                                     fontFamily: 'Sarabun',
@@ -2082,6 +2149,7 @@ class _NameListItemState extends State<NameListItem>
     }
 
     if (label.isNotEmpty) {
+      final style = _getDynamicCardStyle();
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -2090,7 +2158,7 @@ class _NameListItemState extends State<NameListItem>
           Text(
             label,
             style: TextStyle(
-              color: AppColors.textGray,
+              color: style.meaningColor.withValues(alpha: 0.8),
               fontSize: 10,
               fontWeight: FontWeight.w500,
             ),
@@ -2656,11 +2724,12 @@ class _NameListItemState extends State<NameListItem>
     final bool isGold = widget.result.isSatGood && widget.result.isShaGood;
     final bool hasKaki = widget.result.kakiHighlight.any((h) => h.isKaki);
 
+    final style = _getDynamicCardStyle();
     final textStyle = TextStyle(
       fontSize: 22,
       fontWeight: FontWeight.w900,
       fontFamily: 'Sarabun',
-      color: AppColors.textLight, // Themed text color
+      color: style.nameColor, // Themed text color
     );
 
     Widget nameWidget;
@@ -3968,4 +4037,58 @@ class _ThaiKanokPatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(_ThaiKanokPatternPainter old) =>
       old.color != color || old.rank != rank;
+}
+
+class _LVMonogramPatternPainter extends CustomPainter {
+  final Color color;
+
+  _LVMonogramPatternPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: 0.05)
+      ..style = PaintingStyle.fill;
+
+    final strokePaint = Paint()
+      ..color = color.withValues(alpha: 0.035)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final double stepX = 40.0;
+    final double stepY = 40.0;
+
+    for (double x = 10; x < size.width; x += stepX) {
+      for (double y = 10; y < size.height; y += stepY) {
+        int cellIndex = ((x / stepX).floor() + (y / stepY).floor()) % 3;
+        if (cellIndex == 0) {
+          final path = Path();
+          path.moveTo(x, y - 6);
+          path.quadraticBezierTo(x, y, x + 6, y);
+          path.quadraticBezierTo(x, y, x, y + 6);
+          path.quadraticBezierTo(x, y, x - 6, y);
+          path.quadraticBezierTo(x, y, x, y - 6);
+          canvas.drawPath(path, paint);
+        } else if (cellIndex == 1) {
+          canvas.drawCircle(Offset(x, y), 3, strokePaint);
+          final path = Path();
+          path.moveTo(x, y - 5);
+          path.lineTo(x + 5, y);
+          path.lineTo(x, y + 5);
+          path.lineTo(x - 5, y);
+          path.close();
+          canvas.drawPath(path, strokePaint);
+        } else {
+          canvas.drawCircle(Offset(x, y), 5, strokePaint);
+          canvas.drawCircle(Offset(x, y - 3), 2, paint);
+          canvas.drawCircle(Offset(x, y + 3), 2, paint);
+          canvas.drawCircle(Offset(x - 3, y), 2, paint);
+          canvas.drawCircle(Offset(x + 3, y), 2, paint);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LVMonogramPatternPainter old) => old.color != color;
 }
