@@ -994,8 +994,8 @@ class _NamingScreenState extends State<NamingScreen>
       if (result != null) {
         if (result.type == "full_name" && result.firstName != null) {
           _resolveSeedName(result.firstName!);
-        } else if (result.type == "single_name" && result.firstName != null) {
-          _resolveSeedName(result.firstName!);
+        } else if (result.type == "single_name") {
+          _resolveSeedName(result.firstName ?? text);
         }
         if (result.type == "single_name" ||
             result.type == "full_name" ||
