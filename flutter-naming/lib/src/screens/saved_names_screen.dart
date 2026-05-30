@@ -1398,7 +1398,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -1441,7 +1441,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                           if (item.rankPosition <= 3 || item.rankPosition == 0) ...[
                             Icon(
                               Icons.emoji_events,
-                              size: 13,
+                              size: 12,
                               color: item.rankPosition == 1 || (item.rankPosition == 0 && isLucky)
                                   ? const Color(0xFFD4AF37)
                                   : item.rankPosition == 2
@@ -1450,7 +1450,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                                           ? const Color(0xFFCD7F32)
                                           : const Color(0xFF7C3AED),
                             ),
-                            const SizedBox(width: 5),
+                            const SizedBox(width: 4),
                           ],
                           Text(
                             item.rankPosition > 0
@@ -1464,7 +1464,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                                       : item.rankPosition == 3
                                           ? const Color(0xFFCD7F32)
                                           : const Color(0xFF7C3AED),
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.2,
                             ),
@@ -1475,7 +1475,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                     GestureDetector(
                       onTap: () => _showLuckExplanationDialog(item),
                       child: Container(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
+                        padding: const EdgeInsets.fromLTRB(12, 6, 10, 6),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: gradientColors,
@@ -1499,14 +1499,14 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                                   ? Icons.auto_awesome
                                   : Icons.info_outline_rounded,
                               color: Colors.white,
-                              size: 14,
+                              size: 13,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 5),
                             Text(
                               luckText,
                               style: GoogleFonts.prompt(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
