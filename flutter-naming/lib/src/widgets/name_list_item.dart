@@ -1162,15 +1162,16 @@ class _NameListItemState extends State<NameListItem>
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              const SizedBox(width: 44),
                               Expanded(
                                 child: FittedBox(
                                   fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
+                                  alignment: Alignment.center,
                                   child: GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () {
@@ -1201,6 +1202,7 @@ class _NameListItemState extends State<NameListItem>
                           Wrap(
                             spacing: 6,
                             runSpacing: 4,
+                            alignment: WrapAlignment.center,
                             children: [
                               if (widget.result.kakiHighlight.isNotEmpty &&
                                   !widget.result.kakiHighlight.any(
@@ -1219,7 +1221,8 @@ class _NameListItemState extends State<NameListItem>
                             children: [
                               Expanded(
                                 child: Text(
-                                  widget.result.meaning,
+                                  "\"${widget.result.meaning}\"",
+                                  textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: style.meaningColor,
                                     fontSize: 15,
