@@ -416,7 +416,7 @@ class _NameListItemState extends State<NameListItem>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      "✨ บันทึกสิริมงคลชื่อ '${widget.result.name}' สู่ทำเนียบสำเร็จแล้ว",
+                      "✨ บันทึกชื่อสำเร็จแล้ว กดปุ่ม UP เพื่อดูรายการด้านบน",
                       style: GoogleFonts.sarabun(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
@@ -2571,47 +2571,33 @@ class _NameListItemState extends State<NameListItem>
       onTap: widget.onScrollToTop,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 10 : 12,
-          vertical: compact ? 7 : 8,
-        ),
+        width: compact ? 32 : 36,
+        height: compact ? 32 : 36,
         decoration: BoxDecoration(
+          shape: BoxShape.circle,
           gradient: const LinearGradient(
-            colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)], // Premium light blue gradient
+            colors: [Color(0xFFE0F2FE), Color(0xFF93C5FD)], // Premium sky to baby blue gradient
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: const Color(0xFFBAE6FD).withValues(alpha: 0.5),
-            width: 1,
+            color: const Color(0xFF60A5FA).withValues(alpha: 0.4),
+            width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFBAE6FD).withValues(alpha: 0.25),
-              blurRadius: 12,
-              offset: const Offset(0, 5),
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.arrow_upward_rounded,
-              size: 14,
-              color: Color(0xFF0369A1),
-            ),
-            const SizedBox(width: 5),
-            Text(
-              "ขึ้นบนสุด",
-              style: GoogleFonts.sarabun(
-                color: const Color(0xFF0369A1),
-                fontSize: compact ? 12 : 13,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
+        child: const Center(
+          child: Icon(
+            Icons.arrow_upward_rounded,
+            size: 16,
+            color: Color(0xFF1D4ED8),
+          ),
         ),
       ),
     );
