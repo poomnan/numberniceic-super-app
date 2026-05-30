@@ -882,7 +882,79 @@ class _NamingScreenState extends State<NamingScreen>
     fetchNameSuggestionsDebounced(text);
     _scheduleClassifyInput(text);
 
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        _inputClassification = _classifyInputLocally(text);
+      });
+    }
+  }
+
+  InputClassification _classifyInputLocally(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      return const InputClassification(
+        type: "meaning",
+        confidence: 0.0,
+        signals: [],
+      );
+    }
+
+    // 1. Number detection (digits only)
+    if (RegExp(r'^\d+$').hasMatch(trimmed)) {
+      return const InputClassification(
+        type: "number",
+        confidence: 1.0,
+        signals: ["digits_only"],
+      );
+    }
+
+    // 2. Full Name detection (with space)
+    if (trimmed.contains(RegExp(r'\s+'))) {
+      final parts = trimmed.split(RegExp(r'\s+'));
+      return InputClassification(
+        type: "full_name",
+        confidence: 0.9,
+        firstName: parts.first,
+        surname: parts.length > 1 ? parts[1] : null,
+        signals: ["contains_space"],
+      );
+    }
+
+    // 3. Single Name vs Meaning detection
+    if (RegExp(r'^[ก-๙]+$').hasMatch(trimmed)) {
+      // Common prefix meaning keywords in Thai
+      final commonMeaningKeywords = ['ความ', 'การ', 'ผู้', 'ใจ', 'รัก', 'งาม', 'ดี', 'มี', 'สุข', 'โชค'];
+      bool hasMeaningKeyword = false;
+      for (final kw in commonMeaningKeywords) {
+        if (trimmed.startsWith(kw) && trimmed.length > 3) {
+          hasMeaningKeyword = true;
+          break;
+        }
+      }
+
+      // Names are typically short and don't start with meaning prefixes
+      if (trimmed.length >= 2 && trimmed.length <= 8 && !hasMeaningKeyword) {
+        return InputClassification(
+          type: "single_name",
+          confidence: 0.85,
+          firstName: trimmed,
+          signals: ["thai_letters", "name_length_match"],
+        );
+      } else {
+        return const InputClassification(
+          type: "meaning",
+          confidence: 0.7,
+          signals: ["thai_letters", "meaning_pattern"],
+        );
+      }
+    }
+
+    // Default fallback
+    return const InputClassification(
+      type: "meaning",
+      confidence: 0.5,
+      signals: ["default_fallback"],
+    );
   }
 
   void _setKeywordWithoutTriggeringListener(String value) {
@@ -1027,13 +1099,15 @@ class _NamingScreenState extends State<NamingScreen>
 
   String _getThaiInputType(String type) {
     if (type == "single_name") return "ชื่อ";
-    if (type == "full_name") return "ชื่อ + สกุล";
+    if (type == "full_name") return "ชื่อ + นามสกุล";
+    if (type == "number") return "เลขศาสตร์ / ตัวเลข";
     return "ความหมายของชื่อ";
   }
 
   Color _getThaiInputTypeColor(String type) {
     if (type == "single_name") return const Color(0xFF059669);
     if (type == "full_name") return const Color(0xFF7C3AED);
+    if (type == "number") return const Color(0xFFEA580C);
     return const Color(0xFFD97706);
   }
 
