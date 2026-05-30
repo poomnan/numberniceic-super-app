@@ -1,41 +1,52 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	"go-naming/database"
-	"go-naming/services"
+	"log"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	database.InitDB()
-	goodSums, _ := services.GetGoodSums()
-
-	goodSumMap := make(map[int]bool)
-	for _, sum := range goodSums {
-		goodSumMap[sum] = true
+	connStr := "postgres://tayap:IntelliP24.X@43.228.85.200/tayap?sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatalf("Error opening database connection: %v", err)
 	}
+	defer db.Close()
 
-	lastnameSat := 41 // อัศวโภคิน
-
-	targetSatSums := []int{}
-	for _, s := range goodSums {
-		if s > lastnameSat {
-			baseSat := s - lastnameSat
-			if goodSumMap[baseSat] {
-				targetSatSums = append(targetSatSums, baseSat)
-			}
+	// Try a query that replicates buildQuery
+	// Using a ZERO vector as a test
+	vector := make([]float64, 1536)
+	vectorStr := "["
+	for i, v := range vector {
+		if i > 0 {
+			vectorStr += ","
 		}
+		vectorStr += fmt.Sprintf("%f", v)
 	}
+	vectorStr += "]"
 
-	is18InArray := false
-	for _, v := range targetSatSums {
-		if v == 18 {
-			is18InArray = true
-		}
+	query := `
+		SELECT name_id, thname FROM names_miracle 
+		WHERE 1=1
+		ORDER BY meaning_vector <=> $1 ASC LIMIT 5
+	`
+	rows, err := db.Query(query, vectorStr)
+	if err != nil {
+		fmt.Printf("Query error: %v\n", err)
+		return
 	}
-	fmt.Printf("Is 18 in targetSatSums? %v\n", is18InArray)
-	fmt.Printf("Is 18 in goodSums? %v\n", goodSumMap[18])
+	defer rows.Close()
 
-	// What about 10?
-	fmt.Printf("Is 10 in targetSatSums? %v\n", targetSatSums)
+	count := 0
+	for rows.Next() {
+		var id int
+		var name string
+		rows.Scan(&id, &name)
+		fmt.Printf("Result %d: %d - %s\n", count, id, name)
+		count++
+	}
+	fmt.Printf("Total found: %d\n", count)
 }

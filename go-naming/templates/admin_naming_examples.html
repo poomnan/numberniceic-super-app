@@ -9,32 +9,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #E2B237;
-            --primary-light: #F2994A;
-            --secondary: #9B51E0;
-            --accent: #FF2E93;
-            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
-            --card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(155, 81, 224, 0.12);
-            --border-color-hover: rgba(155, 81, 224, 0.32);
-            --text: #2D1E4E;
-            --text-muted: #6C5B7B;
+            --primary: #D4AF37;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
         }
 
         body {
             font-family: 'Prompt', sans-serif;
-            background: var(--bg) no-repeat fixed;
+            background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 0;
-            min-height: 100vh;
         }
 
         .navbar {
             background: var(--card);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #334155;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -47,7 +40,7 @@
         .logo {
             font-weight: 700;
             font-size: 1.5rem;
-            color: var(--secondary);
+            color: #B8860B;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -61,24 +54,17 @@
         }
 
         h1 {
-            color: var(--text);
+            color: var(--accent);
             text-align: center;
             margin-bottom: 30px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .card {
             background: var(--card);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             margin-bottom: 24px;
-            border: 1px solid var(--border-color);
         }
 
         .form-grid {
@@ -95,8 +81,7 @@
             display: block;
             margin-bottom: 8px;
             font-size: 14px;
-            color: var(--text-muted);
-            font-weight: 500;
+            color: #94A3B8;
         }
 
         input,
@@ -104,23 +89,14 @@
             width: 100%;
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: #FFFFFF;
-            color: var(--text);
+            border: 1px solid #334155;
+            background: #FFFAF0;
+            color: white;
             box-sizing: border-box;
-            outline: none;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        input:focus,
-        select:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.1);
         }
 
         .btn {
-            background: linear-gradient(135deg, #9B51E0, #FF2E93);
+            background: var(--primary);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -128,22 +104,15 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.2);
         }
 
         .btn:hover {
-            opacity: 0.95;
+            opacity: 0.9;
             transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.3);
         }
 
         .btn-delete {
-            background: #EF4444 !important;
-            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2) !important;
-        }
-
-        .btn-delete:hover {
-            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3) !important;
+            background: #EF4444;
         }
 
         .example-list {
@@ -153,30 +122,20 @@
         }
 
         .example-item {
-            background: var(--card);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--border-color);
+            background: #1E293B;
+            border: 1px solid #334155;
             border-radius: 12px;
             padding: 16px;
             display: flex;
             align-items: center;
             gap: 16px;
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.05);
-            transition: all 0.2s;
-        }
-
-        .example-item:hover {
-            border-color: var(--border-color-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.1);
         }
 
         .avatar-preview {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: rgba(155, 81, 224, 0.08);
+            background: #334155;
             object-fit: cover;
             border: 2px solid var(--primary);
         }
@@ -188,30 +147,24 @@
         .item-name {
             font-weight: 600;
             font-size: 16px;
-            color: var(--text);
         }
 
         .item-meta {
             font-size: 12px;
-            color: var(--text-muted);
+            color: #94A3B8;
         }
 
         .upload-area {
-            border: 2px dashed rgba(155, 81, 224, 0.2);
+            border: 2px dashed #334155;
             padding: 20px;
             text-align: center;
             border-radius: 12px;
             margin-bottom: 16px;
             cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.5);
-            color: var(--text-muted);
         }
 
         .upload-area:hover {
-            border-color: var(--secondary);
-            background: rgba(155, 81, 224, 0.02);
-            color: var(--secondary);
+            border-color: var(--primary);
         }
 
         #imagePreview {
@@ -219,7 +172,6 @@
             margin-top: 10px;
             border-radius: 50%;
             display: none;
-            border: 2px solid var(--primary);
         }
     </style>
 </head>

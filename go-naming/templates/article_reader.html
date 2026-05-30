@@ -8,25 +8,22 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css?v=14">
+    <link rel="stylesheet" href="/styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --primary-pink: #9B51E0;
-            --dark-bg: #FAF8FF;
-            --dark-surface: #FFF5FA;
-            --dark-surface-2: #FFFDF5;
-            --text-main: #332255;
-            --text-title: #2D1E4E;
-            --text-muted: #6C5B7B;
-            --accent-glow: rgba(155, 81, 224, 0.15);
-            /* Badges standard */
-            --violet: linear-gradient(135deg, #9B51E0 0%, #FF2E93 100%);
-            --gold: linear-gradient(135deg, #FFD026 0%, #F2994A 50%, #9B51E0 100%);
+            --primary-pink: #D4AF37;
+            --dark-bg: #FFF8E1;
+            --dark-surface: #FFFAF0;
+            --dark-surface-2: #FFF3C4;
+            --text-main: #2C1810;
+            --text-title: #1A0D07;
+            --text-muted: #5D4037;
+            --accent-glow: rgba(212, 175, 55, 0.2);
         }
 
         body {
-            background: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%) no-repeat fixed;
+            background-color: var(--dark-bg);
             color: var(--text-main);
             font-family: 'Sarabun', sans-serif;
             line-height: 1.8;
@@ -36,35 +33,13 @@
         }
 
         .article-nav {
-            background: rgba(250, 248, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(155, 81, 224, 0.15);
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
             padding: 15px 0;
             position: sticky;
             top: 0;
             z-index: 1000;
-        }
-
-        .article-nav-download {
-            background: var(--violet);
-            color: white !important;
-            padding: 8px 18px !important;
-            border-radius: 99px;
-            font-family: 'Prompt';
-            font-weight: 600;
-            font-size: 13px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(155, 81, 224, 0.25);
-            transition: all 0.3s ease;
-        }
-
-        .article-nav-download:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(155, 81, 224, 0.45);
         }
 
         .article-container {
@@ -79,9 +54,9 @@
         }
 
         .article-category {
-            background: var(--violet);
+            background: var(--primary-pink);
             color: white;
-            padding: 4px 16px;
+            padding: 4px 14px;
             border-radius: 50px;
             font-size: 13px;
             text-transform: uppercase;
@@ -108,7 +83,7 @@
             display: flex;
             justify-content: center;
             gap: 25px;
-            border-bottom: 1px solid rgba(155, 81, 224, 0.15);
+            border-bottom: 1px solid #333;
             padding-bottom: 25px;
         }
 
@@ -118,73 +93,17 @@
             min-height: 400px;
             max-height: 600px;
             object-fit: cover;
-            border-radius: 20px;
+            border-radius: 16px;
             margin-bottom: 50px;
-            box-shadow: 0 20px 40px rgba(155, 81, 224, 0.12);
-            border: 1px solid rgba(155, 81, 224, 0.15);
-        }
-
-        .article-youtube-showcase {
-            position: relative;
-            max-width: 430px;
-            margin: 0 auto 50px;
-            padding: 14px;
-            border-radius: 34px;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 245, 252, 0.94));
-            box-shadow: 0 24px 60px rgba(155, 81, 224, 0.18);
-            border: 1px solid rgba(155, 81, 224, 0.16);
-            overflow: hidden;
-        }
-
-        .article-youtube-showcase::before,
-        .article-youtube-showcase::after {
-            content: "";
-            position: absolute;
-            border-radius: 999px;
-            filter: blur(18px);
-            opacity: 0.58;
-            pointer-events: none;
-        }
-
-        .article-youtube-showcase::before {
-            width: 150px;
-            height: 150px;
-            right: -44px;
-            top: -38px;
-            background: rgba(255, 198, 41, 0.46);
-        }
-
-        .article-youtube-showcase::after {
-            width: 170px;
-            height: 170px;
-            left: -54px;
-            bottom: -48px;
-            background: rgba(45, 212, 191, 0.34);
-        }
-
-        .article-youtube-frame {
-            position: relative;
-            z-index: 1;
-            aspect-ratio: 9 / 16;
-            border-radius: 26px;
-            overflow: hidden;
-            background: #111827;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-        }
-
-        .article-youtube-frame iframe {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
         }
 
         .article-content {
             font-size: 19px;
             color: var(--text-main);
-            margin-bottom: 60px;
-            font-weight: 400;
+            margin-bottom: 80px;
+            font-weight: 300;
         }
 
         .article-content p {
@@ -217,164 +136,12 @@
             border-bottom-style: solid;
         }
 
-        /* Article Promo Card Local Styles */
-        .article-app-promo {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 245, 250, 0.98) 50%, rgba(255, 253, 245, 0.95) 100%) !important;
-            border: 2px solid rgba(155, 81, 224, 0.18) !important;
-            border-radius: 24px !important;
-            padding: 35px !important;
-            margin: 40px 0 !important;
-            box-shadow: 0 15px 35px rgba(155, 81, 224, 0.08), 0 0 25px rgba(242, 201, 76, 0.08) !important;
-            position: relative !important;
-            overflow: hidden !important;
-            display: block !important;
-            text-align: left !important;
-        }
-
-        .article-app-promo::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -30%;
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle, rgba(242, 201, 76, 0.15) 0%, transparent 70%);
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        .article-app-promo .promo-content {
-            display: flex !important;
-            align-items: center !important;
-            gap: 35px !important;
-            position: relative !important;
-            z-index: 1 !important;
-        }
-
-        .article-app-promo .promo-text {
-            flex: 1 !important;
-        }
-
-        .article-app-promo .promo-text h3 {
-            font-family: 'Prompt', sans-serif !important;
-            font-size: 22px !important;
-            color: var(--text-title) !important;
-            margin-top: 0 !important;
-            margin-bottom: 12px !important;
-            font-weight: 700 !important;
-            line-height: 1.3 !important;
-        }
-
-        .article-app-promo .promo-text p {
-            font-size: 15px !important;
-            color: var(--text-muted) !important;
-            line-height: 1.6 !important;
-            margin-bottom: 24px !important;
-        }
-
-        .article-app-promo .promo-image {
-            width: 130px !important;
-            flex-shrink: 0 !important;
-        }
-
-        .article-app-promo .promo-image img {
-            width: 100% !important;
-            height: auto !important;
-            border-radius: 16px !important;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
-            border: 3px solid #1c1830 !important;
-            transform: rotate(3deg) !important;
-            display: block !important;
-        }
-
-        .promo-download-btns {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 12px !important;
-        }
-
-        /* Play Store and App Store Badges Styling */
-        .download-store-btn {
-            display: inline-flex !important;
-            align-items: center !important;
-            background: #0A0813 !important;
-            border: 1px solid rgba(155, 81, 224, 0.25) !important;
-            border-radius: 10px !important;
-            padding: 8px 18px !important;
-            color: white !important;
-            text-decoration: none !important;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-            transition: all 0.3s ease !important;
-            height: 52px !important;
-            min-width: 175px !important;
-            gap: 10px !important;
-            box-shadow: none !important;
-            border-bottom: none !important;
-        }
-
-        .download-store-btn:hover:not(.disabled) {
-            transform: translateY(-3px) !important;
-            border-color: var(--primary) !important;
-            box-shadow: 0 10px 20px rgba(155, 81, 224, 0.2) !important;
-            border-bottom: none !important;
-            background: #0A0813 !important;
-        }
-
-        .download-store-btn.disabled {
-            opacity: 0.6 !important;
-            cursor: not-allowed !important;
-            position: relative !important;
-            background: #12101e !important;
-        }
-
-        .download-store-btn.disabled .badge-coming-soon {
-            font-size: 9px !important;
-            background: var(--accent) !important;
-            color: white !important;
-            font-weight: 700 !important;
-            padding: 2px 6px !important;
-            border-radius: 4px !important;
-            position: absolute !important;
-            top: -10px !important;
-            right: 10px !important;
-            box-shadow: 0 4px 10px rgba(255, 46, 147, 0.4) !important;
-            font-family: 'Prompt' !important;
-        }
-
-        .store-icon {
-            display: flex !important;
-            align-items: center !important;
-            flex-shrink: 0 !important;
-        }
-
-        .store-text-col {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            line-height: 1.15 !important;
-        }
-
-        .store-text-col .store-label {
-            font-size: 9px !important;
-            font-weight: 500 !important;
-            text-transform: uppercase !important;
-            color: #A2A0B5 !important;
-            letter-spacing: 0.5px !important;
-        }
-
-        .store-text-col .store-name {
-            font-size: 15px !important;
-            font-weight: 600 !important;
-            color: white !important;
-        }
-
-        /* Related Section in Magical Theme */
+        /* Related Section in Dark Mode */
         .related-section {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
+            background: var(--dark-surface);
             padding: 80px 0;
             margin-top: 100px;
-            border-top: 1px solid rgba(155, 81, 224, 0.15);
+            border-top: 1px solid #333;
         }
 
         .related-grid {
@@ -383,132 +150,69 @@
             gap: 25px;
         }
 
-        .article-card {
-            position: relative;
-            background: #0f0b24;
-            border-radius: 16px;
+        .related-card {
+            background: var(--dark-surface-2);
+            border-radius: 12px;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
-            color: white;
+            color: inherit;
             display: flex;
             flex-direction: column;
-            height: 320px;
-            border: none;
+            border: 1px solid #444;
         }
 
-        .article-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 30px rgba(15, 11, 36, 0.25);
-            z-index: 2;
+        .related-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary-pink);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 15px var(--accent-glow);
         }
 
         .card-image-wrapper {
             width: 100%;
-            height: 100%;
-            position: relative;
+            height: 160px;
             overflow: hidden;
+            background: #222;
         }
 
-        .card-image {
+        .related-card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.6s ease;
+            transition: transform 0.5s ease;
         }
 
-        .article-card:hover .card-image {
+        .related-card:hover img {
             transform: scale(1.05);
         }
 
-        .card-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(transparent, rgba(15, 11, 36, 0.95) 80%);
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            min-height: 140px;
+        .related-card-content {
+            padding: 18px;
+            flex-grow: 1;
         }
 
-        .card-category {
-            display: inline-block;
-            background: var(--violet);
-            color: white;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            align-self: flex-start;
-            letter-spacing: 0.5px;
-        }
-
-        .card-title {
+        .related-card-title {
             font-family: 'Prompt', sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            color: white;
-            margin: 0 0 12px 0;
-            line-height: 1.4;
-        }
-
-        .card-footer {
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .card-footer .read-more {
-            color: #FF2E93;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s;
-        }
-
-        .article-card:hover .read-more {
-            color: #ff57a9;
-            gap: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: var(--text-title);
         }
 
         @media (max-width: 900px) {
             .related-grid {
-                grid-template-columns: repeat(2, 1fr) !important;
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .article-title {
                 font-size: 32px;
             }
-
-            .article-app-promo .promo-content {
-                flex-direction: column !important;
-                text-align: center !important;
-            }
-
-            .promo-download-btns {
-                justify-content: center !important;
-            }
-
-            .article-app-promo .promo-image {
-                width: 120px !important;
-                margin-top: 15px !important;
-            }
         }
 
         @media (max-width: 500px) {
             .related-grid {
-                grid-template-columns: 1fr !important;
+                grid-template-columns: 1fr;
             }
 
             .article-hero-image {
@@ -522,14 +226,6 @@
         .article-hero-image+.article-content>img:first-child {
             display: none !important;
         }
-
-        .share-buttons i {
-            transition: color 0.2s ease;
-        }
-
-        .share-buttons i:hover {
-            color: var(--primary-pink) !important;
-        }
     </style>
 </head>
 
@@ -540,21 +236,12 @@
             style="display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; padding: 0 20px;">
             <a href="/" style="text-decoration: none; display: flex; align-items: center;">
                 <span
-                    style="font-family: 'Prompt'; font-weight: 800; font-size: 22px; background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">แอปชื่อดี</span>
+                    style="font-family: 'Prompt'; font-weight: 800; font-size: 20px; background: linear-gradient(135deg, #B8860B, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">แอปชื่อดี</span>
             </a>
-            <div style="display: flex; align-items: center; gap: 18px;">
-                <a href="/"
-                    style="text-decoration: none; color: var(--text-muted); font-family: 'Prompt'; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 5px;">
-                    <i data-lucide="home" style="width: 16px;"></i> หน้าแรก
-                </a>
-                <a href="/about"
-                    style="text-decoration: none; color: var(--text-muted); font-family: 'Prompt'; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 5px;">
-                    <i data-lucide="info" style="width: 16px;"></i> เกี่ยวกับเรา
-                </a>
-                <a href="/#download" class="article-nav-download">
-                    <i data-lucide="download" style="width: 14px; height: 14px;"></i> ดาวน์โหลดแอป
-                </a>
-            </div>
+            <a href="/"
+                style="text-decoration: none; color: #666; font-family: 'Prompt'; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 5px;">
+                <i data-lucide="home" style="width: 16px;"></i> หน้าแรก
+            </a>
         </div>
     </nav>
 
@@ -573,131 +260,137 @@
         <img src="{{.Article.ImageURL}}" alt="{{.Article.Title}}" class="article-hero-image">
         {{end}}
 
-        {{if .Article.YouTubeEmbedURL}}
-        <div class="article-youtube-showcase">
-            <div class="article-youtube-frame">
-                <iframe src="{{.Article.YouTubeEmbedURL}}" title="{{.Article.Title}}"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen></iframe>
-            </div>
-        </div>
-        {{end}}
-
         <div class="article-content">
             {{.Article.Content | safeHTML}}
         </div>
 
-        <!-- App Download Promotion Banner -->
-        <div class="article-app-promo">
-            <div class="promo-content">
-                <div class="promo-text">
-                    <h3>🔮 อยากได้ชื่อมงคลที่ส่งเสริมดวงชะตาที่ดีที่สุด?</h3>
-                    <p>ดาวน์โหลดแอปพลิเคชัน <strong>"ชื่อดี"</strong> เพื่อค้นหาและคัดเลือกชื่อที่สมบูรณ์แบบครบ 4 มิติ ทั้งความหมายที่เป็นมงคล ค่าเลขศาสตร์ และเลขพลังเงา มั่นใจในทุกตัวเลือกด้วยระบบ AI อัจฉริยะ!</p>
-                    <div class="promo-download-btns">
-                        <!-- Play Store -->
-                        <a href="https://play.google.com/store/apps/details?id=com.numberniceic.app" class="download-store-btn" target="_blank">
-                            <div class="store-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24" style="vertical-align: middle;">
-                                    <path fill="#00E5FF" d="M30.3 7C28.8 8.5 28 10.9 28 14v484c0 3.1.8 5.5 2.3 7L31 506l264-264L31 6z"/>
-                                    <path fill="#FFC107" d="M346.7 178.6L295 242l51.8 63.4 90.7-51.7c25.7-14.7 25.7-38.7 0-53.4l-90.8-51.7z"/>
-                                    <path fill="#FF3D00" d="M31 6l264 264 51.7-51.4L31 6z"/>
-                                    <path fill="#4CAF50" d="M31 506l315.7-213-51.7-51L31 506z"/>
-                                </svg>
-                            </div>
-                            <div class="store-text-col">
-                                <span class="store-label">GET IT ON</span>
-                                <span class="store-name">Google Play</span>
-                            </div>
-                        </a>
-                        <!-- App Store (Coming Soon) -->
-                        <a href="#" class="download-store-btn disabled" onclick="return false;">
-                            <span class="badge-coming-soon">เร็วๆ นี้</span>
-                            <div class="store-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="22" height="22" fill="white" style="vertical-align: middle;">
-                                    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-48-20.7-77.5-20.7-38.5 0-78.3 21.6-98 55.7-40.2 70.2-10.2 173.2 28.5 229.3 19 27.2 41.5 57.4 71 56.4 28.3-1 39.1-18.2 73.5-18.2 34 0 43.9 18.2 73.5 17.2 30-.5 49.3-27.2 68.3-54.7 22-31.8 31-62.7 31.5-64.3-.7-.3-60.7-23.2-61.3-91.8zM300.2 82c21.3-25.8 18.5-57.7 18.5-57.7s-29.2 1.4-50.5 25.8c-20.8 24-17.1 56-17.1 56s27.8 1.7 49.1-24.1z"/>
-                                </svg>
-                            </div>
-                            <div class="store-text-col">
-                                <span class="store-label">Download on the</span>
-                                <span class="store-name">App Store</span>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                <div class="promo-image">
-                    <img src="/app_screen.png" alt="หน้าจอแอปชื่อดี">
-                </div>
-            </div>
-        </div>
+        <style>
+            /* Tailwind compatibility classes commonly found in content */
+            .flex {
+                display: flex;
+            }
+
+            .justify-center {
+                justify-content: center;
+            }
+
+            .my-6 {
+                margin-top: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .mx-auto {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .rounded-lg {
+                border-radius: 0.5rem;
+            }
+
+            .shadow-lg {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            }
+
+            .article-content img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+            }
+        </style>
 
         <div
-            style="border-top: 1px solid rgba(155, 81, 224, 0.15); margin-top: 40px; padding-top: 20px; display: flex; justify-content: space-between;">
+            style="border-top: 1px solid #eee; margin-top: 40px; padding-top: 20px; display: flex; justify-content: space-between;">
             <div class="share-buttons">
-                <span style="font-size: 14px; color: var(--text-muted); margin-right: 15px;">แชร์บทความ:</span>
-                <i data-lucide="facebook" id="shareFacebook" style="cursor: pointer; margin-right: 15px; color: var(--text-muted); transition: color 0.2s;" title="แชร์ไปยัง Facebook"></i>
-                <i data-lucide="twitter" id="shareTwitter" style="cursor: pointer; margin-right: 15px; color: var(--text-muted); transition: color 0.2s;" title="แชร์ไปยัง Twitter"></i>
-                <i data-lucide="link" id="copyLink" style="cursor: pointer; color: var(--text-muted); transition: color 0.2s;" title="คัดลอกลิงก์"></i>
-                <span id="copyToast" style="font-size: 13px; color: #10B981; margin-left: 15px; display: none; font-weight: 500;">
-                    <i data-lucide="check" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i> คัดลอกลิงก์สำเร็จ!
-                </span>
+                <span style="font-size: 14px; color: #999; margin-right: 15px;">แชร์บทความ:</span>
+                <i data-lucide="facebook" style="cursor: pointer; margin-right: 10px;"></i>
+                <i data-lucide="twitter" style="cursor: pointer; margin-right: 10px;"></i>
+                <i data-lucide="link" style="cursor: pointer;"></i>
             </div>
         </div>
     </article>
 
     <section class="related-section">
         <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 20px;">
-            <h2 style="font-family: 'Prompt'; text-align: center; margin-bottom: 40px; color: var(--text-title);">บทความที่คุณอาจสนใจ</h2>
+            <h2 style="font-family: 'Prompt'; text-align: center; margin-bottom: 40px;">บทความที่คุณอาจสนใจ</h2>
             <div class="related-grid">
                 {{range .Highlights}}
-                <a href="/article/{{.Slug}}" class="article-card">
+                <a href="/article/{{.Slug}}" class="related-card">
                     <div class="card-image-wrapper">
-                        <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}/main_highlight.png{{end}}" alt="{{.Title}}" class="card-image">
-                        <div class="card-overlay">
-                            <span class="card-category">{{.Category}}</span>
-                            <h3 class="card-title">{{.Title}}</h3>
-                            <div class="card-footer">
-                                <span style="display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> 
-                                    {{.PublishedAt.Format "02 Jan 2006"}}
-                                </span>
-                                <span class="read-more">อ่านต่อ <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i></span>
-                            </div>
-                        </div>
+                        <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}/main_highlight.png{{end}}" alt="{{.Title}}">
+                    </div>
+                    <div class="related-card-content">
+                        <h3 class="related-card-title">{{.Title}}</h3>
                     </div>
                 </a>
                 {{else}}
-                <p style="text-align: center; color: var(--text-muted);">ไม่พบข้อความแนะนำ</p>
+                <p style="text-align: center; color: #999;">ไม่พบข้อความแนะนำ</p>
                 {{end}}
             </div>
         </div>
     </section>
 
+    <style>
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .related-card {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+        }
+
+        .card-image-wrapper {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            background: #eee;
+        }
+
+        .related-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .related-card-content {
+            padding: 12px;
+            flex-grow: 1;
+        }
+
+        .related-card-title {
+            font-family: 'Prompt', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        @media (max-width: 900px) {
+            .related-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .related-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
     <script>
         lucide.createIcons();
-
-        // Share functionality
-        const currentUrl = window.location.href;
-        const currentTitle = document.title;
-
-        document.getElementById('shareFacebook').addEventListener('click', () => {
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`, '_blank', 'width=600,height=400');
-        });
-
-        document.getElementById('shareTwitter').addEventListener('click', () => {
-            window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(currentTitle)}`, '_blank', 'width=600,height=400');
-        });
-
-        document.getElementById('copyLink').addEventListener('click', () => {
-            navigator.clipboard.writeText(currentUrl).then(() => {
-                const toast = document.getElementById('copyToast');
-                toast.style.display = 'inline-block';
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-            });
-        });
     </script>
 </body>
 

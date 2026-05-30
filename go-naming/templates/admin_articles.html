@@ -13,32 +13,25 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <style>
         :root {
-            --primary: #E2B237;
-            --primary-light: #F2994A;
-            --secondary: #9B51E0;
-            --accent: #FF2E93;
-            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
-            --card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(155, 81, 224, 0.12);
-            --border-color-hover: rgba(155, 81, 224, 0.32);
-            --text: #2D1E4E;
-            --text-muted: #6C5B7B;
+            --primary: #D4AF37;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
         }
 
         body {
             font-family: 'Sarabun', sans-serif;
-            background: var(--bg) no-repeat fixed;
+            background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 0;
-            min-height: 100vh;
         }
 
         .navbar {
             background: var(--card);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #334155;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -51,7 +44,7 @@
         .logo {
             font-weight: 700;
             font-size: 1.5rem;
-            color: var(--secondary);
+            color: #B8860B;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -72,23 +65,16 @@
         }
 
         h1 {
-            color: var(--text);
+            color: var(--accent);
             margin: 0;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .card {
             background: var(--card);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 24px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.05);
+            border: 1px solid #334155;
         }
 
         .form-grid {
@@ -109,8 +95,7 @@
             display: block;
             margin-bottom: 8px;
             font-size: 14px;
-            color: var(--text-muted);
-            font-weight: 500;
+            color: #94A3B8;
         }
 
         input,
@@ -119,29 +104,19 @@
             width: 100%;
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: #FFFFFF;
-            color: var(--text);
+            border: 1px solid #334155;
+            background: #FFFAF0;
+            color: white;
             box-sizing: border-box;
             font-family: inherit;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.1);
         }
 
         textarea {
             min-height: 100px;
-            resize: vertical;
         }
 
         .btn {
-            background: linear-gradient(135deg, #9B51E0, #FF2E93);
+            background: var(--primary);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -149,22 +124,15 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.2);
         }
 
         .btn:hover {
-            opacity: 0.95;
+            opacity: 0.9;
             transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.3);
         }
 
         .btn-delete {
-            background: #EF4444 !important;
-            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2) !important;
-        }
-
-        .btn-delete:hover {
-            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3) !important;
+            background: #EF4444;
         }
 
         .article-list {
@@ -175,19 +143,12 @@
 
         .article-item {
             background: var(--card);
-            border: 1px solid var(--border-color);
+            border: 1px solid #334155;
             border-radius: 12px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            transition: all 0.2s;
-        }
-
-        .article-item:hover {
-            border-color: var(--border-color-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.1);
         }
 
         .article-img {
@@ -195,18 +156,17 @@
             height: 150px;
             object-fit: cover;
             border-radius: 8px;
-            background: rgba(155, 81, 224, 0.05);
+            background: #0F172A;
         }
 
         .article-info h3 {
             margin: 0;
             font-size: 1.1rem;
-            color: var(--text);
         }
 
         .article-meta {
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: #94A3B8;
             margin-top: 4px;
         }
 
@@ -219,72 +179,69 @@
         }
 
         .status-active {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.2);
             color: #10B981;
         }
 
         .status-draft {
-            background: rgba(245, 158, 11, 0.1);
+            background: rgba(245, 158, 11, 0.2);
             color: #F59E0B;
         }
 
-        /* Custom Quill Styles - Light Theme */
+        /* Custom Quill Styles - Dark Theme Fix */
         .ql-toolbar.ql-snow {
-            background: rgba(255, 255, 255, 0.9) !important;
-            border: 1px solid var(--border-color) !important;
+            background: #334155 !important;
+            border-color: #475569 !important;
             border-radius: 8px 8px 0 0;
         }
 
-        /* Make Icons Dark Purple */
+        /* Make Icons White */
         .ql-snow .ql-stroke {
-            stroke: var(--text) !important;
+            stroke: #F8FAFC !important;
         }
 
         .ql-snow .ql-fill {
-            fill: var(--text) !important;
+            fill: #F8FAFC !important;
         }
 
         .ql-snow .ql-picker {
-            color: var(--text) !important;
+            color: #F8FAFC !important;
         }
 
         /* Hover Effects */
         .ql-snow.ql-toolbar button:hover .ql-stroke,
         .ql-snow.ql-toolbar button.ql-active .ql-stroke {
-            stroke: var(--secondary) !important;
+            stroke: var(--accent) !important;
         }
 
         .ql-snow.ql-toolbar button:hover .ql-fill,
         .ql-snow.ql-toolbar button.ql-active .ql-fill {
-            fill: var(--secondary) !important;
+            fill: var(--accent) !important;
         }
 
         .ql-container.ql-snow {
-            background: #FFFFFF !important;
-            border: 1px solid var(--border-color) !important;
-            border-top: none !important;
+            background: #1e293b !important;
+            border-color: #475569 !important;
             border-radius: 0 0 8px 8px;
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Prompt', sans-serif;
             height: 450px;
-            color: var(--text);
+            color: white;
             font-size: 1.1rem;
         }
 
         .ql-editor.ql-blank::before {
-            color: var(--text-muted) !important;
+            color: #94a3b8 !important;
             font-style: normal;
-            opacity: 0.6;
         }
 
         /* Picker text styling */
         .ql-snow .ql-picker-options {
-            background-color: #FFFFFF !important;
-            border: 1px solid var(--border-color) !important;
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.1);
+            background-color: #1e293b !important;
+            border-color: #475569 !important;
         }
 
         .ql-snow .ql-picker-item:hover {
-            color: var(--secondary) !important;
+            color: var(--accent) !important;
         }
     </style>
 </head>
@@ -318,7 +275,7 @@
         <h3><i class="fas fa-list"></i> รายการบทความทั้งหมด</h3>
         <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 40px;">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead style="background: rgba(155, 81, 224, 0.08); color: var(--text); font-size: 0.95rem; font-weight: 600;">
+                <thead style="background: #334155; color: #94A3B8; font-size: 0.85rem;">
                     <tr>
                         <th style="padding: 12px 16px;">รูป</th>
                         <th style="padding: 12px 16px;">หัวข้อ</th>
@@ -362,11 +319,6 @@
                     <input type="text" id="image_url" placeholder="https://...">
                 </div>
                 <div class="form-group">
-                    <label>วิดีโอ YouTube (URL)</label>
-                    <input type="url" id="youtube_url" placeholder="https://www.youtube.com/watch?v=...">
-                    <small style="display:block; margin-top:6px; color: var(--text-muted);">รองรับเฉพาะลิงก์ YouTube / youtu.be ระบบจะแปลงเป็นวิดีโอให้เอง</small>
-                </div>
-                <div class="form-group">
                     <label>ลำดับปักหมุด (เลขมากอยู่บนสุด)</label>
                     <input type="number" id="pin_order" value="0">
                 </div>
@@ -397,33 +349,6 @@
     </div>
 
     <script>
-        // Register image attributes for Quill to prevent sanitizing style/width
-        var ImageFormat = Quill.import('formats/image');
-        class CustomImage extends ImageFormat {
-            static formats(domNode) {
-                let formats = super.formats(domNode);
-                if (domNode.hasAttribute('width')) {
-                    formats['width'] = domNode.getAttribute('width');
-                }
-                if (domNode.hasAttribute('style')) {
-                    formats['style'] = domNode.getAttribute('style');
-                }
-                return formats;
-            }
-            format(name, value) {
-                if (name === 'width' || name === 'style') {
-                    if (value) {
-                        this.domNode.setAttribute(name, value);
-                    } else {
-                        this.domNode.removeAttribute(name);
-                    }
-                } else {
-                    super.format(name, value);
-                }
-            }
-        }
-        Quill.register(CustomImage, true);
-
         // Initialize Quill
         var quill = new Quill('#editor-container', {
             theme: 'snow',
@@ -437,19 +362,6 @@
                     ['clean']
                 ]
             }
-        });
-
-        // Custom Image Handler to prompt for URL and Width
-        quill.getModule('toolbar').addHandler('image', () => {
-            const url = prompt('กรุณาใส่ URL ของรูปภาพที่คัดลอกมาจากคลังภาพ:');
-            if (!url) return;
-            
-            const width = prompt('ระบุความกว้างของรูปภาพ (เช่น 50%, 75%, 400px หรือปล่อยว่างเพื่อใช้ 100%):', '50%');
-            const finalWidth = width ? width : '100%';
-            
-            const range = quill.getSelection(true);
-            const imgHtml = `<img src="${url}" style="width: ${finalWidth}; max-width: 100%; display: block; margin: 15px auto;" />`;
-            quill.clipboard.dangerouslyPasteHTML(range.index, imgHtml);
         });
 
         document.addEventListener('DOMContentLoaded', loadArticles);
@@ -470,29 +382,25 @@
 
                 data.forEach(item => {
                     const tr = document.createElement('tr');
-                    tr.style.borderTop = '1px solid var(--border-color)';
-                    tr.style.transition = 'background-color 0.2s';
-                    tr.addEventListener('mouseenter', () => tr.style.backgroundColor = 'rgba(155, 81, 224, 0.02)');
-                    tr.addEventListener('mouseleave', () => tr.style.backgroundColor = 'transparent');
+                    tr.style.borderTop = '1px solid #334155';
                     tr.innerHTML = `
                         <td style="padding: 12px 16px;">
-                            <img src="${item.image_url || item.youtube_thumbnail_url || 'https://via.placeholder.com/50x50'}" style="width: 50px; height: 35px; border-radius: 4px; object-fit: cover; background: rgba(155, 81, 224, 0.05); border: 1px solid var(--border-color);">
+                            <img src="${item.image_url || 'https://via.placeholder.com/50x50'}" style="width: 50px; height: 35px; border-radius: 4px; object-fit: cover; background: #000;">
                         </td>
                         <td style="padding: 12px 16px;">
-                            <div style="font-weight: 500; font-size: 0.95rem; color: var(--text);">${item.title}</div>
-                            <small style="color: var(--text-muted); font-size: 0.8rem; font-weight: 400; display: block; margin-top: 2px;">/${item.slug}</small>
-                            ${item.youtube_url ? '<small style="color: #dc2626; font-size: 0.78rem; display: block; margin-top: 2px;"><i class="fab fa-youtube"></i> มีวิดีโอ YouTube</small>' : ''}
+                            <div style="font-weight: 500; font-size: 0.95rem;">${item.title}</div>
+                            <small style="color: #94A3B8;">/${item.slug}</small>
                         </td>
-                        <td style="padding: 12px 16px; font-size: 0.9rem; color: var(--text);">${item.category}</td>
+                        <td style="padding: 12px 16px; font-size: 0.9rem;">${item.category}</td>
                         <td style="padding: 12px 16px;">
                             <span class="status-badge ${item.is_published ? 'status-active' : 'status-draft'}">
                                 ${item.is_published ? 'เผยแพร่' : 'ฉบับร่าง'}
                             </span>
                         </td>
-                        <td style="padding: 12px 16px; color: var(--text);">${item.pin_order}</td>
+                        <td style="padding: 12px 16px;">${item.pin_order}</td>
                         <td style="padding: 12px 16px; display: flex; gap: 8px;">
-                            <button class="btn" style="padding: 6px 12px; font-size: 0.8rem; box-shadow: none;" onclick="editArticle(${item.art_id})"><i class="fas fa-edit"></i> แก้ไข</button>
-                            <button class="btn btn-delete" style="padding: 6px 10px; font-size: 0.8rem; box-shadow: none;" onclick="deleteArticle(${item.art_id})"><i class="fas fa-trash"></i></button>
+                            <button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editArticle(${item.art_id})"><i class="fas fa-edit"></i> แก้ไข</button>
+                            <button class="btn btn-delete" style="padding: 6px 10px; font-size: 0.8rem;" onclick="deleteArticle(${item.art_id})"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -520,7 +428,6 @@
                 document.getElementById('title_short').value = item.title_short || '';
                 document.getElementById('category').value = item.category || 'ความรู้';
                 document.getElementById('image_url').value = item.image_url || '';
-                document.getElementById('youtube_url').value = item.youtube_url || '';
                 document.getElementById('pin_order').value = item.pin_order || 0;
                 document.getElementById('excerpt').value = item.excerpt || '';
 
@@ -549,7 +456,6 @@
                 title_short: document.getElementById('title_short').value,
                 category: document.getElementById('category').value,
                 image_url: document.getElementById('image_url').value,
-                youtube_url: document.getElementById('youtube_url').value,
                 pin_order: parseInt(document.getElementById('pin_order').value || 0),
                 excerpt: document.getElementById('excerpt').value,
                 content: contentHtml,
@@ -605,7 +511,6 @@
             document.getElementById('title_short').value = '';
             document.getElementById('category').value = 'ความรู้';
             document.getElementById('image_url').value = '';
-            document.getElementById('youtube_url').value = '';
             document.getElementById('pin_order').value = '0';
             document.getElementById('excerpt').value = '';
             quill.setContents([]); // Clear Quill

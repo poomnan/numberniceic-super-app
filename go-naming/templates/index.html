@@ -17,9 +17,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=14">
+    <link rel="stylesheet" href="styles.css?v=4">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -27,9 +27,8 @@
     <nav class="navbar">
         <div class="container navbar-container">
             <a href="/" class="logo" style="text-decoration: none;">
-                <span class="logo-text">
-                    <span style="font-family: 'Prompt'; font-weight: 800; font-size: 26px;">แอปชื่อดี</span>
-                </span>
+                <span class="logo-text"
+                    style="font-family: 'Prompt'; font-weight: 800; font-size: 24px; background: linear-gradient(135deg, #B8860B, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">แอปชื่อดี</span>
             </a>
 
             <button class="mobile-menu-btn" id="mobileMenuBtn">
@@ -39,11 +38,10 @@
             <div class="nav-links desktop-menu">
                 <a href="/">หน้าแรก</a>
                 <a href="#features">ศาสตร์ทั้ง 4</a>
-                <a href="#app-review">รีวิวแอป</a>
+
                 <a href="#knowledge">ความรู้คู่ชื่อมงคล</a>
-                <a href="#how-ranking">วิธีจัดอันดับ</a>
-                <a href="/about">เกี่ยวกับเรา</a>
-                <a href="#download" class="nav-download-btn"><i data-lucide="download" style="width: 15px; height: 15px;"></i> ดาวน์โหลดแอป</a>
+                <a href="/how-ranking">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="nav-link">🌌 ดวงดาว</a>
             </div>
         </div>
 
@@ -52,22 +50,20 @@
             <div class="mobile-menu-content">
                 <a href="/" class="mobile-link">หน้าแรก</a>
                 <a href="#features" class="mobile-link">ศาสตร์ทั้ง 4</a>
-                <a href="#app-review" class="mobile-link">รีวิวแอป</a>
+
                 <a href="#knowledge" class="mobile-link">ความรู้คู่ชื่อมงคล</a>
-                <a href="#how-ranking" class="mobile-link">วิธีจัดอันดับ</a>
-                <a href="/about" class="mobile-link">เกี่ยวกับเรา</a>
-                <a href="#download" class="mobile-download-btn">ดาวน์โหลดแอป</a>
+                <a href="/how-ranking" class="mobile-link">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="mobile-link">🌌 ดวงดาว</a>
             </div>
         </div>
     </nav>
 
-    <!-- Highlight News Section -->
     <section class="highlight-news">
         <div class="container highlight-grid">
             {{range $index, $item := .Highlights}}
             {{if eq $index 0}}
             <a href="/article/{{$item.Slug}}" class="grid-item large">
-                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else if $item.YouTubeThumbnailURL}}{{$item.YouTubeThumbnailURL}}{{else}}1024x500.png{{end}}"
+                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else}}1024x500.png{{end}}"
                     alt="บทความแรงบันดาลใจสำหรับการตั้งชื่อมงคลและวิเคราะห์ชื่อ {{$item.Title}}">
                 <div class="item-content">
                     <span class="category-tag">{{$item.Category}}</span>
@@ -77,7 +73,7 @@
             </a>
             {{else}}
             <a href="/article/{{$item.Slug}}" class="grid-item small">
-                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else if $item.YouTubeThumbnailURL}}{{$item.YouTubeThumbnailURL}}{{else}}Screenshot_1772810719.png{{end}}"
+                <img src="{{if $item.ImageURL}}{{$item.ImageURL}}{{else}}Screenshot_1772810719.png{{end}}"
                     alt="แรงบันดาลใจค้นหาชื่อมงคลจากบทความ {{$item.Title}}">
                 <div class="item-content">
                     <span class="category-tag">{{$item.Category}}</span>
@@ -106,8 +102,8 @@
                 </div>
             </a>
             <a href="#" class="grid-item small">
-                <div class="grid-icon-box" style="background: linear-gradient(135deg, #D4AF37, #2C1810);">
-                    <i data-lucide="shield" style="color: white; width: 40px; height: 40px;"></i>
+                <div class="grid-icon-box" style="background: linear-gradient(135deg, #D4AF37, #FFF8E1);">
+                    <i data-lucide="shield" style="color: #2C1810; width: 40px; height: 40px;"></i>
                 </div>
                 <div class="item-content">
                     <span class="category-tag">Shadow Power</span>
@@ -128,7 +124,8 @@
             <div class="grid-item text-list">
                 <ul>
                     {{range $index, $item := .Popular}}
-                    <li><a href="/article/{{$item.Slug}}">{{$item.TitleShort}}</a></li>
+                    <li><a href="/article/{{$item.Slug}}">{{if
+                            $item.TitleShort}}{{$item.TitleShort}}{{else}}{{$item.Title}}{{end}}</a></li>
                     {{else}}
                     <li><a href="/guide-change-name">วิธีเปลี่ยนชื่อที่อำเภอใน 1 วัน</a></li>
                     <li><a href="#">รวมชื่อมงคลตามวันเกิดปี 2567</a></li>
@@ -144,145 +141,71 @@
         </div>
     </section>
 
-    <!-- Hero Section -->
     <header class="hero">
         <div class="hero-glow"></div>
         <div class="container hero-content">
             <div class="hero-text">
-                <div class="badge-vip">✨ ค้นพบความสมบูรณ์แบบของชีวิต</div>
-                <h1>วิเคราะห์ & ตั้งชื่อมงคล <br><span class="highlight">ด้วยขุมพลัง AI อัจฉริยะ</span></h1>
-                <p>ช่วยตั้งชื่อลูก เปลี่ยนชื่อเพื่อเสริมพลังดวงชะตา และวิเคราะห์เลขศาสตร์ของชื่อเดิมอย่างละเอียดรอบด้าน คัดกรองครบ 4 มิติเพื่อเสริมการงาน การเงิน และชีวิตที่ดีกว่าเดิม</p>
-                
+                <div class="badge-vip">✨ Exclusive VIP Feature</div>
+                <h1>ตั้งชื่อมงคลด้วย AI <br><span class="highlight">ค้นหาชื่อดีจากความหมาย เลขศาสตร์ และพลังเงา</span></h1>
+                <p>ช่วยตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง และวิเคราะห์ชื่อเดิม เพื่อค้นหาชื่อที่เหมาะกับชีวิตคุณมากขึ้น
+                    ทั้งความหมาย เลขศาสตร์ชื่อ พลังเงา และความเหมาะสมโดยรวม</p>
                 <div class="hero-cta">
-                    <!-- Google Play (Active) -->
-                    <a href="https://play.google.com/store/apps/details?id=com.numberniceic.app" class="download-store-btn" target="_blank">
-                        <div class="store-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24" style="vertical-align: middle;">
-                                <path fill="#00E5FF" d="M30.3 7C28.8 8.5 28 10.9 28 14v484c0 3.1.8 5.5 2.3 7L31 506l264-264L31 6z"/>
-                                <path fill="#FFC107" d="M346.7 178.6L295 242l51.8 63.4 90.7-51.7c25.7-14.7 25.7-38.7 0-53.4l-90.8-51.7z"/>
-                                <path fill="#FF3D00" d="M31 6l264 264 51.7-51.4L31 6z"/>
-                                <path fill="#4CAF50" d="M31 506l315.7-213-51.7-51L31 506z"/>
-                            </svg>
-                        </div>
-                        <div class="store-text-col">
-                            <span class="store-label">GET IT ON</span>
-                            <span class="store-name">Google Play</span>
-                        </div>
-                    </a>
-
-                    <!-- App Store (Dummy Coming Soon) -->
-                    <a href="#" class="download-store-btn disabled" onclick="return false;">
-                        <span class="badge-coming-soon">เร็วๆ นี้</span>
-                        <div class="store-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="22" height="22" fill="white" style="vertical-align: middle;">
-                                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-48-20.7-77.5-20.7-38.5 0-78.3 21.6-98 55.7-40.2 70.2-10.2 173.2 28.5 229.3 19 27.2 41.5 57.4 71 56.4 28.3-1 39.1-18.2 73.5-18.2 34 0 43.9 18.2 73.5 17.2 30-.5 49.3-27.2 68.3-54.7 22-31.8 31-62.7 31.5-64.3-.7-.3-60.7-23.2-61.3-91.8zM300.2 82c21.3-25.8 18.5-57.7 18.5-57.7s-29.2 1.4-50.5 25.8c-20.8 24-17.1 56-17.1 56s27.8 1.7 49.1-24.1z"/>
-                            </svg>
-                        </div>
-                        <div class="store-text-col">
-                            <span class="store-label">Download on the</span>
-                            <span class="store-name">App Store</span>
-                        </div>
-                    </a>
-
-                    <a href="#features" class="btn-secondary" style="margin-left: 10px;">
-                        รายละเอียดศาสตร์
-                    </a>
+                    <a href="#knowledge" class="btn-secondary">เรียนรู้ศาสตร์การตั้งชื่อ</a>
                 </div>
             </div>
             <div class="hero-visual">
                 <div class="hero-image-container">
-                    <img src="app_screen.png" alt="แอปพลิเคชันชื่อดี ค้นหาชื่อมงคลและวิเคราะห์ชื่อด้วย AI" class="main-mockup">
-                    <div class="floating-badge badge-stars">
-                        <i data-lucide="star" style="color: var(--secondary); fill: var(--secondary); width: 16px; height: 16px;"></i>
-                        <span>คะแนนรีวิว 4.9 ดาว</span>
-                    </div>
-                    <div class="floating-badge badge-downloads">
-                        <i data-lucide="download" style="color: var(--accent); width: 16px; height: 16px;"></i>
-                        <span>ดาวน์โหลดแล้ว 100K+</span>
-                    </div>
+                    <img src="1024x500.png" alt="ชื่อดี.com แอปค้นหาชื่อมงคลและวิเคราะห์ชื่อด้วย AI" class="main-mockup">
                     <div class="hero-glow-sphere"></div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Features Section -->
     <section id="features" class="features">
         <div class="container">
             <div class="section-header">
-                <h2>ยกระดับดวงชะตาชีวิต <br><span>"ด้วยความสมบูรณ์แบบทั้ง 4 มิติ"</span></h2>
-                <p>แอปชื่อดีไม่ได้ดูแค่ความไพเราะ แต่ผสมผสานเทคโนโลยี AI และองค์ความรู้ศาสตร์โบราณเพื่อความสมบูรณ์แบบในทุกด้าน</p>
+                <h2>ค้นพบชื่อมงคล <br><span>"ดีสมบูรณ์แบบทั้ง 4 มิติ"</span></h2>
+                <p>เราไม่ได้ดูแค่ชื่อเพราะหรือความหมายดี แต่ช่วยคัดชื่อที่เหมาะจาก 4 มิติสำคัญคือ ความหมาย
+                    เลขศาสตร์ พลังเงา และความเหมาะสมโดยรวม เพื่อใช้ตั้งชื่อลูก เปลี่ยนชื่อใหม่ หรือวิเคราะห์ชื่อเดิม</p>
             </div>
             <div class="feature-grid">
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <div class="phone-mockup-frame">
-                            <div class="phone-notch"></div>
-                            <div class="phone-inner-screen">
-                                <img src="Screenshot_1772810719.png" alt="ค้นหาชื่อตามความหมายด้วย AI Search">
-                            </div>
-                            <div class="phone-home-indicator"></div>
-                        </div>
-                    </div>
-                    <div class="card-icon">
-                        <i data-lucide="search"></i>
+                        <img src="Screenshot_1772810719.png" alt="ค้นหาชื่อตามความหมายด้วย AI Search">
                     </div>
                     <h3>1. ค้นหาชื่อตามความหมายด้วย AI</h3>
-                    <p>พิมพ์ความหมายหรือแนวคิดที่คุณต้องการ แล้วระบบจะช่วยค้นหาชื่อมงคลที่มีรากศัพท์และความหมายตรงใจอย่างรวดเร็วและเป็นธรรมชาติ</p>
+                    <p>พิมพ์ความหมายที่คุณต้องการ แล้วระบบจะช่วยค้นหาชื่อมงคล ชื่อตามความหมาย
+                        และชื่อเสริมดวงที่ใกล้เคียงที่สุด เหมาะทั้งคนที่กำลังตั้งชื่อลูกและคนที่อยากเปลี่ยนชื่อใหม่</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <div class="phone-mockup-frame">
-                            <div class="phone-notch"></div>
-                            <div class="phone-inner-screen">
-                                <img src="Screenshot_1772810728.png" alt="วิเคราะห์เลขศาสตร์ชื่อและค้นหาชื่อเสริมดวง">
-                            </div>
-                            <div class="phone-home-indicator"></div>
-                        </div>
-                    </div>
-                    <div class="card-icon">
-                        <i data-lucide="binary"></i>
+                        <img src="Screenshot_1772810728.png" alt="วิเคราะห์เลขศาสตร์ชื่อและค้นหาชื่อเสริมดวง">
                     </div>
                     <h3>2. วิเคราะห์เลขศาสตร์ชื่ออย่างละเอียด</h3>
-                    <p>ถอดรหัสค่าตัวเลขของชื่อเพื่อตรวจสอบดวงดาวและดวงชะตา วิเคราะห์พลังดวงดาวที่ส่งเสริมชีวิต ด้านการเงิน ความรัก และความสำเร็จ</p>
+                    <p>ช่วยเช็กว่าชื่อเดิมดีไหม หรือคัดชื่อใหม่ที่มีเลขศาสตร์ชื่อดี เหมาะกับเป้าหมายชีวิต การงาน การเงิน
+                        และชื่อเสริมดวงในแบบที่คุณต้องการ</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <div class="phone-mockup-frame">
-                            <div class="phone-notch"></div>
-                            <div class="phone-inner-screen">
-                                <img src="Screenshot_1772810752.png" alt="วิเคราะห์พลังเงาของชื่อเพื่อคัดชื่อที่เหมาะสม">
-                            </div>
-                            <div class="phone-home-indicator"></div>
-                        </div>
-                    </div>
-                    <div class="card-icon">
-                        <i data-lucide="shield-alert"></i>
+                        <img src="Screenshot_1772810752.png" alt="วิเคราะห์พลังเงาของชื่อเพื่อคัดชื่อที่เหมาะสม">
                     </div>
                     <h3>3. อ่านพลังเงาเพื่อมองชื่อให้ลึกขึ้น</h3>
-                    <p>ศาสตร์วิเคราะห์เลขพลังเงา (Shadow Power) เพื่อค้นหาอุปสรรคและโอกาสแฝง คัดเลือกเฉพาะชื่อที่สะอาดและเป็นมงคลแท้จริง</p>
+                    <p>นอกจากความหมายและเลขศาสตร์ ระบบยังวิเคราะห์พลังเงาเพื่อช่วยมองพลังแฝงของชื่อ
+                        เหมาะสำหรับคนที่อยากวิเคราะห์ชื่ออย่างรอบด้านก่อนตัดสินใจใช้จริง</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-image-wrapper">
-                        <div class="phone-mockup-frame">
-                            <div class="phone-notch"></div>
-                            <div class="phone-inner-screen">
-                                <img src="Screenshot_1772810777.png" alt="คัดกรองชื่อมงคล 4 มิติและวิเคราะห์ชื่อแบบครบระบบ">
-                            </div>
-                            <div class="phone-home-indicator"></div>
-                        </div>
+                        <img src="Screenshot_1772810777.png" alt="คัดกรองชื่อมงคล 4 มิติและวิเคราะห์ชื่อแบบครบระบบ">
                     </div>
-                    <div class="card-icon">
-                        <i data-lucide="sliders"></i>
-                    </div>
-                    <h3>4. ระบบคัดกรองชื่อมงคลครบวงจร</h3>
-                    <p>รวบรวมผลลัพธ์ของความหมายอักษร เลขศาสตร์พลังงานบวก เลขพลังเงา และทิศทางดวงชะตา เพื่อชื่อที่เหมาะกับวันเกิดคุณมากที่สุด</p>
+                    <h3>4. คัดชื่อที่เหมาะกับคุณมากขึ้นแบบครบระบบ</h3>
+                    <p>รวมผลจากความหมาย เลขศาสตร์ พลังเงา และเกณฑ์คัดกรองสำคัญไว้ในที่เดียว
+                        เพื่อช่วยหาชื่อมงคลที่เหมาะกับคุณมากขึ้นอย่างเป็นระบบ</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- AI Section -->
     <section id="ai" class="ai-tech">
         <div class="container ai-content">
             <div class="ai-visual">
@@ -292,256 +215,81 @@
                 </div>
             </div>
             <div class="ai-text">
-                <h2>ขุมพลัง Hybrid AI Algorithm <br>นวัตกรรมล่าสุดเพื่อคุณ</h2>
-                <p>เราพัฒนาและฝึกฝนโมเดล AI เพื่อทำความเข้าใจความสัมพันธ์ของคำและความหมายเชิงอักษรศาสตร์โบราณ ช่วยส่งต่อชื่อที่เป็นมงคลอย่างเป็นระบบ</p>
+                <h2>นวัตกรรม AI <br>เพื่อศาสตร์การตั้งชื่อ</h2>
+                <p>เราใช้ระบบ <strong>Hybrid AI Algorithm</strong> เพื่อช่วยค้นหาชื่อจากความหมาย วิเคราะห์ชื่อเดิม
+                    และเชื่อมคำค้นกับแรงบันดาลใจจากชื่อคนต้นแบบหรือบทความที่เกี่ยวข้องอย่างเป็นธรรมชาติ</p>
                 <ul class="ai-list">
-                    <li><i data-lucide="check" style="color: #10B981;"></i> วิเคราะห์รากศัพท์ภาษาบาลี สันสกฤต และไทยโบราณ</li>
-                    <li><i data-lucide="check" style="color: #10B981;"></i> ระบบ Semantic Search เพื่อหาชื่อทดแทนที่ความหมายใกล้เคียง</li>
-                    <li><i data-lucide="check" style="color: #10B981;"></i> ความแม่นยำทางสถิติและเลขศาสตร์ด้วยระบบฐานข้อมูลขนาดใหญ่</li>
+                    <li><i data-lucide="check"></i> วิเคราะห์รากศัพท์และความหมายเชิงลึกเพื่อค้นหาชื่อตามความหมาย</li>
+                    <li><i data-lucide="check"></i> semantic search ช่วยแนะนำชื่อที่ความหมายใกล้เคียงอัตโนมัติ</li>
+                    <li><i data-lucide="check"></i> รองรับทั้งตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง และวิเคราะห์ชื่อเดิม</li>
                 </ul>
             </div>
         </div>
     </section>
 
-    <!-- Analysis Showcase Section -->
+    <!-- New Analysis Showcase Section -->
     <section class="analysis-showcase">
         <div class="container showcase-content">
             <div class="showcase-text">
-                <div class="badge-vip">🏆 วิเคราะห์เชิงลึกอย่างมั่นใจ</div>
-                <h2>ผลลัพธ์ที่แม่นยำ <br><span class="highlight">ด้วยวิเคราะห์ Triple Lucky x3</span></h2>
-                <p>มั่นใจในทุกตัวเลือกชื่อของคุณ ด้วยผลลัพธ์การรายงานแบบเจาะลึก 3 ชั้น ทั้งค่าเลขศาสตร์ชื่อ เลขพลังเงา และทิศทางดวงชะตาร่วมกับนามสกุล เพื่อผลลัพธ์ที่ดีที่สุดในการเปลี่ยนชื่อ</p>
+                <div class="badge-vip">🛡️ แม่นยำ & ละเอียดที่สุด</div>
+                <h2>วิเคราะห์ผลลัพธ์ <br><span class="highlight">Triple Lucky x3</span></h2>
+                <p>ไม่ใช่แค่ชื่อดี แต่ต้องช่วยตัดสินใจได้จริง เราวิเคราะห์ทั้งชื่อเดิม ชื่อใหม่ เลขศาสตร์ชื่อ
+                    และพลังเงา เพื่อช่วยคัดชื่อมงคลที่เหมาะกับชีวิตคุณมากขึ้น</p>
             </div>
             <div class="showcase-visual">
                 <div class="visual-glow"></div>
-                <img src="Screenshot_1772810777.png" alt="หน้าจอวิเคราะห์ชื่อ เลขศาสตร์ และพลังเงาแบบ Triple Lucky บนแอปชื่อดี">
-            </div>
-        </div>
-    </section>
-
-    <!-- App Review Section -->
-    <section id="app-review" class="app-review">
-        <div class="container">
-            <div class="section-header">
-                <div class="badge-vip" style="margin-bottom: 16px;">📺 App Review</div>
-                <h2>รีวิวจากผู้ใช้งานจริง<br><span>"ชมการใช้งานแอปพลิเคชันชื่อดี"</span></h2>
-                <p>เจาะลึกทุกการใช้งาน วิเคราะห์เลขศาสตร์ และดูเลขพลังเงาได้ง่าย ๆ เพียงปลายนิ้วสัมผัส</p>
-            </div>
-            
-            <div class="video-container-wrapper" style="position: relative; max-width: 400px; margin: 30px auto 0; z-index: 10; display: flex; justify-content: center;">
-                <div class="video-glow-sphere-1"></div>
-                <div class="video-glow-sphere-2"></div>
-                
-                <!-- Phone Mockup Container -->
-                <div class="review-phone-frame" style="width: 100%; display: flex; justify-content: center; align-items: center;">
-                    <div class="review-phone" style="width: 340px; aspect-ratio: 9 / 16; max-width: 100%; position: relative; background: #000; border: 12px solid #1c1c1e; border-radius: 40px; box-shadow: 0 25px 60px rgba(155, 81, 224, 0.25), 0 0 40px rgba(242, 201, 76, 0.1); overflow: hidden; display: flex; flex-direction: column;">
-                        <div class="review-phone-speaker" style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 35px; height: 3px; background: #2c2c2e; border-radius: 2px; z-index: 20;"></div>
-                        <div class="review-phone-island" style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 80px; height: 18px; background: #000; border-radius: 20px; z-index: 20; box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.2);"></div>
-                        <div class="review-phone-screen" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 28px; overflow: hidden; background: #000;">
-                            <iframe src="https://www.youtube.com/embed/sISp-CjJPMY?playsinline=1&rel=0" 
-                                    title="รีวิวแอปพลิเคชันชื่อดี" 
-                                    frameborder="0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                                    allowfullscreen
-                                    style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 316%; height: 100%; border: 0;"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Smart Ranking Section -->
-    <section id="how-ranking" class="features" style="background: linear-gradient(180deg, rgba(255, 240, 248, 0.5) 0%, rgba(250, 248, 255, 0.8) 100%); border-top: 1px solid var(--border-color);">
-        <div class="container">
-            <div class="section-header">
-                <div class="badge-vip" style="margin-bottom: 16px;">🏆 Smart Ranking System</div>
-                <h2>ระบบจัดอันดับ<br><span>"ชื่อมงคลอัจฉริยะ"</span></h2>
-                <p>ไขข้อข้องใจ! ทำความเข้าใจขั้นตอนและเกณฑ์การคำนวณที่ประมวลผลผ่านระบบ AI เพื่อคัดสรรชื่อที่ดีที่สุดสำหรับคุณ</p>
-                
-                <!-- Formula Box -->
-                <div class="ranking-formula-box" style="margin-top: 30px; display: inline-flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; background: rgba(155, 81, 224, 0.05); border: 1px solid rgba(155, 81, 224, 0.15); border-radius: 16px; padding: 12px 24px; font-family: 'Prompt', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-light); max-width: 100%; box-sizing: border-box;">
-                    <span style="color: var(--accent); font-weight: 700;">⚡ Ranking List</span>
-                    <span style="color: var(--text-gray); font-weight: 400;">=</span>
-                    <span style="background: var(--gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">🎯 มีแม่แบบชื่อ</span>
-                    <span style="color: var(--text-gray); font-weight: 400;">+</span>
-                    <span style="background: var(--violet); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✅ ผ่านตัวคัด SAT/SHA</span>
-                    <span style="color: var(--text-gray); font-weight: 400;">+</span>
-                    <span style="color: var(--secondary); font-weight: 700;">🏆 final_rank_score</span>
-                </div>
-            </div>
-
-            <div class="feature-grid">
-                <!-- Card 1 -->
-                <div class="feature-card" style="position: relative;">
-                    <div class="card-icon" style="background: rgba(155, 81, 224, 0.06); color: var(--secondary);">
-                        <i data-lucide="target"></i>
-                    </div>
-                    <h3>1. ต้องมีแม่แบบชื่อ</h3>
-                    <p style="margin-bottom: 12px;">ระบบจำเป็นต้องมีชื่ออ้างอิงหรือข้อกำหนดความหมายที่ผู้ใช้กรอกเพื่อแปลงเป็นแม่แบบ หากยังไม่มีแม่แบบตั้งต้น ระบบจะนำเสนอคำแนะนำและไอเดียชื่อทั่วไปแทนการจัดอันดับ</p>
-                    <div style="font-size: 12px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; border-top: 1px solid var(--border-color); padding-top: 8px;">
-                         สถานะเกณฑ์: Required (จำเป็น)
-                    </div>
-                </div>
-
-                <!-- Card 2 -->
-                <div class="feature-card">
-                    <div class="card-icon" style="background: rgba(255, 46, 147, 0.06); color: var(--accent);">
-                        <i data-lucide="check-square"></i>
-                    </div>
-                    <h3>2. ผ่านเงื่อนไขตัวคัดกรอง</h3>
-                    <p style="margin-bottom: 12px;">ชื่อในอันดับต้องตรงตามปุ่มตัวคัดกรองที่ผู้ใช้เลือกเปิดใช้งาน: <strong>คัดเลขศาสตร์ดี (SAT)</strong> หรือ <strong>คัดพลังเงาดี (SHA)</strong> หากเปิดใช้ทั้งสอง ชื่อต้องผ่านทั้งสองเกณฑ์อย่างสมบูรณ์</p>
-                    <div style="font-size: 12px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; border-top: 1px solid var(--border-color); padding-top: 8px;">
-                         สถานะเกณฑ์: Active Filters Gate
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="feature-card">
-                    <div class="card-icon" style="background: rgba(226, 178, 55, 0.06); color: var(--primary);">
-                        <i data-lucide="award"></i>
-                    </div>
-                    <h3>3. คะแนนจากระบบหลังบ้าน</h3>
-                    <p style="margin-bottom: 12px;">ใช้เกณฑ์คะแนนอันดับ <strong>final_rank_score</strong> จาก Backend เป็นโครงสร้างหลักในการเรียงลำดับ เพื่อรับประกันว่าลำดับชื่อบนเว็บบราวเซอร์และในแอปมือถือจะเหมือนกัน</p>
-                    <div style="font-size: 12px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; border-top: 1px solid var(--border-color); padding-top: 8px;">
-                         สถานะเกณฑ์: Primary Sorting
-                    </div>
-                </div>
-
-                <!-- Card 4 -->
-                <div class="feature-card">
-                    <div class="card-icon" style="background: rgba(16, 185, 129, 0.06); color: #10B981;">
-                        <i data-lucide="sliders"></i>
-                    </div>
-                    <h3>4. ตัดสินด้วยคุณภาพคู่เลข</h3>
-                    <p style="margin-bottom: 12px;">เมื่อคะแนนจัดอันดับรวมเท่ากัน ระบบจะใช้เกรดความแข็งแรงของคู่เลขศาสตร์ (D10 &gt; D8 &gt; D5) ร่วมกับระดับคะแนนคู่เลข (pairpoint) เพื่อตัดสินและเรียงชื่อที่ดีที่สุดขึ้นก่อน</p>
-                    <div style="font-size: 12px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; border-top: 1px solid var(--border-color); padding-top: 8px;">
-                         สถานะเกณฑ์: Tie-Break Rule
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Process Step Flow -->
-            <div style="margin-top: 40px; background: var(--bg-card); padding: 24px; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(155, 81, 224, 0.04); box-sizing: border-box; width: 100%; max-width: 100%;">
-                <h3 style="font-family: 'Prompt'; font-size: 22px; color: var(--text-title); text-align: center; margin-bottom: 30px; font-weight: 700;">
-                     ขั้นตอนการประมวลผลคะแนนชื่อ (ในเวลา &lt; 2 วินาที)
-                </h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px;">
-                    <div style="text-align: center; padding: 15px; position: relative;">
-                        <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(155, 81, 224, 0.1); color: var(--secondary); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; margin-bottom: 15px;">1</div>
-                        <h4 style="font-family: 'Prompt'; font-size: 16px; margin-bottom: 8px; font-weight: 600;">สร้างแม่แบบชื่อ</h4>
-                        <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">รับข้อมูลที่ป้อนเข้ามา แล้วสร้างเกณฑ์แม่แบบความหมาย</p>
-                    </div>
-                    <div style="text-align: center; padding: 15px; position: relative;">
-                        <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(255, 46, 147, 0.1); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; margin-bottom: 15px;">2</div>
-                        <h4 style="font-family: 'Prompt'; font-size: 16px; margin-bottom: 8px; font-weight: 600;">คำนวณ Vector</h4>
-                        <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">แปลงความหมายเป็น Vector 1536 มิติ สำหรับเทียบฐานข้อมูล</p>
-                    </div>
-                    <div style="text-align: center; padding: 15px; position: relative;">
-                        <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(226, 178, 55, 0.1); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; margin-bottom: 15px;">3</div>
-                        <h4 style="font-family: 'Prompt'; font-size: 16px; margin-bottom: 8px; font-weight: 600;">Hybrid Search</h4>
-                        <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">ค้นหารวมกันแบบ Vector และ Trigram ได้ผู้สมัคร 200 รายชื่อ</p>
-                    </div>
-                    <div style="text-align: center; padding: 15px; position: relative;">
-                        <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); color: #10B981; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; margin-bottom: 15px;">4</div>
-                        <h4 style="font-family: 'Prompt'; font-size: 16px; margin-bottom: 8px; font-weight: 600;">กรองกาลกิณี & ตัวคัด</h4>
-                        <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">คัดกรองความมงคลและกาลกิณีตามตัวกรองที่ผู้ใช้กำหนด</p>
-                    </div>
-                    <div style="text-align: center; padding: 15px; position: relative;">
-                        <div style="width: 45px; height: 45px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); color: #3B82F6; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; margin-bottom: 15px;">5</div>
-                        <h4 style="font-family: 'Prompt'; font-size: 16px; margin-bottom: 8px; font-weight: 600;">จัดเรียงแสดงผล</h4>
-                        <p style="font-size: 13px; color: var(--text-gray); line-height: 1.5;">เรียงลำดับด้วย final_rank_score พร้อมป้อนเข้าแอปและหน้าเว็บ</p>
-                    </div>
-                </div>
+                <img src="Screenshot_1772810777.png" alt="หน้าจอวิเคราะห์ชื่อ เลขศาสตร์ และพลังเงาแบบ Triple Lucky">
             </div>
         </div>
     </section>
 
     <!-- Knowledge Section -->
-    <section id="knowledge" class="knowledge-section">
+    <section id="knowledge" class="knowledge-section" style="padding: 100px 0; background: rgba(184, 134, 11, 0.03);">
         <div class="container">
             <div class="section-header">
-                <h2>สาระน่ารู้คู่ชื่อมงคล</h2>
-                <p>เรียนรู้วิธีการเลือกชื่อ แนวทางการเตรียมตัว เอกสารที่ใช้ และความรู้อิทธิพลเลขศาสตร์</p>
+                <h2 style="color: var(--text-light);">ความรู้คู่ชื่อมงคล</h2>
+                <p style="color: var(--text-gray);">บทความสำหรับคนที่อยากตั้งชื่อลูก เปลี่ยนชื่อเสริมดวง
+                    หรือเช็กว่าชื่อเดิมดีไหมก่อนตัดสินใจ</p>
             </div>
-            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <div style="display: flex; justify-content: center;">
                 <a href="/guide-change-name" class="feature-card"
-                    style="max-width: 580px; text-decoration: none; text-align: left; display: block; border-color: rgba(155,81,224,0.12); box-shadow: 0 10px 30px rgba(155, 81, 224, 0.04);">
-                    <div class="card-icon" style="background: rgba(155, 81, 224, 0.06); color: var(--secondary);">
+                    style="max-width: 600px; text-decoration: none; text-align: left; transition: transform 0.3s ease; background: var(--bg-card); border: 1px solid rgba(184, 134, 11, 0.2);">
+                    <div class="card-icon" style="--icon-color: #D4AF37; background: rgba(184, 134, 11, 0.1);">
                         <i data-lucide="file-text"></i>
                     </div>
-                    <h3 style="color: var(--text-light); margin-bottom: 12px; font-size: 20px; font-weight: 700;">
+                    <h3 style="color: var(--text-light); margin-bottom: 12px; font-size: 1.6rem; font-weight: 700;">
                         ขั้นตอนการเปลี่ยนชื่อที่อำเภอ</h3>
-                    <p style="color: var(--text-gray); font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-                        เตรียมตัวให้พร้อมก่อนไปเปลี่ยนชื่อที่อำเภอหรือเทศบาล เรียนรู้เรื่องเอกสารที่จำเป็นต้องใช้ ขั้นตอนการตรวจรับจากเจ้าหน้าที่ เพื่อให้ทำธุรกรรมเสร็จสิ้นภายในวันเดียว...
-                    </p>
-                    <div style="color: var(--secondary); font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px;">
-                        อ่านบทความฉบับเต็ม <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
-                    </div>
+                    <p style="color: var(--text-gray); font-size: 1rem; line-height: 1.7;">เตรียมตัวให้พร้อมก่อนไปอำเภอ
+                        ทั้งเอกสารที่ต้องใช้ ขั้นตอนสำคัญที่เจ้าหน้าที่จะตรวจสอบ
+                        และแนวคิดก่อนเปลี่ยนชื่อเสริมดวงให้เหมาะกับเป้าหมายชีวิตของคุณ...</p>
+                    <div
+                        style="margin-top: 24px; color: var(--secondary); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                        อ่านบทความฉบับเต็ม <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i></div>
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
     <section id="download" class="cta-section">
-        <div class="container text-center cta-container">
-            <div>
-                <h2>เริ่มชีวิตใหม่ด้วยชื่อที่ดีที่สุดใน <span class="highlight">แอปพลิเคชันชื่อดี</span></h2>
-                <p style="max-width: 600px; margin: 0 auto; color: var(--text-gray); font-size: 16px;">ดาวน์โหลดแอปฟรีวันนี้ เพื่อเริ่มวิเคราะห์ชื่อ ตั้งชื่อมงคล และเช็กปฏิทินฤกษ์มงคลได้จากอุปกรณ์ของคุณ</p>
-            </div>
-            
+        <div class="container text-center">
+            <h2>พร้อมเริ่มค้นหาชื่อมงคลที่ <span class="highlight">เหมาะกับคุณ</span> หรือยัง?</h2>
+            <p>ดาวน์โหลดแอปเพื่อค้นหาชื่อตามความหมาย ตั้งชื่อลูก วิเคราะห์ชื่อ และเปลี่ยนชื่อเสริมดวงได้ในที่เดียว</p>
             <div class="download-btns">
-                <!-- Google Play (Active) -->
-                <a href="https://play.google.com/store/apps/details?id=com.numberniceic.app" class="download-store-btn" target="_blank">
-                    <div class="store-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24" style="vertical-align: middle;">
-                            <path fill="#00E5FF" d="M30.3 7C28.8 8.5 28 10.9 28 14v484c0 3.1.8 5.5 2.3 7L31 506l264-264L31 6z"/>
-                            <path fill="#FFC107" d="M346.7 178.6L295 242l51.8 63.4 90.7-51.7c25.7-14.7 25.7-38.7 0-53.4l-90.8-51.7z"/>
-                            <path fill="#FF3D00" d="M31 6l264 264 51.7-51.4L31 6z"/>
-                            <path fill="#4CAF50" d="M31 506l315.7-213-51.7-51L31 506z"/>
-                        </svg>
-                    </div>
-                    <div class="store-text-col">
-                        <span class="store-label">GET IT ON</span>
-                        <span class="store-name">Google Play</span>
-                    </div>
-                </a>
 
-                <!-- App Store (Dummy Coming Soon) -->
-                <a href="#" class="download-store-btn disabled" onclick="return false;">
-                    <span class="badge-coming-soon">เร็วๆ นี้</span>
-                    <div class="store-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width="22" height="22" fill="white" style="vertical-align: middle;">
-                            <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-48-20.7-77.5-20.7-38.5 0-78.3 21.6-98 55.7-40.2 70.2-10.2 173.2 28.5 229.3 19 27.2 41.5 57.4 71 56.4 28.3-1 39.1-18.2 73.5-18.2 34 0 43.9 18.2 73.5 17.2 30-.5 49.3-27.2 68.3-54.7 22-31.8 31-62.7 31.5-64.3-.7-.3-60.7-23.2-61.3-91.8zM300.2 82c21.3-25.8 18.5-57.7 18.5-57.7s-29.2 1.4-50.5 25.8c-20.8 24-17.1 56-17.1 56s27.8 1.7 49.1-24.1z"/>
-                        </svg>
-                    </div>
-                    <div class="store-text-col">
-                        <span class="store-label">Download on the</span>
-                        <span class="store-name">App Store</span>
-                    </div>
+                <a href="/download" style="display: inline-block;">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                        alt="ดาวน์โหลดแอปชื่อดี.com บน Google Play" style="height: 64px;">
                 </a>
-            </div>
-
-            <!-- Dynamic QR Code scanner for Desktop -->
-            <div class="qr-code-wrapper">
-                <div class="qr-code">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.numberniceic.app" alt="QR Code สำหรับสแกนดาวน์โหลดแอปชื่อดี">
-                </div>
-                <div class="qr-text">
-                    <h4>สแกนเพื่อดาวน์โหลด (Android)</h4>
-                    <p>เปิดกล้องมือถือแล้วสแกนภาพ QR Code <br>เพื่อเข้าสู่ Google Play Store ทันที</p>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container footer-content">
-            <div class="footer-logo">แอปชื่อดี.com</div>
+            <div class="footer-logo">ชื่อดี.com</div>
             <p>&copy; 2026 ชื่อดี.com - All Rights Reserved. <br>แอปพลิเคชันสำหรับตั้งชื่อมงคล ตั้งชื่อลูก วิเคราะห์ชื่อ
                 เลขศาสตร์ชื่อ และพลังเงา | <a
-                    href="/privacy-policy" style="color: var(--secondary); text-decoration: underline;">นโยบายความเป็นส่วนตัว</a>
+                    href="/privacy-policy" style="color: inherit; text-decoration: underline;">นโยบายความเป็นส่วนตัว</a>
             </p>
             <div class="footer-dev-menu">
                 <a href="/api-mobile-doc" target="_blank">📱 Mobile API Document</a>
@@ -562,15 +310,16 @@
         // Mobile Menu Logic
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
-        const mobileLinks = document.querySelectorAll('.mobile-link, .mobile-download-btn');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
 
         mobileMenuBtn.addEventListener('click', () => {
             const isActive = mobileMenu.classList.toggle('active');
-            
+            const iconContainer = mobileMenuBtn;
+
             if (isActive) {
-                mobileMenuBtn.innerHTML = '<i data-lucide="x"></i>';
+                iconContainer.innerHTML = '<i data-lucide="x"></i>';
             } else {
-                mobileMenuBtn.innerHTML = '<i data-lucide="menu"></i>';
+                iconContainer.innerHTML = '<i data-lucide="menu"></i>';
             }
             lucide.createIcons();
         });

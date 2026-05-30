@@ -5,24 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - ระบบจัดการชื่อดี</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #E2B237;
-            --secondary: #9B51E0;
-            --accent: #FF2E93;
-            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
-            --card: rgba(255, 255, 255, 0.95);
-            --text: #2D1E4E;
-            --text-gray: #6C5B7B;
-            --gold: linear-gradient(135deg, #FFD026 0%, #F2994A 50%, #9B51E0 100%);
-            --violet: linear-gradient(135deg, #9B51E0 0%, #FF2E93 100%);
+            --primary: #D4AF37;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
         }
 
         body {
             font-family: 'Prompt', sans-serif;
-            background: var(--bg) no-repeat fixed;
+            background-color: var(--bg);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -33,93 +28,73 @@
 
         .login-card {
             background: var(--card);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             padding: 40px;
-            border-radius: 24px;
-            border: 1px solid rgba(155, 81, 224, 0.15);
-            box-shadow: 0 20px 40px rgba(155, 81, 224, 0.12), 0 0 20px rgba(242, 201, 76, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             width: 100%;
             max-width: 400px;
             text-align: center;
-            box-sizing: border-box;
         }
 
         .logo {
             font-size: 3rem;
-            background: var(--gold);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
-            display: inline-block;
+            color: var(--primary);
+            margin-bottom: 20px;
         }
 
         h2 {
-            margin: 0 0 30px 0;
-            font-weight: 700;
-            color: var(--text);
-            font-size: 24px;
+            margin-bottom: 30px;
+            font-weight: 600;
         }
 
         .form-group {
             text-align: left;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
-            color: var(--text-gray);
-            font-size: 0.95rem;
-            font-weight: 500;
+            color: #94A3B8;
+            font-size: 0.9rem;
         }
 
         input {
             width: 100%;
             padding: 12px 16px;
-            border-radius: 12px;
-            border: 1px solid rgba(155, 81, 224, 0.20);
-            background: #FFFFFF;
-            color: var(--text);
+            border-radius: 10px;
+            border: 1px solid #334155;
+            background: #FFF8E1;
+            color: white;
             font-size: 1rem;
             box-sizing: border-box;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        input:focus {
-            border-color: var(--secondary);
-            box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.15);
         }
 
         .btn-login {
             width: 100%;
-            background: var(--violet);
+            background: var(--primary);
             color: white;
             border: none;
             padding: 14px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(155, 81, 224, 0.25);
         }
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(155, 81, 224, 0.4);
-            background: linear-gradient(135deg, #843ac7 0%, #e61b7b 100%);
+            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.3);
         }
 
         .error {
             color: #EF4444;
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 24px;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             font-size: 0.9rem;
             display: none;
         }
@@ -136,11 +111,11 @@
         <form id="loginForm">
             <div class="form-group">
                 <label>Username</label>
-                <input type="text" id="username" name="username" required autocomplete="username">
+                <input type="text" id="username" name="username" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="password" name="password" required autocomplete="current-password">
+                <input type="password" id="password" name="password" required>
             </div>
             <button type="submit" class="btn-login">เข้าสู่ระบบ</button>
         </form>

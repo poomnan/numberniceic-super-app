@@ -13,9 +13,108 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/lib/pq"
 )
+
+type NameInputResolveResponse struct {
+	Input               string               `json:"input"`
+	InputType           string               `json:"input_type"`
+	ExistsInDatabase    bool                 `json:"exists_in_database"`
+	CanDecode           bool                 `json:"can_decode"`
+	CanRankFromTemplate bool                 `json:"can_rank_from_template"`
+	SuggestionStrategy  string               `json:"suggestion_strategy"`
+	DBMeaning           string               `json:"db_meaning,omitempty"`
+	Intent              *services.Result     `json:"intent,omitempty"`
+	Decode              *models.DecodeResult `json:"decode,omitempty"`
+}
+
+func looksLikeTypedThaiName(input string) bool {
+	input = strings.TrimSpace(input)
+	if input == "" || strings.ContainsAny(input, " \t\n\r") {
+		return false
+	}
+	runeCount := utf8.RuneCountInString(input)
+	if runeCount < 2 || runeCount > 12 {
+		return false
+	}
+	for _, r := range input {
+		if r < 'ก' || r > '๙' {
+			return false
+		}
+	}
+	return true
+}
+
+func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	input := strings.TrimSpace(r.URL.Query().Get("input"))
+	if input == "" {
+		jsonResponse(w, http.StatusBadRequest, map[string]string{"error": "input parameter required"})
+		return
+	}
+	day := strings.TrimSpace(r.URL.Query().Get("day"))
+
+	var dbMeaning string
+	existsInDB := false
+	if err := database.DB.QueryRow("SELECT COALESCE(meaning, '') FROM names_miracle WHERE thname = $1 LIMIT 1", input).Scan(&dbMeaning); err == nil && strings.TrimSpace(dbMeaning) != "" {
+		existsInDB = true
+		dbMeaning = strings.TrimSpace(dbMeaning)
+	}
+
+	intent, err := services.DetectNameIntent(r.Context(), database.DB, input)
+	if err != nil {
+		log.Printf("GetNameInputResolveHandler intent error input=%q: %v", input, err)
+		intent = services.Result{Mode: "MEANING", Confidence: 0, Candidates: []string{}, BestScore: 0}
+	}
+	typedName := looksLikeTypedThaiName(input)
+	inputType := "meaning"
+	switch {
+	case existsInDB || typedName || intent.Mode == "NAME":
+		inputType = "name"
+	case intent.Mode == "HYBRID":
+		inputType = "hybrid"
+	}
+
+	canDecode := inputType == "name" || inputType == "hybrid"
+	canRankFromTemplate := existsInDB || inputType == "meaning"
+	suggestionStrategy := "semantic"
+	switch {
+	case existsInDB:
+		suggestionStrategy = "hybrid"
+	case inputType == "name" && !existsInDB:
+		suggestionStrategy = "pg_trgm"
+	case inputType == "hybrid":
+		suggestionStrategy = "hybrid"
+	}
+
+	var decode *models.DecodeResult
+	if canDecode {
+		if decoded, err := services.DecodeName(input, day); err == nil {
+			decode = decoded
+		} else {
+			log.Printf("GetNameInputResolveHandler decode error input=%q: %v", input, err)
+		}
+	}
+
+	resp := NameInputResolveResponse{
+		Input:               input,
+		InputType:           inputType,
+		ExistsInDatabase:    existsInDB,
+		CanDecode:           canDecode,
+		CanRankFromTemplate: canRankFromTemplate,
+		SuggestionStrategy:  suggestionStrategy,
+		DBMeaning:           dbMeaning,
+		Intent:              &intent,
+		Decode:              decode,
+	}
+	jsonResponse(w, http.StatusOK, resp)
+}
 
 // GetNameSuggestionsHandler returns name suggestions based on semantic similarity (embeddings)
 func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,16 +163,18 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	normalizedQuery := strings.TrimSpace(q)
 	candidates := make(map[string]suggestionCandidate)
 
-	// 1. Semantic search for meanings (embeddings)
+	// 1. Semantic search for meanings (embeddings). If embedding is unavailable,
+	// keep going with pg_trgm so typed names that are not in DB still get suggestions.
 	embedding, err := services.GetEmbedding(queryText)
+	hasEmbedding := err == nil
 	if err != nil {
 		log.Printf("Error getting embedding for suggestions: %v", err)
-		// Fallback to empty results if embedding fails
-		jsonResponse(w, http.StatusOK, res)
-		return
 	}
 
-	vectorStr := formatVector(embedding)
+	vectorStr := ""
+	if hasEmbedding {
+		vectorStr = formatVector(embedding)
+	}
 	addCandidate := func(
 		id int,
 		name, meaning string,
@@ -138,10 +239,42 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+
+		trigramRows, trigramErr := database.DB.Query(`
+				SELECT name_id, thname, COALESCE(meaning, ''),
+				       GREATEST(COALESCE(similarity(thname, $1), 0), COALESCE(word_similarity(thname, $1), 0)) AS trigram_score,
+				       COALESCE(phonetic_summary, ''),
+				       phonetic_score, pronunciation_ease, euphony_score, rhythm_score
+				FROM names_miracle
+				WHERE thname != $1
+				  AND char_length(meaning) > 10
+				  AND GREATEST(COALESCE(similarity(thname, $1), 0), COALESCE(word_similarity(thname, $1), 0)) > 0
+				ORDER BY trigram_score DESC, char_length(thname) ASC, name_id ASC
+				LIMIT 120
+		`, normalizedQuery)
+		if trigramErr == nil {
+			defer trigramRows.Close()
+			for trigramRows.Next() {
+				var id int
+				var name, meaning string
+				var trigramScore float64
+				var phoneticSummary sql.NullString
+				var phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64
+				if err := trigramRows.Scan(
+					&id, &name, &meaning, &trigramScore, &phoneticSummary,
+					&phoneticScore, &pronunciationEase, &euphonyScore, &rhythmScore,
+				); err == nil {
+					addCandidate(id, name, meaning, 1400+(trigramScore*450), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+				}
+			}
+		} else {
+			log.Printf("GetNameSuggestionsHandler: pg_trgm suggestion query failed for '%s': %v", normalizedQuery, trigramErr)
+		}
 	}
 
 	// 3. Semantic core search from the meaning embedding.
-	semRows, semErr := database.DB.Query(`
+	if hasEmbedding {
+		semRows, semErr := database.DB.Query(`
 			SELECT name_id, thname, COALESCE(meaning, ''), COALESCE((meaning_vector <=> $1), 1), COALESCE(phonetic_summary, ''),
 			       phonetic_score, pronunciation_ease, euphony_score, rhythm_score
 			FROM names_miracle 
@@ -150,20 +283,23 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 		LIMIT 200
 	`, vectorStr)
 
-	if semErr == nil {
-		defer semRows.Close()
-		for semRows.Next() {
-			var id int
-			var name, meaning string
-			var distance float64
-			var phoneticSummary sql.NullString
-			var phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64
-			if err := semRows.Scan(
-				&id, &name, &meaning, &distance, &phoneticSummary,
-				&phoneticScore, &pronunciationEase, &euphonyScore, &rhythmScore,
-			); err == nil {
-				addCandidate(id, name, meaning, 1000-(distance*100), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+		if semErr == nil {
+			defer semRows.Close()
+			for semRows.Next() {
+				var id int
+				var name, meaning string
+				var distance float64
+				var phoneticSummary sql.NullString
+				var phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64
+				if err := semRows.Scan(
+					&id, &name, &meaning, &distance, &phoneticSummary,
+					&phoneticScore, &pronunciationEase, &euphonyScore, &rhythmScore,
+				); err == nil {
+					addCandidate(id, name, meaning, 1000-(distance*100), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+				}
 			}
+		} else {
+			log.Printf("GetNameSuggestionsHandler: semantic suggestion query failed: %v", semErr)
 		}
 	}
 
@@ -374,10 +510,6 @@ func cleanSuggestionMeaning(name, meaning string) string {
 
 	cleanMeaning = strings.TrimPrefix(cleanMeaning, name+" ")
 	cleanMeaning = strings.Join(strings.Fields(cleanMeaning), " ")
-
-	if len([]rune(cleanMeaning)) > 60 {
-		cleanMeaning = string([]rune(cleanMeaning)[:57]) + "..."
-	}
 
 	return cleanMeaning
 }

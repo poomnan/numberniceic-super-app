@@ -1,14 +1,14 @@
 {
-  "claimed": 0,
-  "processed": 0,
+  "claimed": 2,
+  "processed": 2,
   "failed": 0,
   "retried": 0,
   "skipped": 0,
-  "last_name_id": 0,
-  "last_name": "",
-  "updated_at": "2026-05-30T11:40:02.328070583Z",
-  "worker_id": "ubuntu-2152349",
-  "version": "typhoon_v1_promptA",
+  "last_name_id": 13111,
+  "last_name": "กันย์ชลี",
+  "updated_at": "2026-04-09T00:42:23.328768Z",
+  "worker_id": "TAYAPs-Mac-Studio.local-11635",
+  "version": "typhoon_v2_name_euphony_json",
   "dry_run": false,
-  "limit_reached": false
+  "limit_reached": true
 }

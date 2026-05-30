@@ -212,6 +212,30 @@ func GetPairTypesMap() (map[string]string, error) {
 	return typeMap, nil
 }
 
+// GetPairPointsMap returns a mapping of pair number -> pairpoint.
+func GetPairPointsMap() (map[string]int, error) {
+	query := "SELECT pairnumber, pairpoint FROM numbers"
+	rows, err := database.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	pointMap := make(map[string]int)
+	for rows.Next() {
+		var num string
+		var point int
+		if err := rows.Scan(&num, &point); err == nil {
+			num = strings.TrimSpace(num)
+			pointMap[num] = point
+			if len(num) == 2 && num[0] == '0' {
+				pointMap[num[1:]] = point
+			}
+		}
+	}
+	return pointMap, nil
+}
+
 // GetGoodSums returns all sums (1-200) where every pair is Good (D-series)
 // Used for DB-level filtering: WHERE sat_sum IN (...) AND sha_sum IN (...)
 func GetGoodSums() ([]int, error) {

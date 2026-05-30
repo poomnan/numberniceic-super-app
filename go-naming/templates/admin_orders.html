@@ -9,33 +9,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #E2B237;
-            --primary-light: #F2994A;
-            --secondary: #9B51E0;
-            --accent: #FF2E93;
+            --primary: #D4AF37;
+            --secondary: #2C1810;
             --success: #10B981;
-            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
-            --card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(155, 81, 224, 0.12);
-            --border-color-hover: rgba(155, 81, 224, 0.32);
-            --text: #2D1E4E;
-            --text-muted: #6C5B7B;
+            --warning: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
         }
 
         body {
             font-family: 'Prompt', sans-serif;
-            background: var(--bg) no-repeat fixed;
+            background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 0;
-            min-height: 100vh;
         }
 
         .navbar {
             background: var(--card);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #334155;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -48,7 +41,7 @@
         .logo {
             font-weight: 700;
             font-size: 1.5rem;
-            color: var(--secondary);
+            color: #B8860B;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -69,12 +62,8 @@
         }
 
         h1 {
-            color: var(--text);
+            color: var(--warning);
             margin: 0;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .stats-grid {
@@ -86,51 +75,38 @@
 
         .stat-card {
             background: var(--card);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             padding: 20px;
             border-radius: 12px;
             text-align: center;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.05);
+            border: 1px solid #334155;
         }
 
         .stat-card h2 {
             margin: 0;
             font-size: 2rem;
-            background: linear-gradient(135deg, #FFD026 0%, #F2994A 50%, #9B51E0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
+            color: var(--primary);
         }
 
         .stat-card p {
             margin: 5px 0 0;
-            color: var(--text-muted);
+            color: #94A3B8;
             font-size: 14px;
-            font-weight: 500;
         }
 
         .order-card {
             background: var(--card);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border-radius: 12px;
             margin-bottom: 20px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #334155;
             overflow: hidden;
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.05);
         }
 
         .order-header {
             padding: 15px 20px;
-            background: rgba(155, 81, 224, 0.08);
+            background: #334155;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: var(--text);
-            font-weight: 600;
-            border-bottom: 1px solid var(--border-color);
         }
 
         .order-body {
@@ -144,18 +120,16 @@
         }
 
         .address-box {
-            background: rgba(155, 81, 224, 0.03);
+            background: #FFF8E1;
             padding: 15px;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
-            color: var(--text);
+            border: 1px solid #334155;
         }
 
         .address-box h4 {
             margin-top: 0;
-            color: var(--secondary);
+            color: var(--warning);
             font-size: 14px;
-            font-weight: 600;
         }
 
         .address-box p {
@@ -172,11 +146,10 @@
 
         .item-row {
             padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #334155;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: var(--text);
         }
 
         .item-row:last-child {
@@ -189,59 +162,46 @@
             font-size: 11px;
             text-transform: uppercase;
             font-weight: 700;
-            display: inline-block;
         }
 
         .badge-pending {
-            background: rgba(245, 158, 11, 0.15);
+            background: rgba(245, 158, 11, 0.2);
             color: #F59E0B;
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            border: 1px solid #F59E0B;
         }
 
         .badge-shipped {
-            background: rgba(16, 185, 129, 0.15);
+            background: rgba(16, 185, 129, 0.2);
             color: #10B981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 1px solid #10B981;
         }
 
         .btn {
-            background: linear-gradient(135deg, #9B51E0, #FF2E93);
+            background: var(--primary);
             color: white;
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 13px;
-            font-weight: 600;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.2);
-        }
-
-        .btn:hover {
-            opacity: 0.95;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.3);
         }
 
         .btn-secondary {
-            background: var(--text-muted) !important;
-            box-shadow: none !important;
+            background: #334155;
         }
 
         .btn-success {
-            background: #10B981 !important;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important;
+            background: var(--success);
         }
 
         .btn-warning {
-            background: #F59E0B !important;
-            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2) !important;
+            background: var(--warning);
         }
 
         .loading {
             text-align: center;
             padding: 50px;
-            color: var(--text-muted);
         }
     </style>
 </head>

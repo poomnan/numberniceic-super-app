@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
+	"sync"
 	"time"
 )
 
@@ -24,6 +26,19 @@ type OpenAIResponse struct {
 }
 
 var apiKey string
+var embeddingCache = struct {
+	sync.RWMutex
+	items map[string]cachedEmbedding
+}{
+	items: map[string]cachedEmbedding{},
+}
+
+type cachedEmbedding struct {
+	vector    []float64
+	expiresAt time.Time
+}
+
+const embeddingCacheTTL = 10 * time.Minute
 
 func init() {
 	apiKey = os.Getenv("OPENAI_API_KEY")
@@ -31,6 +46,17 @@ func init() {
 
 // GetEmbedding now calls OpenAI API (text-embedding-3-small)
 func GetEmbedding(text string) ([]float64, error) {
+	cacheKey := strings.TrimSpace(strings.ToLower(text))
+	if cacheKey != "" {
+		embeddingCache.RLock()
+		cached, ok := embeddingCache.items[cacheKey]
+		embeddingCache.RUnlock()
+		if ok && time.Now().Before(cached.expiresAt) {
+			clone := append([]float64(nil), cached.vector...)
+			return clone, nil
+		}
+	}
+
 	if apiKey == "" {
 		// Try to read it again in case it was set later
 		apiKey = os.Getenv("OPENAI_API_KEY")
@@ -79,7 +105,16 @@ func GetEmbedding(text string) ([]float64, error) {
 	}
 
 	if len(res.Data) > 0 {
-		return res.Data[0].Embedding, nil
+		vector := res.Data[0].Embedding
+		if cacheKey != "" && len(vector) > 0 {
+			embeddingCache.Lock()
+			embeddingCache.items[cacheKey] = cachedEmbedding{
+				vector:    append([]float64(nil), vector...),
+				expiresAt: time.Now().Add(embeddingCacheTTL),
+			}
+			embeddingCache.Unlock()
+		}
+		return vector, nil
 	}
 
 	if res.Error != nil {

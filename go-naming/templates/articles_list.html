@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บทความทั้งหมด - แอปชื่อดี</title>
+    <title>บทความทั้งหมด - Go Naming</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;700&display=swap"
         rel="stylesheet">
@@ -12,77 +12,53 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --primary: #E2B237;
-            --secondary: #9B51E0;
-            --accent: #FF2E93;
-            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
-            --card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(155, 81, 224, 0.12);
-            --border-color-hover: rgba(155, 81, 224, 0.32);
-            --text-light: #2D1E4E;
-            --text-gray: #6C5B7B;
-            --violet: linear-gradient(135deg, #9B51E0 0%, #FF2E93 100%);
+            --primary-pink: #D4AF37;
+            --dark-bg: #FFF8E1;
+            --dark-surface: #FFFAF0;
+            --dark-surface-2: #FFF3C4;
+            --text-main: #2C1810;
+            --text-title: #1A0D07;
+            --text-muted: #5D4037;
+            --accent-glow: rgba(212, 175, 55, 0.2);
         }
 
         body {
-            background: var(--bg) no-repeat fixed;
-            color: var(--text-light);
+            background-color: var(--dark-bg);
+            color: var(--text-main);
             font-family: 'Sarabun', sans-serif;
             margin: 0;
             padding: 0;
-            min-height: 100vh;
+            transition: background 0.3s ease;
         }
 
         .articles-nav {
-            height: 80px;
-            background: rgba(250, 248, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
+            padding: 15px 0;
             position: sticky;
             top: 0;
-            z-index: 1050;
-        }
-
-        .nav-home-btn {
-            text-decoration: none;
-            color: var(--text-gray);
-            font-family: 'Prompt';
-            font-size: 15px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid transparent;
-        }
-
-        .nav-home-btn:hover {
-            color: var(--secondary);
-            background: rgba(155, 81, 224, 0.05);
-            border-color: rgba(155, 81, 224, 0.1);
+            z-index: 1000;
         }
 
         .page-header {
+            background: var(--dark-surface);
+            padding: 80px 0;
             text-align: center;
-            padding: 80px 0 40px 0;
+            border-bottom: 1px solid #333;
         }
 
         .page-header h1 {
             font-family: 'Prompt', sans-serif;
-            font-size: 40px;
+            font-size: 38px;
             font-weight: 700;
             margin: 0;
-            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-title);
             letter-spacing: -0.5px;
         }
 
         .page-header p {
-            color: var(--text-gray);
+            color: var(--text-muted);
             margin-top: 15px;
             font-size: 18px;
             font-weight: 300;
@@ -90,155 +66,133 @@
 
         .articles-grid {
             max-width: 1200px;
-            margin: 40px auto 60px auto;
-            padding: 0;
+            margin: 60px auto;
+            padding: 0 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 0;
-            overflow: hidden;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 35px;
         }
 
         .article-card {
-            position: relative;
-            background: #0f0b24;
-            border-radius: 0;
+            background: var(--dark-surface-2);
+            border-radius: 16px;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
-            color: white;
+            color: inherit;
             display: flex;
             flex-direction: column;
-            height: 320px;
-            border: none;
+            border: 1px solid #444;
         }
 
         .article-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 30px rgba(15, 11, 36, 0.25);
-            z-index: 2;
-        }
-
-        .card-image-wrapper {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
+            transform: translateY(-10px);
+            border-color: var(--primary-pink);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
         }
 
         .card-image {
             width: 100%;
-            height: 100%;
+            height: 240px;
             object-fit: cover;
-            transition: transform 0.6s ease;
+            background: #222;
+            transition: transform 0.5s ease;
         }
 
         .article-card:hover .card-image {
             transform: scale(1.05);
         }
 
-        .card-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(transparent, rgba(15, 11, 36, 0.95) 80%);
-            box-sizing: border-box;
+        .card-body {
+            padding: 25px;
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            min-height: 140px;
         }
 
         .card-category {
-            display: inline-block;
-            background: var(--violet);
-            color: white;
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 11px;
+            color: var(--primary-pink);
+            font-family: 'Prompt', sans-serif;
+            font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
-            margin-bottom: 8px;
-            align-self: flex-start;
-            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
         }
 
         .card-title {
             font-family: 'Prompt', sans-serif;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            color: white;
-            margin: 0 0 12px 0;
+            color: var(--text-title);
+            margin: 0 0 15px 0;
             line-height: 1.4;
         }
 
+        .card-excerpt {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-weight: 300;
+        }
+
         .card-footer {
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #444;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .card-footer .read-more {
-            color: #FF2E93;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.2s;
-        }
-
-        .article-card:hover .read-more {
-            color: #ff57a9;
-            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
         }
 
         .pagination {
             max-width: 1200px;
-            margin: 40px auto 80px auto;
+            margin: 60px auto 100px auto;
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 15px;
         }
 
         .pagination-btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 8px;
-            background: var(--card);
-            border: 1px solid var(--border-color);
+            background: var(--dark-surface-2);
+            border: 1px solid #444;
             text-decoration: none;
-            color: var(--text-light);
+            color: var(--text-main);
             font-family: 'Prompt', sans-serif;
             font-weight: 500;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.05);
         }
 
         .pagination-btn:hover {
-            border-color: var(--border-color-hover);
-            color: var(--secondary);
-            background: #FFFFFF;
+            border-color: var(--primary-pink);
+            color: var(--primary-pink);
+            background: var(--dark-surface);
         }
 
         .pagination-btn.active {
-            background: var(--violet);
-            border: none;
+            background: var(--primary-pink);
+            border-color: var(--primary-pink);
             color: white;
-            box-shadow: 0 4px 15px rgba(155, 81, 224, 0.3);
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
 
         @media (max-width: 768px) {
             .articles-grid {
                 grid-template-columns: 1fr;
-                margin: 20px 16px;
             }
 
             .page-header h1 {
-                font-size: 32px;
+                font-size: 28px;
             }
         }
     </style>
@@ -247,18 +201,16 @@
 <body>
 
     <nav class="articles-nav">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 100%;">
+        <div class="container"
+            style="display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; padding: 0 20px;">
             <a href="/" style="text-decoration: none; display: flex; align-items: center;">
-                <span class="logo-text">แอปชื่อดี</span>
+                <span
+                    style="font-family: 'Prompt'; font-weight: 800; font-size: 20px; background: linear-gradient(135deg, #B8860B, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">แอปชื่อดี</span>
             </a>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <a href="/about" class="nav-home-btn">
-                    <i data-lucide="info" style="width: 18px; height: 18px;"></i> เกี่ยวกับเรา
-                </a>
-                <a href="/" class="nav-home-btn">
-                    <i data-lucide="home" style="width: 18px; height: 18px;"></i> หน้าแรก
-                </a>
-            </div>
+            <a href="/"
+                style="text-decoration: none; color: #666; font-family: 'Prompt'; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 5px;">
+                <i data-lucide="home" style="width: 16px;"></i> หน้าแรก
+            </a>
         </div>
     </nav>
 
@@ -272,25 +224,22 @@
     <main class="articles-grid">
         {{range .Articles}}
         <a href="/article/{{.Slug}}" class="article-card">
-            <div class="card-image-wrapper">
-                <img src="{{if .ImageURL}}{{.ImageURL}}{{else if .YouTubeThumbnailURL}}{{.YouTubeThumbnailURL}}{{else}}/main_highlight.png{{end}}" alt="{{.Title}}"
-                    class="card-image">
-                <div class="card-overlay">
-                    <span class="card-category">{{.Category}}</span>
-                    <h2 class="card-title">{{.Title}}</h2>
-                    <div class="card-footer">
-                        <span style="display: flex; align-items: center; gap: 4px;">
-                            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> 
-                            {{.PublishedAt.Format "02 Jan 2006"}}
-                        </span>
-                        <span class="read-more">อ่านต่อ <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i></span>
-                    </div>
+            <img src="{{if .ImageURL}}{{.ImageURL}}{{else}}/main_highlight.png{{end}}" alt="{{.Title}}"
+                class="card-image">
+            <div class="card-body">
+                <span class="card-category">{{.Category}}</span>
+                <h2 class="card-title">{{.Title}}</h2>
+                <p class="card-excerpt">{{.Excerpt}}</p>
+                <div class="card-footer">
+                    <span><i data-lucide="calendar" style="width: 12px; margin-right: 5px;"></i> {{.PublishedAt.Format
+                        "02 Jan 2006"}}</span>
+                    <span>อ่านต่อ <i data-lucide="arrow-right" style="width: 12px;"></i></span>
                 </div>
             </div>
         </a>
         {{else}}
         <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">
-            <p style="color: var(--text-gray); font-size: 18px;">ยังไม่มีบทความในขณะนี้</p>
+            <p style="color: #999; font-size: 18px;">ยังไม่มีบทความในขณะนี้</p>
         </div>
         {{end}}
     </main>

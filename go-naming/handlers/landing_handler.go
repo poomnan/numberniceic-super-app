@@ -8,36 +8,23 @@ import (
 )
 
 func LandingPageHandler(w http.ResponseWriter, r *http.Request) {
-	highlights, err := services.GetHighlightArticles()
-	if err != nil {
-		log.Printf("Error fetching highlights: %v", err)
-	}
-
-	popular, err := services.GetPopularArticles()
-	if err != nil {
-		log.Printf("Error fetching popular: %v", err)
-	}
+	highlights, _ := services.GetHighlightArticles()
+	popular, _ := services.GetPopularArticles()
 
 	data := map[string]interface{}{
 		"Highlights": highlights,
 		"Popular":    popular,
 	}
 
-	tmpl := template.New("index.html").Funcs(template.FuncMap{
-		"add": func(a, b int) int {
-			return a + b
-		},
-	})
-
-	tmpl, err = tmpl.ParseFiles("templates/index.html")
+	tmpl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
-		log.Printf("Error parsing template: %v", err)
+		log.Printf("Error parsing index template: %v", err)
 		http.Error(w, "Template error", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
 	if err := tmpl.Execute(w, data); err != nil {
-		log.Printf("Error executing template: %v", err)
+		log.Printf("Error executing index template: %v", err)
 	}
 }

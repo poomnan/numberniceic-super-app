@@ -53,7 +53,7 @@ fi
 
 printf "%s\t%s\n" "$now_epoch" "$processed" > "$STATE_FILE"
 
-cat <<OUT
+cat <<EOF
 Phonetic Progress
 root_dir: ${ROOT_DIR}
 total_names: ${total}
@@ -66,4 +66,4 @@ recent_window: ${window_text}
 rate_per_min: ${rate_per_min}
 eta: ${eta_text}
 state_file: ${STATE_FILE}
-OUT
+EOF

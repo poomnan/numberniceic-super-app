@@ -9,21 +9,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #E2B237;
-            --primary-light: #F2994A;
-            --secondary: #9B51E0;
-            --accent: #FF2E93;
-            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
-            --card: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(155, 81, 224, 0.12);
-            --border-color-hover: rgba(155, 81, 224, 0.32);
-            --text: #2D1E4E;
-            --text-muted: #6C5B7B;
+            --primary: #D4AF37;
+            --primary-light: #E6C35C;
+            --secondary: #2C1810;
+            --accent: #B8860B;
+            --bg: #FFF8E1;
+            --card: #FFFAF0;
+            --text: #2C1810;
+            --text-muted: #5D4037;
         }
 
         body {
             font-family: 'Prompt', sans-serif;
-            background: var(--bg) no-repeat fixed;
+            background-color: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 0;
@@ -32,9 +30,7 @@
 
         .navbar {
             background: var(--card);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid #334155;
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -47,7 +43,7 @@
         .logo {
             font-weight: 700;
             font-size: 1.5rem;
-            color: var(--secondary);
+            color: var(--primary-light);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -67,10 +63,9 @@
         .welcome-section h1 {
             font-size: 2rem;
             margin: 0;
-            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
+            background: linear-gradient(135deg, #FFF, var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 700;
         }
 
         .welcome-section p {
@@ -86,20 +81,17 @@
 
         .dashboard-card {
             background: var(--card);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             border-radius: 1.25rem;
             padding: 2rem;
             text-decoration: none;
             color: inherit;
-            border: 1px solid var(--border-color);
+            border: 1px solid #334155;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.05), 0 2px 4px -1px rgba(155, 81, 224, 0.02);
         }
 
         .dashboard-card::before {
@@ -109,7 +101,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--secondary), transparent);
+            background: linear-gradient(135deg, var(--primary), transparent);
             opacity: 0;
             transition: opacity 0.3s ease;
             z-index: 0;
@@ -117,8 +109,8 @@
 
         .dashboard-card:hover {
             transform: translateY(-5px);
-            border-color: var(--border-color-hover);
-            box-shadow: 0 20px 25px -5px rgba(155, 81, 224, 0.1), 0 10px 10px -5px rgba(155, 81, 224, 0.04);
+            border-color: var(--primary);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
 
         .dashboard-card:hover::before {
@@ -128,22 +120,14 @@
         .card-icon {
             width: 60px;
             height: 60px;
-            background: rgba(155, 81, 224, 0.08);
+            background: #334155;
             border-radius: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.75rem;
-            color: var(--secondary);
+            color: var(--primary-light);
             z-index: 1;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(155, 81, 224, 0.1);
-        }
-
-        .dashboard-card:hover .card-icon {
-            background: var(--secondary);
-            color: #FFFFFF;
-            transform: scale(1.05);
         }
 
         .card-content {
@@ -154,7 +138,6 @@
             margin: 0;
             font-size: 1.25rem;
             margin-bottom: 0.5rem;
-            font-weight: 600;
         }
 
         .card-content p {
@@ -170,7 +153,7 @@
             padding: 2rem;
             color: var(--text-muted);
             font-size: 0.85rem;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid #334155;
         }
 
         @media (max-width: 768px) {
@@ -215,28 +198,6 @@
                 </div>
             </a>
 
-            <!-- Semantic Search Ideas -->
-            <a href="/admin/semantic-search-ideas" class="dashboard-card">
-                <div class="card-icon">
-                    <i class="fas fa-list-check"></i>
-                </div>
-                <div class="card-content">
-                    <h3>ไอเดียค้นหาจากความหมาย</h3>
-                    <p>จัดการรายการตัวอย่าง Semantic Search ที่แสดงในแอป Flutter ได้ไม่จำกัด</p>
-                </div>
-            </a>
-
-            <!-- Names Management -->
-            <a href="/admin/names" class="dashboard-card">
-                <div class="card-icon">
-                    <i class="fas fa-signature"></i>
-                </div>
-                <div class="card-content">
-                    <h3>จัดการคลังชื่อ</h3>
-                    <p>เพิ่ม ค้นหา และลบชื่อในฐานข้อมูล names_miracle สำหรับระบบตั้งชื่อ</p>
-                </div>
-            </a>
-
             <!-- Articles Management -->
             <a href="/admin/articles" class="dashboard-card">
                 <div class="card-icon">
@@ -256,39 +217,6 @@
                 <div class="card-content">
                     <h3>คลังรูปภาพ (Library)</h3>
                     <p>อัปโหลด จัดการ และคัดลอกลิงก์รูปภาพเพื่อนำไปใช้ในบทความ</p>
-                </div>
-            </a>
-
-            <!-- Users Management -->
-            <a href="/admin/users-list" class="dashboard-card">
-                <div class="card-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="card-content">
-                    <h3>จัดการผู้ใช้งาน</h3>
-                    <p>ค้นหา ตรวจสอบสถานะสมาชิก และจัดการผู้ใช้งานระบบ</p>
-                </div>
-            </a>
-
-            <!-- Bag Color Management -->
-            <a href="/admin/bag-colors" class="dashboard-card">
-                <div class="card-icon">
-                    <i class="fas fa-briefcase"></i>
-                </div>
-                <div class="card-content">
-                    <h3>จัดการสีกระเป๋ามงคล</h3>
-                    <p>กำหนดสีกระเป๋า เสริมดวง และแจ้งเตือนให้สมาชิกรายบุคคล</p>
-                </div>
-            </a>
-
-            <!-- Orders Management -->
-            <a href="/admin/orders" class="dashboard-card">
-                <div class="card-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="card-content">
-                    <h3>รายการสั่งซื้อ & ที่อยู่</h3>
-                    <p>จัดการข้อมูลที่อยู่การจัดส่งของลูกค้า และสถานะการจัดส่ง</p>
                 </div>
             </a>
         </div>

@@ -67,6 +67,15 @@ Mobile App ควรตรวจสอบ HTTP Status Code:
 `https://ชื่อดี.com/api-mobile-doc`
 (หรือเปิดไฟล์ `templates/api_mobile_doc.html` ใน Source Code)
 
+### 4.1 Source of Truth สำหรับ Outfit / ชุดสี
+- การคำนวณศรี-กาลีและการจัดชุดสีใน endpoint `/api/v1/outfit-miracle/*` อ้างอิงจาก:
+  - `/Users/tayap/project-naming/outfit-miracle/main.go`
+  - `/Users/tayap/project-naming/outfit-miracle/SKILL.md`
+- endpoint `/api/v1/outfit-miracle/color-sets` จะส่ง field อ้างอิงกลับมาด้วย:
+  - `reference_project`
+  - `reference_skill_doc`
+  - `reference_code_file`
+
 ## 5. Deployment / Server Info (For Devs)
 - **Backend:** Go (Golang)
 - **Database:** PostgreSQL (User Data), MySQL (Name Data)
