@@ -6049,6 +6049,7 @@ class _NamingScreenState extends State<NamingScreen>
         showInputSnack: false,
         reloadSelectedName: false,
         preserveScrollPosition: true,
+        allowWhileLoading: true,
       );
     }
   }
