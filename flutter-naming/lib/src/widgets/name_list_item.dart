@@ -986,27 +986,30 @@ class _NameListItemState extends State<NameListItem>
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (widget.rank > 0) ...[
-                  _buildRankBadge(
-                    widget.rank,
-                    showShareAction: showShareAction,
-                    isSharePreview: isSharePreview,
+                if (widget.rank > 0)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildRankBadge(
+                        widget.rank,
+                        showShareAction: showShareAction,
+                        isSharePreview: isSharePreview,
+                      ),
+                      if (!isSharePreview) ...[
+                        const SizedBox(width: 10),
+                        _buildBookmarkButton(compact: true),
+                      ],
+                    ],
                   ),
-                  if (!isSharePreview) ...[
-                    const SizedBox(width: 10),
-                    _buildBookmarkButton(compact: true),
-                    const SizedBox(width: 12),
-                  ] else
-                    const SizedBox(width: 12),
-                ],
-                Expanded(
+                const SizedBox(width: 8),
+                Flexible(
                   child: Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.centerRight,
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
+                      alignment: Alignment.centerRight,
                       child: Builder(
                         builder: (context) {
                           final lucky = _computeLuckyBreakdown();
@@ -1814,10 +1817,10 @@ class _NameListItemState extends State<NameListItem>
                   ],
                   //ANCHOR: RanKingStartNO1 (อันดับ)
                   Text(
-                    'อันดับ #$rank',
+                    'อันดับ #$rank | ${(widget.result.finalRankScoreExact > 0 ? widget.result.finalRankScoreExact : (widget.result.finalRankScore > 0 ? widget.result.finalRankScore.toDouble() : score.toDouble())).toStringAsFixed(2)} คะแนน',
                     style: TextStyle(
                       color: textColor,
-                      fontSize: isSharePreview ? 16 : 14,
+                      fontSize: isSharePreview ? 13 : 11.5,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0.5,
                     ),

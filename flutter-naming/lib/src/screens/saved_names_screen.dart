@@ -901,6 +901,86 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                     ),
                   ],
                 ),
+                // Rank badge at top-left
+                if (item.rankPosition > 0)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            (item.rankPosition == 1
+                                    ? const Color(0xFFD4AF37) // Gold
+                                    : item.rankPosition == 2
+                                        ? const Color(0xFFC0C0C0) // Silver
+                                        : item.rankPosition == 3
+                                            ? const Color(0xFFCD7F32) // Bronze
+                                            : const Color(0xFF7C3AED)) // Modern Purple
+                                .withValues(alpha: 0.16),
+                            (item.rankPosition == 1
+                                    ? const Color(0xFFD4AF37)
+                                    : item.rankPosition == 2
+                                        ? const Color(0xFFC0C0C0)
+                                        : item.rankPosition == 3
+                                            ? const Color(0xFFCD7F32)
+                                            : const Color(0xFF7C3AED))
+                                .withValues(alpha: 0.04),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          bottomRight: Radius.circular(8),
+                        ),
+                        border: Border.all(
+                          color: (item.rankPosition == 1
+                                  ? const Color(0xFFD4AF37)
+                                  : item.rankPosition == 2
+                                      ? const Color(0xFFC0C0C0)
+                                      : item.rankPosition == 3
+                                          ? const Color(0xFFCD7F32)
+                                          : const Color(0xFF7C3AED))
+                              .withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (item.rankPosition <= 3) ...[
+                            Icon(
+                              Icons.emoji_events,
+                              size: 13,
+                              color: item.rankPosition == 1
+                                  ? const Color(0xFFD4AF37)
+                                  : item.rankPosition == 2
+                                      ? const Color(0xFFC0C0C0)
+                                      : const Color(0xFFCD7F32),
+                            ),
+                            const SizedBox(width: 5),
+                          ],
+                          Text(
+                            'อันดับ #${item.rankPosition} | ${(item.finalRankScoreExact > 0 ? item.finalRankScoreExact : item.finalRankScore.toDouble()).toStringAsFixed(2)} คะแนน',
+                            style: GoogleFonts.prompt(
+                              color: item.rankPosition == 1
+                                  ? const Color(0xFFB8860B)
+                                  : item.rankPosition == 2
+                                      ? const Color(0xFF64748B)
+                                      : item.rankPosition == 3
+                                          ? const Color(0xFFCD7F32)
+                                          : const Color(0xFF7C3AED),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 // Lucky badge at top-right
                 Positioned(
                   top: 0,
@@ -1069,50 +1149,126 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
             ),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: GestureDetector(
-                    onTap: () => _showLuckExplanationDialog(item),
-                    child: Container(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: gradientColors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (item.rankPosition > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              (item.rankPosition == 1
+                                      ? const Color(0xFFD4AF37) // Gold
+                                      : item.rankPosition == 2
+                                          ? const Color(0xFFC0C0C0) // Silver
+                                          : item.rankPosition == 3
+                                              ? const Color(0xFFCD7F32) // Bronze
+                                              : const Color(0xFF7C3AED)) // Modern Purple
+                                  .withValues(alpha: 0.16),
+                              (item.rankPosition == 1
+                                      ? const Color(0xFFD4AF37)
+                                      : item.rankPosition == 2
+                                          ? const Color(0xFFC0C0C0)
+                                          : item.rankPosition == 3
+                                              ? const Color(0xFFCD7F32)
+                                              : const Color(0xFF7C3AED))
+                                  .withValues(alpha: 0.04),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: (item.rankPosition == 1
+                                    ? const Color(0xFFD4AF37)
+                                    : item.rankPosition == 2
+                                        ? const Color(0xFFC0C0C0)
+                                        : item.rankPosition == 3
+                                            ? const Color(0xFFCD7F32)
+                                            : const Color(0xFF7C3AED))
+                                .withValues(alpha: 0.35),
+                            width: 1,
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.14),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isLucky
-                                ? Icons.auto_awesome
-                                : Icons.info_outline_rounded,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            luckText,
-                            style: GoogleFonts.prompt(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (item.rankPosition <= 3) ...[
+                              Icon(
+                                Icons.emoji_events,
+                                size: 13,
+                                color: item.rankPosition == 1
+                                    ? const Color(0xFFD4AF37)
+                                    : item.rankPosition == 2
+                                        ? const Color(0xFFC0C0C0)
+                                        : const Color(0xFFCD7F32),
+                              ),
+                              const SizedBox(width: 5),
+                            ],
+                            Text(
+                              'อันดับ #${item.rankPosition} | ${(item.finalRankScoreExact > 0 ? item.finalRankScoreExact : item.finalRankScore.toDouble()).toStringAsFixed(2)} คะแนน',
+                              style: GoogleFonts.prompt(
+                                color: item.rankPosition == 1
+                                    ? const Color(0xFFB8860B)
+                                    : item.rankPosition == 2
+                                        ? const Color(0xFF64748B)
+                                        : item.rankPosition == 3
+                                            ? const Color(0xFFCD7F32)
+                                            : const Color(0xFF7C3AED),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.2,
+                              ),
                             ),
+                          ],
+                        ),
+                      )
+                    else
+                      const SizedBox(),
+                    GestureDetector(
+                      onTap: () => _showLuckExplanationDialog(item),
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 14, 8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: gradientColors,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.14),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isLucky
+                                  ? Icons.auto_awesome
+                                  : Icons.info_outline_rounded,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              luckText,
+                              style: GoogleFonts.prompt(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
                 const SizedBox(height: 14),
                 Row(

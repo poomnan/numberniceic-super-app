@@ -372,6 +372,53 @@ class ApiService {
     }
   }
 
+  // Semantic Search Ideas API
+  Future<List<Map<String, dynamic>>> getSemanticSearchIdeas() async {
+    final url = Uri.parse('$baseUrl/api/v1/semantic-search-ideas');
+    try {
+      final response = await http.get(url).timeout(_timeout);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถโหลดไอเดียค้นหาได้ในขณะนี้',
+        );
+        return data.map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Input Classification API
+  Future<InputClassification?> classifyInput(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return null;
+
+    final url = Uri.parse(
+      '$baseUrl/api/v1/input/classify',
+    ).replace(queryParameters: {'input': trimmed});
+
+    try {
+      final response = await http.get(url).timeout(_timeout);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = _decodeJsonBody(
+          response,
+          fallbackMessage: 'ไม่สามารถจำแนกประเภทข้อมูลได้ในขณะนี้',
+        );
+        return InputClassification.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Save name locally (alias for saveName, used in naming screen save dialog)
+  Future<bool> saveNameLocally(Map<String, dynamic> savedData) async {
+    return saveName(savedData);
+  }
+
   // User Saved Names APIs
   Future<bool> saveName(Map<String, dynamic> savedData) async {
     final url = Uri.parse('$baseUrl/api/v1/saved-names/save');

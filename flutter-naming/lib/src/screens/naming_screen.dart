@@ -44,7 +44,8 @@ class _NamingScreenState extends State<NamingScreen>
   NameAnalysisResult? _selectedNameAnalysis;
   bool _hasRankableNameTemplate = false;
   int? _selectedCelebrityIndex; // Track which celebrity avatar is selected
-  int? _selectedExampleIndex; // Track which search idea is active
+  int? _selectedExampleIndex;
+  String? _selectedExampleText;
   String? _selectedDay;
   bool _filterSat = false;
   bool _filterSha = true;
@@ -73,6 +74,7 @@ class _NamingScreenState extends State<NamingScreen>
   final FocusNode _searchFocusNode = FocusNode();
   late AnimationController _celebsAnimController;
   double _celebsScrollPos = 0.0;
+  final ScrollController _scrollController = ScrollController();
 
   String? _relaxedFiltersNotice; // Labels of filters that were turned off
 
@@ -80,8 +82,11 @@ class _NamingScreenState extends State<NamingScreen>
   bool _loadingSuggestions = false;
   NameIntentResult? _nameIntentResult;
   bool _isLoadingNameIntent = false;
+  InputClassification? _inputClassification;
+  Timer? _classifyTimer;
   bool _ignoreNextSearchInputChange = false;
   bool _hideSelectedMeaningCard = false;
+  bool _isSuggestionBoxExpanded = false;
   Map<String, dynamic>? _cachedStats;
   List? _cachedResults;
   bool? _cachedSat, _cachedSha;
@@ -140,28 +145,90 @@ class _NamingScreenState extends State<NamingScreen>
     'Saturday': 'เกิดวันเสาร์',
   };
 
-  static const List<Map<String, dynamic>> _ideaExamples = [
-    {
-      "text": "เศรษฐีผู้มั่งคั่ง มีทรัพย์สมบัติและบารมี",
-      "icon": Icons.trending_up,
-      "iconColor": Color(0xFFD4A017),
-    },
-    {
-      "text": "หญิงสาวผู้อ่อนหวาน มีเสน่ห์ และเป็นที่รัก",
-      "icon": Icons.favorite,
-      "iconColor": Color(0xFFE66A8D),
-    },
-    {
-      "text": "ผู้นำที่กล้าหาญ เจริญรุ่งเรือง ไร้อุปสรรค",
-      "icon": Icons.shield,
-      "iconColor": Color(0xFF4F8FE8),
-    },
-    {
-      "text": "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน",
-      "icon": Icons.psychology,
-      "iconColor": Color(0xFF8B6CD9),
-    },
-  ];
+  List<Map<String, dynamic>> _ideaExamples = [];
+  List<Map<String, dynamic>> _pickedExamples = [];
+  Timer? _shuffleTimer;
+
+  static IconData _iconNameToIconData(String name) {
+    switch (name) {
+      case 'trending_up':
+        return Icons.trending_up;
+      case 'favorite':
+        return Icons.favorite;
+      case 'shield':
+        return Icons.shield;
+      case 'psychology':
+        return Icons.psychology;
+      case 'auto_awesome':
+        return Icons.auto_awesome;
+      case 'star':
+        return Icons.star;
+      case 'diamond':
+        return Icons.diamond;
+      case 'emoji_events':
+        return Icons.emoji_events;
+      case 'thumb_up':
+        return Icons.thumb_up;
+      case 'rocket_launch':
+        return Icons.rocket_launch;
+      case 'local_fire_department':
+        return Icons.local_fire_department;
+      case 'water_drop':
+        return Icons.water_drop;
+      case 'park':
+        return Icons.park;
+      case 'sunny':
+        return Icons.sunny;
+      case 'nightlight':
+        return Icons.nightlight;
+      case 'public':
+        return Icons.public;
+      case 'language':
+        return Icons.language;
+      case 'spa':
+        return Icons.spa;
+      case 'pets':
+        return Icons.pets;
+      case 'music_note':
+        return Icons.music_note;
+      case 'palette':
+        return Icons.palette;
+      case 'school':
+        return Icons.school;
+      case 'work':
+        return Icons.work;
+      case 'monetization_on':
+        return Icons.monetization_on;
+      case 'account_balance':
+        return Icons.account_balance;
+      case 'volunteer_activism':
+        return Icons.volunteer_activism;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      case 'hive':
+        return Icons.hive;
+      case 'bolt':
+        return Icons.bolt;
+      case 'waving_hand':
+        return Icons.waving_hand;
+      case 'diversity_3':
+        return Icons.diversity_3;
+      case 'mood':
+        return Icons.mood;
+      case 'sparkles':
+        return Icons.auto_awesome;
+      case 'workspace_premium':
+        return Icons.workspace_premium;
+      default:
+        return Icons.auto_awesome;
+    }
+  }
+
+  static Color _hexToColor(String hex) {
+    hex = hex.replaceFirst('#', '');
+    if (hex.length == 6) hex = 'FF$hex';
+    return Color(int.parse(hex, radix: 16));
+  }
 
   Future<void> _search({
     bool scrollToResults = false,
@@ -400,9 +467,9 @@ class _NamingScreenState extends State<NamingScreen>
           if (_filterSat && _filterSha) {
             if (!passesSatFilter || !passesShaFilter) return false;
           } else if (_filterSat) {
-            if (!passesSatFilter) return false;
+            if (!passesSatFilter || passesShaFilter) return false;
           } else if (_filterSha) {
-            if (!passesShaFilter) return false;
+            if (passesSatFilter || !passesShaFilter) return false;
           }
 
           return true;
@@ -444,6 +511,19 @@ class _NamingScreenState extends State<NamingScreen>
             }
 
             if (_filterSat && !_filterSha) {
+              if (a.finalRankScore != b.finalRankScore) {
+                return b.finalRankScore.compareTo(a.finalRankScore);
+              }
+              final double scoreA = a
+                  .calculateScore(showMatching: false)
+                  .toDouble();
+              final double scoreB = b
+                  .calculateScore(showMatching: false)
+                  .toDouble();
+              if (scoreA != scoreB) {
+                return scoreB.compareTo(scoreA);
+              }
+
               final int satGoodCompare =
                   (b.isSatGood ? 1 : 0) - (a.isSatGood ? 1 : 0);
               if (satGoodCompare != 0) return satGoodCompare;
@@ -462,6 +542,19 @@ class _NamingScreenState extends State<NamingScreen>
             }
 
             if (_filterSha && !_filterSat) {
+              if (a.finalRankScore != b.finalRankScore) {
+                return b.finalRankScore.compareTo(a.finalRankScore);
+              }
+              final double scoreA = a
+                  .calculateScore(showMatching: false)
+                  .toDouble();
+              final double scoreB = b
+                  .calculateScore(showMatching: false)
+                  .toDouble();
+              if (scoreA != scoreB) {
+                return scoreB.compareTo(scoreA);
+              }
+
               final int shaGoodCompare =
                   (b.isShaGood ? 1 : 0) - (a.isShaGood ? 1 : 0);
               if (shaGoodCompare != 0) return shaGoodCompare;
@@ -623,6 +716,92 @@ class _NamingScreenState extends State<NamingScreen>
 
     loadCelebrities();
     initPremium();
+    _loadIdeaExamples();
+  }
+
+  Future<void> _loadIdeaExamples() async {
+    final raw = await _apiService.getSemanticSearchIdeas();
+    if (!mounted) return;
+    setState(() {
+      _ideaExamples = raw.map((item) {
+        final iconName = item['icon_name'] as String? ?? 'auto_awesome';
+        final colorHex = item['icon_color'] as String? ?? '#8B6CD9';
+        return {
+          'text': item['text'] as String? ?? '',
+          'icon': _iconNameToIconData(iconName),
+          'iconColor': _hexToColor(colorHex),
+        };
+      }).toList();
+    });
+    _applyPickedExamples();
+  }
+
+  void _applyPickedExamples({String? bringToTop}) {
+    final shuffled = List<Map<String, dynamic>>.from(_ideaExamples)
+      ..shuffle(math.Random());
+    List<Map<String, dynamic>> picked;
+    if (bringToTop != null) {
+      final target = shuffled.firstWhere(
+        (e) => e['text'] == bringToTop,
+        orElse: () => shuffled.first,
+      );
+      shuffled.remove(target);
+      picked = [target, ...shuffled.take(5)];
+      _pickedExamples = picked;
+      // Stop/Cancel shuffle timer since user selected an item!
+      _shuffleTimer?.cancel();
+    } else {
+      picked = shuffled.take(6).toList();
+      _pickedExamples = picked;
+      _startShuffleTimer();
+    }
+  }
+
+  void _startShuffleTimer() {
+    // Only run timer if no item is currently selected
+    if (_selectedExampleText != null) {
+      _shuffleTimer?.cancel();
+      return;
+    }
+    _shuffleTimer?.cancel();
+    _shuffleTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      if (!mounted) return;
+      // Double check inside tick
+      if (_selectedExampleText != null) {
+        _shuffleTimer?.cancel();
+        return;
+      }
+      setState(() {
+        if (_pickedExamples.length >= 2 &&
+            _ideaExamples.length > _pickedExamples.length) {
+          // Remove the first item
+          _pickedExamples.removeAt(0);
+
+          // Get the texts of the remaining items
+          final currentTexts = _pickedExamples
+              .map((e) => e['text'] as String)
+              .toSet();
+
+          // Find items in _ideaExamples that are not in _pickedExamples
+          final available = _ideaExamples
+              .where((e) => !currentTexts.contains(e['text'] as String))
+              .toList();
+
+          if (available.isNotEmpty) {
+            // Pick a random one from available items
+            final nextItem = available[math.Random().nextInt(available.length)];
+            _pickedExamples.add(nextItem);
+          } else {
+            // Fallback: rotate the first item back
+            final first = _pickedExamples.removeAt(0);
+            _pickedExamples.add(first);
+          }
+        } else if (_pickedExamples.length >= 2) {
+          final first = _pickedExamples.removeAt(0);
+          _pickedExamples.add(first);
+        }
+      });
+    });
   }
 
   void onSearchInputChanged() {
@@ -638,6 +817,7 @@ class _NamingScreenState extends State<NamingScreen>
     if (mounted) {
       setState(() {
         _hideSelectedMeaningCard = false;
+        _isSuggestionBoxExpanded = false;
         _invalidateStatsCache();
         _results = [];
         _hasSearched = false;
@@ -645,14 +825,16 @@ class _NamingScreenState extends State<NamingScreen>
         _relaxedFiltersNotice = null;
         _nameIntentResult = null;
         _isLoadingNameIntent = false;
+        _inputClassification = null;
 
         // Improved Logic: Be more forgiving with string comparison (trim both)
         if (_selectedExampleIndex != null) {
-          // ANCHOR: idia list (รายการไอเดียวจากประโยคตัวอย่าง)
-          final target =
-              _ideaExamples[_selectedExampleIndex!]['text'] as String;
+          final target = _selectedExampleText ?? '';
           if (text.trim() != target.trim()) {
             _selectedExampleIndex = null;
+            _selectedExampleText = null;
+            // Restart shuffle timer!
+            _startShuffleTimer();
           }
         }
         if (_selectedCelebrityIndex != null && _celebrities.isNotEmpty) {
@@ -681,6 +863,11 @@ class _NamingScreenState extends State<NamingScreen>
         _loadingSuggestions = false;
         _nameIntentResult = null;
         _isLoadingNameIntent = false;
+        _inputClassification = null;
+        _selectedExampleIndex = null;
+        _selectedExampleText = null;
+        // Restart shuffle timer if it was stopped
+        _startShuffleTimer();
       });
       return;
     }
@@ -693,6 +880,7 @@ class _NamingScreenState extends State<NamingScreen>
     // Always fetch suggestions since Backend now handles both pg_trgm & semantic
     // It will also load the meaning/analysis of the currently typed text inside the debouncer
     fetchNameSuggestionsDebounced(text);
+    _scheduleClassifyInput(text);
 
     if (mounted) setState(() {});
   }
@@ -710,12 +898,152 @@ class _NamingScreenState extends State<NamingScreen>
     return RegExp(r'^[ก-๙]+$').hasMatch(trimmed);
   }
 
+  void _scheduleClassifyInput(String text) {
+    _classifyTimer?.cancel();
+    if (text.isEmpty) {
+      setState(() => _inputClassification = null);
+      return;
+    }
+    _classifyTimer = Timer(const Duration(milliseconds: 600), () async {
+      final result = await _apiService.classifyInput(text);
+      if (!mounted) return;
+      if (_keywordController.text.trim() != text) return;
+      setState(() {
+        _inputClassification = result;
+        if (result != null &&
+            (result.type == "single_name" ||
+                result.type == "full_name" ||
+                result.type == "meaning")) {
+          _filterSha = true;
+          _filterSat = false;
+          _hasRankableNameTemplate = true;
+        }
+      });
+      if (result != null) {
+        if (result.type == "full_name" && result.firstName != null) {
+          _resolveSeedName(result.firstName!);
+        } else if (result.type == "single_name" && result.firstName != null) {
+          _resolveSeedName(result.firstName!);
+        }
+        if (result.type == "single_name" ||
+            result.type == "full_name" ||
+            result.type == "meaning") {
+          _search(scrollToResults: false);
+        }
+      }
+    });
+  }
+
+  Widget _buildClassificationChip(InputClassification c) {
+    final isName = c.type == "single_name";
+    final isFullName = c.type == "full_name";
+    final Color chipColor = isName
+        ? const Color(0xFF059669)
+        : isFullName
+        ? const Color(0xFF7C3AED)
+        : const Color(0xFFD97706);
+    final Color bgColor = isName
+        ? const Color(0xFFECFDF5)
+        : isFullName
+        ? const Color(0xFFF5F3FF)
+        : const Color(0xFFFFFBEB);
+    final IconData icon = isName
+        ? Icons.person_rounded
+        : isFullName
+        ? Icons.people_rounded
+        : Icons.auto_awesome_rounded;
+    final String label = isFullName
+        ? "ชื่อ-สกุล"
+        : isName
+        ? "ชื่อ"
+        : "ค้นความหมาย";
+    final String detail = isFullName
+        ? "${c.firstName} + ${c.surname}"
+        : isName
+        ? c.firstName?.isNotEmpty == true
+              ? c.firstName!
+              : (c.signals.contains("exact_db_match")
+                    ? "มีในฐานข้อมูล ✅"
+                    : "คาดว่าเป็นชื่อ")
+        : "ความหมาย: ${c.signals.where((s) => s != "descriptive_phrase" && s != "long_phrase" && s != "non_name_two_word_phrase").join(", ")}";
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: chipColor.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: chipColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 14, color: chipColor),
+                const SizedBox(width: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: chipColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              detail,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: chipColor.withValues(alpha: 0.8),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          if (c.confidence > 0)
+            Text(
+              "${(c.confidence * 100).toInt()}%",
+              style: TextStyle(
+                color: chipColor.withValues(alpha: 0.5),
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _getThaiInputType(String type) {
+    if (type == "single_name") return "ชื่อ";
+    if (type == "full_name") return "ชื่อ + นามสกุล";
+    return "ความหมายชื่อที่ต้องการ";
+  }
+
+  Color _getThaiInputTypeColor(String type) {
+    if (type == "single_name") return const Color(0xFF059669);
+    if (type == "full_name") return const Color(0xFF7C3AED);
+    return const Color(0xFFD97706);
+  }
+
   void _resolveSeedName(String name, {String? meaningHint}) {
     setState(() {
       _selectedNameMeaningName = name;
       _selectedNameMeaning = meaningHint;
       _selectedNameAnalysis = null;
       _nameSuggestions = null;
+      _isSuggestionBoxExpanded = false;
       _hasRankableNameTemplate = true;
       _isLoadingSelectedNameMeaning = false;
     });
@@ -759,7 +1087,9 @@ class _NamingScreenState extends State<NamingScreen>
           resolved?.shouldUsePgTrgmSuggestions ??
           (_looksLikeTypedThaiName(trimmed) && meaning == null);
       final bool canRankFromCurrentInput =
-          resolved?.canRankFromTemplate ??
+          resolved?.canRankFromTemplate == true ||
+          resolved?.inputType == "name" ||
+          _looksLikeTypedThaiName(trimmed) ||
           (meaning != null && meaning.trim().isNotEmpty);
       final bool isSemanticQuery =
           resolved?.isMeaning ?? !_looksLikeTypedThaiName(trimmed);
@@ -813,14 +1143,13 @@ class _NamingScreenState extends State<NamingScreen>
   }
 
   void scrollToTop() {
-    final context = _searchFieldKey.currentContext;
-    if (context == null) return;
-    Scrollable.ensureVisible(
-      context,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-      alignment: 0.0,
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   Future<void> initPremium() async {
@@ -1024,9 +1353,12 @@ class _NamingScreenState extends State<NamingScreen>
   @override
   void dispose() {
     _filterDebounce?.cancel();
+    _classifyTimer?.cancel();
+    _shuffleTimer?.cancel();
     _flutterTts.stop();
     _searchFocusNode.dispose();
     _celebsAnimController.dispose();
+    _scrollController.dispose();
     _keywordController.removeListener(onSearchInputChanged);
     _keywordController.dispose();
     super.dispose();
@@ -1454,6 +1786,7 @@ class _NamingScreenState extends State<NamingScreen>
               return false;
             },
             child: CustomScrollView(
+              controller: _scrollController,
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: [
                 SliverToBoxAdapter(
@@ -2023,329 +2356,281 @@ class _NamingScreenState extends State<NamingScreen>
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_selectedNameMeaning != null)
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 24,
-              bottom: 8,
-            ), // เพิ่มระยะห่างเว้นจากช่องค้นหา
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.bgDarker, // Elegant themed background
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_selectedNameMeaning != null)
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 4,
+                bottom: 8,
+              ), // เพิ่มระยะห่างเว้นจากช่องค้นหา
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.bgDarker, // Elegant themed background
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.accent.withValues(alpha: 0.3),
+                    width: 1.5,
                   ),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.menu_book_rounded,
+                            color: AppColors.secondary,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Text.rich(
+                                      TextSpan(
+                                        text: "ความหมายของชื่อ ",
+                                        style: GoogleFonts.sarabun(
+                                          color: const Color(
+                                            0xFF3D2600,
+                                          ).withValues(alpha: 0.6),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: " $_selectedNameMeaningName",
+                                            style: GoogleFonts.prompt(
+                                              color: const Color(0xFF3D2600),
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  _buildSpeechIconButton(
+                                    icon:
+                                        _isSpeakingKey(
+                                          _selectedNameMeaningName
+                                                      ?.trim()
+                                                      .isNotEmpty ??
+                                                  false
+                                              ? 'selected-meaning:${_selectedNameMeaningName!.trim()}'
+                                              : 'selected-meaning',
+                                        )
+                                        ? Icons.volume_up_rounded
+                                        : Icons.record_voice_over_rounded,
+                                    onTap: _speakSelectedMeaning,
+                                    tooltip: 'ฟังความหมายของชื่อ',
+                                    variant: SpeechButtonVariant.secondary,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 120),
+                                child: Text(
+                                  _selectedNameMeaning!,
+                                  style: GoogleFonts.prompt(
+                                    color: AppColors.textGray,
+                                    fontSize: 16,
+                                    height: 1.6,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Absolute Positioned Root Word Button (Bottom Right)
+                    if (_selectedNameAnalysis != null)
+                      Positioned(
+                        bottom: -12,
+                        right: -8,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.secondary, AppColors.accent],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.secondary.withValues(
+                                  alpha: 0.3,
+                                ),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => showRootWordDialog(
+                                name: _selectedNameAnalysis!.name,
+                                satSum: _selectedNameAnalysis!.satSum,
+                                shaSum: _selectedNameAnalysis!.shaSum,
+                                isSatGood: _selectedNameAnalysis!.isSatGood,
+                                isShaGood: _selectedNameAnalysis!.isShaGood,
+                                meaning: _selectedNameMeaning,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.auto_stories_rounded,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    //ANCHOR: OriginWord (รากศัพท์)
+                                    Text(
+                                      "รากศัพท์",
+                                      style: GoogleFonts.prompt(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
+            ),
+
+          if (_selectedNameAnalysis != null) ...[
+            const SizedBox(height: 10),
+            _MagicSummaryWrapper(
+              isActive:
+                  _selectedNameAnalysis!.isSatGood &&
+                  _selectedNameAnalysis!.isShaGood,
+              color: const Color(0xFFFFD700), // Gold color
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.menu_book_rounded,
-                          color: AppColors.secondary,
-                          size: 20,
-                        ),
+                      buildAnalysisScoreWithSmart(
+                        "เลขศาสตร์:",
+                        _selectedNameAnalysis!.satSum,
+                        _selectedNameAnalysis!.isSatGood,
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Text.rich(
-                                    TextSpan(
-                                      text: "ความหมายของชื่อ ",
-                                      style: GoogleFonts.sarabun(
-                                        color: const Color(
-                                          0xFF3D2600,
-                                        ).withValues(alpha: 0.6),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: " $_selectedNameMeaningName",
-                                          style: GoogleFonts.prompt(
-                                            color: const Color(0xFF3D2600),
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                _buildSpeechIconButton(
-                                  icon:
-                                      _isSpeakingKey(
-                                        _selectedNameMeaningName
-                                                    ?.trim()
-                                                    .isNotEmpty ??
-                                                false
-                                            ? 'selected-meaning:${_selectedNameMeaningName!.trim()}'
-                                            : 'selected-meaning',
-                                      )
-                                      ? Icons.volume_up_rounded
-                                      : Icons.record_voice_over_rounded,
-                                  onTap: _speakSelectedMeaning,
-                                  tooltip: 'ฟังความหมายของชื่อ',
-                                  variant: SpeechButtonVariant.secondary,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 120),
-                              child: Text(
-                                _selectedNameMeaning!,
-                                style: GoogleFonts.prompt(
-                                  color: AppColors.textGray,
-                                  fontSize: 16,
-                                  height: 1.6,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                          ],
-                        ),
+                      buildAnalysisScoreWithSmart(
+                        "พลังเงา:",
+                        _selectedNameAnalysis!.shaSum,
+                        _selectedNameAnalysis!.isShaGood,
                       ),
                     ],
                   ),
 
-                  // Absolute Positioned Root Word Button (Bottom Right)
-                  if (_selectedNameAnalysis != null)
-                    Positioned(
-                      bottom: -12,
-                      right: -8,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppColors.secondary, AppColors.accent],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.secondary.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => showRootWordDialog(
-                              name: _selectedNameAnalysis!.name,
-                              satSum: _selectedNameAnalysis!.satSum,
-                              shaSum: _selectedNameAnalysis!.shaSum,
-                              isSatGood: _selectedNameAnalysis!.isSatGood,
-                              isShaGood: _selectedNameAnalysis!.isShaGood,
-                              meaning: _selectedNameMeaning,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.auto_stories_rounded,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  //ANCHOR: OriginWord (รากศัพท์)
-                                  Text(
-                                    "รากศัพท์",
-                                    style: GoogleFonts.prompt(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        if (_selectedNameMeaning == null &&
-            _selectedNameAnalysis != null &&
-            !_hasRankableNameTemplate)
-          Padding(
-            padding: const EdgeInsets.only(top: 18, bottom: 8),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.bgDarker,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.24),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.fact_check_rounded,
-                    color: AppColors.secondary.withValues(alpha: 0.9),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text.rich(
-                      TextSpan(
-                        text: "วิเคราะห์ชื่อที่คุณพิมพ์แล้ว แต่ ",
-                        style: GoogleFonts.sarabun(
-                          color: AppColors.textGray,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          height: 1.4,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: _selectedNameMeaningName ?? '',
-                            style: GoogleFonts.prompt(
-                              color: AppColors.textLight,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const TextSpan(
-                            text: " ยังไม่มีความหมายในฐานข้อมูล 3 แสนรายชื่อ",
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        if (_selectedNameAnalysis != null) ...[
-          const SizedBox(height: 10),
-          _MagicSummaryWrapper(
-            isActive:
-                _selectedNameAnalysis!.isSatGood &&
-                _selectedNameAnalysis!.isShaGood,
-            color: const Color(0xFFFFD700), // Gold color
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    buildAnalysisScoreWithSmart(
-                      "เลขศาสตร์:",
-                      _selectedNameAnalysis!.satSum,
-                      _selectedNameAnalysis!.isSatGood,
-                    ),
-                    buildAnalysisScoreWithSmart(
-                      "พลังเงา:",
-                      _selectedNameAnalysis!.shaSum,
-                      _selectedNameAnalysis!.isShaGood,
-                    ),
-                  ],
-                ),
-
-                // Absolute Positioned Remark Button (Top Right)
-                Positioned(
-                  top: -8,
-                  right: -8,
-                  child: Tooltip(
-                    message: "อ่านคำอธิบายเลขศาสตร์และพลังเงา",
-                    child: Material(
-                      color: const Color(0xFF111827).withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(8),
-                      elevation: 2,
-                      shadowColor: Colors.black.withValues(alpha: 0.12),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const InformationScreen(initialTabIndex: 0),
-                            ),
-                          );
-                        },
+                  // Absolute Positioned Remark Button (Top Right)
+                  Positioned(
+                    top: -8,
+                    right: -8,
+                    child: Tooltip(
+                      message: "อ่านคำอธิบายเลขศาสตร์และพลังเงา",
+                      child: Material(
+                        color: const Color(0xFF111827).withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.info_outline_rounded,
-                                color: Colors.white.withValues(alpha: 0.85),
-                                size: 12,
+                        elevation: 2,
+                        shadowColor: Colors.black.withValues(alpha: 0.12),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const InformationScreen(initialTabIndex: 0),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                "หมายเหตุ",
-                                style: GoogleFonts.prompt(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  size: 12,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Text(
+                                  "หมายเหตุ",
+                                  style: GoogleFonts.prompt(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -2377,9 +2662,16 @@ class _NamingScreenState extends State<NamingScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildExamples(),
-                const SizedBox(height: 20),
                 buildSearchField(),
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.topCenter,
+                  child: buildSelectedNameMeaningUnderKeyword(),
+                ),
+                buildCombinedSuggestionBox(),
+                const SizedBox(height: 20),
+                buildExamples(),
                 const SizedBox(height: 24),
 
                 // ===== STEP 2: ตั้งค่าเพิ่มเติม (SECONDARY) =====
@@ -2391,26 +2683,103 @@ class _NamingScreenState extends State<NamingScreen>
                   children: [
                     Expanded(child: buildDropdown()),
                     const SizedBox(width: 8),
-                    FilterChipWidget(
-                      label: "กาลกิณี (คัดออก)",
-                      icon: Icons.warning,
-                      isActive: _selectedDay != null && _filterKaki,
-                      onTap: () {
-                        if (_selectedDay == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "ระบุวันเกิด เพื่อคัดอักษรกาลกิณีตามตำราโบราณนะคะ",
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (_selectedDay == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "ระบุวันเกิด เพื่อคัดอักษรกาลกิณีตามตำราโบราณนะคะ",
+                                ),
+                                backgroundColor: Colors.orange,
+                                duration: Duration(seconds: 2),
                               ),
-                              backgroundColor: Colors.orange,
-                              duration: Duration(seconds: 2),
+                            );
+                            return;
+                          }
+                          setState(() => _filterKaki = !_filterKaki);
+                          unawaited(_refreshResultsKeepingStep2Anchor());
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: const Color(0xFFE2E8F0),
+                              width: 1.5,
                             ),
-                          );
-                          return;
-                        }
-                        setState(() => _filterKaki = !_filterKaki);
-                        unawaited(_refreshResultsKeepingStep2Anchor());
-                      },
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Color(0xFF64748B),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  "คัดกาลกิณีออก",
+                                  style: GoogleFonts.prompt(
+                                    color: const Color(0xFF1E293B),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  overflow: TextOverflow.visible,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Transform.scale(
+                                scale: 0.7,
+                                child: Switch.adaptive(
+                                  value: _selectedDay != null && _filterKaki,
+                                  onChanged: (_) {
+                                    if (_selectedDay == null) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "ระบุวันเกิด เพื่อคัดอักษรกาลกิณีตามตำราโบราณนะคะ",
+                                          ),
+                                          backgroundColor: Colors.orange,
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    setState(() => _filterKaki = !_filterKaki);
+                                    unawaited(
+                                      _refreshResultsKeepingStep2Anchor(),
+                                    );
+                                  },
+                                  activeColor: const Color(0xFF0EA5E9),
+                                  activeTrackColor: const Color(
+                                    0xFF0EA5E9,
+                                  ).withValues(alpha: 0.3),
+                                  inactiveThumbColor: Colors.white,
+                                  inactiveTrackColor: const Color(0xFFCBD5E1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -2428,7 +2797,30 @@ class _NamingScreenState extends State<NamingScreen>
   }
 
   Widget buildExamples() {
-    final examples = _ideaExamples;
+    final examples = _pickedExamples.isNotEmpty
+        ? _pickedExamples
+        : [
+            {
+              "text": "เศรษฐีผู้มั่งคั่ง มีทรัพย์สมบัติและบารมี",
+              "icon": Icons.trending_up,
+              "iconColor": const Color(0xFFD4A017),
+            },
+            {
+              "text": "หญิงสาวผู้อ่อนหวาน มีเสน่ห์ และเป็นที่รัก",
+              "icon": Icons.favorite,
+              "iconColor": const Color(0xFFE66A8D),
+            },
+            {
+              "text": "ผู้นำที่กล้าหาญ เจริญรุ่งเรือง ไร้อุปสรรค",
+              "icon": Icons.shield,
+              "iconColor": const Color(0xFF4F8FE8),
+            },
+            {
+              "text": "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน",
+              "icon": Icons.psychology,
+              "iconColor": const Color(0xFF8B6CD9),
+            },
+          ];
 
     return Container(
       decoration: BoxDecoration(
@@ -2459,7 +2851,6 @@ class _NamingScreenState extends State<NamingScreen>
                   ),
                 ),
                 const SizedBox(width: 8),
-                //ANCHOR: title header idea (หาชื่อจากความหมาย (Semantic Search))
                 const Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(top: 0, bottom: 0),
@@ -2477,121 +2868,183 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                   ),
                 ),
+                if (_selectedExampleText != null) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        final textToClear = _selectedExampleText;
+                        _selectedExampleIndex = null;
+                        _selectedExampleText = null;
+                        if (textToClear != null &&
+                            _keywordController.text.trim() ==
+                                textToClear.trim()) {
+                          _keywordController.clear();
+                        }
+                        _startShuffleTimer();
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.goldGradient,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFFFD700,
+                            ).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.play_arrow_rounded,
+                            size: 14,
+                            color: Color(0xFF4E342E),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'สุ่มต่อ',
+                            style: TextStyle(
+                              fontFamily: 'Sarabun',
+                              color: Color(0xFF4E342E),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: examples.asMap().entries.map((entry) {
-              final int index = entry.key;
-              final item = entry.value;
-              final text = item['text'] as String;
-              final icon = item['icon'] as IconData;
-              final iconColor = item['iconColor'] as Color? ?? AppColors.accent;
-              final bool isActive = _selectedExampleIndex == index;
-              final bool isLast = index == examples.length - 1;
-
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 0,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.accent.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  blurRadius: 15,
-                                  spreadRadius: 2,
-                                ),
-                              ]
-                            : null,
+          SizedBox(
+            height: 48 * examples.length.toDouble(),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              child: Column(
+                key: ValueKey(examples.map((e) => e['text']).join(',')),
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: examples.asMap().entries.map((entry) {
+                  final int index = entry.key;
+                  final item = entry.value;
+                  final text = item['text'] as String;
+                  final icon = item['icon'] as IconData;
+                  final iconColor =
+                      item['iconColor'] as Color? ?? AppColors.accent;
+                  final bool isActive = _selectedExampleText == text;
+                  return SizedBox(
+                    height: 48,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 0,
                       ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _setKeywordWithoutTriggeringListener(text);
-                              _selectedExampleIndex = index;
-                              _selectedCelebrityIndex = null;
-                              _filterSat = false;
-                              _filterSha = false;
-                            });
-                            _search();
-                            maybeScrollToSearchField();
-                          },
+                      child: Container(
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? const Color(0xFFFDF4FF)
-                                  : Colors.white.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isActive
-                                    ? AppColors.accent
-                                    : Colors.white.withValues(alpha: 0.15),
-                                width: isActive ? 2.0 : 1.0,
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.accent.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                    blurRadius: 15,
+                                    spreadRadius: 2,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                _setKeywordWithoutTriggeringListener(text);
+                                _selectedExampleIndex = index;
+                                _selectedExampleText = text;
+                                _selectedCelebrityIndex = null;
+                                _filterSat = false;
+                                _filterSha = true;
+                                _applyPickedExamples(bringToTop: text);
+                              });
+                              _search();
+                              maybeScrollToSearchField();
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 0,
                               ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  icon,
-                                  size: 20,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? const Color(0xFFFDF4FF)
+                                    : Colors.white.withValues(alpha: 0.9),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
                                   color: isActive
-                                      ? iconColor
-                                      : iconColor.withValues(alpha: 0.75),
+                                      ? AppColors.accent
+                                      : Colors.white.withValues(alpha: 0.15),
+                                  width: isActive ? 2.0 : 1.0,
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    text,
-                                    style: GoogleFonts.sarabun(
-                                      color: isActive
-                                          ? const Color(0xFF5C3C10)
-                                          : AppColors.textLight.withValues(
-                                              alpha: 0.8,
-                                            ),
-                                      fontSize: 14,
-                                      fontWeight: isActive
-                                          ? FontWeight.w700
-                                          : FontWeight.w600,
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    icon,
+                                    size: 20,
+                                    color: isActive
+                                        ? iconColor
+                                        : iconColor.withValues(alpha: 0.75),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      text,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.sarabun(
+                                        color: isActive
+                                            ? const Color(0xFF5C3C10)
+                                            : AppColors.textLight.withValues(
+                                                alpha: 0.8,
+                                              ),
+                                        fontSize: 14,
+                                        fontWeight: isActive
+                                            ? FontWeight.w700
+                                            : FontWeight.w600,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                if (isActive)
-                                  const Icon(
-                                    Icons.check_circle_rounded,
-                                    size: 20,
-                                    color: AppColors.accent,
-                                  ),
-                              ],
+                                  if (isActive)
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: AppColors.accent,
+                                      size: 18,
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  if (!isLast)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Divider(height: 0, color: Color(0xFFE0E0E0)),
-                    ),
-                ],
-              );
-            }).toList(),
+                  );
+                }).toList(),
+              ),
+            ),
           ),
         ],
       ),
@@ -2785,25 +3238,47 @@ class _NamingScreenState extends State<NamingScreen>
           (viewportWidth / loopWidth).ceil() + 3,
         );
 
-        return SizedBox(
-          height: 98,
-          width: double.infinity,
-          child: ClipRect(
-            child: Stack(
-              clipBehavior: Clip.hardEdge,
-              children: List.generate(_celebrities.length * repeatCount, (
-                virtualIndex,
-              ) {
-                final double left =
-                    (virtualIndex * celebItemWidth) - initialScrollOffset;
-                return Positioned(
-                  left: left,
-                  top: 0,
-                  width: celebItemWidth,
-                  height: 98,
-                  child: buildCelebrityItem(virtualIndex),
-                );
-              }),
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragStart: (_) {
+            stopMarqueeTicker();
+            _celebsResumeRequestId++;
+          },
+          onHorizontalDragUpdate: (details) {
+            setState(() {
+              final double maxScroll = _celebrities.length * celebItemWidth;
+              if (maxScroll > 0) {
+                _celebsScrollPos = (_celebsScrollPos - details.delta.dx);
+                // Keep it in bounds [0, maxScroll]
+                _celebsScrollPos = _celebsScrollPos % maxScroll;
+                // Sync animation controller's value to current scroll ratio to prevent jumping
+                _celebsAnimController.value = _celebsScrollPos / maxScroll;
+              }
+            });
+          },
+          onHorizontalDragEnd: (_) {
+            resumeCelebsAutoScrollAfterDelay();
+          },
+          child: SizedBox(
+            height: 98,
+            width: double.infinity,
+            child: ClipRect(
+              child: Stack(
+                clipBehavior: Clip.hardEdge,
+                children: List.generate(_celebrities.length * repeatCount, (
+                  virtualIndex,
+                ) {
+                  final double left =
+                      (virtualIndex * celebItemWidth) - initialScrollOffset;
+                  return Positioned(
+                    left: left,
+                    top: 0,
+                    width: celebItemWidth,
+                    height: 98,
+                    child: buildCelebrityItem(virtualIndex),
+                  );
+                }),
+              ),
             ),
           ),
         );
@@ -2959,19 +3434,38 @@ class _NamingScreenState extends State<NamingScreen>
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              _nameIntentResult?.isMeaning == true
-                                  ? "ระบบจะค้นหาชื่อที่มีความหมายใกล้เคียง"
-                                  : "ระบบจะวิเคราะห์ชื่อและถอดเลขศาสตร์ให้",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.sarabun(
-                                color: const Color(
-                                  0xFF7E22CE,
-                                ).withValues(alpha: 0.55),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _nameIntentResult?.isMeaning == true
+                                      ? "ระบบจะค้นหาชื่อที่มีความหมายใกล้เคียง"
+                                      : "ระบบจะวิเคราะห์ชื่อและถอดเลขศาสตร์ให้",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.sarabun(
+                                    color: const Color(
+                                      0xFF7E22CE,
+                                    ).withValues(alpha: 0.55),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (_inputClassification != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    "ข้อมูลที่ตรวจพบ: ${_getThaiInputType(_inputClassification!.type)}",
+                                    style: GoogleFonts.sarabun(
+                                      color: _getThaiInputTypeColor(
+                                        _inputClassification!.type,
+                                      ),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -3047,452 +3541,327 @@ class _NamingScreenState extends State<NamingScreen>
             );
           },
         ),
+      ],
+    );
+  }
 
-        AnimatedSize(
+  Widget buildCombinedSuggestionBox() {
+    return Builder(
+      builder: (context) {
+        final isTyping = _keywordController.text.isNotEmpty;
+        final hasNames = _nameSuggestions?.names.isNotEmpty ?? false;
+        final hasIntentCandidates =
+            _nameIntentResult?.isHybrid == true &&
+            (_nameIntentResult?.candidates.isNotEmpty ?? false);
+        final showApiSuggestions =
+            isTyping &&
+            ((hasNames || _loadingSuggestions) ||
+                hasIntentCandidates ||
+                _isLoadingNameIntent ||
+                _hasSearched);
+
+        if (!showApiSuggestions) {
+          return const SizedBox.shrink();
+        }
+
+        return AnimatedSize(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
           alignment: Alignment.topCenter,
-          child: buildSelectedNameMeaningUnderKeyword(),
-        ),
-
-        // Combined Suggestion Box
-        Builder(
-          builder: (context) {
-            final isTyping = _keywordController.text.isNotEmpty;
-            final hasNames = _nameSuggestions?.names.isNotEmpty ?? false;
-            final hasIntentCandidates =
-                _nameIntentResult?.isHybrid == true &&
-                (_nameIntentResult?.candidates.isNotEmpty ?? false);
-            final showApiSuggestions =
-                isTyping &&
-                ((hasNames || _loadingSuggestions) ||
-                    hasIntentCandidates ||
-                    _isLoadingNameIntent ||
-                    _hasSearched);
-
-            if (!showApiSuggestions) {
-              return const SizedBox.shrink();
-            }
-
-            return AnimatedSize(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: Container(
-                margin: EdgeInsets.only(top: hasNames ? 10 : 14),
-                width: double.infinity,
-                padding: EdgeInsets.fromLTRB(
-                  12,
-                  _loadingSuggestions ? 14 : 12,
-                  12,
-                  _loadingSuggestions ? 14 : 12,
+          child: Container(
+            margin: EdgeInsets.only(top: hasNames ? 10 : 14),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.bgDark,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-                decoration: BoxDecoration(
-                  color: AppColors.bgDark,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() {
+                      _isSuggestionBoxExpanded = !_isSuggestionBoxExpanded;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome_rounded,
+                          color: AppColors.secondary,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          hasNames
+                              ? "รายชื่อที่มีความหมายใกล้เคียง (${_nameSuggestions!.names.length})"
+                              : "รายชื่อที่มีความหมายใกล้เคียง",
+                          style: GoogleFonts.sarabun(
+                            color: AppColors.secondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (_loadingSuggestions) ...[
+                          const SizedBox(width: 8),
+                          const SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                        const Spacer(),
+                        Icon(
+                          _isSuggestionBoxExpanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: AppColors.secondary,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (_isLoadingNameIntent) ...[
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.tune_rounded,
-                            color: AppColors.primary,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "กำลังวิเคราะห์คำค้น...",
-                            style: GoogleFonts.sarabun(
-                              color: AppColors.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                    ] else if (hasIntentCandidates) ...[
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.auto_fix_high_rounded,
-                            color: AppColors.primary,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              "คุณอาจหมายถึง:",
-                              style: GoogleFonts.sarabun(
+                if (_isSuggestionBoxExpanded) ...[
+                  const Divider(height: 1, color: Colors.white12),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_isLoadingNameIntent) ...[
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.tune_rounded,
                                 color: AppColors.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
+                                size: 16,
                               ),
-                            ),
-                          ),
-                          Text(
-                            "${((_nameIntentResult?.confidence ?? 0) * 100).round()}%",
-                            style: GoogleFonts.sarabun(
-                              color: AppColors.textGray,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _nameIntentResult!.candidates.take(5).map((
-                          candidate,
-                        ) {
-                          return InkWell(
-                            onTap: () {
-                              _setKeywordWithoutTriggeringListener(candidate);
-                              _keywordController.selection =
-                                  TextSelection.collapsed(
-                                    offset: candidate.length,
-                                  );
-                              FocusScope.of(context).unfocus();
-                              _search();
-                              maybeScrollToSearchField();
-                            },
-                            borderRadius: BorderRadius.circular(999),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.12,
-                                ),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.28,
-                                  ),
-                                ),
-                              ),
-                              child: Text(
-                                candidate,
+                              const SizedBox(width: 6),
+                              Text(
+                                "กำลังวิเคราะห์คำค้น...",
                                 style: GoogleFonts.sarabun(
-                                  color: AppColors.textLight,
-                                  fontSize: 14,
+                                  color: AppColors.primary,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      if (hasNames || _loadingSuggestions)
-                        const SizedBox(height: 14),
-                    ],
-
-                    // --- SECTION 1: API SUGGESTIONS (NAMES) ---
-                    if (_loadingSuggestions || hasNames) ...[
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.auto_awesome_rounded,
-                            color: AppColors.secondary,
-                            size: 16,
+                            ],
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            "รายชื่อที่ความหมายใกล้เคียง:",
-                            style: GoogleFonts.sarabun(
-                              color: AppColors.secondary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: _loadingSuggestions ? 12 : 10),
-                      if (_loadingSuggestions)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(8, 6, 8, 2),
-                            child: MagicLoadingView(
-                              height: 64,
-                              message: "กำลังค้นหาไอเดีย...",
-                              subtitle:
-                                  "AI กำลังคัดชื่อที่มีความหมายใกล้เคียงให้คุณ",
-                              textColor: AppColors.textGray,
-                              minimal: true,
-                            ),
-                          ),
-                        )
-                      else
-                        // ANCHOR: LikeName (ชื่อที่มีความหมายใกล้เคียง)
-                        Column(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 10),
-                              padding: const EdgeInsets.fromLTRB(
-                                12,
-                                10,
-                                12,
-                                10,
+                          const SizedBox(height: 10),
+                        ] else if (hasIntentCandidates) ...[
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.auto_fix_high_rounded,
+                                color: AppColors.primary,
+                                size: 16,
                               ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.secondary.withValues(alpha: 0.1),
-                                    AppColors.accent.withValues(alpha: 0.08),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: AppColors.secondary.withValues(
-                                    alpha: 0.18,
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  "คุณอาจหมายถึง:",
+                                  style: GoogleFonts.sarabun(
+                                    color: AppColors.primary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 34,
-                                    height: 34,
+                              Text(
+                                "${((_nameIntentResult?.confidence ?? 0) * 100).round()}%",
+                                style: GoogleFonts.sarabun(
+                                  color: AppColors.textGray,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _nameIntentResult!.candidates.take(5).map(
+                              (candidate) {
+                                return InkWell(
+                                  onTap: () {
+                                    _setKeywordWithoutTriggeringListener(
+                                      candidate,
+                                    );
+                                    _keywordController.selection =
+                                        TextSelection.collapsed(
+                                          offset: candidate.length,
+                                        );
+                                    FocusScope.of(context).unfocus();
+                                    _search();
+                                    maybeScrollToSearchField();
+                                  },
+                                  borderRadius: BorderRadius.circular(999),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.secondary.withValues(
-                                        alpha: 0.14,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.graphic_eq_rounded,
-                                      color: AppColors.secondary,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'คัดจากความหมายและพลังเสียงอ่าน',
-                                          style: GoogleFonts.sarabun(
-                                            color: AppColors.textLight,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'ระบบดูทั้งความหมายที่ใกล้เคียง และคุณภาพการออกเสียงเพื่อให้ชื่อที่ฟังดีเด่นขึ้นมา',
-                                          style: GoogleFonts.sarabun(
-                                            color: AppColors.textGray,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            height: 1.35,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            ..._nameSuggestions!.names.map((item) {
-                              return Material(
-                                color: Colors.transparent,
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                    horizontal: 10,
-                                  ),
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.92),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
                                       color: AppColors.primary.withValues(
                                         alpha: 0.12,
                                       ),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(
                                         color: AppColors.primary.withValues(
-                                          alpha: 0.04,
+                                          alpha: 0.28,
                                         ),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 3),
                                       ),
-                                    ],
+                                    ),
+                                    child: Text(
+                                      candidate,
+                                      style: GoogleFonts.sarabun(
+                                        color: AppColors.textLight,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                  child: Column(
+                                );
+                              },
+                            ).toList(),
+                          ),
+                          if (hasNames || _loadingSuggestions)
+                            const SizedBox(height: 14),
+                        ],
+
+                        // --- SECTION 1: API SUGGESTIONS (NAMES) ---
+                        if (_loadingSuggestions || hasNames) ...[
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.auto_awesome_rounded,
+                                color: AppColors.secondary,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                "รายชื่อที่ความหมายใกล้เคียง:",
+                                style: GoogleFonts.sarabun(
+                                  color: AppColors.secondary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          SizedBox(height: _loadingSuggestions ? 12 : 10),
+                          if (_loadingSuggestions)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(8, 6, 8, 2),
+                                child: MagicLoadingView(
+                                  height: 64,
+                                  message: "กำลังค้นหาไอเดีย...",
+                                  subtitle:
+                                      "AI กำลังคัดชื่อที่มีความหมายใกล้เคียงให้คุณ",
+                                  textColor: AppColors.textGray,
+                                  minimal: true,
+                                ),
+                              ),
+                            )
+                          else
+                            // ANCHOR: LikeName (ชื่อที่มีความหมายใกล้เคียง)
+                            Column(
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.fromLTRB(
+                                    12,
+                                    10,
+                                    12,
+                                    10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppColors.secondary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        AppColors.accent.withValues(
+                                          alpha: 0.08,
+                                        ),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: AppColors.secondary.withValues(
+                                        alpha: 0.18,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        item.name,
-                                                        style:
-                                                            GoogleFonts.sarabun(
-                                                              color: AppColors
-                                                                  .textLight,
-                                                              fontSize: 16,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    _buildSpeechIconButton(
-                                                      icon:
-                                                          _isSpeakingKey(
-                                                            'name+meaning:${item.id}',
-                                                          )
-                                                          ? Icons
-                                                                .volume_up_rounded
-                                                          : Icons.mic_rounded,
-                                                      onTap: () =>
-                                                          _speakNameAndMeaning(
-                                                            item,
-                                                          ),
-                                                      tooltip:
-                                                          'ฟังชื่อและความหมาย',
-                                                      variant:
-                                                          SpeechButtonVariant
-                                                              .primary,
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 3),
-                                                Text(
-                                                  item.meaning,
-                                                  style: GoogleFonts.sarabun(
-                                                    color: AppColors.textGray,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          _buildActionIconButton(
-                                            icon: Icons.chevron_right_rounded,
-                                            onTap: () {
-                                              _setKeywordWithoutTriggeringListener(
-                                                item.name,
-                                              );
-                                              _keywordController.selection =
-                                                  TextSelection.collapsed(
-                                                    offset: item.name.length,
-                                                  );
-                                              _resolveSeedName(
-                                                item.name,
-                                                meaningHint: item.meaning,
-                                              );
-                                              FocusScope.of(context).unfocus();
-                                              _search();
-                                              maybeScrollToSearchField();
-                                            },
-                                            tooltip: 'เลือกชื่อนี้',
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
                                       Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 10,
-                                        ),
+                                        width: 34,
+                                        height: 34,
                                         decoration: BoxDecoration(
-                                          color: item.phoneticScore != null
-                                              ? AppColors.secondary.withValues(
-                                                  alpha: 0.08,
-                                                )
-                                              : AppColors.primary.withValues(
-                                                  alpha: 0.06,
-                                                ),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
+                                          color: AppColors.secondary.withValues(
+                                            alpha: 0.14,
                                           ),
-                                          border: Border.all(
-                                            color: item.phoneticScore != null
-                                                ? AppColors.secondary
-                                                      .withValues(alpha: 0.12)
-                                                : AppColors.primary.withValues(
-                                                    alpha: 0.12,
-                                                  ),
-                                          ),
+                                          shape: BoxShape.circle,
                                         ),
-                                        child: Row(
+                                        child: const Icon(
+                                          Icons.graphic_eq_rounded,
+                                          color: AppColors.secondary,
+                                          size: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Expanded(
-                                              child: Text(
-                                                item.phoneticScore != null
-                                                    ? _buildPhoneticHighlight(
-                                                        item,
-                                                      )
-                                                    : _buildSuggestionTrustLine(
-                                                        item,
-                                                      ),
-                                                style: GoogleFonts.sarabun(
-                                                  color:
-                                                      item.phoneticScore != null
-                                                      ? const Color(0xFF1E4D47)
-                                                      : AppColors.textLight,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  height: 1.3,
-                                                ),
+                                            Text(
+                                              'คัดจากความหมายและพลังเสียงอ่าน',
+                                              style: GoogleFonts.sarabun(
+                                                color: AppColors.textLight,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
-                                            const SizedBox(width: 8),
-                                            _buildSpeechIconButton(
-                                              icon:
-                                                  _isSpeakingKey(
-                                                    'phonetic:${item.id}',
-                                                  )
-                                                  ? Icons.volume_up_rounded
-                                                  : Icons
-                                                        .record_voice_over_rounded,
-                                              onTap: () => _speakPhonetic(item),
-                                              tooltip: 'ฟังการออกเสียงชื่อ',
-                                              variant:
-                                                  SpeechButtonVariant.secondary,
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'ระบบดูทั้งความหมายที่ใกล้เคียง และคุณภาพการออกเสียงเพื่อให้ชื่อที่ฟังดีเด่นขึ้นมา',
+                                              style: GoogleFonts.sarabun(
+                                                color: AppColors.textGray,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.35,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -3500,18 +3869,224 @@ class _NamingScreenState extends State<NamingScreen>
                                     ],
                                   ),
                                 ),
-                              );
-                            }),
-                          ],
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ],
+                                ..._nameSuggestions!.names.map((item) {
+                                  return Material(
+                                    color: Colors.transparent,
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 10,
+                                      ),
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.92,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.12,
+                                          ),
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.04,
+                                            ),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Expanded(
+                                                          child: Text(
+                                                            item.name,
+                                                            style: GoogleFonts.sarabun(
+                                                              color: AppColors
+                                                                  .textLight,
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        _buildSpeechIconButton(
+                                                          icon:
+                                                              _isSpeakingKey(
+                                                                'name+meaning:${item.id}',
+                                                              )
+                                                              ? Icons
+                                                                    .volume_up_rounded
+                                                              : Icons
+                                                                    .mic_rounded,
+                                                          onTap: () =>
+                                                              _speakNameAndMeaning(
+                                                                item,
+                                                              ),
+                                                          tooltip:
+                                                              'ฟังชื่อและความหมาย',
+                                                          variant:
+                                                              SpeechButtonVariant
+                                                                  .primary,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 3),
+                                                    Text(
+                                                      item.meaning,
+                                                      style:
+                                                          GoogleFonts.sarabun(
+                                                            color: AppColors
+                                                                .textGray,
+                                                            fontSize: 13,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              _buildActionIconButton(
+                                                icon:
+                                                    Icons.chevron_right_rounded,
+                                                onTap: () {
+                                                  _setKeywordWithoutTriggeringListener(
+                                                    item.name,
+                                                  );
+                                                  _keywordController.selection =
+                                                      TextSelection.collapsed(
+                                                        offset:
+                                                            item.name.length,
+                                                      );
+                                                  _resolveSeedName(
+                                                    item.name,
+                                                    meaningHint: item.meaning,
+                                                  );
+                                                  FocusScope.of(
+                                                    context,
+                                                  ).unfocus();
+                                                  _search();
+                                                  maybeScrollToSearchField();
+                                                },
+                                                tooltip: 'เลือกชื่อนี้',
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 10,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: item.phoneticScore != null
+                                                  ? AppColors.secondary
+                                                        .withValues(alpha: 0.08)
+                                                  : AppColors.primary
+                                                        .withValues(
+                                                          alpha: 0.06,
+                                                        ),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                color:
+                                                    item.phoneticScore != null
+                                                    ? AppColors.secondary
+                                                          .withValues(
+                                                            alpha: 0.12,
+                                                          )
+                                                    : AppColors.primary
+                                                          .withValues(
+                                                            alpha: 0.12,
+                                                          ),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    item.phoneticScore != null
+                                                        ? _buildPhoneticHighlight(
+                                                            item,
+                                                          )
+                                                        : _buildSuggestionTrustLine(
+                                                            item,
+                                                          ),
+                                                    style: GoogleFonts.sarabun(
+                                                      color:
+                                                          item.phoneticScore !=
+                                                              null
+                                                          ? const Color(
+                                                              0xFF1E4D47,
+                                                            )
+                                                          : AppColors.textLight,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      height: 1.3,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                _buildSpeechIconButton(
+                                                  icon:
+                                                      _isSpeakingKey(
+                                                        'phonetic:${item.id}',
+                                                      )
+                                                      ? Icons.volume_up_rounded
+                                                      : Icons
+                                                            .record_voice_over_rounded,
+                                                  onTap: () =>
+                                                      _speakPhonetic(item),
+                                                  tooltip: 'ฟังการออกเสียงชื่อ',
+                                                  variant: SpeechButtonVariant
+                                                      .secondary,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -3920,9 +4495,13 @@ class _NamingScreenState extends State<NamingScreen>
 
   Widget buildFilterChipsSection() {
     final bool canUseRankingTemplate =
-        _keywordController.text.trim().isNotEmpty && _hasRankableNameTemplate;
+        _keywordController.text.trim().isNotEmpty &&
+        (_hasRankableNameTemplate ||
+            (_inputClassification != null &&
+                (_inputClassification!.type == "single_name" ||
+                    _inputClassification!.type == "full_name")));
     final bool needsSeedName =
-        _keywordController.text.trim().isNotEmpty && !_hasRankableNameTemplate;
+        _keywordController.text.trim().isNotEmpty && !canUseRankingTemplate;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3971,7 +4550,7 @@ class _NamingScreenState extends State<NamingScreen>
                     children: [
                       Expanded(
                         child: Text(
-                          "หาชื่อตามตำราที่ดีที่สุดจาก 3 แสนรายชื่อ",
+                          "หาชื่อตามตำราที่ดีที่สุด",
                           style: GoogleFonts.prompt(
                             color: AppColors.textLight,
                             fontSize: 13,
@@ -4033,156 +4612,114 @@ class _NamingScreenState extends State<NamingScreen>
                         ],
                       ),
                     ),
-                  if (needsSeedName)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                  const SizedBox(height: 10),
+                  // ANCHOR: 2ButtonPremium (2ปุ่มพรีเมี่ยม)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Icon(
-                            Icons.touch_app_rounded,
-                            color: AppColors.secondary.withValues(alpha: 0.9),
-                            size: 15,
-                          ),
-                          const SizedBox(width: 7),
                           Expanded(
-                            child: Text(
-                              "เลือกชื่อใกล้เคียงจาก LikeName เพื่อใช้เป็นชื่อต้นแบบในการค้นชื่อที่ดีที่สุด",
-                              style: GoogleFonts.sarabun(
-                                color: AppColors.textLight.withValues(
-                                  alpha: 0.62,
-                                ),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                height: 1.35,
-                              ),
+                            child: _buildCompactFilterTile(
+                              title: "เลขศาสตร์ดี",
+                              icon: Icons.auto_awesome_rounded,
+                              iconColor: const Color(0xFF10B981),
+                              isActive:
+                                  canUseRankingTemplate &&
+                                  _filterSat &&
+                                  !_filterSha,
+                              isDisabled: !canUseRankingTemplate,
+                              activeColor: const Color(0xFF10B981),
+                              onTap: () {
+                                if (!canUseRankingTemplate) return;
+                                final bool currentlyActive =
+                                    _filterSat && !_filterSha;
+                                _handleFilterOptionTap(
+                                  targetSat: !currentlyActive,
+                                  targetSha: false,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildCompactFilterTile(
+                              title: "พลังเงาดี",
+                              icon: Icons.shield_rounded,
+                              iconColor: const Color(0xFF7C3AED),
+                              isActive:
+                                  canUseRankingTemplate &&
+                                  !_filterSat &&
+                                  _filterSha,
+                              isDisabled: !canUseRankingTemplate,
+                              activeColor: const Color(0xFF7C3AED),
+                              onTap: () {
+                                if (!canUseRankingTemplate) return;
+                                final bool currentlyActive =
+                                    !_filterSat && _filterSha;
+                                _handleFilterOptionTap(
+                                  targetSat: false,
+                                  targetSha: !currentlyActive,
+                                );
+                              },
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  const SizedBox(height: 10),
-                  // ANCHOR: 2ButtonPremium (2ปุ่มพรีเมี่ยม)
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 14, // Increased from 10
-                    children: [
-                      FilterChipWidget(
-                        label: "เลขศาสตร์ดี",
-                        icon: Icons.auto_awesome_rounded,
-                        isActive: canUseRankingTemplate && _filterSat,
-                        isLoading: _isSatLoading,
-                        disabled: !canUseRankingTemplate,
-                        disabledTooltip:
-                            "เลือกชื่อต้นแบบจาก LikeName หรือ Celebrity Avatar ก่อน",
-                        onTapDown: (_) {
-                          _suppressNextGlobalUnfocus = true;
-                        },
-                        activeChipColor: const Color(0xFF8B5CF6),
-                        activeTextColor: Colors.white,
-                        onTap: () async {
-                          if (!canUseRankingTemplate) {
-                            return;
-                          }
-                          final bool willBeDoubleGood =
-                              !_filterSat && _filterSha;
-                          if (willBeDoubleGood) {
-                            if (!PremiumManager().canUseDoubleGood) {
-                              final purchased = await showPaywallDialog(
-                                context,
-                              );
-                              if (!mounted) return;
-                              if (purchased != true) return;
-                            }
-                          }
-
-                          final bool nextFilterSat = !_filterSat;
-                          final bool willKeepRankingCriteria =
-                              nextFilterSat || _filterSha;
-                          debugPrint(
-                            '[เลขศาสตร์ดี] toggle filterSat from $_filterSat to $nextFilterSat',
+                      const SizedBox(height: 8),
+                      _buildPremiumFilterOption(
+                        isPremium: PremiumManager().isPremium,
+                        hasFreeDoubleGood:
+                            PremiumManager().canUseDoubleGood || kDebugMode,
+                        isActive:
+                            canUseRankingTemplate && _filterSat && _filterSha,
+                        isDisabled: !canUseRankingTemplate,
+                        onTap: () {
+                          if (!canUseRankingTemplate) return;
+                          final bool currentlyActive = _filterSat && _filterSha;
+                          _handleFilterOptionTap(
+                            targetSat: !currentlyActive,
+                            targetSha: !currentlyActive,
                           );
-                          setState(() {
-                            _isSatLoading = true;
-                            _invalidateStatsCache();
-                            _filterSat = nextFilterSat;
-                          });
-                          if (willBeDoubleGood && !PremiumManager().isPremium) {
-                            unawaited(PremiumManager().markDoubleGoodUsed());
-                          }
-                          _updateAutoScrollBasedOnFilters();
-                          if (!willKeepRankingCriteria) {
-                            if (mounted) {
-                              setState(() {
-                                _isSatLoading = false;
-                                _invalidateStatsCache();
-                                _results = [];
-                                _hasSearched = true;
-                                _relaxedFiltersNotice = null;
-                              });
-                            }
-                            return;
-                          }
-                          _onFilterToggled();
                         },
                       ),
-                      // ANCHOR: ButtonShadow (ปุ่มพลังเงาดี)
-                      FilterChipWidget(
-                        label: "พลังเงาดี",
-                        icon: Icons.shield_rounded,
-                        isActive: canUseRankingTemplate && _filterSha,
-                        isLoading: _isShaLoading,
-                        disabled: !canUseRankingTemplate,
-                        disabledTooltip:
-                            "เลือกชื่อต้นแบบจาก LikeName หรือ Celebrity Avatar ก่อน",
-                        onTapDown: (_) {
-                          _suppressNextGlobalUnfocus = true;
-                        },
-                        activeChipColor: const Color(0xFF8B5CF6),
-                        activeTextColor: Colors.white,
-                        onTap: () async {
-                          if (!canUseRankingTemplate) {
-                            return;
-                          }
-                          final bool willBeDoubleGood =
-                              !_filterSha && _filterSat;
-                          if (willBeDoubleGood) {
-                            if (!PremiumManager().canUseDoubleGood) {
-                              final purchased = await showPaywallDialog(
-                                context,
-                              );
-                              if (!mounted) return;
-                              if (purchased != true) return;
-                            }
-                          }
-
-                          final bool nextFilterSha = !_filterSha;
-                          final bool willKeepRankingCriteria =
-                              _filterSat || nextFilterSha;
-                          setState(() {
-                            _isShaLoading = true;
-                            _invalidateStatsCache();
-                            _filterSha = nextFilterSha;
-                          });
-                          if (willBeDoubleGood && !PremiumManager().isPremium) {
-                            unawaited(PremiumManager().markDoubleGoodUsed());
-                          }
-                          _updateAutoScrollBasedOnFilters();
-                          if (!willKeepRankingCriteria) {
-                            if (mounted) {
-                              setState(() {
-                                _isShaLoading = false;
-                                _invalidateStatsCache();
-                                _results = [];
-                                _hasSearched = true;
-                                _relaxedFiltersNotice = null;
-                              });
-                            }
-                            return;
-                          }
-                          _onFilterToggled();
-                        },
-                      ),
+                      if (needsSeedName) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.info_outline_rounded,
+                                color: Color(0xFF64748B),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  "ล็อกอยู่: กรุณาแตะเลือกชื่อที่คุณถูกใจจาก LikeName หรือ Celebrity Avatar ด้านบนก่อน เพื่อเป็นชื่อต้นแบบให้ระบบคัดกรอง",
+                                  style: GoogleFonts.sarabun(
+                                    color: const Color(0xFF475569),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -4191,6 +4728,310 @@ class _NamingScreenState extends State<NamingScreen>
           ],
         ),
       ],
+    );
+  }
+
+  void _handleFilterOptionTap({
+    required bool targetSat,
+    required bool targetSha,
+  }) async {
+    final bool willBeDoubleGood = targetSat && targetSha;
+    if (willBeDoubleGood) {
+      if (!PremiumManager().canUseDoubleGood) {
+        final purchased = await showPaywallDialog(context);
+        if (!mounted) return;
+        if (purchased != true) return;
+      }
+    }
+    final bool willHaveCriteria = targetSat || targetSha;
+    setState(() {
+      _invalidateStatsCache();
+      _filterSat = targetSat;
+      _filterSha = targetSha;
+    });
+    if (willBeDoubleGood && !PremiumManager().isPremium) {
+      unawaited(PremiumManager().markDoubleGoodUsed());
+    }
+    _updateAutoScrollBasedOnFilters();
+    if (!willHaveCriteria) {
+      if (mounted) {
+        setState(() {
+          _invalidateStatsCache();
+          _results = [];
+          _hasSearched = true;
+          _relaxedFiltersNotice = null;
+        });
+      }
+      return;
+    }
+    _onFilterToggled();
+  }
+
+  Widget _buildCompactFilterTile({
+    required String title,
+    required IconData icon,
+    required Color iconColor,
+    required bool isActive,
+    required bool isDisabled,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    final Color bgColor = isDisabled
+        ? const Color(0xFFF8FAFC)
+        : isActive
+        ? activeColor.withValues(alpha: 0.10)
+        : Colors.white;
+    final Color borderColor = isDisabled
+        ? const Color(0xFFE2E8F0)
+        : isActive
+        ? activeColor
+        : const Color(0xFFE2E8F0);
+    final Color textColor = isDisabled
+        ? const Color(0xFF94A3B8)
+        : isActive
+        ? activeColor
+        : const Color(0xFF475569);
+    final Color iconFinalColor = isActive ? activeColor : textColor;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isDisabled ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: activeColor.withValues(alpha: 0.14),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 14, color: iconFinalColor),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.prompt(
+                  color: textColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.visible,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Transform.scale(
+              scale: 0.7,
+              child: Switch.adaptive(
+                value: isActive,
+                onChanged: isDisabled ? null : (_) => onTap(),
+                activeColor: activeColor,
+                activeTrackColor: activeColor.withValues(alpha: 0.3),
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFFCBD5E1),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumFilterOption({
+    required bool isPremium,
+    required bool hasFreeDoubleGood,
+    required bool isActive,
+    required bool isDisabled,
+    required VoidCallback onTap,
+  }) {
+    final bool canUse = isPremium || hasFreeDoubleGood;
+    final Color activeGold = const Color(0xFFFFD700);
+
+    // Active VIP Theme (Deep Midnight Purple + Emerald Green)
+    final BoxDecoration activeDecoration = BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFF1E1B4B),
+          Color(0xFF022C22),
+        ], // Midnight Indigo to Deep Emerald
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: activeGold, width: 2.0),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF7C3AED).withValues(alpha: 0.35),
+          blurRadius: 18,
+          spreadRadius: 1,
+          offset: const Offset(0, 6),
+        ),
+        BoxShadow(
+          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+          blurRadius: 12,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+
+    // Inactive VIP Theme (Sophisticated Glassmorphic Off-White)
+    final BoxDecoration inactiveDecoration = BoxDecoration(
+      color: const Color(0xFFFDFCFE),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.02),
+          blurRadius: 8,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    );
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: isDisabled ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: isActive ? activeDecoration : inactiveDecoration,
+        child: Row(
+          children: [
+            // Glowing Premium Icon Badge
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: isActive
+                      ? [
+                          const Color(0xFFFFDF00),
+                          const Color(0xFFD4AF37),
+                        ] // Pure gold gradient
+                      : [
+                          const Color(0xFF8B5CF6),
+                          const Color(0xFF10B981),
+                        ], // Purple to green
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: activeGold.withValues(alpha: 0.5),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Icon(
+                isActive
+                    ? Icons.stars_rounded
+                    : Icons.star_border_purple500_rounded,
+                size: 20,
+                color: isActive ? const Color(0xFF1E1B4B) : Colors.white,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      Text(
+                        "เลขศาสตร์ x พลังเงาดี",
+                        style: GoogleFonts.prompt(
+                          color: isActive
+                              ? Colors.white
+                              : const Color(0xFF1E293B),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      // Premium Badge tag
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? activeGold.withValues(alpha: 0.2)
+                              : const Color(0xFFE0F2FE),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: isActive
+                                ? activeGold
+                                : const Color(0xFF38BDF8),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          isActive ? "VIP ACTIVE" : "ทดลองใช้ฟรี",
+                          style: GoogleFonts.prompt(
+                            color: isActive
+                                ? activeGold
+                                : const Color(0xFF0369A1),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "จัดอันดับ Double Lucky x2 ขั้นสูง",
+                    style: GoogleFonts.sarabun(
+                      color: isActive
+                          ? Colors.white.withValues(alpha: 0.7)
+                          : const Color(0xFF64748B),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Transform.scale(
+              scale: 0.8,
+              child: Switch.adaptive(
+                value: isActive,
+                onChanged: isDisabled ? null : (_) => onTap(),
+                activeColor: activeGold,
+                activeTrackColor: activeGold.withValues(alpha: 0.3),
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFFCBD5E1),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -5052,9 +5893,8 @@ class _NamingScreenState extends State<NamingScreen>
                                     "analysis": rootData.analysis,
                                     "device_id": deviceId,
                                   };
-                                  final success = await ApiService().saveName(
-                                    payload,
-                                  );
+                                  final success = await ApiService()
+                                      .saveNameLocally(payload);
                                   if (success) {
                                     didSave = true;
                                     setDialogState(() {
