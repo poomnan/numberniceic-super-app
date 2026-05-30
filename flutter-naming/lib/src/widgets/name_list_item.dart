@@ -412,7 +412,11 @@ class _NameListItemState extends State<NameListItem>
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.stars_rounded, color: Color(0xFFFDE047), size: 20),
+                  const Icon(
+                    Icons.stars_rounded,
+                    color: Color(0xFFFDE047),
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -766,9 +770,112 @@ class _NameListItemState extends State<NameListItem>
         'เปลี่ยนชีวิตด้วยแรงดึงดูด --ชื่อดี.com';
   }
 
+  Widget _buildShareScoreDisplay(
+    int score,
+    bool isGood,
+    String label, {
+    String pairType = '',
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildScorePairOrSingle(score, isGood, 28.0, pairType),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: GoogleFonts.sarabun(
+            color: AppColors.textGray,
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScorePairOrSingle(
+    int score,
+    bool isGood,
+    double size,
+    String pairType,
+  ) {
+    final pairs = toPairList(score);
+    if (pairs.length > 1) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (int i = 0; i < pairs.length; i++) ...[
+            if (i > 0) const SizedBox(width: 4),
+            _buildGradientCircle(pairs[i], isGood, size, pairType),
+          ],
+        ],
+      );
+    }
+    return _buildGradientCircle(pairs.first, isGood, size, pairType);
+  }
+
+  Widget _buildGradientCircle(
+    String score,
+    bool isGood,
+    double size,
+    String pairType,
+  ) {
+    Color lightColor;
+    Color darkColor;
+
+    if (isGood) {
+      lightColor = const Color(0xFF4ADE80);
+      darkColor = const Color(0xFF16A34A);
+    } else {
+      lightColor = const Color(0xFFF87171);
+      darkColor = const Color(0xFFDC2626);
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [lightColor, darkColor],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.2),
+            blurRadius: 0,
+            offset: const Offset(-1, -1),
+          ),
+        ],
+      ),
+      child: Text(
+        score,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: size * 0.42,
+          fontWeight: FontWeight.w900,
+          fontFamily: 'Prompt',
+          height: 1,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSharePoster() {
-    final bool hasMatching =
-        widget.showMatching && (widget.result.totalSat != widget.result.satSum);
+    final bool isLucky = widget.result.isSatGood && widget.result.isShaGood;
+    final luckText = isLucky ? 'Double Lucky x2' : 'น่าเสียดาย!?';
+    final gradientColors = isLucky
+        ? [const Color(0xFFDBB632), const Color(0xFFFF8C00)]
+        : [const Color(0xFF71717A), const Color(0xFF3F3F46)];
+    final meaning =
+        (widget.result.meaning.isNotEmpty ? widget.result.meaning : '').trim();
 
     return Container(
       width: 430,
@@ -840,9 +947,9 @@ class _NameListItemState extends State<NameListItem>
           const SizedBox(height: 14),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.fromLTRB(18, 26, 18, 18),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFFFFFCF4),
               borderRadius: BorderRadius.circular(26),
               boxShadow: [
                 BoxShadow(
@@ -852,16 +959,198 @@ class _NameListItemState extends State<NameListItem>
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
-              child: _buildFrontCardContent(
-                hasMatching: hasMatching,
-                showShareAction: false,
-                margin: EdgeInsets.zero,
-                isSharePreview: true,
-                satMeaning: _shareSatMeaning,
-                shaMeaning: _shareShaMeaning,
-              ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            (widget.rank == 1 || (widget.rank == 0 && isLucky)
+                                    ? const Color(0xFFD4AF37)
+                                    : widget.rank == 2
+                                    ? const Color(0xFFC0C0C0)
+                                    : widget.rank == 3
+                                    ? const Color(0xFFCD7F32)
+                                    : const Color(0xFF7C3AED))
+                                .withValues(alpha: 0.16),
+                            (widget.rank == 1 || (widget.rank == 0 && isLucky)
+                                    ? const Color(0xFFD4AF37)
+                                    : widget.rank == 2
+                                    ? const Color(0xFFC0C0C0)
+                                    : widget.rank == 3
+                                    ? const Color(0xFFCD7F32)
+                                    : const Color(0xFF7C3AED))
+                                .withValues(alpha: 0.04),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color:
+                              (widget.rank == 1 || (widget.rank == 0 && isLucky)
+                                      ? const Color(0xFFD4AF37)
+                                      : widget.rank == 2
+                                      ? const Color(0xFFC0C0C0)
+                                      : widget.rank == 3
+                                      ? const Color(0xFFCD7F32)
+                                      : const Color(0xFF7C3AED))
+                                  .withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.rank <= 3 || widget.rank == 0) ...[
+                            Icon(
+                              Icons.emoji_events,
+                              size: 12,
+                              color:
+                                  widget.rank == 1 ||
+                                      (widget.rank == 0 && isLucky)
+                                  ? const Color(0xFFD4AF37)
+                                  : widget.rank == 2
+                                  ? const Color(0xFFC0C0C0)
+                                  : widget.rank == 3
+                                  ? const Color(0xFFCD7F32)
+                                  : const Color(0xFF7C3AED),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            widget.rank > 0
+                                ? 'อันดับ #${widget.rank} | ${widget.result.finalRankScoreExact.toStringAsFixed(2)} คะแนน'
+                                : 'คะแนนชื่อดี | ${widget.result.finalRankScoreExact.toStringAsFixed(2)} คะแนน',
+                            style: GoogleFonts.prompt(
+                              color:
+                                  widget.rank == 1 ||
+                                      (widget.rank == 0 && isLucky)
+                                  ? const Color(0xFFB8860B)
+                                  : widget.rank == 2
+                                  ? const Color(0xFF64748B)
+                                  : widget.rank == 3
+                                  ? const Color(0xFFCD7F32)
+                                  : const Color(0xFF7C3AED),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(12, 6, 10, 6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: gradientColors,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.14),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isLucky
+                                ? Icons.auto_awesome
+                                : Icons.info_outline_rounded,
+                            color: Colors.white,
+                            size: 13,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            luckText,
+                            style: GoogleFonts.prompt(
+                              color: Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.result.name,
+                            style: GoogleFonts.sarabun(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF3D2600),
+                            ),
+                          ),
+                          if (meaning.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              '"$meaning"',
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.textGray,
+                                fontSize: 15,
+                                height: 1.5,
+                                fontFamily: 'Sarabun',
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (!widget.showMatching ||
+                        widget.result.satSum == widget.result.totalSat) ...[
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: 92,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            _buildShareScoreDisplay(
+                              widget.result.satSum,
+                              widget.result.isSatGood,
+                              'เลขศาสตร์',
+                              pairType: widget.result.satPairType,
+                            ),
+                            const SizedBox(height: 10),
+                            _buildShareScoreDisplay(
+                              widget.result.shaSum,
+                              widget.result.isShaGood,
+                              'พลังเงา',
+                              pairType: widget.result.shaPairType,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildPhoneticInsightCard(),
+              ],
             ),
           ),
         ],
@@ -930,7 +1219,8 @@ class _NameListItemState extends State<NameListItem>
     Color meaningColor,
     Color accentColor,
     Color glowColor,
-  }) _getDynamicCardStyle() {
+  })
+  _getDynamicCardStyle() {
     final bool isSat = widget.isFilterSatActive;
     final bool isSha = widget.isFilterShaActive;
 
@@ -1063,10 +1353,7 @@ class _NameListItemState extends State<NameListItem>
         decoration: BoxDecoration(
           gradient: style.bgGradient,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: style.borderColor,
-            width: 1.5,
-          ),
+          border: Border.all(color: style.borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: style.glowColor,
@@ -1080,324 +1367,332 @@ class _NameListItemState extends State<NameListItem>
             // Premium Louis Vuitton pattern overlay
             Positioned.fill(
               child: CustomPaint(
-                painter: _LVMonogramPatternPainter(
-                  color: style.patternColor,
-                ),
+                painter: _LVMonogramPatternPainter(color: style.patternColor),
               ),
             ),
             Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (widget.rank > 0)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildRankBadge(
-                        widget.rank,
-                        showShareAction: showShareAction,
-                        isSharePreview: isSharePreview,
-                      ),
-                      if (!isSharePreview && widget.onScrollToTop != null) ...[
-                        const SizedBox(width: 10),
-                        _buildUpButton(compact: true),
-                      ],
-                    ],
-                  ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Builder(
-                        builder: (context) {
-                          final lucky = _computeLuckyBreakdown();
-                          String luckText;
-                          List<Color> gradientColors;
-
-                          if (lucky.isLucky) {
-                            if (lucky.multiplier <= 1) {
-                              luckText = 'Lucky ✨';
-                            } else {
-                              String prefix = lucky.multiplier >= 4
-                                  ? 'Super'
-                                  : (lucky.multiplier == 3
-                                        ? 'Triple'
-                                        : 'Double');
-                              luckText = '$prefix Lucky x${lucky.multiplier}';
-                            }
-
-                            if (lucky.multiplier >= 4) {
-                              gradientColors = [
-                                const Color(0xFFDBB632),
-                                const Color(0xFFFF8C00),
-                                const Color(0xFFFF4FA3),
-                                const Color(0xFFB517FF),
-                              ];
-                            } else if (lucky.multiplier == 3) {
-                              gradientColors = [
-                                const Color(0xFFDBB632),
-                                const Color(0xFFFF8C00),
-                                const Color(0xFFFF4FA3),
-                              ];
-                            } else {
-                              gradientColors = [
-                                const Color(0xFFDBB632),
-                                const Color(0xFFFF8C00),
-                              ];
-                            }
-                          } else {
-                            luckText = 'น่าเสียดาย!?';
-                            gradientColors = [
-                              const Color(0xFF71717A),
-                              const Color(0xFF3F3F46),
-                            ];
-                          }
-
-                          return _MagicLuckyBadge(
-                            isLucky: lucky.isLucky,
-                            text: luckText,
-                            gradientColors: gradientColors,
-                            onTap: showShareAction
-                                ? () => _toggleFlip('luck')
-                                : () {},
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.center,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () {
-                                      if (showShareAction &&
-                                          widget.onTap != null) {
-                                        widget.onTap!();
-                                      }
-                                    },
-                                    child: _buildNameText(context),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              _buildSectionSpeakButton(
-                                compact: true,
-                                isSpeaking: _isSpeaking(
-                                  _nameMeaningSpeakingKey(),
-                                ),
-                                onTap: _speakNameAndMeaning,
-                                tooltip: _getSpeakTooltip(),
-                                icon: _isSpeaking(_nameMeaningSpeakingKey())
-                                    ? Icons.volume_up_rounded
-                                    : Icons.mic_rounded,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              if (widget.result.kakiHighlight.isNotEmpty &&
-                                  !widget.result.kakiHighlight.any(
-                                    (h) => h.isKaki,
-                                  ))
-                                _buildNoKakiBadge(),
-                              if (widget.result.kakiHighlight.any(
-                                (h) => h.isKaki,
-                              ))
-                                _buildKakiWarningBadge(),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  "\"${widget.result.meaning}\"",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: style.meaningColor,
-                                    fontSize: 15,
-                                    height: 1.5,
-                                    fontFamily: 'Sarabun',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (isSharePreview &&
-                              ((satMeaning?.description.isNotEmpty ?? false) ||
-                                  (shaMeaning?.description.isNotEmpty ??
-                                      false))) ...[
-                            const SizedBox(height: 12),
-                            _buildShareMiracleDetails(
-                              satMeaning: satMeaning,
-                              shaMeaning: shaMeaning,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (showSatScore)
-                          _buildSmartScoreDisplay(
-                            widget.result.satSum,
-                            widget.result.isSatGood,
-                            showShareAction ? "" : "เลขศาสตร์",
-                            description: showShareAction ? "" : "",
-                            isActive: widget.isFilterSatActive,
-                            labelOnLeft: showShareAction,
-                            size: isSharePreview
-                                ? 38
-                                : (showShareAction ? 29.1 : 44),
-                            pairType: widget.result.satPairType,
-                          ),
-                        if (showSatScore && showShaScore)
-                          SizedBox(height: isSharePreview ? 10 : 12),
-                        if (showShaScore)
-                          _buildSmartScoreDisplay(
-                            widget.result.shaSum,
-                            widget.result.isShaGood,
-                            showShareAction ? "" : "พลังเงา",
-                            description: showShareAction ? "" : "",
-                            isActive: widget.isFilterShaActive,
-                            labelOnLeft: showShareAction,
-                            size: isSharePreview
-                                ? 38
-                                : (showShareAction ? 29.1 : 44),
-                            pairType: widget.result.shaPairType,
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-                if (_shouldShowPhoneticInsight()) ...[
-                  const SizedBox(height: 12),
-                  _buildPhoneticInsightCard(),
-                ],
-                if (showShareAction) ...[
-                  const SizedBox(height: 16),
-                  Row(
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: _buildRootWordButton(context, compact: true),
+                      if (widget.rank > 0)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildRankBadge(
+                              widget.rank,
+                              showShareAction: showShareAction,
+                              isSharePreview: isSharePreview,
+                            ),
+                            if (!isSharePreview &&
+                                widget.onScrollToTop != null) ...[
+                              const SizedBox(width: 10),
+                              _buildUpButton(compact: true),
+                            ],
+                          ],
                         ),
-                      ),
                       const SizedBox(width: 8),
                       Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: _buildBookmarkButton(compact: true),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: _buildShareCornerButton(compact: true),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Builder(
+                              builder: (context) {
+                                final lucky = _computeLuckyBreakdown();
+                                String luckText;
+                                List<Color> gradientColors;
+
+                                if (lucky.isLucky) {
+                                  if (lucky.multiplier <= 1) {
+                                    luckText = 'Lucky ✨';
+                                  } else {
+                                    String prefix = lucky.multiplier >= 4
+                                        ? 'Super'
+                                        : (lucky.multiplier == 3
+                                              ? 'Triple'
+                                              : 'Double');
+                                    luckText =
+                                        '$prefix Lucky x${lucky.multiplier}';
+                                  }
+
+                                  if (lucky.multiplier >= 4) {
+                                    gradientColors = [
+                                      const Color(0xFFDBB632),
+                                      const Color(0xFFFF8C00),
+                                      const Color(0xFFFF4FA3),
+                                      const Color(0xFFB517FF),
+                                    ];
+                                  } else if (lucky.multiplier == 3) {
+                                    gradientColors = [
+                                      const Color(0xFFDBB632),
+                                      const Color(0xFFFF8C00),
+                                      const Color(0xFFFF4FA3),
+                                    ];
+                                  } else {
+                                    gradientColors = [
+                                      const Color(0xFFDBB632),
+                                      const Color(0xFFFF8C00),
+                                    ];
+                                  }
+                                } else {
+                                  luckText = 'น่าเสียดาย!?';
+                                  gradientColors = [
+                                    const Color(0xFF71717A),
+                                    const Color(0xFF3F3F46),
+                                  ];
+                                }
+
+                                return _MagicLuckyBadge(
+                                  isLucky: lucky.isLucky,
+                                  text: luckText,
+                                  gradientColors: gradientColors,
+                                  onTap: showShareAction
+                                      ? () => _toggleFlip('luck')
+                                      : () {},
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ],
-              ],
-            ),
-          ),
-          if (hasMatching)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 8, 0, 10),
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.subdirectory_arrow_right_rounded,
-                    color: Color(0xFF8B6B04),
-                    size: 24,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                  child: Column(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.center,
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: () {
+                                            if (showShareAction &&
+                                                widget.onTap != null) {
+                                              widget.onTap!();
+                                            }
+                                          },
+                                          child: _buildNameText(context),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _buildSectionSpeakButton(
+                                      compact: true,
+                                      isSpeaking: _isSpeaking(
+                                        _nameMeaningSpeakingKey(),
+                                      ),
+                                      onTap: _speakNameAndMeaning,
+                                      tooltip: _getSpeakTooltip(),
+                                      icon:
+                                          _isSpeaking(_nameMeaningSpeakingKey())
+                                          ? Icons.volume_up_rounded
+                                          : Icons.mic_rounded,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    if (widget
+                                            .result
+                                            .kakiHighlight
+                                            .isNotEmpty &&
+                                        !widget.result.kakiHighlight.any(
+                                          (h) => h.isKaki,
+                                        ))
+                                      _buildNoKakiBadge(),
+                                    if (widget.result.kakiHighlight.any(
+                                      (h) => h.isKaki,
+                                    ))
+                                      _buildKakiWarningBadge(),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        "\"${widget.result.meaning}\"",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: style.meaningColor,
+                                          fontSize: 15,
+                                          height: 1.5,
+                                          fontFamily: 'Sarabun',
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (isSharePreview &&
+                                    ((satMeaning?.description.isNotEmpty ??
+                                            false) ||
+                                        (shaMeaning?.description.isNotEmpty ??
+                                            false))) ...[
+                                  const SizedBox(height: 12),
+                                  _buildShareMiracleDetails(
+                                    satMeaning: satMeaning,
+                                    shaMeaning: shaMeaning,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (showSatScore)
+                                _buildSmartScoreDisplay(
+                                  widget.result.satSum,
+                                  widget.result.isSatGood,
+                                  showShareAction ? "" : "เลขศาสตร์",
+                                  description: showShareAction ? "" : "",
+                                  isActive: widget.isFilterSatActive,
+                                  labelOnLeft: showShareAction,
+                                  size: isSharePreview
+                                      ? 38
+                                      : (showShareAction ? 29.1 : 44),
+                                  pairType: widget.result.satPairType,
+                                ),
+                              if (showSatScore && showShaScore)
+                                SizedBox(height: isSharePreview ? 10 : 12),
+                              if (showShaScore)
+                                _buildSmartScoreDisplay(
+                                  widget.result.shaSum,
+                                  widget.result.isShaGood,
+                                  showShareAction ? "" : "พลังเงา",
+                                  description: showShareAction ? "" : "",
+                                  isActive: widget.isFilterShaActive,
+                                  labelOnLeft: showShareAction,
+                                  size: isSharePreview
+                                      ? 38
+                                      : (showShareAction ? 29.1 : 44),
+                                  pairType: widget.result.shaPairType,
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      if (_shouldShowPhoneticInsight()) ...[
+                        const SizedBox(height: 12),
+                        _buildPhoneticInsightCard(),
+                      ],
+                      if (showShareAction) ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: _buildRootWordButton(
+                                  context,
+                                  compact: true,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: _buildBookmarkButton(compact: true),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: _buildShareCornerButton(compact: true),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [_buildMatchingNameText(context)],
+                ),
+                if (hasMatching)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 0, 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.subdirectory_arrow_right_rounded,
+                          color: Color(0xFF8B6B04),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [_buildMatchingNameText(context)],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (showSatScore)
+                              _buildSmartScoreDisplay(
+                                widget.result.totalSat,
+                                widget.result.isTotalSatGood,
+                                "",
+                                isActive: widget.isFilterSatActive,
+                                size: 34,
+                                labelOnLeft: true,
+                                pairType: widget.result.totalSatPairType,
+                              ),
+                            if (showSatScore && showShaScore)
+                              const SizedBox(height: 4),
+                            if (showShaScore)
+                              _buildSmartScoreDisplay(
+                                widget.result.totalSha,
+                                widget.result.isTotalShaGood,
+                                "",
+                                isActive: widget.isFilterShaActive,
+                                size: 34,
+                                labelOnLeft: true,
+                                pairType: widget.result.totalShaPairType,
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (showSatScore)
-                        _buildSmartScoreDisplay(
-                          widget.result.totalSat,
-                          widget.result.isTotalSatGood,
-                          "",
-                          isActive: widget.isFilterSatActive,
-                          size: 34,
-                          labelOnLeft: true,
-                          pairType: widget.result.totalSatPairType,
-                        ),
-                      if (showSatScore && showShaScore)
-                        const SizedBox(height: 4),
-                      if (showShaScore)
-                        _buildSmartScoreDisplay(
-                          widget.result.totalSha,
-                          widget.result.isTotalShaGood,
-                          "",
-                          isActive: widget.isFilterShaActive,
-                          size: 34,
-                          labelOnLeft: true,
-                          pairType: widget.result.totalShaPairType,
-                        ),
-                    ],
-                  ),
-                ],
-              ),
+              ],
             ),
-        ],
-      ),
-          ],  // Stack children
-        ),   // Stack
-      ),     // Container
-    );       // ClipRRect
+          ], // Stack children
+        ), // Stack
+      ), // Container
+    ); // ClipRRect
   }
 
   Widget _buildBackSide() {
@@ -2510,15 +2805,23 @@ class _NameListItemState extends State<NameListItem>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: _isSaved
-                ? [const Color(0xFFFBCFE8), const Color(0xFFF472B6)] // Soft pink when saved
-                : [const Color(0xFFF3E8FF), const Color(0xFFE9D5FF)], // Lavender when unsaved
+                ? [
+                    const Color(0xFFFBCFE8),
+                    const Color(0xFFF472B6),
+                  ] // Soft pink when saved
+                : [
+                    const Color(0xFFF3E8FF),
+                    const Color(0xFFE9D5FF),
+                  ], // Lavender when unsaved
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: (_isSaved ? const Color(0xFFF472B6) : const Color(0xFFE9D5FF)).withValues(alpha: 0.25),
+              color:
+                  (_isSaved ? const Color(0xFFF472B6) : const Color(0xFFE9D5FF))
+                      .withValues(alpha: 0.25),
               blurRadius: 12,
               offset: const Offset(0, 5),
             ),
@@ -2576,7 +2879,10 @@ class _NameListItemState extends State<NameListItem>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
-            colors: [Color(0xFFE0F2FE), Color(0xFF93C5FD)], // Premium sky to baby blue gradient
+            colors: [
+              Color(0xFFE0F2FE),
+              Color(0xFF93C5FD),
+            ], // Premium sky to baby blue gradient
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -4050,19 +4356,28 @@ class _ThaiKanokPatternPainter extends CustomPainter {
     final petalSize = size.width * 0.12;
     petal.moveTo(0, 0);
     petal.cubicTo(
-      flipX * petalSize * 0.6, petalSize * 0.3,
-      flipX * petalSize * 0.5, petalSize * 0.8,
-      flipX * petalSize * 0.15, petalSize * 1.1,
+      flipX * petalSize * 0.6,
+      petalSize * 0.3,
+      flipX * petalSize * 0.5,
+      petalSize * 0.8,
+      flipX * petalSize * 0.15,
+      petalSize * 1.1,
     );
     petal.cubicTo(
-      flipX * petalSize * 0.4, petalSize * 0.7,
-      flipX * petalSize * 0.8, petalSize * 0.4,
-      flipX * petalSize * 1.0, petalSize * 0.1,
+      flipX * petalSize * 0.4,
+      petalSize * 0.7,
+      flipX * petalSize * 0.8,
+      petalSize * 0.4,
+      flipX * petalSize * 1.0,
+      petalSize * 0.1,
     );
     petal.cubicTo(
-      flipX * petalSize * 0.7, petalSize * 0.05,
-      flipX * petalSize * 0.3, -petalSize * 0.05,
-      0, 0,
+      flipX * petalSize * 0.7,
+      petalSize * 0.05,
+      flipX * petalSize * 0.3,
+      -petalSize * 0.05,
+      0,
+      0,
     );
 
     canvas.drawPath(petal, fillPaint);
@@ -4072,8 +4387,10 @@ class _ThaiKanokPatternPainter extends CustomPainter {
     final swirl = Path();
     swirl.moveTo(flipX * petalSize * 0.15, petalSize * 0.25);
     swirl.quadraticBezierTo(
-      flipX * petalSize * 0.4, petalSize * 0.45,
-      flipX * petalSize * 0.3, petalSize * 0.65,
+      flipX * petalSize * 0.4,
+      petalSize * 0.45,
+      flipX * petalSize * 0.3,
+      petalSize * 0.65,
     );
     canvas.drawPath(swirl, strokePaint);
 
@@ -4158,7 +4475,9 @@ class _LVMonogramPatternPainter extends CustomPainter {
         int row = (y / stepY).floor();
         int patternType = (row % 2 == 0)
             ? (col % 2 == 0 ? 0 : 1) // Even rows: 0 (LV) or 1 (Star)
-            : (col % 2 == 0 ? 2 : 3); // Odd rows: 2 (Hollow) or 3 (Flower Circle)
+            : (col % 2 == 0
+                  ? 2
+                  : 3); // Odd rows: 2 (Hollow) or 3 (Flower Circle)
 
         if (patternType == 0) {
           // --- 1. Stylized overlapping L and V ---
@@ -4218,8 +4537,18 @@ class _LVMonogramPatternPainter extends CustomPainter {
             double prx = x + math.cos(angle + math.pi / 6) * 3.5;
             double pry = y + math.sin(angle + math.pi / 6) * 3.5;
             hollowPath.moveTo(plx, ply);
-            hollowPath.quadraticBezierTo(x + math.cos(angle) * 5.0, y + math.sin(angle) * 5.0, px, py);
-            hollowPath.quadraticBezierTo(x + math.cos(angle) * 5.0, y + math.sin(angle) * 5.0, prx, pry);
+            hollowPath.quadraticBezierTo(
+              x + math.cos(angle) * 5.0,
+              y + math.sin(angle) * 5.0,
+              px,
+              py,
+            );
+            hollowPath.quadraticBezierTo(
+              x + math.cos(angle) * 5.0,
+              y + math.sin(angle) * 5.0,
+              prx,
+              pry,
+            );
           }
           canvas.drawPath(hollowPath, strokePaint);
         } else {
@@ -4230,9 +4559,13 @@ class _LVMonogramPatternPainter extends CustomPainter {
             double angle = i * math.pi / 2;
             double cx = x + math.cos(angle) * 4.2;
             double cy = y + math.sin(angle) * 4.2;
-            flowerPath.addOval(Rect.fromCircle(center: Offset(cx, cy), radius: 2.0));
+            flowerPath.addOval(
+              Rect.fromCircle(center: Offset(cx, cy), radius: 2.0),
+            );
           }
-          flowerPath.addOval(Rect.fromCircle(center: Offset(x, y), radius: 1.0));
+          flowerPath.addOval(
+            Rect.fromCircle(center: Offset(x, y), radius: 1.0),
+          );
           canvas.drawPath(flowerPath, paint);
         }
       }
