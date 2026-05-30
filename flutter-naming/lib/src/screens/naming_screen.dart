@@ -2140,18 +2140,18 @@ class _NamingScreenState extends State<NamingScreen>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFFD946EF).withValues(alpha: 0.12),
-                      const Color(0xFFD946EF).withValues(alpha: 0.04),
+                      const Color(0xFF10B981).withValues(alpha: 0.12),
+                      const Color(0xFF10B981).withValues(alpha: 0.04),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: const Color(0xFFD946EF).withValues(alpha: 0.25),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
                     width: 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFD946EF).withValues(alpha: 0.05),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.05),
                       blurRadius: 12,
                       spreadRadius: 1,
                     ),
@@ -2165,9 +2165,9 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      "ทำเนียบมงคล",
+                      "ชื่อที่บันทึกไว้",
                       style: GoogleFonts.prompt(
-                        color: const Color(0xFFC026D3),
+                        color: const Color(0xFF059669),
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -6590,7 +6590,7 @@ class _SparklingGoldHeartState extends State<SparklingGoldHeart>
 
   @override
   Widget build(BuildContext context) {
-    const Color heartColor = Color(0xFFD946EF);
+    const Color heartColor = Color(0xFF10B981);
 
     return AnimatedBuilder(
       animation: controller,
