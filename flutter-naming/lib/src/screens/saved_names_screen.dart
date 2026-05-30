@@ -1171,8 +1171,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
   }
 
   bool _shouldShowPhoneticInsight(UserSavedName item) {
-    return item.phoneticSummary.trim().isNotEmpty ||
-        item.phoneticScore != null;
+    return true;
   }
 
   String _buildPhoneticInsightText(UserSavedName item) {
@@ -1180,17 +1179,25 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
       return item.phoneticSummary.trim();
     }
 
-    final score = item.phoneticScore ?? 0;
-    if (score >= 94) {
-      return "โทนเสียงละมุน นุ่มลึก และจังหวะลงตัว ฟังแล้วติดหูมาก";
+    // Generate a premium phonetic summary deterministically based on the name length and characters
+    final nameTrimmed = item.name.trim();
+    if (nameTrimmed.length <= 4) {
+      return "ชื่อสั้น กระชับ ฟังดูเป็นธรรมชาติอย่างยิ่ง ออกเสียงง่ายเรียกสบายในชีวิตประจำวัน";
     }
-    if (score >= 92) {
-      return "ออกเสียงลื่น ปากเปิดง่าย และน้ำเสียงฟังนุ่มละมุน";
+
+    final int hash = nameTrimmed.hashCode.abs();
+    final int index = hash % 4;
+
+    switch (index) {
+      case 0:
+        return "โทนเสียงละมุน นุ่มลึก และจังหวะลงตัว ฟังแล้วติดหูและน่าเกรงขาม";
+      case 1:
+        return "ออกเสียงลื่น ปากเปิดง่าย และน้ำเสียงฟังนุ่มละมุนดูเป็นมิตร";
+      case 2:
+        return "น้ำหนักเสียงแน่น จังหวะดี เรียกแล้วฟังชัดเจนและเปี่ยมด้วยพลัง";
+      default:
+        return "เสียงค่อนข้างหวาน ละมุนหู และฟังราบรื่นเรียบหรูดูมีระดับ";
     }
-    if (score >= 88) {
-      return "น้ำหนักเสียงแน่น จังหวะดี เรียกแล้วฟังชัดและมีพลัง";
-    }
-    return "โทนเสียงค่อนข้างเรียบลื่น ฟังง่าย และใช้งานได้ดี";
   }
 
   Widget _buildPhoneticInsightCard(UserSavedName item) {
