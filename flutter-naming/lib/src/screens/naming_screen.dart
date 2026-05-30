@@ -1734,7 +1734,7 @@ class _NamingScreenState extends State<NamingScreen>
   void fetchNameSuggestionsDebounced(String query, {String? meaning}) {
     debugPrint("Debounced suggestion call for: '$query'");
     final int requestId = ++_suggestionDebounceRequestId;
-    Future.delayed(const Duration(milliseconds: 300), () async {
+    Future.delayed(const Duration(milliseconds: 500), () async {
       if (!mounted || requestId != _suggestionDebounceRequestId) return;
       await loadSelectedNameMeaning(query, meaning: meaning);
     });

@@ -122,8 +122,8 @@ var mobileSearchCache = struct {
 	items: map[string]mobileSearchCacheEntry{},
 }
 
-const mobileSearchCacheTTL = 45 * time.Second
-const mobileSearchCacheMaxEntries = 500
+const mobileSearchCacheTTL = 3 * time.Minute
+const mobileSearchCacheMaxEntries = 2000
 
 type seedAnalysisCacheEntry struct {
 	targetSatSums []int
@@ -138,8 +138,8 @@ var seedAnalysisCache = struct {
 	items: map[string]seedAnalysisCacheEntry{},
 }
 
-const seedAnalysisCacheTTL = 2 * time.Minute
-const seedAnalysisCacheMaxEntries = 300
+const seedAnalysisCacheTTL = 5 * time.Minute
+const seedAnalysisCacheMaxEntries = 1000
 
 type RetrievalStageMeta struct {
 	Stage            string `json:"stage"`

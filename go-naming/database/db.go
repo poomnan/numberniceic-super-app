@@ -40,10 +40,11 @@ func ConnectMySQL() {
 		return
 	}
 
-	// Set pool settings to avoid connection leaks/starvation and protect the shared MySQL DB
-	MySQLDB.SetMaxOpenConns(15)
-	MySQLDB.SetMaxIdleConns(5)
-	MySQLDB.SetConnMaxLifetime(5 * 60 * 1000 * 1000 * 1000) // 5 minutes
+	// Set pool settings for 100+ concurrent users
+	MySQLDB.SetMaxOpenConns(30)
+	MySQLDB.SetMaxIdleConns(10)
+	MySQLDB.SetConnMaxLifetime(10 * time.Minute)
+	MySQLDB.SetConnMaxIdleTime(5 * time.Minute)
 
 	// Initialize MySQL tables used by the Android app/admin panel (idempotent)
 	initMySQLAstroTermsDictionaryTable()
@@ -101,10 +102,9 @@ func initMySQLAstroTermsDictionaryTable() {
 }
 
 func Connect() {
-	// Use localhost to avoid network loopback latency
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
-		connStr = "postgres://tayap:IntelliP24.X@43.228.85.200/tayap?sslmode=disable"
+		connStr = "postgres://tayap:IntelliP24.X@localhost/tayap?sslmode=disable"
 	}
 
 	var err error
@@ -113,10 +113,11 @@ func Connect() {
 		log.Fatalf("Error opening database connection: %v", err)
 	}
 
-	// Set pool settings to avoid connection leaks/starvation
-	DB.SetMaxOpenConns(25)
-	DB.SetMaxIdleConns(5)
-	DB.SetConnMaxLifetime(5 * 60 * 1000 * 1000 * 1000) // 5 minutes
+	// Set pool settings for 100+ concurrent users
+	DB.SetMaxOpenConns(80)
+	DB.SetMaxIdleConns(20)
+	DB.SetConnMaxLifetime(10 * time.Minute)
+	DB.SetConnMaxIdleTime(5 * time.Minute)
 
 	if err := DB.Ping(); err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
