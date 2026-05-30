@@ -301,10 +301,14 @@ class _NamingScreenState extends State<NamingScreen>
     final String originalInput = keyword;
     NameIntentResult? detectedIntent;
 
-    try {
-      detectedIntent = await _apiService.detectNameIntent(finalKeyword);
-    } catch (_) {
-      detectedIntent = null;
+    if (reloadSelectedName || _nameIntentResult == null) {
+      try {
+        detectedIntent = await _apiService.detectNameIntent(finalKeyword);
+      } catch (_) {
+        detectedIntent = null;
+      }
+    } else {
+      detectedIntent = _nameIntentResult;
     }
 
     if (!mounted || requestId != _searchRequestId) return;
@@ -393,13 +397,15 @@ class _NamingScreenState extends State<NamingScreen>
         _relaxedFiltersNotice = null;
       });
       if (!_hasCachedSuggestions) {
-        unawaited(fetchNameSuggestions(
-          originalInput,
-          meaning:
-              (!shouldUsePgTrgmSuggestions && shouldFetchMeaningSuggestions)
-              ? suggestionMeaning
-              : null,
-        ));
+        unawaited(
+          fetchNameSuggestions(
+            originalInput,
+            meaning:
+                (!shouldUsePgTrgmSuggestions && shouldFetchMeaningSuggestions)
+                ? suggestionMeaning
+                : null,
+          ),
+        );
       }
       if (scrollToResults) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -597,7 +603,9 @@ class _NamingScreenState extends State<NamingScreen>
           requestId == _searchRequestId) {
         final Stopwatch suggestionWatch = Stopwatch()..start();
         if (!_hasCachedSuggestions) {
-          unawaited(fetchNameSuggestions(originalInput, meaning: suggestionMeaning));
+          unawaited(
+            fetchNameSuggestions(originalInput, meaning: suggestionMeaning),
+          );
         }
         debugPrint(
           '[_search] fetchNameSuggestions initiated concurrently in ${suggestionWatch.elapsedMilliseconds}ms',
@@ -923,7 +931,18 @@ class _NamingScreenState extends State<NamingScreen>
     // 3. Single Name vs Meaning detection
     if (RegExp(r'^[ก-๙]+$').hasMatch(trimmed)) {
       // Common prefix meaning keywords in Thai
-      final commonMeaningKeywords = ['ความ', 'การ', 'ผู้', 'ใจ', 'รัก', 'งาม', 'ดี', 'มี', 'สุข', 'โชค'];
+      final commonMeaningKeywords = [
+        'ความ',
+        'การ',
+        'ผู้',
+        'ใจ',
+        'รัก',
+        'งาม',
+        'ดี',
+        'มี',
+        'สุข',
+        'โชค',
+      ];
       bool hasMeaningKeyword = false;
       for (final kw in commonMeaningKeywords) {
         if (trimmed.startsWith(kw) && trimmed.length > 3) {
@@ -1389,7 +1408,7 @@ class _NamingScreenState extends State<NamingScreen>
 
   void _onFilterToggled() {
     _filterDebounce?.cancel();
-    _filterDebounce = Timer(const Duration(milliseconds: 500), () async {
+    _filterDebounce = Timer(const Duration(milliseconds: 160), () async {
       if (!mounted) return;
       try {
         await _refreshResultsKeepingStep2Anchor();
@@ -3747,7 +3766,9 @@ class _NamingScreenState extends State<NamingScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.secondary.withValues(alpha: 0.25),
+                                color: AppColors.secondary.withValues(
+                                  alpha: 0.25,
+                                ),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
