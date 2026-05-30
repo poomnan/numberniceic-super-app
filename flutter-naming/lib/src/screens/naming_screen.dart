@@ -980,26 +980,35 @@ class _NamingScreenState extends State<NamingScreen>
       final result = await _apiService.classifyInput(text);
       if (!mounted) return;
       if (_keywordController.text.trim() != text) return;
+
+      // Only set ranking flags for confident name classifications.
+      // Low-confidence matches (e.g. common Thai words like "หอยแครง" that
+      // structurally resemble names) should not auto-trigger expensive ranked
+      // searches.
+      final bool isConfidentName = result != null &&
+          (result.type == "single_name" || result.type == "full_name") &&
+          result.confidence >= 0.90;
+
       setState(() {
         _inputClassification = result;
-        if (result != null &&
-            (result.type == "single_name" ||
-                result.type == "full_name" ||
-                result.type == "meaning")) {
+        if (isConfidentName) {
           _filterSha = true;
           _filterSat = false;
           _hasRankableNameTemplate = true;
         }
+        // For "meaning" type or low-confidence names, don't override filter
+        // flags — let the user's existing filter state remain as-is.
       });
-      if (result != null) {
+
+      if (result != null && isConfidentName) {
         if (result.type == "full_name" && result.firstName != null) {
           _resolveSeedName(result.firstName!);
         } else if (result.type == "single_name" && result.firstName != null) {
           _resolveSeedName(result.firstName!);
         }
-        if (result.type == "single_name" ||
-            result.type == "full_name" ||
-            result.type == "meaning") {
+        // Guard: don't trigger a new search while one is already in progress
+        // to avoid stacking long-running API calls.
+        if (!_isLoading) {
           _search(scrollToResults: false, preserveScrollPosition: true);
         }
       }
