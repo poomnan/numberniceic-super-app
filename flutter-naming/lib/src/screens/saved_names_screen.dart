@@ -1200,7 +1200,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
     }
   }
 
-  Widget _buildPhoneticInsightCard(UserSavedName item) {
+  Widget _buildPhoneticInsightCard(UserSavedName item, {bool showSpeakButton = true}) {
     final phoneticText = _buildPhoneticInsightText(item);
     return Stack(
       clipBehavior: Clip.none,
@@ -1214,7 +1214,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
             border: Border.all(color: const Color(0xFFBDE8E3), width: 1.2),
           ),
           child: Padding(
-            padding: const EdgeInsets.only(right: 54),
+            padding: EdgeInsets.only(right: showSpeakButton ? 54 : 14),
             child: Text(
               phoneticText,
               style: GoogleFonts.sarabun(
@@ -1226,15 +1226,16 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
             ),
           ),
         ),
-        Positioned(
-          top: 0,
-          bottom: 0,
-          right: 10,
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: _buildPhoneticSpeakButton(phoneticText),
+        if (showSpeakButton)
+          Positioned(
+            top: 0,
+            bottom: 0,
+            right: 10,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _buildPhoneticSpeakButton(phoneticText),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1529,7 +1530,7 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            meaning,
+                            "\"$meaning\"",
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -1539,6 +1540,8 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                               fontFamily: 'Sarabun',
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          _buildPhoneticInsightCard(item, showSpeakButton: false),
                           if ((satMeaning?.description.isNotEmpty ?? false) ||
                               (shaMeaning?.description.isNotEmpty ??
                                   false)) ...[
