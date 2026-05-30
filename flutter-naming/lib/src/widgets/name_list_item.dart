@@ -2551,7 +2551,7 @@ class _NameListItemState extends State<NameListItem>
                   ),
             const SizedBox(width: 5),
             Text(
-              _isSaved ? 'บันทึกแล้ว' : 'บันทึกมงคล',
+              _isSaved ? 'บันทึกแล้ว' : 'บันทึกชื่อ',
               style: GoogleFonts.sarabun(
                 color: _isSaved
                     ? const Color(0xFFDB2777)
