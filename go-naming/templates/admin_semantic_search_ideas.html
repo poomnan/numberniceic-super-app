@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการไอเดีย Semantic Search - Admin Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #E2B237;
+            --secondary: #9B51E0;
+            --accent: #FF2E93;
+            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
+            --card: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(155, 81, 224, 0.14);
+            --border-color-hover: rgba(155, 81, 224, 0.34);
+            --text: #2D1E4E;
+            --text-muted: #6C5B7B;
+            --danger: #EF4444;
+            --success: #16A34A;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: var(--bg) no-repeat fixed;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            margin: 0 0 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.06);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 180px 180px 140px;
+            gap: 16px;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #FFFFFF;
+            color: var(--text);
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        textarea {
+            min-height: 96px;
+            resize: vertical;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.1);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #9B51E0, #FF2E93);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.2);
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6C5B7B;
+            box-shadow: 0 4px 6px -1px rgba(108, 91, 123, 0.2);
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .item-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .idea-item {
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 52px 1fr auto;
+            gap: 16px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .idea-item:hover {
+            border-color: var(--border-color-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.08);
+        }
+
+        .idea-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: rgba(226, 178, 55, 0.12);
+            font-size: 20px;
+        }
+
+        .idea-text {
+            font-weight: 600;
+            line-height: 1.6;
+        }
+
+        .meta {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge.active {
+            background: rgba(22, 163, 74, 0.12);
+            color: var(--success);
+        }
+
+        .badge.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 32px;
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+        }
+
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: #2D1E4E;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(45, 30, 78, 0.25);
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: all 0.2s;
+            z-index: 200;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 840px) {
+            .form-grid,
+            .idea-item {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar,
+            .row-actions {
+                align-items: stretch;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/admin/dashboard" class="logo">
+            <i class="fas fa-shield-halved"></i>
+            Admin Center
+        </a>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="/" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i> กลับสู่หน้าเว็บ
+            </a>
+            <a href="/admin/logout" style="color: #EF4444; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1><i class="fas fa-list-check"></i> จัดการไอเดียค้นหาจากความหมาย</h1>
+
+        <div class="card">
+            <h3 id="formTitle">เพิ่มรายการใหม่</h3>
+            <div>
+                <label>ข้อความที่จะแสดงในแอป</label>
+                <textarea id="text" placeholder="เช่น เศรษฐีผู้มั่งคั่ง มีทรัพย์สมบัติและบารมี"></textarea>
+            </div>
+            <div class="form-grid" style="margin-top: 16px;">
+                <div>
+                    <label>ไอคอน</label>
+                    <select id="icon_name">
+                        <option value="trending_up">trending_up</option>
+                        <option value="favorite">favorite</option>
+                        <option value="shield">shield</option>
+                        <option value="psychology">psychology</option>
+                        <option value="star">star</option>
+                        <option value="workspace_premium">workspace_premium</option>
+                        <option value="diamond">diamond</option>
+                        <option value="sparkles">sparkles</option>
+                    </select>
+                </div>
+                <div>
+                    <label>สีไอคอน</label>
+                    <input type="color" id="icon_color" value="#D4A017">
+                </div>
+                <div>
+                    <label>ลำดับ</label>
+                    <input type="number" id="sort_order" value="0">
+                </div>
+                <div>
+                    <label>สถานะ</label>
+                    <select id="is_active">
+                        <option value="true">เปิดใช้งาน</option>
+                        <option value="false">ปิดไว้ก่อน</option>
+                    </select>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn" id="saveBtn" onclick="saveIdea()"><i class="fas fa-save"></i> บันทึกข้อมูล</button>
+                <button class="btn btn-secondary" id="cancelBtn" style="display:none;" onclick="resetForm()">ยกเลิก</button>
+            </div>
+            <input type="hidden" id="edit_id">
+        </div>
+
+        <div class="toolbar">
+            <h3 style="margin:0;">รายการทั้งหมด</h3>
+            <button class="btn btn-secondary" onclick="loadIdeas()"><i class="fas fa-rotate-right"></i> รีเฟรช</button>
+        </div>
+        <div id="ideaList" class="item-list"></div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadIdeas);
+
+        const iconClassMap = {
+            trending_up: 'fa-chart-line',
+            favorite: 'fa-heart',
+            shield: 'fa-shield-halved',
+            psychology: 'fa-brain',
+            star: 'fa-star',
+            workspace_premium: 'fa-award',
+            diamond: 'fa-gem',
+            sparkles: 'fa-wand-magic-sparkles',
+        };
+
+        async function loadIdeas() {
+            const list = document.getElementById('ideaList');
+            list.innerHTML = '<div class="empty">กำลังโหลดข้อมูล...</div>';
+            try {
+                const res = await fetch('/api/v1/admin/semantic-search-ideas/list');
+                const data = await res.json();
+                list.innerHTML = '';
+                if (!Array.isArray(data) || data.length === 0) {
+                    list.innerHTML = '<div class="empty">ยังไม่มีรายการ</div>';
+                    return;
+                }
+                data.forEach(item => {
+                    const iconClass = iconClassMap[item.icon_name] || iconClassMap.sparkles;
+                    const row = document.createElement('div');
+                    row.className = 'idea-item';
+                    row.innerHTML = `
+                        <div class="idea-icon" style="color:${escapeAttr(item.icon_color || '#E2B237')}">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div>
+                            <div class="idea-text">${escapeHtml(item.text || '')}</div>
+                            <div class="meta">
+                                ลำดับ: ${Number(item.sort_order || 0)}
+                                <span class="badge ${item.is_active ? 'active' : 'inactive'}">
+                                    ${item.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row-actions">
+                            <button class="btn" onclick='editIdea(${JSON.stringify(item).replace(/'/g, "&#39;")})'><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-delete" onclick="deleteIdea(${Number(item.id)})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+            } catch (err) {
+                list.innerHTML = '<div class="empty">โหลดข้อมูลไม่สำเร็จ</div>';
+            }
+        }
+
+        async function saveIdea() {
+            const id = document.getElementById('edit_id').value;
+            const payload = {
+                text: document.getElementById('text').value.trim(),
+                icon_name: document.getElementById('icon_name').value,
+                icon_color: document.getElementById('icon_color').value,
+                sort_order: parseInt(document.getElementById('sort_order').value || '0', 10),
+                is_active: document.getElementById('is_active').value === 'true',
+            };
+            if (!payload.text) {
+                showToast('กรุณาระบุข้อความ');
+                return;
+            }
+            if (id) payload.id = parseInt(id, 10);
+
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+            try {
+                const res = await fetch(id ? '/api/v1/admin/semantic-search-ideas/update' : '/api/v1/admin/semantic-search-ideas/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                if (!res.ok) throw new Error('save failed');
+                showToast('บันทึกสำเร็จ');
+                resetForm();
+                loadIdeas();
+            } catch (err) {
+                showToast('บันทึกไม่สำเร็จ');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> บันทึกข้อมูล';
+            }
+        }
+
+        function editIdea(item) {
+            document.getElementById('formTitle').textContent = 'แก้ไขรายการ';
+            document.getElementById('edit_id').value = item.id;
+            document.getElementById('text').value = item.text || '';
+            document.getElementById('icon_name').value = item.icon_name || 'sparkles';
+            document.getElementById('icon_color').value = item.icon_color || '#E2B237';
+            document.getElementById('sort_order').value = item.sort_order || 0;
+            document.getElementById('is_active').value = item.is_active ? 'true' : 'false';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteIdea(id) {
+            if (!confirm('ยืนยันการลบรายการนี้?')) return;
+            try {
+                const res = await fetch('/api/v1/admin/semantic-search-ideas/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id }),
+                });
+                if (!res.ok) throw new Error('delete failed');
+                showToast('ลบสำเร็จ');
+                loadIdeas();
+            } catch (err) {
+                showToast('ลบไม่สำเร็จ');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('formTitle').textContent = 'เพิ่มรายการใหม่';
+            document.getElementById('edit_id').value = '';
+            document.getElementById('text').value = '';
+            document.getElementById('icon_name').value = 'trending_up';
+            document.getElementById('icon_color').value = '#D4A017';
+            document.getElementById('sort_order').value = '0';
+            document.getElementById('is_active').value = 'true';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            }[char]));
+        }
+
+        function escapeAttr(value) {
+            return String(value).replace(/["'<>]/g, '');
+        }
+    </script>
+</body>
+
+</html>

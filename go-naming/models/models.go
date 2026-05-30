@@ -191,6 +191,18 @@ type NamingExample struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+// SemanticSearchIdea represents a managed prompt shown in semantic search UI.
+type SemanticSearchIdea struct {
+	ID        int       `json:"id"`
+	Text      string    `json:"text"`
+	IconName  string    `json:"icon_name"`
+	IconColor string    `json:"icon_color"`
+	SortOrder int       `json:"sort_order"`
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 // UserSavedName represents a name saved by a user for later viewing
 type UserSavedName struct {
 	ID        int       `json:"id"`

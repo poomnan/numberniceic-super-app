@@ -24,6 +24,12 @@ class FilterChipWidget extends StatelessWidget {
   final GestureTapDownCallback? onTapDown;
   final bool disabled;
   final String? disabledTooltip;
+  final Color? inactiveBorderColor;
+  final Gradient? activeGradient;
+  final Gradient? inactiveGradient;
+  final Color? customInactiveTextColor;
+  final List<BoxShadow>? customBoxShadow;
+  final VoidCallback? onDisabledTap;
 
   const FilterChipWidget({
     super.key,
@@ -38,6 +44,12 @@ class FilterChipWidget extends StatelessWidget {
     this.onTapDown,
     this.disabled = false,
     this.disabledTooltip,
+    this.inactiveBorderColor,
+    this.activeGradient,
+    this.inactiveGradient,
+    this.customInactiveTextColor,
+    this.customBoxShadow,
+    this.onDisabledTap,
   });
 
   @override
@@ -47,38 +59,46 @@ class FilterChipWidget extends StatelessWidget {
         activeTextColor ??
         (activeChipColor != null ? Colors.white : AppColors.textLight);
 
-    final Color inactiveTextColor = disabled
-        ? AppColors.textGray.withValues(alpha: 0.45)
+    final Color inactiveTextColor = customInactiveTextColor ?? (disabled
+        ? const Color(0xFF94A3B8) // Slate 400 for disabled state
         : isLocked
         ? AppColors.textGray.withValues(alpha: 0.9)
-        : AppColors.textLight;
+        : AppColors.textLight);
 
     final chip = GestureDetector(
       onTapDown: disabled ? null : onTapDown,
-      onTap: disabled ? null : (isLoading ? null : onTap),
+      onTap: disabled 
+          ? onDisabledTap 
+          : (isLoading ? null : onTap),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: disabled
-              ? Colors.white.withValues(alpha: 0.25)
+              ? const Color(0xFFF1F5F9) // Slate 100 solid background for disabled look
               : isActive
-              ? finalActiveColor
+              ? (activeGradient == null ? finalActiveColor : null)
               : isLocked
               ? const Color(0xFFF6F2FF)
-              : Colors.white.withValues(alpha: 0.5),
+              : (inactiveGradient == null ? Colors.white.withValues(alpha: 0.5) : null),
+          gradient: disabled
+              ? null
+              : isActive
+              ? activeGradient
+              : (isLocked ? null : inactiveGradient),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: disabled
-                ? AppColors.textGray.withValues(alpha: 0.15)
+                ? const Color(0xFFCBD5E1) // Slate 300 for solid disabled border
                 : isActive
-                ? finalActiveColor
+                ? (activeGradient != null ? Colors.transparent : finalActiveColor)
                 : isLocked
                 ? const Color(0xFFD8CCFF)
-                : AppColors.secondary.withValues(alpha: 0.2),
+                : (inactiveBorderColor ??
+                      AppColors.secondary.withValues(alpha: 0.2)),
             width: 1.5,
           ),
-          boxShadow: isActive && !disabled
+          boxShadow: customBoxShadow ?? (isActive && !disabled
               ? [
                   BoxShadow(
                     color: finalActiveColor.withValues(alpha: 0.2),
@@ -87,7 +107,7 @@ class FilterChipWidget extends StatelessWidget {
                     offset: const Offset(0, 2),
                   ),
                 ]
-              : null,
+              : null),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -103,24 +123,22 @@ class FilterChipWidget extends StatelessWidget {
               )
             else
               Icon(
-                disabled
-                    ? Icons.block_rounded
-                    : (isLocked ? Icons.lock_rounded : icon),
+                isLocked ? Icons.lock_rounded : icon,
                 size: 18,
                 color: disabled
-                    ? AppColors.textGray.withValues(alpha: 0.35)
+                    ? const Color(0xFF94A3B8) // Slate 400
                     : isActive
                     ? finalActiveTextColor
                     : isLocked
                     ? const Color(0xFF8B5CF6)
-                    : AppColors.textGray.withValues(alpha: 0.7),
+                    : (customInactiveTextColor ?? AppColors.textGray.withValues(alpha: 0.7)),
               ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
                 color: disabled
-                    ? AppColors.textGray.withValues(alpha: 0.45)
+                    ? const Color(0xFF94A3B8) // Slate 400
                     : isActive
                     ? finalActiveTextColor
                     : inactiveTextColor,

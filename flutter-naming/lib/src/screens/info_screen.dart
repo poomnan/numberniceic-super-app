@@ -211,13 +211,14 @@ class InformationScreen extends StatelessWidget {
           const SizedBox(height: 28),
           _buildFeatureCard(
             number: "1",
-            title: "ต้องเลือกเงื่อนไขก่อนจึงเริ่มจัดอันดับ",
+            title: "ต้องมีชื่ออ้างอิงและเลือกเงื่อนไขก่อนจัดอันดับ",
             description:
-                "ระบบจะยังไม่จัดอันดับรายชื่อจนกว่าคุณจะกดอย่างน้อยหนึ่งเงื่อนไข คือ 'เลขศาสตร์ดี' หรือ 'พลังเงาดี' เพื่อให้การจัดลำดับมีหลักเกณฑ์ที่ชัดเจน",
+                "ระบบจะจัดอันดับเมื่อมีชื่อหรือความหมายที่แปลงเป็นแม่แบบชื่อได้ และคุณเปิดอย่างน้อยหนึ่งตัวคัด คือ 'คัดเลขศาสตร์ดี' หรือ 'คัดพลังเงาดี' เพื่อให้รายชื่อที่แสดงผ่านเกณฑ์เดียวกับที่ใช้เรียงอันดับ",
             bullets: [
-              "ยังไม่เลือกเงื่อนไข: ระบบยังไม่แสดงรายการจัดอันดับ",
-              "เลือก 1 เงื่อนไข: ระบบจัดอันดับตามแกนนั้นเท่านั้น",
-              "เลือก 2 เงื่อนไข: ระบบค่อยพิจารณาทั้ง SAT และ SHA ร่วมกัน",
+              "ยังไม่มีแม่แบบชื่อหรือยังไม่เลือกตัวคัด: ระบบแสดงไอเดียชื่อ ยังไม่แสดงอันดับ",
+              "เลือกคัดเลขศาสตร์ดี: แสดงเฉพาะชื่อที่ผ่าน SAT แล้วเรียงตามคะแนนอันดับ",
+              "เลือกคัดพลังเงาดี: แสดงเฉพาะชื่อที่ผ่าน SHA แล้วเรียงตามคะแนนอันดับ",
+              "เลือกทั้งสองตัวคัด: ชื่อต้องผ่านทั้ง SAT และ SHA ก่อนจึงเข้า ranking list",
             ],
             icon: Icons.rule_rounded,
             color: const Color(0xFFDBB632),
@@ -225,13 +226,13 @@ class InformationScreen extends StatelessWidget {
           const SizedBox(height: 16),
           _buildFeatureCard(
             number: "2",
-            title: "ความหมายเป็นด่านแรก เงื่อนไขที่เลือกเป็นด่านจัดอันดับ",
+            title: "ความหมายเป็นด่านแรก คะแนนอันดับเป็นแกนหลัก",
             description:
-                "ระบบเริ่มจาก semantic retrieval เพื่อหาชื่อที่มีความหมายใกล้เคียงก่อน จากนั้นจึงใช้เงื่อนไขที่คุณเลือกมาเรียงลำดับผลลัพธ์",
+                "ระบบเริ่มจาก semantic retrieval เพื่อหาชื่อที่มีความหมายใกล้เคียงก่อน จากนั้นใช้คะแนนจัดอันดับจาก backend เป็นหลัก หากไม่มีคะแนนนี้จึงคำนวณจากคะแนนชื่อในแอปเป็น fallback",
             bullets: [
-              "เลือกเลขศาสตร์ดี: ดู SAT เป็นหลัก",
-              "เลือกพลังเงาดี: ดู SHA เป็นหลัก",
-              "เลือกทั้งสอง: ต้องผ่านร่วมกันจึงมีโอกาสขึ้นกลุ่มดีเยี่ยม",
+              "ใช้ final_rank_score ก่อนเสมอเมื่อ backend ส่งกลับมา",
+              "หากคะแนนอันดับเท่ากัน ระบบดูความแข็งแรงของคู่เลข D10/D8/D5 และ pairpoint",
+              "semantic score ใช้ช่วยตัดสินลำดับท้าย ๆ เมื่อคุณภาพชื่อใกล้กันมาก",
             ],
             icon: Icons.account_tree_rounded,
             color: const Color(0xFF60A5FA),
@@ -254,7 +255,7 @@ class InformationScreen extends StatelessWidget {
             sublabel: "SAT Bonus",
             points: "+20pt",
             description:
-                "ใช้เมื่อคุณเปิดเงื่อนไข 'เลขศาสตร์ดี' หรือเปิดทั้งสองเงื่อนไขร่วมกัน",
+                "ใช้เมื่อชื่อผ่านเลขศาสตร์ดี และจะเป็นเงื่อนไขคัดกรองเมื่อเปิด 'คัดเลขศาสตร์ดี'",
             icon: Icons.calculate_rounded,
             color: const Color(0xFF4ADE80),
             highlight: false,
@@ -265,7 +266,7 @@ class InformationScreen extends StatelessWidget {
             sublabel: "SHA Bonus",
             points: "+20pt",
             description:
-                "ใช้เมื่อคุณเปิดเงื่อนไข 'พลังเงาดี' หรือเปิดทั้งสองเงื่อนไขร่วมกัน",
+                "ใช้เมื่อชื่อผ่านพลังเงาดี และจะเป็นเงื่อนไขคัดกรองเมื่อเปิด 'คัดพลังเงาดี'",
             icon: Icons.grid_view_rounded,
             color: const Color(0xFF34D399),
             highlight: false,
@@ -276,10 +277,21 @@ class InformationScreen extends StatelessWidget {
             sublabel: "Elite Grand Bonus",
             points: "+50pt",
             description:
-                "ใช้เฉพาะตอนที่คุณเลือกทั้งเลขศาสตร์ดีและพลังเงาดีพร้อมกันเท่านั้น",
+                "ชื่อที่ผ่านทั้งเลขศาสตร์ดีและพลังเงาดีจะได้แรงส่งพิเศษ โดยเฉพาะเมื่อเปิดทั้งสองตัวคัดพร้อมกัน",
             icon: Icons.auto_awesome,
             color: const Color(0xFFDBB632),
             highlight: true,
+          ),
+          const SizedBox(height: 10),
+          _buildBonusCard(
+            label: "คุณภาพคู่เลข",
+            sublabel: "PairType / Pairpoint",
+            points: "Tie-break",
+            description:
+                "เมื่อคะแนนอันดับใกล้กัน ระบบให้คู่เลขที่แข็งแรงกว่า เช่น D10, D8, D5 และ pairpoint สูงกว่า ขึ้นก่อนตามแกนที่คุณเลือกคัด",
+            icon: Icons.linear_scale_rounded,
+            color: const Color(0xFF38BDF8),
+            highlight: false,
           ),
           const SizedBox(height: 10),
           _buildBonusCard(

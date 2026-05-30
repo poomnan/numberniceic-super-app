@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Auto Deploy Go Naming Server Script with sshpass สำหรับโดเมน ชื่อดี.com
+# Auto Deploy Go Naming Server Script with sshpass
 # Usage: ./deploy_auto.sh
 
 set -e
 
 PASS="Lydh@58LTG"
-SERVER="root@43.228.85.200"  # IP สำหรับโดเมน ชื่อดี.com
+SERVER="root@43.228.85.200"
 LOCAL_DIR="/Users/tayap/project-naming/go-naming"
 
-echo "🚀 Starting automated deployment for ชื่อดี.com..."
+echo "🚀 Starting automated deployment..."
 
 # Step 1: Build for Linux
 echo "📦 Building for Linux..."

@@ -114,16 +114,12 @@ func CheckDreamChatAccess(memberID string, guestID string) (bool, string, time.T
 	}
 	defer rows.Close()
 
-	var latestExpiredAt time.Time
-	var hadPaidOrder bool
-
 	for rows.Next() {
 		var productID int
 		var updatedAt time.Time
 		if err := rows.Scan(&productID, &updatedAt); err != nil {
 			continue
 		}
-		hadPaidOrder = true
 
 		switch productID {
 		case 1: // 1 Month
@@ -131,16 +127,10 @@ func CheckDreamChatAccess(memberID string, guestID string) (bool, string, time.T
 			if time.Now().Before(expiry) {
 				return true, "คุณมีสิทธิ์ใช้งานแชททำนายฝัน (1 เดือน)", expiry
 			}
-			if expiry.After(latestExpiredAt) {
-				latestExpiredAt = expiry
-			}
 		case 2: // 1 Year
 			expiry := updatedAt.AddDate(1, 0, 0)
 			if time.Now().Before(expiry) {
 				return true, "คุณมีสิทธิ์ใช้งานแชททำนายฝัน (1 ปี)", expiry
-			}
-			if expiry.After(latestExpiredAt) {
-				latestExpiredAt = expiry
 			}
 		case 3: // Lifetime
 			return true, "คุณมีสิทธิ์ใช้งานแชททำนายฝัน (ไม่จำกัดเวลา)", time.Time{}
@@ -149,14 +139,7 @@ func CheckDreamChatAccess(memberID string, guestID string) (bool, string, time.T
 			if time.Now().Before(expiry) {
 				return true, "คุณมีสิทธิ์ใช้งานแชททำนายฝัน (ทดสอบระบบ 1 นาที)", expiry
 			}
-			if expiry.After(latestExpiredAt) {
-				latestExpiredAt = expiry
-			}
 		}
-	}
-
-	if hadPaidOrder && !latestExpiredAt.IsZero() {
-		return false, fmt.Sprintf("สิทธิ์ทำนายฝันของคุณหมดอายุเมื่อ %s", latestExpiredAt.Format("02/01/2006 15:04")), latestExpiredAt
 	}
 
 	return false, "ไม่มีสิทธิ์เข้าถึง หรือสิทธิ์การใช้งานหมดอายุแล้ว", time.Time{}

@@ -1,0 +1,34 @@
+                                                 phonetic_error                                                 | cnt  
+----------------------------------------------------------------------------------------------------------------+------
+ typhoon batch request failed: Post "https://api.opentyphoon.ai/v1/chat/completions": context deadline exceeded | 2708
+ parse structured phonetic batch json failed: unexpected end of JSON input                                      |  327
+ parse structured phonetic batch json failed: invalid character '}' after array element                         |   68
+ typhoon request failed: Post "https://api.opentyphoon.ai/v1/chat/completions": context deadline exceeded       |    6
+ parse structured phonetic batch json failed: invalid character 'à' after top-level value                       |    5
+ missing batch result for name=นันสะอาง                                                                          |    1
+ missing batch result for name=นวกุลมีทอง                                                                         |    1
+ missing batch result for name=จารุเศ์รนี                                                                          |    1
+ missing batch result for name=ภู่เภ่ง                                                                             |    1
+ missing batch result for name=พาฟลอฟสกี้                                                                         |    1
+ missing batch result for name=ระดีวงษ์                                                                           |    1
+ missing batch result for name=รัตตนงพิสัตย์                                                                        |    1
+ missing batch result for name=รัตตนิทัศน์                                                                          |    1
+ missing batch result for name=ฤทธ์เรือง                                                                          |    1
+ missing batch result for name=ตุ้ยหนึ้ง                                                                            |    1
+ missing batch result for name=ศัลย์พิเศษ                                                                          |    1
+ missing batch result for name=ศรารัชต์                                                                           |    1
+ missing batch result for name=พัชรญาโณภาส                                                                       |    1
+ missing batch result for name=ศาสตรศิริภูมิ                                                                        |    1
+ missing batch result for name=สุวรรณวิจิตต์                                                                        |    1
+ missing batch result for name=สุวาส                                                                             |    1
+ missing batch result for name=หมายเหนี่ยวกลาง                                                                    |    1
+ missing batch result for name=หมื่นสา                                                                            |    1
+ missing batch result for name=หมื่นสาย                                                                           |    1
+ missing batch result for name=หมื่นสายญาติ                                                                        |    1
+ missing batch result for name=หมื่นสิทธิแพร่                                                                        |    1
+ missing batch result for name=อรสินี                                                                             |    1
+ missing batch result for name=อัครกันทรากร                                                                       |    1
+ missing batch result for name=อินทร์เรืองศรี                                                                       |    1
+ missing batch result for name=ลอรัตนเรืองกิต                                                                      |    1
+(30 rows)
+

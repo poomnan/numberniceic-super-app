@@ -41,6 +41,7 @@ class NameInputResolveResult {
   final bool canRankFromTemplate;
   final String suggestionStrategy;
   final String? dbMeaning;
+  final String? semanticMeaning;
   final NameIntentResult? intent;
   final NameAnalysisResult? decode;
 
@@ -52,6 +53,7 @@ class NameInputResolveResult {
     required this.canRankFromTemplate,
     required this.suggestionStrategy,
     this.dbMeaning,
+    this.semanticMeaning,
     this.intent,
     this.decode,
   });
@@ -68,6 +70,7 @@ class NameInputResolveResult {
       suggestionStrategy: (json['suggestion_strategy'] as String? ?? 'semantic')
           .trim(),
       dbMeaning: (json['db_meaning'] as String?)?.trim(),
+      semanticMeaning: (json['semantic_meaning'] as String?)?.trim(),
       intent: intentJson is Map<String, dynamic>
           ? NameIntentResult.fromJson(intentJson)
           : intentJson is Map
@@ -86,4 +89,30 @@ class NameInputResolveResult {
       (inputType == 'name' && !existsInDatabase);
 
   bool get isMeaning => inputType == 'meaning';
+}
+
+class InputClassification {
+  final String type;
+  final double confidence;
+  final String? firstName;
+  final String? surname;
+  final List<String> signals;
+
+  const InputClassification({
+    required this.type,
+    required this.confidence,
+    this.firstName,
+    this.surname,
+    required this.signals,
+  });
+
+  factory InputClassification.fromJson(Map<String, dynamic> json) {
+    return InputClassification(
+      type: json['type'] as String? ?? 'meaning',
+      confidence: (json['confidence'] ?? 0.0).toDouble(),
+      firstName: json['first_name'] as String?,
+      surname: json['surname'] as String?,
+      signals: List<String>.from(json['signals'] ?? const <String>[]),
+    );
+  }
 }

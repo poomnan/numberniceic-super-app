@@ -1,3 +1,10 @@
+int? _jsonInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.round();
+  return int.tryParse(value.toString());
+}
+
 class MobileNameResult {
   final String name;
   final String meaning;
@@ -30,6 +37,7 @@ class MobileNameResult {
   final int totalShaPairPoint;
   final List<CharHighlight> kakiHighlight;
   final int finalRankScore;
+  final double finalRankScoreExact;
   final int semanticRankScore;
   final int numerologyRankScore;
   final int pairTypeBonus;
@@ -39,6 +47,7 @@ class MobileNameResult {
   final int satBonus;
   final int shaBonus;
   final int doubleBonus;
+  final List<RankScoreItem> rankScoreItems;
   final List<String> rankReasons;
 
   MobileNameResult({
@@ -73,6 +82,7 @@ class MobileNameResult {
     this.totalShaPairPoint = 0,
     required this.kakiHighlight,
     this.finalRankScore = 0,
+    this.finalRankScoreExact = 0,
     this.semanticRankScore = 0,
     this.numerologyRankScore = 0,
     this.pairTypeBonus = 0,
@@ -82,6 +92,7 @@ class MobileNameResult {
     this.satBonus = 0,
     this.shaBonus = 0,
     this.doubleBonus = 0,
+    this.rankScoreItems = const [],
     this.rankReasons = const [],
   });
 
@@ -106,10 +117,10 @@ class MobileNameResult {
           '',
       gender: json['gender'] ?? '',
       phoneticSummary: json['phonetic_summary'] ?? '',
-      phoneticScore: json['phonetic_score'] as int?,
-      pronunciationEase: json['pronunciation_ease'] as int?,
-      euphonyScore: json['euphony_score'] as int?,
-      rhythmScore: json['rhythm_score'] as int?,
+      phoneticScore: _jsonInt(json['phonetic_score']),
+      pronunciationEase: _jsonInt(json['pronunciation_ease']),
+      euphonyScore: _jsonInt(json['euphony_score']),
+      rhythmScore: _jsonInt(json['rhythm_score']),
       satSum: json['sat_sum'] ?? 0,
       shaSum: json['sha_sum'] ?? 0,
       totalSat: json['total_sat'] ?? 0,
@@ -133,6 +144,7 @@ class MobileNameResult {
       totalShaPairPoint: json['total_sha_pair_point'] ?? 0,
       kakiHighlight: highlights,
       finalRankScore: json['final_rank_score'] ?? 0,
+      finalRankScoreExact: (json['final_rank_score_exact'] ?? 0).toDouble(),
       semanticRankScore: json['semantic_rank_score'] ?? 0,
       numerologyRankScore: json['numerology_rank_score'] ?? 0,
       pairTypeBonus: json['pair_type_bonus'] ?? 0,
@@ -142,6 +154,12 @@ class MobileNameResult {
       satBonus: json['sat_bonus'] ?? 0,
       shaBonus: json['sha_bonus'] ?? 0,
       doubleBonus: json['double_bonus'] ?? 0,
+      rankScoreItems: (json['rank_score_items'] as List? ?? const [])
+          .whereType<Map>()
+          .map(
+            (item) => RankScoreItem.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .toList(),
       rankReasons: List<String>.from(json['rank_reasons'] ?? const []),
     );
   }
@@ -151,7 +169,9 @@ class MobileNameResult {
     bool isFilterShaActive = true,
     bool isFilterKakiActive = true,
   }) {
-    if (finalRankScore > 0) return finalRankScore;
+    if (finalRankScore > 0 && isFilterSatActive && isFilterShaActive) {
+      return finalRankScore;
+    }
 
     final similarity = (100 * (1 - distance)).clamp(0.0, 100.0);
 
@@ -162,15 +182,20 @@ class MobileNameResult {
     final int satPoint = showMatching ? totalSatPairPoint : satPairPoint;
     final int shaPoint = showMatching ? totalShaPairPoint : shaPairPoint;
 
-    final satBonus = satPass ? 20 : 0;
-    final shaBonus = shaPass ? 20 : 0;
-    final doubleBonus = (satPass && shaPass) ? 50 : 0;
+    final satBonus = isFilterSatActive && satPass ? 20 : 0;
+    final shaBonus = isFilterShaActive && shaPass ? 20 : 0;
+    final doubleBonus =
+        (isFilterSatActive && isFilterShaActive && satPass && shaPass) ? 50 : 0;
     final pairTypeBonus =
-        _pairTypeTierBonus(satPair) + _pairTypeTierBonus(shaPair);
+        (isFilterSatActive ? _pairTypeTierBonus(satPair) : 0) +
+        (isFilterShaActive ? _pairTypeTierBonus(shaPair) : 0);
     final pairPointBonus =
-        _pairPointRankBonus(satPoint) + _pairPointRankBonus(shaPoint);
+        (isFilterSatActive ? _pairPointRankBonus(satPoint) : 0) +
+        (isFilterShaActive ? _pairPointRankBonus(shaPoint) : 0);
     final kakiBonus =
-        (kakiHighlight.isNotEmpty && !kakiHighlight.any((h) => h.isKaki))
+        (isFilterKakiActive &&
+            kakiHighlight.isNotEmpty &&
+            !kakiHighlight.any((h) => h.isKaki))
         ? 10
         : 0;
 
@@ -237,6 +262,20 @@ class CharHighlight {
     return CharHighlight(
       char: json['char'] ?? '',
       isKaki: json['is_kaki'] ?? false,
+    );
+  }
+}
+
+class RankScoreItem {
+  final String label;
+  final double score;
+
+  const RankScoreItem({required this.label, required this.score});
+
+  factory RankScoreItem.fromJson(Map<String, dynamic> json) {
+    return RankScoreItem(
+      label: json['label'] ?? '',
+      score: (json['score'] ?? 0).toDouble(),
     );
   }
 }
@@ -369,6 +408,16 @@ class UserSavedName {
   final DateTime createdAt;
   final String satPairType;
   final String shaPairType;
+  final String birthDay;
+  final bool noKaki;
+  final String kakiChars;
+  final int satPairPoint;
+  final int shaPairPoint;
+  final int? phoneticScore;
+  final String phoneticSummary;
+  final int finalRankScore;
+  final double finalRankScoreExact;
+  final int rankPosition;
 
   UserSavedName({
     required this.id,
@@ -383,6 +432,16 @@ class UserSavedName {
     required this.createdAt,
     this.satPairType = '',
     this.shaPairType = '',
+    this.birthDay = '',
+    this.noKaki = false,
+    this.kakiChars = '',
+    this.satPairPoint = 0,
+    this.shaPairPoint = 0,
+    this.phoneticScore,
+    this.phoneticSummary = '',
+    this.finalRankScore = 0,
+    this.finalRankScoreExact = 0.0,
+    this.rankPosition = 0,
   });
 
   factory UserSavedName.fromJson(Map<String, dynamic> json) {
@@ -406,6 +465,20 @@ class UserSavedName {
       ),
       satPairType: json['sat_pair_type'] ?? '',
       shaPairType: json['sha_pair_type'] ?? '',
+      birthDay: (json['birth_day'] ?? '').toString(),
+      noKaki: json['no_kaki'] == true,
+      kakiChars: (json['kaki_chars'] ?? '').toString(),
+      satPairPoint: json['sat_pair_point'] ?? 0,
+      shaPairPoint: json['sha_pair_point'] ?? 0,
+      phoneticScore: _jsonInt(json['phonetic_score']),
+      phoneticSummary: json['phonetic_summary'] ?? '',
+      finalRankScore: json['final_rank_score'] ?? 0,
+      finalRankScoreExact: json['final_rank_score_exact'] != null
+          ? (json['final_rank_score_exact'] as num).toDouble()
+          : json['final_rank_score'] != null
+          ? (json['final_rank_score'] as num).toDouble()
+          : 0.0,
+      rankPosition: json['rank_position'] ?? 0,
     );
   }
 }
@@ -455,10 +528,10 @@ class SuggestionNameItem {
       name: json['name'] ?? '',
       meaning: json['meaning'] ?? '',
       phoneticSummary: json['phonetic_summary'] ?? '',
-      phoneticScore: json['phonetic_score'] as int?,
-      pronunciationEase: json['pronunciation_ease'] as int?,
-      euphonyScore: json['euphony_score'] as int?,
-      rhythmScore: json['rhythm_score'] as int?,
+      phoneticScore: _jsonInt(json['phonetic_score']),
+      pronunciationEase: _jsonInt(json['pronunciation_ease']),
+      euphonyScore: _jsonInt(json['euphony_score']),
+      rhythmScore: _jsonInt(json['rhythm_score']),
       rankScore: json['rank_score'] ?? 0,
     );
   }

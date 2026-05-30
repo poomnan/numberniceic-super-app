@@ -1,0 +1,74 @@
+# Version Information: flutter-naming v1.4.20+50
+# Build Date: 2026-05-12
+# For Play Store Deployment
+
+## App Information
+- **App Name**: ชื่อดี (Numberniceic)
+- **Package Name**: com.numberniceic.app
+- **Version**: 1.4.20 (versionName)
+- **Version Code**: 50 (versionCode)
+- **Build Type**: Release
+- **File Size**: 44.4 MB (AAB format)
+
+## Build Details
+- **Flutter Version**: Latest stable
+- **Dart Version**: 3.11.1+
+- **Compile SDK**: Android 16 (API level 36)
+- **Target SDK**: Android 15 (API level 35)
+- **Min SDK**: Android 8.0 (API level 26)
+
+## Recent Changes (v1.4.20)
+1. **Fixed Edge-to-Edge Warnings** for Android 15
+   - Removed deprecated `android:windowOptOutEdgeToEdgeEnforcement="true"`
+   - Added proper edge-to-edge configuration in MainActivity.kt
+   - Set transparent system bars in styles.xml
+
+2. **Improved Celebrity Avatar Loading** for iOS 26.4
+   - Added retry logic (3 attempts with exponential backoff)
+   - Removed fake User-Agent headers that might be blocked by Cloudflare
+   - Improved error handling and timeout management
+
+3. **Updated API Service** for better iOS compatibility
+   - Enhanced `getNamingExamples()` function resilience
+   - Added JSON parsing error recovery
+   - Better network timeout handling
+
+## Files for Play Store Upload
+1. **AAB File**: `flutter-naming-v1.4.20-50.aab` (44.4 MB)
+   - Location: `/Users/tayap/Numberniceic-Super-Apps/flutter-naming/`
+   - SHA-256: [Will be generated during upload]
+
+2. **Release Notes** (for Play Store):
+```
+v1.4.20 - May 2026
+• Fixed display issues on latest Android 15 devices
+• Improved celebrity name examples loading
+• Enhanced app stability and performance
+• Better compatibility with iOS 26.4
+```
+
+## Testing Notes
+- Tested on: iPhone 17 Pro (iOS 26.4), Android 15 devices
+- Edge-to-edge display: Fixed for all screen configurations
+- Celebrity Avatar section: Now loads reliably on iOS 26.4
+
+## Next Steps for Deployment
+1. Upload `flutter-naming-v1.4.20-50.aab` to Google Play Console
+2. Fill in release notes as shown above
+3. Select appropriate release track (Production/Internal Test)
+4. Review and publish the update
+
+## File Verification
+```bash
+# Check file integrity
+md5 flutter-naming-v1.4.20-50.aab
+shasum -a 256 flutter-naming-v1.4.20-50.aab
+
+# File size verification
+ls -lh flutter-naming-v1.4.20-50.aab
+```
+
+## Contact
+- Developer: Numberniceic Team
+- Support: support@numberniceic.com
+- Website: https://ชื่อดี.com

@@ -10,7 +10,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=14">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .guide-container {
@@ -124,23 +124,22 @@
             color: #2c1810;
         }
 
-        .btn-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
+        .play-store-badge {
+            display: inline-block;
+            line-height: 0;
             margin-top: 20px;
-            transition: transform 0.2s;
+            transition: transform 0.2s ease, filter 0.2s ease;
         }
 
-        .btn-cta:hover {
+        .play-store-badge:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            filter: drop-shadow(0 10px 20px rgba(99, 102, 241, 0.24));
+        }
+
+        .play-store-badge img {
+            height: 64px;
+            max-width: min(260px, 100%);
+            display: block;
         }
 
         .back-link {
@@ -162,13 +161,34 @@
 <body>
     <nav class="navbar">
         <div class="container navbar-container">
-            <a href="/" class="logo">
-                <span class="logo-text">ชื่อดี.com</span>
+            <a href="/" class="logo" style="text-decoration: none;">
+                <span class="logo-text"
+                    style="font-family: 'Prompt'; font-weight: 800; font-size: 24px; background: linear-gradient(135deg, #B8860B, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">แอปชื่อดี</span>
             </a>
-            <div class="nav-links">
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i data-lucide="menu"></i>
+            </button>
+
+            <div class="nav-links desktop-menu">
                 <a href="/">หน้าแรก</a>
+                <a href="/#features">ศาสตร์ทั้ง 4</a>
+
                 <a href="/#knowledge">ความรู้คู่ชื่อมงคล</a>
-                <a href="/download" class="btn-primary">ดาวน์โหลดเลย</a>
+                <a href="/how-ranking">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="nav-link">🌌 ดวงดาว</a>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-content">
+                <a href="/" class="mobile-link">หน้าแรก</a>
+                <a href="/#features" class="mobile-link">ศาสตร์ทั้ง 4</a>
+
+                <a href="/#knowledge" class="mobile-link">ความรู้คู่ชื่อมงคล</a>
+                <a href="/how-ranking" class="mobile-link">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="mobile-link">🌌 ดวงดาว</a>
             </div>
         </div>
     </nav>
@@ -241,8 +261,9 @@
                     ค้นหาชื่อที่มีความหมายถูกต้องตามพจนานุกรมแน่นอน พร้อมวิเคราะห์รากศัพท์ภาษาบาลี-สันสกฤตให้เสร็จสรรพ
                 </p>
                 <p>ได้ทั้งชื่อมงคล 4 มิติ และความหมายที่เจ้าหน้าที่ยอมรับ 100%</p>
-                <a href="/download" class="btn-cta">
-                    <i data-lucide="download"></i> ดาวน์โหลดแอปชื่อดี
+                <a href="/download" class="play-store-badge" aria-label="ดาวน์โหลดแอปชื่อดี.com บน Google Play">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                        alt="ดาวน์โหลดแอปชื่อดี.com บน Google Play">
                 </a>
             </div>
         </div>
@@ -257,6 +278,24 @@
 
     <script>
         lucide.createIcons();
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            const isActive = mobileMenu.classList.toggle('active');
+            mobileMenuBtn.innerHTML = isActive ? '<i data-lucide="x"></i>' : '<i data-lucide="menu"></i>';
+            lucide.createIcons();
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuBtn.innerHTML = '<i data-lucide="menu"></i>';
+                lucide.createIcons();
+            });
+        });
     </script>
 </body>
 

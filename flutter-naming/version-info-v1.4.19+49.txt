@@ -1,0 +1,20 @@
+Version: 1.4.19+49
+Build Date: 2026-05-04
+
+Changes:
+- Fixed: LikeName section now updates when user selects a new seed/anchor name
+- Fixed: Speech icons in LikeName now properly positioned after text (right-aligned)
+- Fixed: Speech icons revert to microphone after speaking completes
+- Fixed: No results false positive when backend query takes longer than expected
+- Fixed: Number meaning dialog now shows ด้านดี/ด้านเสีย from database
+- Fixed: 2ButtonPremium disabled state shows tooltip when no seed name selected
+- Fixed: Removed "ล้างเงื่อนไข" button when showing "ไม่มีรายชื่อ" state
+- Feature: LikeName first mic button reads name+meaning, second reads phonetic
+- Feature: 2ButtonPremium disabled when no seed/anchor name selected
+- Backend: SQL query now concatenates detail_vip into detail for number meaning API
+- Backend: Concatenated detail displays ด้านดี (green) and ด้านเสีย (red) in Flutter dialogs
+
+Notes:
+- Premium paywall dialog updated with personalized seed name display
+- Backend timeout alignment with Flutter timeout settings
+- Double-good mode pool limits increased to prevent good names from being excluded

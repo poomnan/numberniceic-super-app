@@ -9,25 +9,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #D4AF37;
-            --secondary: #2C1810;
-            --accent: #B8860B;
-            --bg: #FFF8E1;
-            --card: #FFFAF0;
-            --text: #2C1810;
+            --primary: #E2B237;
+            --primary-light: #F2994A;
+            --secondary: #9B51E0;
+            --accent: #FF2E93;
+            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
+            --card: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(155, 81, 224, 0.12);
+            --border-color-hover: rgba(155, 81, 224, 0.32);
+            --text: #2D1E4E;
+            --text-muted: #6C5B7B;
         }
 
         body {
             font-family: 'Prompt', sans-serif;
-            background-color: var(--bg);
+            background: var(--bg) no-repeat fixed;
             color: var(--text);
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
 
         .navbar {
             background: var(--card);
-            border-bottom: 1px solid #334155;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -40,7 +47,7 @@
         .logo {
             font-weight: 700;
             font-size: 1.5rem;
-            color: #B8860B;
+            color: var(--secondary);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -61,8 +68,12 @@
         }
 
         h1 {
-            color: var(--accent);
+            color: var(--text);
             margin: 0;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .search-box {
@@ -75,14 +86,21 @@
             flex: 1;
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid #334155;
-            background: #1E293B;
-            color: white;
+            border: 1px solid var(--border-color);
+            background: #FFFFFF;
+            color: var(--text);
             font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.1);
         }
 
         .btn {
-            background: var(--primary);
+            background: linear-gradient(135deg, #9B51E0, #FF2E93);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -90,33 +108,45 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.2);
+        }
+
+        .btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.3);
         }
 
         .btn-secondary {
-            background: #334155;
+            background: var(--text-muted);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             background: var(--card);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.05);
         }
 
         th {
             text-align: left;
             padding: 15px;
-            background: #334155;
+            background: rgba(155, 81, 224, 0.08);
             font-size: 14px;
-            color: #94A3B8;
+            color: var(--text);
+            font-weight: 600;
         }
 
         td {
             padding: 15px;
-            border-top: 1px solid #334155;
+            border-top: 1px solid var(--border-color);
             font-size: 15px;
+            color: var(--text);
         }
 
         .badge {
@@ -124,24 +154,41 @@
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
+            display: inline-block;
         }
 
         .badge-vip {
-            background: #FDB931;
-            color: #000;
+            background: rgba(226, 178, 55, 0.15);
+            color: #C2931A;
+            border: 1px solid rgba(226, 178, 55, 0.3);
+        }
+
+        .badge-premium {
+            background: rgba(155, 81, 224, 0.15);
+            color: #9B51E0;
+            border: 1px solid rgba(155, 81, 224, 0.3);
         }
 
         .badge-normal {
-            background: #334155;
-            color: #94A3B8;
+            background: rgba(108, 91, 123, 0.1);
+            color: var(--text-muted);
+            border: 1px solid rgba(108, 91, 123, 0.2);
         }
 
         select {
-            background: #0F172A;
-            color: white;
-            border: 1px solid #334155;
-            padding: 4px;
-            border-radius: 4px;
+            background: #FFFFFF;
+            color: var(--text);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: var(--secondary);
         }
 
         .loading {
@@ -216,14 +263,23 @@
                 if (data.status === 'success' && data.users) {
                     data.users.forEach(user => {
                         const tr = document.createElement('tr');
-                        const isVip = user.vipcode && user.vipcode !== 'normal';
+                        tr.style.transition = 'background-color 0.2s';
+                        tr.addEventListener('mouseenter', () => tr.style.backgroundColor = 'rgba(155, 81, 224, 0.02)');
+                        tr.addEventListener('mouseleave', () => tr.style.backgroundColor = 'transparent');
+                        
+                        let badgeClass = 'badge-normal';
+                        if (user.vipcode === 'vip') {
+                            badgeClass = 'badge-vip';
+                        } else if (user.vipcode === 'premium') {
+                            badgeClass = 'badge-premium';
+                        }
 
                         tr.innerHTML = `
                             <td><code>${user.memberid}</code></td>
-                            <td>${user.username}</td>
+                            <td style="font-weight: 500;">${user.username}</td>
                             <td>${user.realname} ${user.surname}</td>
                             <td>
-                                <span class="badge ${isVip ? 'badge-vip' : 'badge-normal'}">
+                                <span class="badge ${badgeClass}">
                                     ${user.vipcode || 'normal'}
                                 </span>
                             </td>

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../utils/colors.dart';
 
 /// Dashboard Summary Widget - แสดงสถิติผลการค้นหาแบบพรีเมียม
 class DashboardSummary extends StatelessWidget {
@@ -29,106 +28,109 @@ class DashboardSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String displayedNumerologyGood = isSatActive ? numerologyGood : '0';
-    final String displayedShadowGood = isShaActive ? shadowGood : '0';
-    final List<({String label, String value, Color accent})> stats = [
-      (
-        label: 'ทั้งหมด',
-        value: totalNames.toString(),
-        accent: const Color(0xFFDBB632),
-      ),
+    final List<({String label, String value, Color accent, bool isActive})>
+    stats = [
       (
         label: 'เลขศาสตร์',
-        value: displayedNumerologyGood,
+        value: isSatActive ? numerologyGood : '-',
         accent: const Color(0xFF10B981),
+        isActive: isSatActive,
       ),
       (
         label: 'พลังเงา',
-        value: displayedShadowGood,
+        value: isShaActive ? shadowGood : '-',
         accent: const Color(0xFF6366F1),
+        isActive: isShaActive,
       ),
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFF7D6), Color(0xFFF1E8FF), Color(0xFFE8F7F3)],
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           // ANCHOR: Count by Ranking (แสดงรายชื่อที่ผ่านเกณฑ์ดีที่สุดตามเงื่อนไข)
-
-          child: Text(
-            'แสดงรายชื่อที่ผ่านเกณฑ์ดีที่สุดตามเงื่อนไข',
+          Text(
+            'แสดงรายชื่อที่ผ่านเกณฑ์จัดอันดับ',
             style: GoogleFonts.sarabun(
-              color: AppColors.textGray.withValues(alpha: 0.6),
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
+              color: const Color(0xFF6B4E16).withValues(alpha: 0.82),
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800,
             ),
           ),
-        ),
-        // ANCHOR: Count by Ranking (รายชื่อวิเคราะห์ได้ตามเงื่อนไข)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: stats
-              .map(
-                (stat) => Expanded(
-                  child: _buildSimpleStat(
-                    label: stat.label,
-                    value: stat.value,
-                    accent: stat.accent,
-                    isLoading: isLoading,
+          const SizedBox(height: 8),
+          // ANCHOR: Count by Ranking (รายชื่อวิเคราะห์ได้ตามเงื่อนไข)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: stats
+                .map(
+                  (stat) => Expanded(
+                    child: _buildSimpleStat(
+                      label: stat.label,
+                      value: stat.value,
+                      accent: stat.accent,
+                      isLoading: isLoading,
+                      isActive: stat.isActive,
+                    ),
                   ),
-                ),
-              )
-              .toList(),
-        ),
+                )
+                .toList(),
+          ),
 
-        // Recommended Days (if provided)
-        if (!isLoading && recommendedDays != null && recommendedDays!.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.bgDarker,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.accent.withValues(alpha: 0.2),
+          // Recommended Days (if provided)
+          if (!isLoading &&
+              recommendedDays != null &&
+              recommendedDays!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.56),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.calendar_month_rounded,
+                    size: 14,
+                    color: Color(0xFF7A5C12),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'ฤกษ์ดีสำหรับ: ',
+                    style: GoogleFonts.sarabun(
+                      color: const Color(0xFF7A5C12).withValues(alpha: 0.76),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      recommendedDays!,
+                      style: GoogleFonts.prompt(
+                        color: const Color(0xFF3D2600),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.calendar_month_rounded,
-                  size: 14,
-                  color: AppColors.textGray,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'ฤกษ์ดีสำหรับ: ',
-                  style: GoogleFonts.sarabun(
-                    color: AppColors.textGray.withValues(alpha: 0.7),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Flexible(
-                  child: Text(
-                    recommendedDays!,
-                    style: GoogleFonts.prompt(
-                      color: AppColors.textLight.withValues(alpha: 0.9),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -137,38 +139,52 @@ class DashboardSummary extends StatelessWidget {
     required String value,
     required Color accent,
     bool isLoading = false,
+    bool isActive = true,
   }) {
+    final Color labelColor = isActive
+        ? accent.withValues(alpha: 0.9)
+        : const Color(0xFF94A3B8);
+    final Color valueColor = isActive
+        ? const Color(0xFF1F2937)
+        : const Color(0xFF94A3B8);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.sarabun(
-            color: accent.withValues(alpha: 0.9),
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.1,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.sarabun(
+                color: labelColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (isLoading)
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(accent),
+                ),
+              )
+            else
+              Text(
+                value,
+                style: GoogleFonts.prompt(
+                  color: valueColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
+          ],
         ),
-        const SizedBox(height: 4),
-        if (isLoading)
-          SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.4,
-              valueColor: AlwaysStoppedAnimation<Color>(accent),
-            ),
-          )
-        else
-          Text(
-            value,
-            style: GoogleFonts.prompt(
-              color: AppColors.textLight,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
       ],
     );
   }

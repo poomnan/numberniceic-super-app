@@ -10,25 +10,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #D4AF37;
-            --secondary: #2C1810;
-            --accent: #B8860B;
-            --bg: #FFF8E1;
-            --card: #FFFAF0;
-            --text: #2C1810;
+            --primary: #E2B237;
+            --primary-light: #F2994A;
+            --secondary: #9B51E0;
+            --accent: #FF2E93;
+            --bg: linear-gradient(135deg, #FAF8FF 0%, #FFF5FA 50%, #FFFDF5 100%);
+            --card: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(155, 81, 224, 0.12);
+            --border-color-hover: rgba(155, 81, 224, 0.32);
+            --text: #2D1E4E;
+            --text-muted: #6C5B7B;
         }
 
         body {
             font-family: 'Sarabun', sans-serif;
-            background-color: var(--bg);
+            background: var(--bg) no-repeat fixed;
             color: var(--text);
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
 
         .navbar {
             background: var(--card);
-            border-bottom: 1px solid #334155;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
@@ -41,7 +48,7 @@
         .logo {
             font-weight: 700;
             font-size: 1.5rem;
-            color: #B8860B;
+            color: var(--secondary);
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -62,16 +69,23 @@
         }
 
         h1 {
-            color: var(--accent);
+            color: var(--text);
             margin: 0;
             font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2D1E4E, #9B51E0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .card {
             background: var(--card);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border-radius: 16px;
             padding: 24px;
-            border: 1px solid #334155;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.05);
         }
 
         .media-grid {
@@ -82,24 +96,26 @@
         }
 
         .media-item {
-            background: #FFFAF0;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #334155;
+            border: 1px solid var(--border-color);
             transition: all 0.2s;
             position: relative;
+            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.05);
         }
 
         .media-item:hover {
             transform: translateY(-5px);
-            border-color: var(--primary);
+            border-color: var(--border-color-hover);
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.1);
         }
 
         .media-preview {
             width: 100%;
             height: 150px;
             object-fit: cover;
-            background: #000;
+            background: rgba(155, 81, 224, 0.05);
             cursor: pointer;
         }
 
@@ -112,8 +128,9 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #94A3B8;
+            color: var(--text-muted);
             margin-bottom: 5px;
+            font-weight: 500;
         }
 
         .media-actions {
@@ -122,7 +139,7 @@
         }
 
         .btn {
-            background: var(--primary);
+            background: linear-gradient(135deg, #9B51E0, #FF2E93);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -134,10 +151,13 @@
             align-items: center;
             gap: 8px;
             transition: 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(155, 81, 224, 0.2);
         }
 
         .btn:hover {
-            opacity: 0.9;
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(155, 81, 224, 0.3);
         }
 
         .btn-sm {
@@ -146,31 +166,44 @@
         }
 
         .btn-delete {
-            background: #EF4444;
+            background: #EF4444 !important;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .btn-delete:hover {
+            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3) !important;
         }
 
         .btn-copy {
-            background: #10B981;
+            background: #10B981 !important;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2) !important;
+        }
+
+        .btn-copy:hover {
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3) !important;
         }
 
         .upload-area {
-            border: 2px dashed #334155;
+            border: 2px dashed rgba(155, 81, 224, 0.2);
             border-radius: 12px;
             padding: 40px;
             text-align: center;
             margin-bottom: 30px;
             cursor: pointer;
             transition: 0.2s;
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--text-muted);
         }
 
         .upload-area:hover {
-            border-color: var(--primary);
-            background: rgba(139, 92, 246, 0.05);
+            border-color: var(--secondary);
+            background: rgba(155, 81, 224, 0.02);
+            color: var(--secondary);
         }
 
         .upload-area i {
             font-size: 2.5rem;
-            color: #4B5563;
+            color: var(--secondary);
             margin-bottom: 10px;
         }
 

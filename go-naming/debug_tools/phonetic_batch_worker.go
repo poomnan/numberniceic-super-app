@@ -132,37 +132,18 @@ func main() {
 			}
 
 			if err != nil {
-				log.Printf("[phonetic-worker] batch fallback to single-name mode names=%d error=%v", len(group), err)
 				for _, item := range group {
-					evaluation, rawSingle, singleAttempts, singleErr := evaluateWithRetry(client, item.Name, cfg)
-					if singleAttempts > 1 {
-						stats.Retried += singleAttempts - 1
-					}
 					stats.LastNameID = item.ID
 					stats.LastName = item.Name
-					if singleErr != nil {
-						stats.Failed++
-						stats.LastError = singleErr.Error()
-						log.Printf("[phonetic-worker] failed id=%d name=%s attempts=%d error=%v", item.ID, item.Name, singleAttempts, singleErr)
-						if updateErr := markFailure(db, item.ID, cfg.WorkerID, rawSingle, singleErr, cfg.RetryBackoff); updateErr != nil {
-							log.Printf("[phonetic-worker] mark failure error id=%d: %v", item.ID, updateErr)
-						}
-						writeCheckpoint(cfg.CheckpointFile, stats)
-						continue
-					}
-					stats.Processed++
-					stats.LastError = ""
-					log.Printf("[phonetic-worker] processed id=%d name=%s overall=%d ease=%d euphony=%d rhythm=%d",
-						item.ID, item.Name, evaluation.Score.Overall, evaluation.Score.PronunciationEase, evaluation.Score.Euphony, evaluation.Score.Rhythm)
-					if updateErr := markSuccess(db, item.ID, cfg.WorkerID, cfg.Version, evaluation, rawSingle); updateErr != nil {
-						log.Printf("[phonetic-worker] mark success error id=%d: %v", item.ID, updateErr)
+					stats.Failed++
+					stats.LastError = err.Error()
+					log.Printf("[phonetic-worker] failed id=%d name=%s attempts=%d error=%v", item.ID, item.Name, attempts, err)
+					if updateErr := markFailure(db, item.ID, cfg.WorkerID, rawResponse, err, cfg.RetryBackoff); updateErr != nil {
+						log.Printf("[phonetic-worker] mark failure error id=%d: %v", item.ID, updateErr)
 					}
 					writeCheckpoint(cfg.CheckpointFile, stats)
 				}
-				continue
-			}
-
-			if err == nil {
+			} else {
 				for _, item := range group {
 					stats.LastNameID = item.ID
 					stats.LastName = item.Name
@@ -219,7 +200,7 @@ func loadWorkerConfig() workerConfig {
 
 	flag.StringVar(&cfg.DatabaseURL, "database-url", getenvDefault("DATABASE_URL", "postgres://tayap:IntelliP24.X@127.0.0.1/tayap?sslmode=disable"), "PostgreSQL connection string")
 	flag.IntVar(&cfg.BatchSize, "batch-size", getenvInt("PHONETIC_BATCH_SIZE", 50), "Number of names to claim per batch")
-	flag.IntVar(&cfg.RequestBatchSize, "request-batch-size", getenvInt("PHONETIC_REQUEST_BATCH_SIZE", 3), "Number of names to send to Typhoon per request")
+	flag.IntVar(&cfg.RequestBatchSize, "request-batch-size", getenvInt("PHONETIC_REQUEST_BATCH_SIZE", 5), "Number of names to send to Typhoon per request")
 	flag.IntVar(&cfg.Limit, "limit", getenvInt("PHONETIC_LIMIT", 0), "Optional max number of records to process in this run (0 = unlimited)")
 	flag.IntVar(&cfg.MaxRetries, "max-retries", getenvInt("PHONETIC_MAX_RETRIES", 3), "Max DB retry count before record is skipped")
 	flag.DurationVar(&cfg.ClaimTimeout, "claim-timeout", getenvDuration("PHONETIC_CLAIM_TIMEOUT", 20*time.Minute), "How long before a claimed row can be resumed by another run")

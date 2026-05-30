@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-# Configuration สำหรับโดเมน ชื่อดี.com
-HOST="43.228.85.200"  # IP สำหรับโดเมน ชื่อดี.com
+HOST="43.228.85.200"
 USER="root"
 PASS="Lydh@58LTG"
 BINARY="dist/go-naming-linux-amd64"
@@ -10,7 +9,7 @@ SERVICE="go-naming.service"
 REMOTE_BIN="/usr/local/bin/go-naming"
 REMOTE_SERVICE="/etc/systemd/system/go-naming.service"
 
-echo "Deploying to ชื่อดี.com ($USER@$HOST)..."
+echo "Deploying to $USER@$HOST..."
 
 # 0. Stop service (ignore errors if not running)
 echo "Stopping service..."

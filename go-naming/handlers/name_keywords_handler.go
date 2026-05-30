@@ -257,8 +257,6 @@ JSON Format:
 	// Dynamic Auspicious Bonus — loaded from DB pairtype
 	d10Sums, d8Sums, d5Sums, _ := services.GetSumsByPairType()
 	aucBonusSQL := buildAuspiciousBonus(d10Sums, d8Sums, d5Sums)
-	// Phonetic bonus for natural-sounding names
-	phoneticBonusSQL := "(" + buildPhoneticBonus() + ") / 305.0"
 
 	filterSQL := ""
 	queryArgs := []interface{}{cleanRoots, vectorStr, name}
@@ -276,8 +274,6 @@ JSON Format:
 	}
 	// kaki filter uses a boolean column (no query arg needed)
 	filterSQL += kakiFilter
-	// exclude names with odd pronunciation
-	filterSQL += buildPhoneticFilter()
 
 	query := fmt.Sprintf(`
 		WITH ai_output AS (
@@ -288,10 +284,6 @@ JSON Format:
 		),
 		top_semantic AS (
 			SELECT thname AS name, COALESCE(meaning, '') AS meaning, COALESCE(gender, '') AS gender, sat_sum, sha_sum,
-				COALESCE(phonetic_score, 0) AS phonetic_score,
-				COALESCE(pronunciation_ease, 0) AS pronunciation_ease,
-				COALESCE(euphony_score, 0) AS euphony_score,
-				COALESCE(rhythm_score, 0) AS rhythm_score,
 				word_similarity((SELECT ai_roots FROM ai_output), thname) AS root_score,
 				GREATEST(0, 1 - (meaning_vector <=> (SELECT vec FROM target_vector))) AS semantic_score
 			FROM names_miracle
@@ -301,10 +293,6 @@ JSON Format:
 		),
 		top_trigram AS (
 			SELECT thname AS name, COALESCE(meaning, '') AS meaning, COALESCE(gender, '') AS gender, sat_sum, sha_sum,
-				COALESCE(phonetic_score, 0) AS phonetic_score,
-				COALESCE(pronunciation_ease, 0) AS pronunciation_ease,
-				COALESCE(euphony_score, 0) AS euphony_score,
-				COALESCE(rhythm_score, 0) AS rhythm_score,
 				word_similarity((SELECT ai_roots FROM ai_output), thname) AS root_score,
 				GREATEST(0, 1 - (meaning_vector <=> (SELECT vec FROM target_vector))) AS semantic_score
 			FROM names_miracle
@@ -320,11 +308,9 @@ JSON Format:
 		ranked AS (
 			SELECT
 				name, meaning, gender, sat_sum, sha_sum, root_score, semantic_score,
-				((root_score * 0.7) + (semantic_score * 0.3)) AS base_score,
+				((root_score * 0.4) + (semantic_score * 0.6)) AS base_score,
 				-- Auspicious Bonus: based on pairtype from DB (D10 > D8 > D5)
 				%s AS auspicious_bonus,
-				-- Phonetic bonus for natural-sounding names
-				%s AS phonetic_bonus,
 				-- Length Adjust: ชื่อ 2-3 พยางค์ (<=8 char) ง่ายต่อการเรียก = บวก, ยาวมาก (>=12) = ลบ
 				CASE
 					WHEN char_length(name) <= 6  THEN 0.07
@@ -337,11 +323,11 @@ JSON Format:
 		)
 		SELECT
 			name, meaning, gender, sat_sum, sha_sum, root_score, semantic_score,
-			LEAST(1.0, base_score + auspicious_bonus + phonetic_bonus + length_adjust) AS final_rank
+			LEAST(1.0, base_score + auspicious_bonus + length_adjust) AS final_rank
 		FROM ranked
 		ORDER BY final_rank DESC
 		LIMIT 15;
-	`, filterSQL, filterSQL, aucBonusSQL, phoneticBonusSQL)
+	`, filterSQL, filterSQL, aucBonusSQL)
 
 	queryStart := time.Now()
 	rows, err := database.DB.Query(query, queryArgs...)
@@ -481,25 +467,6 @@ func buildAuspiciousBonus(d10, d8, d5 []int) string {
 	}
 	sql += "\n\t\t\t\t\tELSE 0\n\t\t\t\tEND"
 	return sql
-}
-
-// buildPhoneticBonus generates a CASE WHEN SQL expression for phonetic ranking bonus.
-// Returns integer bonus values matching mobile_search_handler.go's phoneticRankingBonus.
-func buildPhoneticBonus() string {
-	return `CASE
-		WHEN COALESCE(phonetic_score, 0) >= 94 AND COALESCE(pronunciation_ease, 0) >= 94 AND COALESCE(euphony_score, 0) >= 92 AND COALESCE(rhythm_score, 0) >= 90 THEN 22
-		WHEN COALESCE(phonetic_score, 0) >= 88 AND COALESCE(pronunciation_ease, 0) >= 88 THEN 14
-		WHEN COALESCE(phonetic_score, 0) >= 80 AND COALESCE(pronunciation_ease, 0) >= 82 THEN 8
-		WHEN COALESCE(phonetic_score, 0) < 58 OR COALESCE(pronunciation_ease, 0) < 60 THEN -22
-		WHEN COALESCE(phonetic_score, 0) < 68 OR COALESCE(pronunciation_ease, 0) < 70 THEN -12
-		ELSE 0
-	END`
-}
-
-// buildPhoneticFilter generates a WHERE clause to exclude names with odd pronunciation.
-// Returns SQL condition that can be appended to filterSQL.
-func buildPhoneticFilter() string {
-	return ` AND NOT (COALESCE(phonetic_score, 0) < 50 OR COALESCE(pronunciation_ease, 0) < 50 OR (COALESCE(phonetic_score, 0) < 58 AND COALESCE(pronunciation_ease, 0) < 60) OR (COALESCE(phonetic_score, 0) < 62 AND COALESCE(euphony_score, 0) < 58 AND COALESCE(rhythm_score, 0) < 58))`
 }
 
 // loadKakiSet queries the kakis_day table and returns a set of kaki characters for the given day.

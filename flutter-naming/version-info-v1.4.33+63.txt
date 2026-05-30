@@ -1,0 +1,12 @@
+Chuedee / flutter-naming release
+
+- Version: 1.4.33
+- Version Code: 63
+- Android bundle: build/app/outputs/bundle/release/app-release.aab
+- Upload bundle: flutter-naming-v1.4.33-63.aab
+- SHA-256: a1c8ba86d2e5cd74925407fdcefe8705cc1a360beeb36c779e49bdebf18e762c
+
+Changes:
+- Optimize double-good name search
+- Update naming apps and phonetic ranking flow
+- Default shadow filter and bottom scroll

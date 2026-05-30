@@ -42,18 +42,26 @@ func GetNumberMeaningHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid number format", http.StatusBadRequest)
 		return
 	}
-	if len(numberStr) == 1 {
-		numberStr = "0" + numberStr
-	}
 
 	// Query database
+	// Try strict match first
 	// Query database
+	// Try strict match first
 	var description sql.NullString
 	var detail sql.NullString
 	var pairType sql.NullString
 
-	query := "SELECT miracledesc, miracledetail || E'\n\n' || COALESCE(NULLIF(detail_vip, ''), '') AS miracledetail, pairtype FROM numbers WHERE pairnumber = $1"
+	query := "SELECT miracledesc, miracledetail, pairtype FROM numbers WHERE pairnumber = $1"
 	err = database.DB.QueryRow(query, numberStr).Scan(&description, &detail, &pairType)
+
+	if err == sql.ErrNoRows {
+		// Try zero-padding if input is like "5" -> "05"
+		// Only if needed (integers < 10)
+		if len(numberStr) == 1 {
+			padded := fmt.Sprintf("0%s", numberStr)
+			err = database.DB.QueryRow(query, padded).Scan(&description, &detail, &pairType)
+		}
+	}
 
 	if err != nil {
 		log.Printf("Database Error querying number meaning: %v", err)

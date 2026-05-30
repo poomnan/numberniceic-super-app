@@ -25,6 +25,7 @@ class MagicLoadingView extends StatefulWidget {
 class _MagicLoadingViewState extends State<MagicLoadingView>
     with TickerProviderStateMixin {
   late AnimationController _rotationController;
+  late AnimationController _slowRotationController;
   late AnimationController _pulseController;
   late AnimationController _particleController;
 
@@ -40,6 +41,11 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
       duration: const Duration(seconds: 4),
     )..repeat();
 
+    _slowRotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat();
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -51,7 +57,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
     )..repeat();
 
     // Create initial particles
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 30; i++) {
       _particles.add(_createParticle());
     }
   }
@@ -66,9 +72,28 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
     );
   }
 
+  Widget _glowingOrbDot(double scale, Color color) {
+    return Container(
+      width: 6 * scale,
+      height: 6 * scale,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: color,
+            blurRadius: 6 * scale,
+            spreadRadius: 1.5 * scale,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _rotationController.dispose();
+    _slowRotationController.dispose();
     _pulseController.dispose();
     _particleController.dispose();
     super.dispose();
@@ -84,397 +109,184 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
             ? math.min(widget.height * 0.62, constraints.maxHeight * 0.40)
             : widget.height;
         final double scale = baseSize / 120.0;
-        final bool minimal = widget.minimal;
-        final subtitle = compact
-            ? null
-            : widget.subtitle ??
-                  (widget.message == null
-                      ? null
-                      : "AI กำลังคัดสรรชื่อมงคลที่เหมาะกับพลังของคุณ");
 
-        if (minimal) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 72 * scale,
-                height: 72 * scale,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            const Color(0xFFFFF4CC).withValues(alpha: 0.55),
-                            const Color(0xFFFFF4CC).withValues(alpha: 0.08),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                      child: SizedBox(
-                        width: 72 * scale,
-                        height: 72 * scale,
-                      ),
+        return Center(
+          child: SizedBox(
+            height: baseSize,
+            width: baseSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFFFFECC2).withValues(alpha: 0.95),
+                        const Color(0xFFE5D5FF).withValues(alpha: 0.45),
+                        Colors.transparent,
+                      ],
                     ),
-                    RotationTransition(
-                      turns: _rotationController,
-                      child: CustomPaint(
-                        painter: _MagicCirclePainter(
-                          color: AppColors.secondary.withValues(alpha: 0.42),
-                          strokeWidth: 1.6 * scale,
-                          dashCount: 6,
-                        ),
-                        size: Size(58 * scale, 58 * scale),
-                      ),
+                  ),
+                  child: SizedBox(
+                    width: 120 * scale,
+                    height: 120 * scale,
+                  ),
+                ),
+                // Outer Ring: Electric Magenta Astrological Compass with zodiac tick markers
+                RotationTransition(
+                  turns: _rotationController,
+                  child: CustomPaint(
+                    painter: _CosmicCompassPainter(
+                      colors: const [
+                        Color(0xFFD500F9), // Electric Magenta
+                        Color(0xFF00E5FF), // Neon Cyan
+                        Color(0xFFD500F9),
+                      ],
+                      strokeWidth: 2.2 * scale,
+                      rotationValue: _rotationController.value,
+                      drawZodiacTicks: true,
                     ),
-                    RotationTransition(
-                      turns: ReverseAnimation(_rotationController),
-                      child: CustomPaint(
-                        painter: _MagicCirclePainter(
-                          color: AppColors.accent.withValues(alpha: 0.42),
-                          strokeWidth: 1.2 * scale,
-                          dashCount: 5,
-                        ),
-                        size: Size(42 * scale, 42 * scale),
-                      ),
+                    size: Size(110 * scale, 110 * scale),
+                  ),
+                ),
+                // Middle Ring: Reverse rotating neon cyan gradient ring
+                RotationTransition(
+                  turns: ReverseAnimation(_rotationController),
+                  child: CustomPaint(
+                    painter: _CosmicCompassPainter(
+                      colors: const [
+                        Color(0xFF00E5FF), // Neon Cyan
+                        Color(0xFFFFD54F), // Golden Yellow
+                        Color(0xFF00E5FF),
+                      ],
+                      strokeWidth: 1.6 * scale,
+                      rotationValue: _rotationController.value,
                     ),
-                    ScaleTransition(
-                      scale: Tween<double>(begin: 0.94, end: 1.04).animate(
+                    size: Size(86 * scale, 86 * scale),
+                  ),
+                ),
+                // Inner Ring: Slow rotating golden runic compass
+                RotationTransition(
+                  turns: _slowRotationController,
+                  child: CustomPaint(
+                    painter: _CosmicCompassPainter(
+                      colors: const [
+                        Color(0xFFFFD54F), // Golden Yellow
+                        Color(0xFFFF6D00), // Orange/Gold
+                        Color(0xFFFFD54F),
+                      ],
+                      strokeWidth: 1.2 * scale,
+                      rotationValue: _slowRotationController.value,
+                    ),
+                    size: Size(68 * scale, 68 * scale),
+                  ),
+                ),
+                AnimatedBuilder(
+                  animation: _particleController,
+                  builder: (context, _) {
+                    return CustomPaint(
+                      painter: _ParticleFieldPainter(
+                        particles: _particles,
+                        progress: _particleController.value,
+                        scale: scale,
+                      ),
+                      size: Size(120 * scale, 120 * scale),
+                    );
+                  },
+                ),
+                // Pulsing Cosmic Central Orb with orbiting elemental light points
+                ScaleTransition(
+                  scale:
+                      Tween<double>(
+                        begin: 0.92 * scale,
+                        end: 1.08 * scale,
+                      ).animate(
                         CurvedAnimation(
                           parent: _pulseController,
                           curve: Curves.easeInOut,
                         ),
                       ),
-                      child: Container(
-                        width: 20 * scale,
-                        height: 20 * scale,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 54 * scale,
+                        height: 54 * scale,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: const LinearGradient(
-                            colors: [AppColors.secondary, AppColors.accent],
+                            colors: [
+                              Color(0xFFD500F9), // Electric Magenta
+                              Color(0xFF00E5FF), // Neon Cyan
+                            ],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.accent.withValues(alpha: 0.22),
+                              color: const Color(0xFFD500F9).withValues(alpha: 0.65),
+                              blurRadius: 18 * scale,
+                              spreadRadius: 2 * scale,
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFF00E5FF).withValues(alpha: 0.55),
+                              blurRadius: 28 * scale,
+                              spreadRadius: 1 * scale,
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFFFFD54F).withValues(alpha: 0.45),
                               blurRadius: 10 * scale,
-                              spreadRadius: 1,
+                              spreadRadius: 0.5 * scale,
                             ),
                           ],
                         ),
-                        child: Icon(
-                          Icons.auto_awesome_rounded,
-                          color: Colors.white,
-                          size: 10 * scale,
+                        child: Center(
+                          child: Icon(
+                            Icons.auto_awesome,
+                            color: Colors.white,
+                            size: 30 * scale,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              if (widget.message != null) ...[
-                SizedBox(height: 10 * scale),
-                Text(
-                  widget.message!,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.sarabun(
-                    color: widget.textColor,
-                    fontSize: 13 * (scale < 0.8 ? 0.92 : 1.0),
-                    fontWeight: FontWeight.w700,
+                      // 4 cardinal glowing elemental dots orbiting the center orb
+                      RotationTransition(
+                        turns: _rotationController,
+                        child: SizedBox(
+                          width: 76 * scale,
+                          height: 76 * scale,
+                          child: Stack(
+                            children: [
+                              Align(
+                                alignment: Alignment.topCenter,
+                                child: _glowingOrbDot(scale, const Color(0xFFFFD54F)),
+                              ),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: _glowingOrbDot(scale, const Color(0xFFFFD54F)),
+                              ),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: _glowingOrbDot(scale, const Color(0xFF00E5FF)),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: _glowingOrbDot(scale, const Color(0xFFD500F9)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-              if (subtitle != null) ...[
-                SizedBox(height: 4 * scale),
-                ConstrainedBox(
-                  constraints: BoxConstraints(maxWidth: 220 * scale),
-                  child: Text(
-                    subtitle,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.sarabun(
-                      color: widget.textColor.withValues(alpha: 0.62),
-                      fontSize: 11 * (scale < 0.8 ? 0.9 : 1.0),
-                      fontWeight: FontWeight.w500,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          );
-        }
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: compact ? 12 * scale : 18 * scale,
-                vertical: compact ? 10 * scale : 14 * scale,
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(
-                  (compact ? 18 : 24) * scale,
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.92),
-                    const Color(0xFFFFF8E7).withValues(alpha: 0.96),
-                    const Color(0xFFF7F1FF).withValues(alpha: 0.92),
-                  ],
-                ),
-                border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.22),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFD4AF37).withValues(alpha: 0.10),
-                    blurRadius: (compact ? 16 : 28) * scale,
-                    spreadRadius: 1,
-                    offset: Offset(0, (compact ? 6 : 10) * scale),
-                  ),
-                  BoxShadow(
-                    color: AppColors.secondary.withValues(alpha: 0.06),
-                    blurRadius: (compact ? 12 : 18) * scale,
-                    offset: Offset(0, (compact ? 4 : 6) * scale),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!compact)
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12 * scale,
-                        vertical: 6 * scale,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3CD),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.28),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.auto_awesome_rounded,
-                            size: 14 * scale,
-                            color: const Color(0xFFC58B00),
-                          ),
-                          SizedBox(width: 6 * scale),
-                          Text(
-                            "AI MAGIC MATCHING",
-                            style: GoogleFonts.prompt(
-                              color: const Color(0xFF6B4E16),
-                              fontSize: 10 * scale,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.9,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  SizedBox(height: (compact ? 6 : 12) * scale),
-                  SizedBox(
-                    height: baseSize,
-                    width: baseSize,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                const Color(0xFFFFF7D6).withValues(alpha: 0.95),
-                                const Color(0xFFFFF7D6).withValues(alpha: 0.15),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                          child: SizedBox(
-                            width: 120 * scale,
-                            height: 120 * scale,
-                          ),
-                        ),
-                        RotationTransition(
-                          turns: _rotationController,
-                          child: CustomPaint(
-                            painter: _MagicCirclePainter(
-                              color: AppColors.primary.withValues(alpha: 0.4),
-                              strokeWidth: 2 * scale,
-                              dashCount: 8,
-                            ),
-                            size: Size(100 * scale, 100 * scale),
-                          ),
-                        ),
-                        Container(
-                          width: 110 * scale,
-                          height: 110 * scale,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.textLight.withValues(alpha: 0.08),
-                              width: 1 * scale,
-                            ),
-                          ),
-                        ),
-                        RotationTransition(
-                          turns: ReverseAnimation(_rotationController),
-                          child: CustomPaint(
-                            painter: _MagicCirclePainter(
-                              color: AppColors.secondary.withValues(alpha: 0.5),
-                              strokeWidth: 1.5 * scale,
-                              dashCount: 12,
-                            ),
-                            size: Size(80 * scale, 80 * scale),
-                          ),
-                        ),
-                        AnimatedBuilder(
-                          animation: _particleController,
-                          builder: (context, _) {
-                            return CustomPaint(
-                              painter: _ParticleFieldPainter(
-                                particles: _particles,
-                                progress: _particleController.value,
-                                scale: scale,
-                              ),
-                              size: Size(120 * scale, 120 * scale),
-                            );
-                          },
-                        ),
-                        ScaleTransition(
-                          scale:
-                              Tween<double>(
-                                begin: 0.9 * scale,
-                                end: 1.1 * scale,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: _pulseController,
-                                  curve: Curves.easeInOut,
-                                ),
-                              ),
-                          child: Container(
-                            width: 50 * scale,
-                            height: 50 * scale,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppColors.primary,
-                                  AppColors.secondary,
-                                ],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.5),
-                                  blurRadius: 15 * scale,
-                                  spreadRadius: 2 * scale,
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.auto_awesome,
-                                color: Colors.white,
-                                size: 28 * scale,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (widget.message != null) ...[
-                    SizedBox(height: (compact ? 8 : 12) * scale),
-                    _AnimatedLoadingText(
-                      text: widget.message!,
-                      fontSize: compact
-                          ? 12 * (scale < 0.8 ? 0.9 : 1.0)
-                          : 14 * (scale < 0.8 ? 0.8 : 1.0),
-                      color: widget.textColor,
-                    ),
-                  ],
-                  if (subtitle != null) ...[
-                    SizedBox(height: 6 * scale),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: 260 * scale),
-                      child: Text(
-                        subtitle,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.sarabun(
-                          color: widget.textColor.withValues(alpha: 0.62),
-                          fontSize: 11.5 * (scale < 0.8 ? 0.85 : 1.0),
-                          fontWeight: FontWeight.w500,
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (!compact) ...[
-                    SizedBox(height: 10 * scale),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 8 * scale,
-                      runSpacing: 8 * scale,
-                      children: [
-                        _LoadingBadge(label: "กำลังอ่านความหมาย", scale: scale),
-                        _LoadingBadge(label: "คัดตามพลังชื่อ", scale: scale),
-                        _LoadingBadge(
-                          label: "จัดอันดับอย่างประณีต",
-                          scale: scale,
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
             ),
-          ],
+          ),
         );
       },
     );
   }
 }
 
-class _LoadingBadge extends StatelessWidget {
-  final String label;
-  final double scale;
-
-  const _LoadingBadge({required this.label, required this.scale});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 10 * scale,
-        vertical: 6 * scale,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.65),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.18)),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.sarabun(
-          color: AppColors.textGray,
-          fontSize: 10.5 * (scale < 0.8 ? 0.85 : 1.0),
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
 
 class _MagicCirclePainter extends CustomPainter {
   final Color color;
@@ -514,6 +326,66 @@ class _MagicCirclePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+class _CosmicCompassPainter extends CustomPainter {
+  final List<Color> colors;
+  final double strokeWidth;
+  final double rotationValue;
+  final bool drawZodiacTicks;
+
+  _CosmicCompassPainter({
+    required this.colors,
+    required this.strokeWidth,
+    required this.rotationValue,
+    this.drawZodiacTicks = false,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..shader = SweepGradient(
+        colors: colors,
+        stops: const [0.0, 0.5, 1.0],
+        transform: GradientRotation(rotationValue * 2 * math.pi),
+      ).createShader(rect);
+
+    canvas.drawCircle(center, radius, paint);
+
+    if (drawZodiacTicks) {
+      final tickPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth * 1.5
+        ..shader = SweepGradient(
+          colors: colors.reversed.toList(),
+        ).createShader(rect);
+
+      for (int i = 0; i < 12; i++) {
+        final angle = i * 2 * math.pi / 12;
+        final startOffset = Offset(
+          center.dx + math.cos(angle) * (radius - 5 * strokeWidth),
+          center.dy + math.sin(angle) * (radius - 5 * strokeWidth),
+        );
+        final endOffset = Offset(
+          center.dx + math.cos(angle) * radius,
+          center.dy + math.sin(angle) * radius,
+        );
+        canvas.drawLine(startOffset, endOffset, tickPaint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CosmicCompassPainter oldDelegate) =>
+      oldDelegate.rotationValue != rotationValue ||
+      oldDelegate.colors != colors ||
+      oldDelegate.strokeWidth != strokeWidth;
+}
+
 class _MagicParticle {
   double angle;
   double radius;
@@ -550,12 +422,21 @@ class _ParticleFieldPainter extends CustomPainter {
       final x = center.dx + math.cos(currentAngle) * p.radius * scale;
       final y = center.dy + math.sin(currentAngle) * p.radius * scale;
 
+      Color baseColor;
+      if (p.opacity < 0.35) {
+        baseColor = const Color(0xFFE040FB); // Vibrant Purple
+      } else if (p.opacity < 0.7) {
+        baseColor = const Color(0xFF00E5FF); // Vibrant Cyan
+      } else {
+        baseColor = const Color(0xFFFFD54F); // Vibrant Gold
+      }
+
       final paint = Paint()
         ..color = Color.lerp(
-          AppColors.accent,
+          baseColor,
           Colors.white,
-          p.opacity,
-        )!.withValues(alpha: 0.6 * math.sin(progress * math.pi));
+          p.opacity * 0.4,
+        )!.withValues(alpha: 0.8 * math.sin(progress * math.pi));
 
       canvas.drawCircle(Offset(x, y), p.size * scale, paint);
     }

@@ -14,35 +14,18 @@ import (
 
 const (
 	DefaultTyphoonPhoneticURL     = "https://api.opentyphoon.ai/v1/chat/completions"
-	DefaultTyphoonPhoneticModel   = "typhoon-v2.5-30b-a3b-instruct"
-	DefaultTyphoonPhoneticVersion = "typhoon_v2_name_euphony_json"
+	DefaultTyphoonPhoneticModel   = "typhoon-v2.1-12b-instruct"
+	DefaultTyphoonPhoneticVersion = "typhoon_v1_promptA"
 	DefaultTyphoonMaxTokens       = 1200
-	DefaultTyphoonBatchMaxTokens  = 3000
-	TyphoonPhoneticSystemPrompt   = `ประเมินความไพเราะและความไหลลื่นของชื่อภาษาไทยเท่านั้น
-ประเมินเฉพาะเสียงและจังหวะการอ่าน
-ห้ามพิจารณาความหมาย ความมงคล ความนิยม บุคลิก ภาพลักษณ์ เลขศาสตร์ หรือดวง
-ตอบเป็น JSON เท่านั้น
-ห้ามมี markdown
-ห้ามมีข้อความอื่นนอก JSON
-คะแนนทุกช่องต้องเป็นจำนวนเต็ม 0-100
-labels ต้องเลือกจากชุดคำที่กำหนดเท่านั้น
-ถ้าชื่อมีลักษณะเสียงแข็งหรือสะดุด ต้องมี "เสียงค่อนข้างแข็ง" หรือ "จังหวะสะดุดเล็กน้อย" อย่างน้อย 1 ค่า
-summary ต้องเป็นภาษาไทยล้วน ห้ามมีอักษรจีน เกาหลี ญี่ปุ่น หรืออักษรต่างประเทศอื่น
-issues ใส่เฉพาะเมื่อมีปัญหา ถ้าไม่มีให้เป็น []`
+	TyphoonPhoneticSystemPrompt   = `ประเมินเสียงชื่อภาษาไทยเท่านั้น
+ดู 4 มิติ: ความไหลลื่น การออกเสียง ความไพเราะ และจังหวะ
+ห้ามวิเคราะห์ความหมาย เลขศาสตร์ ดวง หรือเรื่องอื่น
+ตอบ JSON เท่านั้น ไม่มี prose ไม่มี markdown
+คะแนนเป็นจำนวนเต็ม 0-100
+labels <= 3, issues <= 2, style_tone <= 3
+summary เป็นประโยคไทยสั้นหนึ่งประโยค
+ถ้าไม่มี issues ให้ส่ง []`
 )
-
-var allowedPhoneticLabels = map[string]struct{}{
-	"เสียงลื่น":           {},
-	"ออกเสียงง่าย":        {},
-	"ฟังนุ่ม":             {},
-	"เสียงค่อนข้างแข็ง":   {},
-	"จังหวะสมดุล":         {},
-	"จังหวะสะดุดเล็กน้อย": {},
-	"ฟังคลาสสิก":          {},
-	"ฟังร่วมสมัย":         {},
-	"จำง่าย":              {},
-	"มีเอกลักษณ์":         {},
-}
 
 type TyphoonPhoneticClient struct {
 	APIKey     string
@@ -112,13 +95,15 @@ func NewTyphoonPhoneticClientFromEnv(timeout time.Duration) (*TyphoonPhoneticCli
 }
 
 func BuildTyphoonPhoneticUserPrompt(name string) string {
-	return fmt.Sprintf(`ประเมินความไพเราะและความไหลลื่นของชื่อภาษาไทยนี้:
+	return fmt.Sprintf(`ประเมินชื่อภาษาไทยนี้: "%s"
 
-ชื่อ: %s
+ให้โฟกัสเฉพาะเสียงของชื่อ:
+- ความไหลลื่นเวลาพูด
+- ความง่ายในการออกเสียง
+- ความไพเราะโดยรวม
+- จังหวะของชื่อ
 
-ให้ตอบเป็น JSON เท่านั้น ห้ามมีข้อความอื่นนอก JSON
-
-ใช้ schema นี้:
+ตอบ JSON ตาม schema นี้เท่านั้น:
 {
   "score": {
     "overall": 0,
@@ -130,56 +115,17 @@ func BuildTyphoonPhoneticUserPrompt(name string) string {
   "summary": "",
   "issues": [],
   "style_tone": []
-}
-
-กฎสำคัญ:
-1. labels ต้องเลือกจากชุดนี้เท่านั้น:
-[
-  "เสียงลื่น",
-  "ออกเสียงง่าย",
-  "ฟังนุ่ม",
-  "เสียงค่อนข้างแข็ง",
-  "จังหวะสมดุล",
-  "จังหวะสะดุดเล็กน้อย",
-  "ฟังคลาสสิก",
-  "ฟังร่วมสมัย",
-  "จำง่าย",
-  "มีเอกลักษณ์"
-]
-
-2. ถ้าชื่อมีลักษณะเสียงแข็งหรือสะดุด ให้ใส่:
-- "เสียงค่อนข้างแข็ง"
-หรือ
-- "จังหวะสะดุดเล็กน้อย"
-
-3. ห้ามใช้คำอื่นนอกชุด labels
-4. labels ต้องมี 2-4 ค่า
-5. summary ต้องเป็นภาษาไทยล้วน ห้ามมีอักษรจีน เกาหลี ญี่ปุ่น
-6. issues:
-- ใส่เฉพาะถ้ามีปัญหา
-- ถ้าไม่มีให้ใส่ []
-7. style_tone ไม่เกิน 3 คำ
-8. ห้ามอธิบายเพิ่มนอก JSON
-
-เป้าหมาย:
-- ประเมินว่าชื่อนี้อ่านลื่นหรือไม่
-- ไม่ต้องเน้นความเพราะที่สุด
-- เน้นจับว่า "แปลก/สะดุด/แข็ง" หรือไม่`, name)
+}`, name)
 }
 
 func BuildTyphoonBatchPhoneticUserPrompt(names []string) string {
 	var b strings.Builder
-	b.WriteString("ประเมินความไพเราะและความไหลลื่นของชื่อภาษาไทยต่อไปนี้\n")
-	b.WriteString("ตอบเป็น JSON array เท่านั้น ไม่มีข้อความอื่น\n")
+	b.WriteString("ประเมินชื่อเหล่านี้และตอบ JSON array เท่านั้น\n")
 	b.WriteString("ทุก object ต้องมี: name, score, labels, summary, issues, style_tone\n")
 	b.WriteString("name ต้องตรงกับ input เดิมทุกตัวอักษร\n")
-	b.WriteString("summary ต้องเป็นภาษาไทยล้วน ห้ามมีอักษรจีน เกาหลี ญี่ปุ่น\n")
 	for i, name := range names {
 		fmt.Fprintf(&b, "%d:%s\n", i+1, name)
 	}
-	b.WriteString(`\nกฎ labels ใช้ได้เฉพาะ:
-["เสียงลื่น","ออกเสียงง่าย","ฟังนุ่ม","เสียงค่อนข้างแข็ง","จังหวะสมดุล","จังหวะสะดุดเล็กน้อย","ฟังคลาสสิก","ฟังร่วมสมัย","จำง่าย","มีเอกลักษณ์"]`)
-	b.WriteString(`\nถ้าชื่อมีลักษณะเสียงแข็งหรือสะดุด ต้องมี "เสียงค่อนข้างแข็ง" หรือ "จังหวะสะดุดเล็กน้อย"`)
 	b.WriteString(`\nตอบรูปแบบนี้เท่านั้น:[{"name":"นาลีตา","score":{"overall":0,"pronunciation_ease":0,"euphony":0,"rhythm":0},"labels":[],"summary":"","issues":[],"style_tone":[]}]`)
 	return b.String()
 }
@@ -249,7 +195,7 @@ func (c *TyphoonPhoneticClient) EvaluateThaiNamesBatch(ctx context.Context, name
 	reqBody := map[string]interface{}{
 		"model":       c.Model,
 		"temperature": 0.1,
-		"max_tokens":  DefaultTyphoonBatchMaxTokens,
+		"max_tokens":  1800,
 		"messages": []map[string]string{
 			{"role": "system", "content": TyphoonPhoneticSystemPrompt},
 			{"role": "user", "content": BuildTyphoonBatchPhoneticUserPrompt(names)},
@@ -288,23 +234,8 @@ func (c *TyphoonPhoneticClient) EvaluateThaiNamesBatch(ctx context.Context, name
 		return results, rawBody, err
 	}
 
-	if !looksLikeJSONArray(content) {
-		return results, rawBody, fmt.Errorf(
-			"structured phonetic batch content looks truncated or invalid: len=%d head=%q tail=%q",
-			len(content),
-			snippetForLog(content, 160, true),
-			snippetForLog(content, 160, false),
-		)
-	}
-
 	if err := json.Unmarshal([]byte(content), &results); err != nil {
-		return results, rawBody, fmt.Errorf(
-			"parse structured phonetic batch json failed: %w len=%d head=%q tail=%q",
-			err,
-			len(content),
-			snippetForLog(content, 160, true),
-			snippetForLog(content, 160, false),
-		)
+		return results, rawBody, fmt.Errorf("parse structured phonetic batch json failed: %w", err)
 	}
 
 	for i := range results {
@@ -339,69 +270,18 @@ func cleanupJSONContent(content string) string {
 	return strings.TrimSpace(content)
 }
 
-func looksLikeJSONArray(content string) bool {
-	trimmed := strings.TrimSpace(content)
-	return strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]")
-}
-
-func snippetForLog(content string, max int, fromStart bool) string {
-	trimmed := strings.TrimSpace(content)
-	if len(trimmed) <= max {
-		return trimmed
-	}
-	if fromStart {
-		return trimmed[:max] + "..."
-	}
-	return "..." + trimmed[len(trimmed)-max:]
-}
-
 func sanitizePhoneticEvaluation(in PhoneticEvaluation) PhoneticEvaluation {
 	in.Score.Overall = clampScore(in.Score.Overall)
 	in.Score.PronunciationEase = clampScore(in.Score.PronunciationEase)
 	in.Score.Euphony = clampScore(in.Score.Euphony)
 	in.Score.Rhythm = clampScore(in.Score.Rhythm)
 
-	in.Labels = trimAllowedLabels(in.Labels, 4)
+	in.Labels = trimSlice(in.Labels, 3)
 	in.Issues = trimSlice(in.Issues, 2)
-	for i := range in.Issues {
-		in.Issues[i] = stripNonThaiText(in.Issues[i])
-	}
 	in.StyleTone = trimSlice(in.StyleTone, 3)
-	for i := range in.StyleTone {
-		in.StyleTone[i] = stripNonThaiText(in.StyleTone[i])
-	}
-	in.Summary = stripNonThaiText(in.Summary)
+	in.Summary = strings.TrimSpace(in.Summary)
 
 	return in
-}
-
-func trimAllowedLabels(items []string, max int) []string {
-	if len(items) == 0 {
-		return []string{}
-	}
-	out := make([]string, 0, max)
-	seen := make(map[string]struct{}, max)
-	for _, item := range items {
-		clean := strings.TrimSpace(item)
-		if clean == "" {
-			continue
-		}
-		if _, ok := allowedPhoneticLabels[clean]; !ok {
-			continue
-		}
-		if _, ok := seen[clean]; ok {
-			continue
-		}
-		seen[clean] = struct{}{}
-		out = append(out, clean)
-		if len(out) >= max {
-			break
-		}
-	}
-	if len(out) == 0 {
-		return []string{}
-	}
-	return out
 }
 
 func trimSlice(items []string, max int) []string {
@@ -425,27 +305,6 @@ func trimSlice(items []string, max int) []string {
 	return out
 }
 
-func stripNonThaiText(s string) string {
-	var b strings.Builder
-	b.Grow(len(s))
-	for _, r := range s {
-		if r == '\n' || r == '\t' {
-			b.WriteRune(' ')
-			continue
-		}
-		if (r >= '\u0E00' && r <= '\u0E7F') ||
-			(r >= 'a' && r <= 'z') ||
-			(r >= 'A' && r <= 'Z') ||
-			(r >= '0' && r <= '9') ||
-			r == ' ' || r == '.' || r == ',' || r == '!' ||
-			r == '?' || r == '-' || r == '(' || r == ')' ||
-			r == '"' || r == '\'' || r == ':' {
-			b.WriteRune(r)
-		}
-	}
-	return strings.TrimSpace(b.String())
-}
-
 func clampScore(v int) int {
 	if v < 0 {
 		return 0
@@ -455,3 +314,53 @@ func clampScore(v int) int {
 	}
 	return v
 }
+
+// GenerateThaiNameMeaning uses Typhoon AI to generate a beautiful, auspicious Thai meaning for a name.
+func (c *TyphoonPhoneticClient) GenerateThaiNameMeaning(ctx context.Context, name string) (string, json.RawMessage, error) {
+	reqBody := map[string]interface{}{
+		"model":       c.Model,
+		"temperature": 0.3,
+		"max_tokens":  150,
+		"messages": []map[string]string{
+			{"role": "system", "content": "คุณคือผู้เชี่ยวชาญด้านภาษาไทยและคลังชื่อมงคล ให้ระบุความหมายมงคลที่ถูกต้อง ไพเราะ และกระชับ สำหรับชื่อภาษาไทยที่กำหนดให้ ตอบเฉพาะคำแปลหรือความหมายสั้นๆ ไม่ต้องมีอารัมภบทหรืออธิบายเพิ่มเติม เช่น 'ผู้มีชื่อเสียงอันดีงาม', 'ผู้มีความเจริญรุ่งเรือง'"},
+			{"role": "user", "content": fmt.Sprintf("ขอความหมายมงคลของชื่อ: %s", name)},
+		},
+	}
+
+	payload, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", nil, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.URL, bytes.NewBuffer(payload))
+	if err != nil {
+		return "", nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return "", nil, fmt.Errorf("typhoon request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	rawBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", nil, fmt.Errorf("read typhoon response failed: %w", err)
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", rawBody, fmt.Errorf("typhoon status %d: %s", resp.StatusCode, string(rawBody))
+	}
+
+	var chatResp typhoonChatResponse
+	if err := json.Unmarshal(rawBody, &chatResp); err == nil && len(chatResp.Choices) > 0 {
+		content := strings.TrimSpace(chatResp.Choices[0].Message.Content)
+		content = strings.Trim(content, "\"`'")
+		return content, rawBody, nil
+	}
+
+	return "", rawBody, fmt.Errorf("unsupported typhoon response shape: %s", string(rawBody))
+}
+

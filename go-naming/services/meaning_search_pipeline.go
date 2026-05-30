@@ -140,10 +140,7 @@ func (c MeaningSearchContext) OrderByExpression() string {
 		return "name_id DESC"
 	}
 	if !c.HasKeywordSignal {
-		return fmt.Sprintf(
-			"((1 - COALESCE(meaning_vector <=> $1, 1)) * %.2f) DESC",
-			c.SemanticWeight,
-		)
+		return "meaning_vector <=> $1 ASC"
 	}
 	return fmt.Sprintf(
 		"(GREATEST(COALESCE(similarity(thname, $2), 0), COALESCE(word_similarity(thname, $2), 0)) * %.2f + (1 - COALESCE(meaning_vector <=> $1, 1)) * %.2f) DESC",
@@ -167,15 +164,15 @@ func normalizeSearchEntryMode(raw string, meaningIntent string) SearchEntryMode 
 }
 
 func resolvedCandidateLimit(requestLimit int, similarMode bool, semanticPrimary bool) int {
-	limit := 100
-	if requestLimit > 100 {
+	limit := 300
+	if requestLimit > 300 {
 		limit = requestLimit
 	}
-	if similarMode && limit < 150 {
-		limit = 150
+	if similarMode && limit < 350 {
+		limit = 350
 	}
-	if semanticPrimary && limit < 120 {
-		limit = 120
+	if semanticPrimary && limit < 320 {
+		limit = 320
 	}
 	return limit
 }

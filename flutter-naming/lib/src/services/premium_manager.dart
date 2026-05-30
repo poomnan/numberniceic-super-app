@@ -32,13 +32,18 @@ class PremiumManager extends ChangeNotifier {
   bool _isInitialized = false;
   bool _isPurchasePending = false;
   String? _purchaseError;
+  ProductDetails? _premiumProductDetails;
 
   // IAP
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
-  // Set to true to bypass all paywall gates during development.
-  static const bool _bypassForTesting = true;
+  // Set with --dart-define=PREMIUM_BYPASS=true for local QA only.
+  // TODO: revert defaultValue back to false before release
+  static const bool _bypassForTesting = bool.fromEnvironment(
+    'PREMIUM_BYPASS',
+    defaultValue: true, // ← bypass สำหรับ test เท่านั้น
+  );
   // ──────────────────────────────────────────────────────
 
   // Getters
@@ -48,6 +53,7 @@ class PremiumManager extends ChangeNotifier {
   bool get hasTrialLeft => _bypassForTesting ? true : (_trialUsed < trialLimit);
   bool get isPurchasePending => _isPurchasePending;
   String? get purchaseError => _purchaseError;
+  String get premiumPriceLabel => _premiumProductDetails?.price ?? '359 บาท';
 
   bool get doubleGoodUsed => _doubleGoodUsed;
   bool get canUseDoubleGood =>
@@ -87,7 +93,41 @@ class PremiumManager extends ChangeNotifier {
     );
 
     _isInitialized = true;
+    unawaited(loadProductDetails());
     notifyListeners();
+  }
+
+  Future<ProductDetails?> loadProductDetails({bool force = false}) async {
+    if (!force && _premiumProductDetails != null) {
+      return _premiumProductDetails;
+    }
+    if (_isTest) return null;
+
+    try {
+      final bool available = await _iap.isAvailable();
+      if (!available) {
+        return null;
+      }
+
+      final ProductDetailsResponse response = await _iap.queryProductDetails(
+        _kIds,
+      );
+      if (response.notFoundIDs.isNotEmpty && kDebugMode) {
+        debugPrint("Product not found in store: ${response.notFoundIDs}");
+      }
+      if (response.productDetails.isEmpty) {
+        return null;
+      }
+
+      _premiumProductDetails = response.productDetails.first;
+      notifyListeners();
+      return _premiumProductDetails;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint("Failed to load premium product details: $e");
+      }
+      return null;
+    }
   }
 
   @override
@@ -122,33 +162,16 @@ class PremiumManager extends ChangeNotifier {
         return;
       }
 
-      final ProductDetailsResponse response = await _iap.queryProductDetails(
-        _kIds,
-      );
-      if (response.notFoundIDs.isNotEmpty) {
-        // If product not found, maybe just unlock for testing in debug mode?
+      ProductDetails? productDetails = await loadProductDetails(force: true);
+      if (productDetails == null) {
         if (kDebugMode) {
-          debugPrint("Product not found in store, unlocking for testing...");
-          await unlockPremium();
-          _isPurchasePending = false;
-          notifyListeners();
-          return;
+          debugPrint("Product not found in store: $_kIds");
         }
         _purchaseError = "Product not found";
         _isPurchasePending = false;
         notifyListeners();
         return;
       }
-
-      final List<ProductDetails> products = response.productDetails;
-      if (products.isEmpty) {
-        _purchaseError = "No products found";
-        _isPurchasePending = false;
-        notifyListeners();
-        return;
-      }
-
-      final ProductDetails productDetails = products.first;
       final PurchaseParam purchaseParam = PurchaseParam(
         productDetails: productDetails,
       );

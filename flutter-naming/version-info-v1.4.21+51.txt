@@ -1,0 +1,19 @@
+Chuedee / flutter-naming release
+
+- Version: 1.4.21
+- Version Code: 51
+- Android bundle: build/app/outputs/bundle/release/app-release.aab
+- Upload bundle: flutter-naming-v1.4.21-51.aab
+- SHA-256: 67efebbdae27b57d63fac60fbf4a382286d4c67c818e5183eff8223d1a824292
+
+Changes:
+- Support Thai full-name detection with firstname + lastname.
+- Use firstname for name-search/suggestions while preserving full input for decode.
+- Decode full names without counting spaces in numerology characters or sums.
+- Deploy go-naming backend with full-name resolve/decode support.
+
+Verification:
+- flutter analyze lib/src/screens/naming_screen.dart: passed.
+- go test ./handlers: passed.
+- Production resolve passed for "สุพรรณษา เวชกามา" and "สมชาย ใจดี".
+- Production resolve rejected "ฟหกด ่าสว" and "สุพรรณษา เวชกามา ทดสอบ" as decode inputs.

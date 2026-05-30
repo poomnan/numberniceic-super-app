@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกี่ยวกับเรา - แอปชื่อดี</title>
+    <meta name="description" content="ความเป็นมาและแรงบันดาลใจของแอปชื่อดี ระบบช่วยตั้งชื่อมงคลด้วยตรรกะตามตำราและ AI">
+    <meta property="og:title" content="เกี่ยวกับเรา - แอปชื่อดี">
+    <meta property="og:description" content="ความเป็นมาและแรงบันดาลใจของแอปชื่อดี ระบบช่วยตั้งชื่อมงคลด้วยตรรกะตามตำราและ AI">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/1024x500.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #fffaf3;
+            --surface: rgba(255, 255, 255, 0.88);
+            --ink: #281b11;
+            --muted: #745f4b;
+            --gold: #b8860b;
+            --rose: #b04a7a;
+            --line: rgba(184, 134, 11, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Sarabun', sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 12% 10%, rgba(255, 220, 138, 0.34), transparent 30%),
+                radial-gradient(circle at 84% 18%, rgba(176, 74, 122, 0.14), transparent 34%),
+                linear-gradient(180deg, #fff8ef 0%, #fffdf9 52%, #fff6ea 100%);
+            line-height: 1.78;
+        }
+
+        .about-nav {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            height: 72px;
+            background: rgba(255, 255, 255, 0.82);
+            border-bottom: 1px solid var(--line);
+            backdrop-filter: blur(16px);
+        }
+
+        .nav-inner {
+            max-width: 1060px;
+            height: 100%;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand {
+            font-family: 'Prompt', sans-serif;
+            font-weight: 800;
+            font-size: 23px;
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-family: 'Prompt', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .nav-links .download {
+            color: #fff;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #b8860b, #e3b341);
+            box-shadow: 0 10px 24px rgba(184, 134, 11, 0.2);
+        }
+
+        main {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 72px 24px 96px;
+        }
+
+        .hero {
+            margin-bottom: 34px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--rose);
+            font-family: 'Prompt', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            font-family: 'Prompt', sans-serif;
+            font-size: clamp(42px, 7vw, 76px);
+            line-height: 1.02;
+            letter-spacing: 0;
+            margin: 0 0 18px;
+            color: var(--ink);
+        }
+
+        .lead {
+            max-width: 760px;
+            color: var(--muted);
+            font-size: 21px;
+            margin: 0;
+        }
+
+        .story-card {
+            position: relative;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: clamp(24px, 5vw, 46px);
+            box-shadow: 0 28px 80px rgba(80, 49, 18, 0.09);
+            overflow: hidden;
+        }
+
+        .story-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 5px;
+            background: linear-gradient(90deg, #b8860b, #f3d27b, #b04a7a);
+        }
+
+        h2 {
+            font-family: 'Prompt', sans-serif;
+            color: var(--gold);
+            font-size: 25px;
+            margin: 0 0 24px;
+        }
+
+        p {
+            font-size: 19px;
+            margin: 0 0 24px;
+        }
+
+        .quote {
+            margin: 34px 0;
+            padding: 22px 26px;
+            border-left: 4px solid var(--gold);
+            background: rgba(255, 247, 226, 0.78);
+            border-radius: 0 14px 14px 0;
+            color: #5d4216;
+            font-family: 'Prompt', sans-serif;
+            font-size: 21px;
+            font-weight: 600;
+        }
+
+        .signature {
+            margin-top: 34px;
+            color: var(--rose);
+            font-family: 'Prompt', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        @media (max-width: 720px) {
+            .about-nav {
+                height: auto;
+            }
+
+            .nav-inner {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 14px 20px;
+            }
+
+            .nav-links {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 2px;
+            }
+
+            main {
+                padding-top: 48px;
+            }
+
+            .lead {
+                font-size: 18px;
+            }
+
+            p {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="about-nav">
+        <div class="nav-inner">
+            <a href="/" class="brand">แอปชื่อดี</a>
+            <div class="nav-links">
+                <a href="/">หน้าแรก</a>
+                <a href="/articles">บทความ</a>
+                <a href="/about">เกี่ยวกับเรา</a>
+                <a href="/#download" class="download">ดาวน์โหลดแอป</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <div class="eyebrow"><i data-lucide="sparkles" style="width: 17px; height: 17px;"></i> เกี่ยวกับเรา</div>
+            <h1>ชื่อดี</h1>
+            <p class="lead">ความเป็นมาและแรงบันดาลใจของระบบช่วยตั้งชื่อมงคล ที่ผสานตำราการตั้งชื่อ ตรรกะการคัดเลือก และความสามารถของ AI</p>
+        </section>
+
+        <section class="story-card">
+            <h2>ความเป็นมาและความสำคัญของปัญหา</h2>
+
+            <p>สมัยข้าพเจ้าเรียนชั้นประถมฯ จะมีการขานชื่อนักเรียนโดยครูประจำชั้นว่า ใครมาหรือขาดเรียนบ้างในแต่ละวัน เมื่อครูขานชื่อใคร คนนั้นต้องขานรับตอบว่า “มาครับ/มาค่ะ” เพื่อให้ครูติ๊กถูกรายชื่อในใบบันทึกการมาเรียน</p>
+
+            <p>บางคนจะมีชื่อแปลกๆ และมีบุคลิกแปลกสมชื่อเป็นที่ขบขัน เช่น ครูเรียกชื่อ “เด็กชายมังกือ” สิ้นเสียงครู เด็กชายมังกือก็จะตอบเสียงดังฟังชัดว่า “มาครับ” และตามมาด้วยเสียงหัวเราะของเพื่อนๆ ในห้อง</p>
+
+            <p>มีบางครั้งนักเรียนเลขที่ต่อกันถูกเรียก การออกเสียงชื่อฟังเหมือนบทสวดมนต์ จนครูได้แซวว่า “ชื่อแบบนี้เอามาเขียนต่อกันแล้วสวดเป่าแก้ตาแดงได้”</p>
+
+            <div class="quote">“ชื่อแบบนี้เอามาเขียนต่อกันแล้วสวดเป่าแก้ตาแดงได้”</div>
+
+            <p>บทสวดมนต์กับสูตรสมุนไพรที่มาจากภูมิปัญญาชาวบ้าน ในชนบทเมื่อก่อนยังมีคนทำพิธีกรรมการสวดมนต์กับว่านสมุนไพรเพื่อการรักษาโรค ปัจจุบันหมดสิ้นไปกับอายุขัยของเจ้าของบทสวดนั้นแล้ว ส่วนคำพูดของครูที่ตีความหมายว่า “ชื่อ” สามารถรักษาโรคตาแดงได้นั้น เป็นแรงบันดาลใจให้ได้มาศึกษา วิธีการตั้งชื่ออย่างไรให้ได้ตรงตามตำรา?</p>
+
+            <p>แอพ “ชื่อดี” เป็นแอพฯ ที่พัฒนาขึ้นมาในขณะที่ความรู้ด้านการออกแบบ “ชื่อ” ให้ดีมีมงคลนั้น “ตกผลึก” และความสามารถของ AI “พร้อมแล้ว” ที่จะอำนวยต่อการพัฒนาโปรแกรมการตั้งชื่อที่มีความสลับซับซ้อนให้ได้ดี</p>
+
+            <p>เป็นเรื่องเกี่ยวกับความเชื่อ!? และข้าพเจ้าเชื่อว่า “ผลลัพธ์” คุ้มค่าที่จะลอง เพราะระบบถูกออกแบบมาเพื่อคอยช่วยเหลือผู้ใช้งาน ได้เลือกชื่อตามเงื่อนไข และตรรกะ (Logic) ตามตำราการตั้งชื่อให้ดีมีมงคล ที่สำคัญชื่อที่มีความไพเราะจะแสดงรสนิยมเจ้าตัว การเลือกใช้ชื่อที่ดี จะให้ประสบการณ์ที่ดี ความหมายของชื่อที่ดีจะส่งเสริมภาพลักษณ์ที่ดี ไม่แน่คุณอาจได้ชื่อที่เป่าแก้ตาแดงได้ เหมือนดังที่ครูพูดไว้เมื่อนานมาแล้วก็เป็นได้</p>
+
+            <div class="signature">- ทญา ว่องไว</div>
+        </section>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

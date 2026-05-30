@@ -4,12 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดอันดับชื่อมงคล — ชื่อดี.com Smart Ranking</title>
-    <meta name="description" content="เข้าใจวิธีที่ ชื่อดี.com จัดอันดับชื่อมงคลด้วย AI + เลขศาสตร์ + ความน่าจดจำ">
+    <title>วิธีจัดอันดับชื่อมงคล - ชื่อดี.com Smart Ranking</title>
+    <meta name="description"
+        content="เข้าใจวิธีที่ ชื่อดี.com จัดอันดับชื่อมงคลด้วยแม่แบบชื่อ ตัวคัดเลขศาสตร์ดี พลังเงาดี final_rank_score และคุณภาพคู่เลข">
     <link
         href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=14">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
             --bg: #FFF8E1;
@@ -18,11 +21,16 @@
             --border: rgba(212, 175, 55, 0.2);
             --purple: #B8860B;
             --pink: #D4AF37;
-            --gold: #FFD700;
-            --green: #10b981;
+            --gold: #B45309;
+            --green: #047857;
             --blue: #B8860B;
             --text: #2C1810;
             --muted: #5D4037;
+            --amber-text: #92400E;
+            --green-text: #047857;
+            --red-text: #B91C1C;
+            --blue-text: #1D4ED8;
+            --slate-text: #475569;
         }
 
         * {
@@ -37,6 +45,23 @@
             color: var(--text);
             line-height: 1.7;
             overflow-x: hidden;
+        }
+
+        body .navbar {
+            position: sticky;
+            top: 0;
+            height: 80px;
+            overflow: visible;
+        }
+
+        body .navbar .navbar-container {
+            max-width: 1200px;
+            height: 100%;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         /* --- Hero --- */
@@ -321,7 +346,7 @@
             background: rgba(245, 158, 11, 0.15);
             border-radius: 6px;
             padding: 2px 8px;
-            color: #fbbf24;
+            color: var(--amber-text);
             font-weight: 700;
             font-size: 0.8rem;
         }
@@ -339,18 +364,18 @@
             background: rgba(100, 116, 139, 0.15);
             border-radius: 6px;
             padding: 2px 8px;
-            color: #94a3b8;
+            color: var(--slate-text);
             font-weight: 700;
             font-size: 0.8rem;
         }
 
         .bonus-green {
-            color: #34d399;
+            color: var(--green-text);
             font-weight: 600;
         }
 
         .bonus-red {
-            color: #f87171;
+            color: var(--red-text);
             font-weight: 600;
         }
 
@@ -530,6 +555,31 @@
             box-shadow: 0 12px 35px rgba(184, 134, 11, 0.6);
         }
 
+        .play-store-badge {
+            display: inline-block;
+            line-height: 0;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+
+        .play-store-badge:hover {
+            transform: translateY(-2px);
+            filter: drop-shadow(0 8px 18px rgba(44, 24, 16, 0.22));
+        }
+
+        .play-store-badge img {
+            height: 64px;
+            max-width: min(260px, 100%);
+            display: block;
+        }
+
+        .cta-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
         /* --- Animations --- */
         @keyframes fadeUp {
             from {
@@ -573,11 +623,48 @@
                 font-size: 0.8rem;
                 padding: 0.8rem 1rem;
             }
+
+            .cta-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 
 <body>
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="/" class="logo" style="text-decoration: none;">
+                <span class="logo-text"
+                    style="font-family: 'Prompt'; font-weight: 800; font-size: 24px; background: linear-gradient(135deg, #B8860B, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">แอปชื่อดี</span>
+            </a>
+
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i data-lucide="menu"></i>
+            </button>
+
+            <div class="nav-links desktop-menu">
+                <a href="/">หน้าแรก</a>
+                <a href="/#features">ศาสตร์ทั้ง 4</a>
+
+                <a href="/#knowledge">ความรู้คู่ชื่อมงคล</a>
+                <a href="/how-ranking">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="nav-link">🌌 ดวงดาว</a>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-content">
+                <a href="/" class="mobile-link">หน้าแรก</a>
+                <a href="/#features" class="mobile-link">ศาสตร์ทั้ง 4</a>
+
+                <a href="/#knowledge" class="mobile-link">ความรู้คู่ชื่อมงคล</a>
+                <a href="/how-ranking" class="mobile-link">วิธีจัดอันดับ</a>
+                <a href="/astro-api" class="mobile-link">🌌 ดวงดาว</a>
+            </div>
+        </div>
+    </nav>
 
     <!-- Hero -->
     <section class="hero">
@@ -588,17 +675,17 @@
             ระบบจัดอันดับ<br><span>ชื่อมงคลอัจฉริยะ</span>
         </h1>
         <p class="animate delay-2">
-            ชื่อดี.com ไม่ได้เรียงชื่อแบบสุ่ม แต่ใช้สูตรผสมผสาน 3 มิติ
-            เพื่อให้ชื่อที่ "ดีที่สุดสำหรับคุณ" ปรากฏขึ้นก่อน
+            ชื่อดี.com จัดอันดับเฉพาะเมื่อมีชื่ออ้างอิงหรือความหมายที่ใช้เป็นแม่แบบได้
+            และคุณเปิดตัวคัด "เลขศาสตร์ดี" หรือ "พลังเงาดี" เพื่อให้รายชื่อที่ขึ้นอันดับผ่านเกณฑ์จริงก่อนเสมอ
         </p>
         <div class="formula-box animate delay-3">
-            <span class="f-result">⚡ Final Score</span>
+            <span class="f-result">⚡ Ranking List</span>
             <span class="f-plus">=</span>
-            <span class="f-part">🧠 ความหมายตรง</span>
+            <span class="f-part">🎯 มีแม่แบบชื่อ</span>
             <span class="f-plus">+</span>
-            <span class="f-part">🌟 เลขศาสตร์มงคล</span>
+            <span class="f-part">✅ ผ่าน SAT/SHA ที่เลือก</span>
             <span class="f-plus">+</span>
-            <span class="f-part">🔤 จดจำง่าย</span>
+            <span class="f-part">🏆 final_rank_score</span>
         </div>
     </section>
 
@@ -609,114 +696,112 @@
             <span class="icon" style="background:rgba(184, 134, 11, 0.15); color:#B8860B;">
                 <i class="fa-solid fa-sliders"></i>
             </span>
-            องค์ประกอบการจัดอันดับ
+            เงื่อนไขก่อนเข้าสู่ Ranking
         </h2>
 
         <div class="factor-grid">
 
-            <!-- Factor 1: Semantic -->
+            <!-- Factor 1: Template -->
             <div class="factor-card purple animate delay-1">
                 <div class="factor-header">
-                    <div class="factor-icon purple">🧠</div>
+                    <div class="factor-icon purple">🎯</div>
                     <div>
-                        <div class="factor-title">ความหมายตรงกัน</div>
-                        <span class="factor-weight" style="background:rgba(184, 134, 11, 0.2); color:#B8860B;">60% ของ
-                            Base</span>
+                        <div class="factor-title">ต้องมีแม่แบบชื่อ</div>
+                        <span class="factor-weight" style="background:rgba(184, 134, 11, 0.2); color:#B8860B;">Entry
+                            condition</span>
                     </div>
                 </div>
                 <p class="factor-desc">
-                    AI แปลงความหมายทั้งชื่อที่คุณค้นหาและชื่อในฐานข้อมูลให้เป็น <strong>Vector</strong> แล้วคำนวณ Cosine
-                    Distance ว่าความหมาย "ใกล้กัน" แค่ไหน
-                    ยิ่ง % สูง ยิ่งตรงกับสิ่งที่คุณต้องการ
+                    ระบบต้องมีชื่ออ้างอิง หรือความหมายที่แปลงเป็นแม่แบบชื่อได้ก่อน
+                    ถ้ายังไม่มีแม่แบบ ระบบจะแสดงไอเดียและคำแนะนำชื่อแทนการแสดงรายการจัดอันดับ
                 </p>
                 <div class="weight-bar-wrap">
                     <div class="weight-bar-label">
-                        <span>Semantic Score (Vector AI)</span>
-                        <span>60%</span>
+                        <span>Rankable name template</span>
+                        <span>Required</span>
                     </div>
                     <div class="weight-bar">
                         <div class="weight-bar-fill"
-                            style="width:0%; background:linear-gradient(90deg,#B8860B,#D4AF37);" data-width="60"></div>
+                            style="width:0%; background:linear-gradient(90deg,#B8860B,#D4AF37);" data-width="100"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Factor 2: Roots -->
+            <!-- Factor 2: SAT/SHA Gate -->
             <div class="factor-card purple animate delay-2">
                 <div class="factor-header">
-                    <div class="factor-icon purple">🔤</div>
+                    <div class="factor-icon purple">✅</div>
                     <div>
-                        <div class="factor-title">รากอักษรคล้ายกัน</div>
-                        <span class="factor-weight" style="background:rgba(184, 134, 11, 0.2); color:#B8860B;">40% ของ
-                            Base</span>
+                        <div class="factor-title">ต้องเปิดตัวคัดอย่างน้อย 1 ตัว</div>
+                        <span class="factor-weight" style="background:rgba(184, 134, 11, 0.2); color:#B8860B;">SAT หรือ
+                            SHA</span>
                     </div>
                 </div>
                 <p class="factor-desc">
-                    AI วิเคราะห์พยางค์และรากศัพท์ แล้วใช้ <strong>Trigram Similarity</strong> ของ PostgreSQL
-                    เปรียบเทียบชุดตัวอักษร 3 ตัวที่มีร่วมกัน
-                    เช่น "ณเดชน์" มีรากร่วมกับ "เดชาพล"
+                    ถ้าเปิด <strong>คัดเลขศาสตร์ดี</strong> ชื่อต้องผ่าน SAT
+                    ถ้าเปิด <strong>คัดพลังเงาดี</strong> ชื่อต้องผ่าน SHA
+                    และถ้าเปิดทั้งสอง ชื่อต้องผ่านทั้ง SAT และ SHA ก่อนเข้า ranking list
                 </p>
                 <div class="weight-bar-wrap">
                     <div class="weight-bar-label">
-                        <span>Root Score (Trigram)</span>
-                        <span>40%</span>
+                        <span>Filter gate</span>
+                        <span>Required</span>
                     </div>
                     <div class="weight-bar">
                         <div class="weight-bar-fill"
-                            style="width:0%; background:linear-gradient(90deg,#B8860B,#D4AF37);" data-width="40"></div>
+                            style="width:0%; background:linear-gradient(90deg,#B8860B,#D4AF37);" data-width="100"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Factor 3: Auspicious -->
+            <!-- Factor 3: Rank Score -->
             <div class="factor-card gold animate delay-3">
                 <div class="factor-header">
-                    <div class="factor-icon gold">🌟</div>
+                    <div class="factor-icon gold">🏆</div>
                     <div>
-                        <div class="factor-title">เลขศาสตร์มงคล</div>
-                        <span class="factor-weight" style="background:rgba(245,158,11,0.2); color:#fbbf24;">โบนัส +5%
-                            ถึง +15%</span>
+                        <div class="factor-title">ใช้คะแนนอันดับจาก Backend ก่อน</div>
+                        <span class="factor-weight"
+                            style="background:rgba(245,158,11,0.2); color:var(--amber-text);">final_rank_score</span>
                     </div>
                 </div>
                 <p class="factor-desc">
-                    ชื่อที่ผลรวม <strong>เลขศาสตร์</strong> ผ่านเกณฑ์ <strong>pairtype D10 / D8 / D5</strong>
-                    จาก Database จะได้รับคะแนนโบนัสพิเศษดันขึ้นมาด้านบน เพื่อให้ชื่อ "เลขดีด้วย ความหมายตรงด้วย"
-                    โผล่ขึ้นก่อน
+                    เมื่อ backend ส่ง <strong>final_rank_score</strong> กลับมา ระบบใช้คะแนนนี้เป็นแกนหลักในการเรียงอันดับ
+                    เพื่อให้หน้าเว็บและแอปมือถือเห็นลำดับสอดคล้องกัน
                 </p>
                 <div class="weight-bar-wrap">
                     <div class="weight-bar-label">
-                        <span>Auspicious Bonus</span>
-                        <span>สูงสุด +15%</span>
+                        <span>Server-first ranking</span>
+                        <span>Primary</span>
                     </div>
                     <div class="weight-bar">
                         <div class="weight-bar-fill"
-                            style="width:0%; background:linear-gradient(90deg,#f59e0b,#f97316);" data-width="75"></div>
+                            style="width:0%; background:linear-gradient(90deg,#f59e0b,#f97316);" data-width="95"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Factor 4: Length -->
+            <!-- Factor 4: Pair Quality -->
             <div class="factor-card blue animate delay-4">
                 <div class="factor-header">
-                    <div class="factor-icon blue">📏</div>
+                    <div class="factor-icon blue">🔢</div>
                     <div>
-                        <div class="factor-title">จดจำและเรียกง่าย</div>
-                        <span class="factor-weight" style="background:rgba(59,130,246,0.2); color:#93c5fd;">ปรับ -3% ถึง
-                            +10%</span>
+                        <div class="factor-title">คู่เลขช่วยตัดสินเมื่อคะแนนใกล้กัน</div>
+                        <span class="factor-weight"
+                            style="background:rgba(59,130,246,0.2); color:var(--blue-text);">PairType / Pairpoint</span>
                     </div>
                 </div>
                 <p class="factor-desc">
-                    ชื่อ <strong>สั้น–กระชับ (1-2 พยางค์)</strong> เรียกง่ายในชีวิตประจำวัน จะได้บวกคะแนนพิเศษ
-                    ส่วนชื่อที่ยาวมาก (5+ พยางค์) จะโดนปรับลงเล็กน้อย เพื่อให้ชื่อที่ใช้ได้จริงขึ้นมาก่อน
+                    หากคะแนนอันดับเท่ากัน ระบบดูความแข็งแรงของคู่เลขตามแกนที่เลือก
+                    โดย <strong>D10 &gt; D8 &gt; D5</strong> และ pairpoint สูงกว่าจะขึ้นก่อน
                 </p>
                 <div class="weight-bar-wrap">
                     <div class="weight-bar-label">
-                        <span>Length Adjustment</span>
-                        <span>ปรับตามความยาว</span>
+                        <span>Tie-break quality</span>
+                        <span>After score</span>
                     </div>
                     <div class="weight-bar">
                         <div class="weight-bar-fill"
-                            style="width:0%; background:linear-gradient(90deg,#3b82f6,#06b6d4);" data-width="50"></div>
+                            style="width:0%; background:linear-gradient(90deg,#3b82f6,#06b6d4);" data-width="70"></div>
                     </div>
                 </div>
             </div>
@@ -725,109 +810,106 @@
 
         <!-- Auspicious Tiers Table -->
         <h2 class="section-title animate">
-            <span class="icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;">
+            <span class="icon" style="background:rgba(245,158,11,0.15); color:var(--amber-text);">
                 <i class="fa-solid fa-star"></i>
             </span>
-            ตาราง Tier เลขศาสตร์มงคล
+            ตารางกฎตัวคัด Ranking
         </h2>
 
         <div class="factor-card gold animate" style="overflow:auto;">
             <div
-                style="font-size:0.78rem; color:#64748b; margin-bottom:0.8rem; display:flex; align-items:center; gap:6px;">
-                <i class="fa-solid fa-database" style="color:#f59e0b;"></i>
-                โหลดจากฐานข้อมูลอัตโนมัติ — หากแก้ไข pairtype ใน DB ตารางนี้จะอัพเดตเองทันที
+                style="font-size:0.78rem; color:var(--slate-text); margin-bottom:0.8rem; display:flex; align-items:center; gap:6px;">
+                <i class="fa-solid fa-filter" style="color:#f59e0b;"></i>
+                Ranking list แสดงเฉพาะชื่อที่ผ่านตัวคัดที่ผู้ใช้เปิดไว้เท่านั้น
             </div>
             <table class="tier-table">
                 <thead>
                     <tr>
-                        <th>Pairtype</th>
-                        <th>ผลรวมเลขศาสตร์ (sat_sum)</th>
-                        <th>โบนัส</th>
-                        <th>ความหมาย</th>
+                        <th>ตัวคัดที่เปิด</th>
+                        <th>เงื่อนไขที่ชื่อต้องผ่าน</th>
+                        <th>ผลต่อรายการ</th>
+                        <th>แกน tie-break</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><span class="tier-s">⭐ D10</span></td>
-                        <td style="font-family:'Fira Code',monospace; color:#fbbf24; font-size:0.82rem;">9, 14, 15, 24,
-                            36, 41, 42, 44, 45, 46, 51, 54, 55, 59, 63, 65, 95</td>
-                        <td><span class="bonus-green">+15%</span></td>
-                        <td>เลขสูงสุด ดีทุก pair — บุญ ปัญญา โชคลาภ</td>
+                        <td><span class="tier-s">คัดเลขศาสตร์ดี</span></td>
+                        <td><code>is_sat_good = true</code></td>
+                        <td>แสดงเฉพาะชื่อที่ผ่าน SAT แล้วเรียงตามคะแนนอันดับ</td>
+                        <td><code>sat_pair_type</code> และ <code>sat_pair_point</code></td>
                     </tr>
                     <tr>
-                        <td><span class="tier-a">🔮 D8</span></td>
-                        <td style="font-family:'Fira Code',monospace; color:#c4b5fd; font-size:0.82rem;">5, 56, 64, 79,
-                            90, 97, 99</td>
-                        <td><span class="bonus-green">+10%</span></td>
-                        <td>เลขดีมาก — pair ที่อ่อนแอสุดคือ D8</td>
+                        <td><span class="tier-a">คัดพลังเงาดี</span></td>
+                        <td><code>is_sha_good = true</code></td>
+                        <td>แสดงเฉพาะชื่อที่ผ่าน SHA แล้วเรียงตามคะแนนอันดับ</td>
+                        <td><code>sha_pair_type</code> และ <code>sha_pair_point</code></td>
                     </tr>
                     <tr>
                         <td><span
-                                style="background:rgba(16,185,129,0.15); border-radius:6px; padding:2px 8px; color:#34d399; font-weight:700; font-size:0.8rem;">✅
-                                D5</span></td>
-                        <td style="font-family:'Fira Code',monospace; color:#34d399; font-size:0.82rem;">4, 6, 23, 40,
-                            50, 69, 96</td>
-                        <td><span class="bonus-green">+5%</span></td>
-                        <td>เลขดี — pair ที่อ่อนแอสุดคือ D5</td>
+                                style="background:rgba(16,185,129,0.15); border-radius:6px; padding:2px 8px; color:var(--green-text); font-weight:700; font-size:0.8rem;">✅
+                                เปิดทั้งสอง</span></td>
+                        <td><code>is_sat_good = true</code> และ <code>is_sha_good = true</code></td>
+                        <td>ชื่อที่ไม่ผ่านอย่างใดอย่างหนึ่งจะไม่เข้า ranking list</td>
+                        <td>ใช้ final score ก่อน แล้วดูคุณภาพ SAT/SHA ประกอบ</td>
                     </tr>
                     <tr>
-                        <td><span class="tier-b">⬜ R-series</span></td>
-                        <td style="font-family:'Fira Code',monospace; font-size:0.82rem;">อื่นๆ (R10, R7, R5)</td>
-                        <td><span style="color:var(--muted);">+0%</span></td>
-                        <td>เรียงตามความหมายและรากศัพท์ล้วนๆ</td>
+                        <td><span class="tier-b">ยังไม่เปิดตัวคัด</span></td>
+                        <td>ยังไม่มี ranking criteria</td>
+                        <td>ระบบแสดงไอเดีย/คำแนะนำชื่อ ไม่แสดงอันดับ</td>
+                        <td><span style="color:var(--muted);">ยังไม่ใช้ ranking tie-break</span></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Length Table -->
+        <!-- Ranking Order Table -->
         <h2 class="section-title animate">
-            <span class="icon" style="background:rgba(59,130,246,0.15); color:#93c5fd;">
+            <span class="icon" style="background:rgba(59,130,246,0.15); color:var(--blue-text);">
                 <i class="fa-solid fa-ruler-horizontal"></i>
             </span>
-            ตารางปรับคะแนนตามความยาวชื่อ
+            ลำดับการเรียงคะแนน
         </h2>
 
         <div class="factor-card blue animate" style="overflow:auto;">
             <table class="tier-table">
                 <thead>
                     <tr>
-                        <th>ความยาว</th>
-                        <th>ตัวอย่างพยางค์</th>
-                        <th>ปรับคะแนน</th>
+                        <th>ลำดับ</th>
+                        <th>ข้อมูลที่ใช้</th>
+                        <th>ใช้เมื่อใด</th>
                         <th>เหตุผล</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>≤ 4 ตัวอักษร</td>
-                        <td>เดช, วรา, นิล</td>
-                        <td><span class="bonus-green">+10%</span></td>
-                        <td>สั้นเป็นพิเศษ เรียกง่าย จดจำง่ายที่สุด</td>
+                        <td>1</td>
+                        <td><span class="bonus-green">final_rank_score</span></td>
+                        <td>เมื่อ backend ส่งค่ากลับมา</td>
+                        <td>เป็นคะแนนกลางที่ทำให้ web และ mobile เรียงอันดับตรงกัน</td>
                     </tr>
                     <tr>
-                        <td>5 ตัวอักษร</td>
-                        <td>กานต์, วรดา</td>
-                        <td><span class="bonus-green">+6.5%</span></td>
-                        <td>ความยาวกะทัดรัด (ยอดนิยม)</td>
+                        <td>2</td>
+                        <td>local calculated score</td>
+                        <td>เมื่อไม่มี final_rank_score</td>
+                        <td>ใช้ semantic, numerology, pair bonus, กาลกิณี และความยาวเป็น fallback</td>
                     </tr>
                     <tr>
-                        <td>6 ตัวอักษร</td>
-                        <td>ธนวรรธ, รดาธร</td>
-                        <td><span class="bonus-green">+3.2%</span></td>
-                        <td>ความยาวมาตรฐาน</td>
+                        <td>3</td>
+                        <td>D10 / D8 / D5</td>
+                        <td>เมื่อคะแนนอันดับเท่ากัน</td>
+                        <td>คู่เลขที่แข็งแรงกว่าควรขึ้นก่อนชื่อที่คะแนนรวมใกล้กัน</td>
                     </tr>
                     <tr>
-                        <td>7-8 ตัวอักษร</td>
-                        <td>รชานนท์, เมธาวี</td>
-                        <td><span style="color:var(--muted);">0%</span></td>
-                        <td>ความยาวระดับกลาง</td>
+                        <td>4</td>
+                        <td>pairpoint</td>
+                        <td>เมื่อ pairType เท่ากัน</td>
+                        <td>คะแนนคู่เลขละเอียดช่วยแยกชื่อที่อยู่ใน tier เดียวกัน</td>
                     </tr>
                     <tr>
-                        <td>≥ 9 ตัวอักษร</td>
-                        <td>วราธิปติบดีกร</td>
-                        <td><span class="bonus-red">−3.2%</span></td>
-                        <td>ยาวมาก เรียกในชีวิตจริงลำบาก</td>
+                        <td>5</td>
+                        <td>semantic score</td>
+                        <td>ท้ายสุด</td>
+                        <td>ใช้ตัดสินเมื่อคุณภาพชื่อและคู่เลขใกล้กันมาก</td>
                     </tr>
                 </tbody>
             </table>
@@ -835,7 +917,7 @@
 
         <!-- Comparison Example -->
         <h2 class="section-title animate">
-            <span class="icon" style="background:rgba(16,185,129,0.15); color:#34d399;">
+            <span class="icon" style="background:rgba(16,185,129,0.15); color:var(--green-text);">
                 <i class="fa-solid fa-code-compare"></i>
             </span>
             ตัวอย่างการจัดอันดับ (ค้นหา "ผู้มีอำนาจ")
@@ -844,67 +926,65 @@
         <div class="compare-box animate">
             <div class="compare-title">
                 <i class="fa-solid fa-arrow-trend-up" style="color:var(--green);"></i>
-                ชื่อที่ดีแบบ Old Logic vs Smart Ranking ของ ชื่อดี.com
+                เมื่อเปิดตัวคัดแล้ว ระบบให้คะแนนอันดับและคุณภาพเลขทำงานร่วมกัน
             </div>
             <div class="compare-row">
                 <!-- Old -->
                 <div class="name-ex">
                     <div
-                        style="font-size:0.72rem; color:#64748b; margin-bottom:6px; font-weight:600; letter-spacing:0.05em;">
-                        📉 OLD LOGIC (ความหมายอย่างเดียว)</div>
-                    <div class="name-ex-title" style="color:#f87171;">วราธิปติบดี</div>
-                    <div class="name-ex-score">14 ตัวอักษร · เลขปกติ· ความหมาย 98%</div>
+                        style="font-size:0.72rem; color:var(--slate-text); margin-bottom:6px; font-weight:600; letter-spacing:0.05em;">
+                        ยังไม่เข้าอันดับ</div>
+                    <div class="name-ex-title" style="color:var(--red-text);">วราธิปติบดี</div>
+                    <div class="name-ex-score">ความหมายใกล้เคียงมาก · ยังไม่ผ่านตัวคัดที่เลือก</div>
                     <div class="score-row"><span style="color:var(--muted);">🧠 Semantic</span><span
-                            style="color:#c4b5fd;">98%</span></div>
+                            style="color:var(--amber-text);">98%</span></div>
                     <div class="score-bar-mini">
                         <div class="score-bar-mini-fill" style="width:98%;background:#B8860B;"></div>
                     </div>
-                    <div class="score-row"><span style="color:var(--muted);">🌟 เลขศาสตร์</span><span
-                            style="color:#64748b;">73 (ไม่มีโบนัส)</span></div>
+                    <div class="score-row"><span style="color:var(--muted);">✅ SAT/SHA Gate</span><span
+                            style="color:var(--red-text);">ไม่ผ่าน</span></div>
                     <div class="score-bar-mini">
-                        <div class="score-bar-mini-fill" style="width:0%;background:#f59e0b;"></div>
+                        <div class="score-bar-mini-fill" style="width:20%;background:#ef4444;"></div>
                     </div>
-                    <div class="score-row"><span style="color:var(--muted);">📏 ความยาว</span><span
-                            style="color:#f87171;">−5%</span></div>
+                    <div class="score-row"><span style="color:var(--muted);">🏆 Ranking</span><span
+                            style="color:var(--red-text);">ไม่แสดงใน ranking list</span></div>
                     <div class="score-bar-mini">
-                        <div class="score-bar-mini-fill" style="width:5%;background:#ef4444;"></div>
+                        <div class="score-bar-mini-fill" style="width:0%;background:#ef4444;"></div>
                     </div>
                     <div style="margin-top:12px;">
-                        <div class="final-score-display" style="color:#f87171;">0.88 <span
-                                style="font-size:0.8rem;color:var(--muted);">/ 1.00</span></div>
+                        <div class="final-score-display" style="color:var(--red-text);">Filter out</div>
                         <span class="rank-badge"
-                            style="background:rgba(239,68,68,0.1); color:#f87171; border:1px solid rgba(239,68,68,0.2);">
-                            <i class="fa-solid fa-arrow-down"></i> อันดับ 3+
+                            style="background:rgba(239,68,68,0.1); color:var(--red-text); border:1px solid rgba(239,68,68,0.2);">
+                            <i class="fa-solid fa-filter-circle-xmark"></i> ไม่เข้าอันดับ
                         </span>
                     </div>
                 </div>
                 <!-- New -->
                 <div class="name-ex" style="border-color:rgba(245,158,11,0.2);">
                     <div
-                        style="font-size:0.72rem; color:#fbbf24; margin-bottom:6px; font-weight:600; letter-spacing:0.05em;">
-                        ✨ SMART RANKING (ชื่อดี.com)</div>
-                    <div class="name-ex-title" style="color:#fbbf24;">เดชาธร</div>
-                    <div class="name-ex-score">6 ตัวอักษร · เลข 45 (D10 ✨) · ความหมาย 85%</div>
+                        style="font-size:0.72rem; color:var(--amber-text); margin-bottom:6px; font-weight:600; letter-spacing:0.05em;">
+                        SMART RANKING (ชื่อดี.com)</div>
+                    <div class="name-ex-title" style="color:var(--amber-text);">เดชาธร</div>
+                    <div class="name-ex-score">ผ่านตัวคัด · final_rank_score สูง · คู่เลข D10</div>
                     <div class="score-row"><span style="color:var(--muted);">🧠 Semantic</span><span
-                            style="color:#c4b5fd;">85%</span></div>
+                            style="color:var(--amber-text);">85%</span></div>
                     <div class="score-bar-mini">
                         <div class="score-bar-mini-fill" style="width:85%;background:#B8860B;"></div>
                     </div>
-                    <div class="score-row"><span style="color:var(--muted);">🌟 เลขศาสตร์ 45</span><span
-                            style="color:#fbbf24;">+15% (D10)</span></div>
-                    <div class="score-bar-mini">
-                        <div class="score-bar-mini-fill" style="width:100%;background:#f59e0b;"></div>
-                    </div>
-                    <div class="score-row"><span style="color:var(--muted);">📏 ≤ 6 ตัวอักษร</span><span
-                            style="color:#34d399;">+7%</span></div>
+                    <div class="score-row"><span style="color:var(--muted);">✅ SAT/SHA Gate</span><span
+                            style="color:var(--green-text);">ผ่าน</span></div>
                     <div class="score-bar-mini">
                         <div class="score-bar-mini-fill" style="width:100%;background:#10b981;"></div>
                     </div>
+                    <div class="score-row"><span style="color:var(--muted);">🔢 PairType</span><span
+                            style="color:var(--amber-text);">D10 / pairpoint สูง</span></div>
+                    <div class="score-bar-mini">
+                        <div class="score-bar-mini-fill" style="width:100%;background:#f59e0b;"></div>
+                    </div>
                     <div style="margin-top:12px;">
-                        <div class="final-score-display" style="color:#fbbf24;">1.00 <span
-                                style="font-size:0.8rem;color:var(--muted);">/ 1.00</span></div>
+                        <div class="final-score-display" style="color:var(--amber-text);">อันดับ #1</div>
                         <span class="rank-badge"
-                            style="background:rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">
+                            style="background:rgba(245,158,11,0.15); color:var(--amber-text); border:1px solid rgba(245,158,11,0.3);">
                             <i class="fa-solid fa-crown"></i> อันดับ 1
                         </span>
                     </div>
@@ -922,40 +1002,37 @@
 
         <!-- Double Lucky & Filter -->
         <h2 class="section-title animate">
-            <span class="icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;">
+            <span class="icon" style="background:rgba(245,158,11,0.15); color:var(--amber-text);">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
             </span>
-            Double Lucky & ฟิลเตอร์ (Filter vs. Reality)
+            ตัวคัดและ Double Lucky
         </h2>
 
         <div class="factor-card gold animate" style="border-color:rgba(245,158,11,0.3); margin-bottom: 2rem;">
             <div style="font-size:0.95rem; line-height:1.8; color:var(--text);">
                 <p style="margin-bottom:1rem;">
-                    ผู้ใช้อาจสงเกตว่า <strong>"ถึงแม้จะติ๊กปิดฟิลเตอร์มงคลไปแล้ว แต่ทำไมยังเห็นชื่อ Double Lucky
-                        อยู่?"</strong>
-                    นี่คือกลไกเบื้องหลังที่ ชื่อดี.com ใช้เพื่อให้คุณได้สิ่งที่ดีที่สุดครับ:
+                    ตัวคัดในระบบ ranking เป็น <strong>ประตูเข้าอันดับ</strong> ไม่ใช่แค่ป้ายบอกคะแนน
+                    เมื่อคุณเปิดตัวคัดแล้ว ชื่อที่ไม่ผ่านเงื่อนไขนั้นจะไม่ถูกนำมาแสดงใน ranking list
                 </p>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:0.5rem;">
                     <div
                         style="background:rgba(255,255,255,0.03); padding:1.2rem; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-                        <div style="font-weight:700; color:#fbbf24; margin-bottom:8px;">1. การเปิดกว้าง ไม่ใช่การกีดกัน
+                        <div style="font-weight:700; color:var(--amber-text); margin-bottom:8px;">1. เลือกหนึ่งตัวคัด
                         </div>
                         <div style="font-size:0.85rem; color:var(--muted);">
-                            การไม่ติ๊กฟิลเตอร์หมายถึง <strong>"เปิดโอกาสให้ชื่อที่เลขไม่มงคล (แต่ความหมายตรงใจ)
-                                เข้ามาในผลลัพธ์ได้"</strong>
-                            แต่ไม่ได้หมายความว่าระบบจะตัดชื่อที่มงคลอยู่แล้วทิ้งไป สรุปคือถ้าชื่อนั้นดีทั้งคู่ (Double
-                            Lucky) ระบบจะยังแนะนำให้คุณทราบเสมอครับ
+                            เปิด <strong>คัดเลขศาสตร์ดี</strong> ระบบใช้ SAT เป็น gate
+                            หรือเปิด <strong>คัดพลังเงาดี</strong> ระบบใช้ SHA เป็น gate
+                            แล้วเรียงชื่อที่ผ่านตามคะแนนอันดับ
                         </div>
                     </div>
                     <div
                         style="background:rgba(255,255,255,0.03); padding:1.2rem; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-                        <div style="font-weight:700; color:#fbbf24; margin-bottom:8px;">2. โบนัสคะแนนความสมบูรณ์แบบ
+                        <div style="font-weight:700; color:var(--amber-text); margin-bottom:8px;">2. เปิดทั้งสองตัวคัด
                         </div>
                         <div style="font-size:0.85rem; color:var(--muted);">
-                            ชื่อดี.com มอบโบนัสคะแนน (Smart Bonus) ให้กับชื่อที่สมบูรณ์แบบ (เลขศาสตร์ + พลังเงาดี)
-                            ชื่อที่เป็น Double Lucky จึงมักจะถูกดันขึ้นไปอยู่ที่อันดับ #1 จนถึงอันดับต้นๆ ทุกครั้ง
-                            เพื่อให้แน่ใจว่าคุณจะไม่พลาด "ชื่อที่ดีที่สุด" ไปครับ
+                            ชื่อต้องผ่านทั้ง <strong>เลขศาสตร์ดี</strong> และ <strong>พลังเงาดี</strong>
+                            จึงจะเข้าอันดับได้ ชื่อที่ผ่านทั้งสองมักได้แรงส่งจาก double bonus ในคะแนนรวม
                         </div>
                     </div>
                 </div>
@@ -966,8 +1043,8 @@
 
             <p class="factor-desc" style="margin-bottom:1rem;">
                 เมื่อผู้ใช้ระบุนามสกุล หรือ ค้นหาชื่อคู่
-                ระบบจะมี <strong>กลไกการคัดกรองและจัดอันดับแบบพิเศษ</strong>
-                เพื่อให้ได้ชื่อที่ทั้งความหมายตรงใจและเลขศาสตร์ดีที่สุด:
+                ระบบจะยังยึดหลักเดียวกันคือ <strong>กรองตามเงื่อนไขก่อน แล้วจึงจัดอันดับ</strong>
+                เพียงแต่คะแนนที่แสดงบนการ์ดจะมีทั้งคะแนนชื่อเดี่ยวและคะแนนรวมชื่อ+นามสกุล:
             </p>
             <table class="tier-table">
                 <thead>
@@ -980,26 +1057,24 @@
                 <tbody>
                     <tr>
                         <td><span
-                                style="background:rgba(245,158,11,0.15); border-radius:6px; padding:2px 8px; color:#fbbf24; font-weight:700;">1.
+                                style="background:rgba(245,158,11,0.15); border-radius:6px; padding:2px 8px; color:var(--amber-text); font-weight:700;">1.
                                 ตั๋วเข้าชิง (Filter)</span></td>
-                        <td>ระบบจะคัด <strong>เฉพาะ</strong> พยางค์ชื่อ และ ผลรวมคู่ (ชื่อ+นามสกุล) <br>ที่ผ่านเกณฑ์
-                            <strong>"เลขศาสตร์ระดับสีเขียว"</strong> หรือ <strong>"ไม่ใช่กาลกิณี"</strong>
-                            ตามที่คุณตั้งเงื่อนไขไว้เท่านั้น
+                        <td>ระบบคัดชื่อตามปุ่มที่เปิดไว้ เช่น SAT, SHA หรือทั้งสองแบบร่วมกัน
+                            และในโหมดชื่อคู่จะตรวจคะแนนรวมชื่อ+นามสกุลประกอบด้วย
                         </td>
-                        <td>ชื่อที่ผลคะแนนไม่ถึงเกณฑ์ จะถูกเตะทิ้งทั้งหมด ไม่ให้โอกาสเข้าประกวดจัดอันดับ</td>
+                        <td>ชื่อที่ไม่ผ่านเงื่อนไข active จะไม่เข้า ranking list</td>
                     </tr>
                     <tr>
                         <td><span
                                 style="background:rgba(184, 134, 11, 0.15); border-radius:6px; padding:2px 8px; color:#B8860B; font-weight:700;">2.
                                 จัดอันดับ (Ranking)</span></td>
-                        <td>นำชื่อที่รอดจากข้อ 1 ทั้งหมดนั่นแหละ มาเรียงลำดับจาก <strong>"ความหมายที่ตรงใจคุณมากที่สุด
-                                (% ความเหมือนสูงสุด)"</strong> ด้วย <strong>AI Semantic Vector Search</strong></td>
-                        <td>อันดับ 1 คือชื่อที่มีความหมายตรงกับ <strong>"คำค้นหา (Keyword)"</strong> ของคุณมากที่สุด
-                            (เช่น ค้นหาคำว่า "ร่ำรวย")</td>
+                        <td>นำชื่อที่ผ่าน gate มาเรียงด้วย <strong>final_rank_score</strong> ก่อน
+                            หากคะแนนเท่ากันจึงดู pairType, pairpoint และ semantic score ตามลำดับ</td>
+                        <td>อันดับ 1 คือชื่อที่ผ่านเงื่อนไขและมีคะแนนจัดอันดับดีที่สุด ไม่ใช่แค่ความหมายใกล้ที่สุดอย่างเดียว</td>
                     </tr>
                     <tr>
                         <td><span
-                                style="background:rgba(239,68,68,0.15); border-radius:6px; padding:2px 8px; color:#f87171; font-weight:700;">3.
+                                style="background:rgba(239,68,68,0.15); border-radius:6px; padding:2px 8px; color:var(--red-text); font-weight:700;">3.
                                 แบนชื่อซ้ำ</span></td>
                         <td>รายชื่อเข้ารอบ ที่มีตัวสะกดเหมือนกับ <strong>นามสกุล หรือ ชื่อตั้งต้น</strong> แบบ 100%
                             จะถูกนำออกจาก Candidate ทันที (Exclude)</td>
@@ -1011,22 +1086,20 @@
 
             <div
                 style="margin-top:1.2rem; padding:1rem; background:rgba(236,72,153,0.07); border-radius:12px; border:1px solid rgba(236,72,153,0.15);">
-                <div style="font-size:0.85rem; color:#f8fafc; font-weight:600; margin-bottom:0.5rem;">
-                    <i class="fa-solid fa-lightbulb" style="color:#ec4899;"></i> ทำไมถึงจัดอันดับจากผลลัพธ์ "ความหมาย"
-                    ไม่ใช่ "ผลรวมเลขศาสตร์" เลิศๆ?
+                <div style="font-size:0.85rem; color:var(--text); font-weight:600; margin-bottom:0.5rem;">
+                    <i class="fa-solid fa-lightbulb" style="color:#ec4899;"></i> ทำไมยังต้องใช้ความหมายร่วมกับเลขศาสตร์?
                 </div>
-                <div style="font-size:0.82rem; color:#94a3b8; line-height:1.7;">
-                    เพราะ <strong>ผลรวมเลขศาสตร์มงคล</strong> ไม่ได้บ่งบอกว่า "ความหมายของชื่อนั้นตรงกับที่คุณอยากได้"
-                    ถ้าระบบเอาเลขรวมคู่มาจัดลำดับเป็นหลัก อาจจะได้อันดับ 1 เป็นชื่อที่ได้เลขดังยอดฮิต แต่ความหมายแปลว่า
-                    <strong>"ผู้มีปัญญา"</strong>
-                    ซึ่งไม่ตรงกับสิ่งที่คุณตั้งใจระบุค้นหาแต่แรกว่าอยากได้ชื่อที่แปลว่า <strong>"ร่ำรวย"</strong>
+                <div style="font-size:0.82rem; color:var(--slate-text); line-height:1.7;">
+                    เพราะชื่อที่ดีควรผ่านทั้งสองด้าน: <strong>ความหมายต้องใกล้สิ่งที่ผู้ใช้ต้องการ</strong>
+                    และ <strong>เลขศาสตร์/พลังเงาต้องผ่านตัวคัดที่เลือก</strong>
+                    ระบบจึงไม่ให้ semantic score เอาชนะชื่อที่ไม่ผ่าน gate และไม่ให้เลขดีอย่างเดียวขึ้นนำโดยไม่สัมพันธ์กับความหมาย
                 </div>
             </div>
         </div>
 
         <!-- Kalakini & Ranking -->
         <h2 class="section-title animate">
-            <span class="icon" style="background:rgba(239,68,68,0.15); color:#f87171;">
+            <span class="icon" style="background:rgba(239,68,68,0.15); color:var(--red-text);">
                 <i class="fa-solid fa-ban"></i>
             </span>
             กาลกิณีกับการจัดอันดับ
@@ -1054,15 +1127,15 @@
                         <td><span style="color:var(--muted);">ไม่กระทบ</span></td>
                     </tr>
                     <tr>
-                        <td style="color:#f8fafc;">✅ เลือกวัน + <strong>ไม่ติ๊ก</strong> "ไร้กาลกิณี"</td>
-                        <td>แสดงชื่อทั้งหมด<br><small style="color:#94a3b8;">ตัวกาลกิณี<span
-                                    style="color:#f87171;">แดง</span> (Canvas highlight)</small></td>
+                        <td style="color:var(--text);">✅ เลือกวัน + <strong>ไม่ติ๊ก</strong> "ไร้กาลกิณี"</td>
+                        <td>แสดงชื่อทั้งหมด<br><small style="color:var(--slate-text);">ตัวกาลกิณี<span
+                                    style="color:var(--red-text);">แดง</span> (Canvas highlight)</small></td>
                         <td><span style="color:var(--muted);">Ranking ไม่เปลี่ยน — แสดงตาม Final Score เดิม</span></td>
                     </tr>
                     <tr style="background:rgba(239,68,68,0.04);">
-                        <td style="color:#f8fafc;">⚡ เลือกวัน + <strong>ติ๊ก</strong> "ไร้กาลกิณี"</td>
+                        <td style="color:var(--text);">⚡ เลือกวัน + <strong>ติ๊ก</strong> "ไร้กาลกิณี"</td>
                         <td><span class="bonus-red">กรองก่อน Query</span><br><small
-                                style="color:#94a3b8;">ชื่อที่มีกาลกิณีไม่เข้า pool 200</small></td>
+                                style="color:var(--slate-text);">ชื่อที่มีกาลกิณีไม่เข้า pool 200</small></td>
                         <td><span class="bonus-green">Ranking เปลี่ยน</span> — ชื่อในลิสต์ทุกตัว<br>"ไร้กาลกิณี 100%"
                         </td>
                     </tr>
@@ -1071,13 +1144,13 @@
 
             <div
                 style="margin-top:1.2rem; padding:1rem; background:rgba(239,68,68,0.07); border-radius:12px; border:1px solid rgba(239,68,68,0.15);">
-                <div style="font-size:0.85rem; color:#f8fafc; font-weight:600; margin-bottom:0.5rem;">
-                    <i class="fa-solid fa-circle-info" style="color:#f87171;"></i> การ Highlight สีแดง (Canvas
+                <div style="font-size:0.85rem; color:var(--text); font-weight:600; margin-bottom:0.5rem;">
+                    <i class="fa-solid fa-circle-info" style="color:var(--red-text);"></i> การ Highlight สีแดง (Canvas
                     Rendering)
                 </div>
-                <div style="font-size:0.82rem; color:#94a3b8; line-height:1.7;">
-                    ระบบใช้ <strong style="color:#e2e8f0;">HTML5 Canvas Single-Pass</strong> วาดชื่อทีละตัวอักษร
-                    เพื่อให้ <strong style="color:#f87171;">ตัวการันต์ (์)</strong> และสระที่เป็น Combining Mark
+                <div style="font-size:0.82rem; color:var(--slate-text); line-height:1.7;">
+                    ระบบใช้ <strong style="color:var(--text);">HTML5 Canvas Single-Pass</strong> วาดชื่อทีละตัวอักษร
+                    เพื่อให้ <strong style="color:var(--red-text);">ตัวการันต์ (์)</strong> และสระที่เป็น Combining Mark
                     แสดงสีแดงแยกจากพยัญชนะได้ — เพราะถ้าใช้ <code>&lt;span&gt;</code> ปกติ
                     Browser จะ compose glyph แล้วใช้สีของพยัญชนะ ทำให้ Custom highlight ไม่ทำงาน
                 </div>
@@ -1096,9 +1169,8 @@
             <div class="flow-step">
                 <div class="step-num">1</div>
                 <div class="step-content">
-                    <div class="step-title">AI วิเคราะห์รากศัพท์</div>
-                    <div class="step-desc">ระบบรับชื่อที่คุณกรอก แล้วส่งให้ ChatGPT ถอดรากศัพท์ ความหมายเชิงลึก และสกัด
-                        Keywords ออกมา</div>
+                    <div class="step-title">สร้างแม่แบบชื่อ</div>
+                    <div class="step-desc">ระบบรับชื่อหรือความหมายที่คุณกรอก แล้วสร้างแม่แบบชื่อที่ใช้ค้นหาและจัดอันดับได้</div>
                 </div>
             </div>
             <div class="flow-step">
@@ -1120,17 +1192,17 @@
             <div class="flow-step">
                 <div class="step-num">4</div>
                 <div class="step-content">
-                    <div class="step-title">คำนวณ Engagement Score</div>
-                    <div class="step-desc">นำผู้สมัคร 200 ชื่อมาคำนวณคะแนนด้วยสูตรผสมผสาน รวม Auspicious Bonus และ
-                        Length Adjust</div>
+                    <div class="step-title">คัด SAT/SHA ตามปุ่มที่เลือก</div>
+                    <div class="step-desc">ชื่อต้องผ่านเลขศาสตร์ดีหรือพลังเงาดีตามเงื่อนไขที่เปิดไว้
+                        ถ้าเปิดทั้งสอง ต้องผ่านทั้งสองก่อนเข้า ranking list</div>
                 </div>
             </div>
             <div class="flow-step">
                 <div class="step-num">5</div>
                 <div class="step-content">
-                    <div class="step-title">แสดง Top 15</div>
-                    <div class="step-desc">เรียงลำดับตาม Final Score (สูง→ต่ำ) และคัดเฉพาะ 15 อันดับที่ "ดีที่สุด"
-                        ให้คุณดู</div>
+                    <div class="step-title">เรียงด้วย final_rank_score</div>
+                    <div class="step-desc">ใช้คะแนนจาก backend เป็นหลัก แล้ว tie-break ด้วย D10/D8/D5, pairpoint
+                        และ semantic score เพื่อให้ลำดับไม่ขัดกับคุณภาพชื่อที่ผู้ใช้เห็น</div>
                 </div>
             </div>
         </div>
@@ -1139,10 +1211,12 @@
         <div class="cta-section animate">
             <p style="margin-bottom:1.2rem; color:var(--muted);">พร้อมค้นหาชื่อมงคลสำหรับคุณหรือลูกของคุณแล้วหรือยัง?
             </p>
-            <a href="/" class="cta-btn">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                เริ่มค้นหาชื่อมงคล
-            </a>
+            <div class="cta-actions">
+                <a href="/download" class="play-store-badge" aria-label="ดาวน์โหลดแอปชื่อดี.com บน Google Play">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                        alt="ดาวน์โหลดแอปชื่อดี.com บน Google Play">
+                </a>
+            </div>
             <div style="margin-top:1.5rem; font-size:0.8rem; color:#475569;">
                 ฐานข้อมูล 301,226 รายชื่อ · AI วิเคราะห์รากศัพท์ · เลขศาสตร์และพลังเงา
             </div>
@@ -1151,6 +1225,26 @@
     </div>
 
     <script>
+        lucide.createIcons();
+
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            const isActive = mobileMenu.classList.toggle('active');
+            mobileMenuBtn.innerHTML = isActive ? '<i data-lucide="x"></i>' : '<i data-lucide="menu"></i>';
+            lucide.createIcons();
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuBtn.innerHTML = '<i data-lucide="menu"></i>';
+                lucide.createIcons();
+            });
+        });
+
         // Animate weight bars on scroll
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {

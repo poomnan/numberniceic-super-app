@@ -1,37 +1,54 @@
-#!/bin/bash
-set -e
+# Configuration
+SERVER_IP="43.228.85.200"
+USER="tayap"
+REMOTE_DIR="/home/tayap/go-naming" # Updated to correct service path
 
-# Configuration สำหรับโดเมน ชื่อดี.com
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_IP="43.228.85.200"  # IP สำหรับโดเมน ชื่อดี.com
-SERVER_USER="root"
-SERVER_PASSWORD="Lydh@58LTG"
-SERVICE_NAME="go-naming"
-REMOTE_DIR="/home/tayap/go-naming"
-LOCAL_DIR="${LOCAL_DIR:-$SCRIPT_DIR}"
-DEPLOY_SSH_HOST="${DEPLOY_SSH_HOST:-$SERVER_IP}"
+echo "🚀 Starting Deployment to $SERVER_IP..."
 
-echo "=== Deploying go-naming backend to ชื่อดี.com ($SERVER_IP) (SSH: $DEPLOY_SSH_HOST) ==="
+# 0. Cross-Compile for Linux (amd64)
+echo "🔨 Building binary for Linux..."
+GOOS=linux GOARCH=amd64 go build -o go-naming-linux main.go
+if [ $? -ne 0 ]; then
+    echo "❌ Build failed! Aborting."
+    exit 1
+fi
+echo "✅ Build successful (go-naming-linux)"
 
-# Step 1: Build for Linux
-echo "Building for Linux/amd64..."
-cd "$LOCAL_DIR"
-GOOS=linux GOARCH=amd64 go build -o server-linux main.go
+# 1. Sync Files
+echo "📂 Syncing files..."
+export SSHPASS="IntelliP24.X"
 
-# Step 2: Stop service first (to release binary lock)
-echo "Stopping service..."
-sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -o PasswordAuthentication=yes -T \
-    "$SERVER_USER@$DEPLOY_SSH_HOST" "systemctl stop $SERVICE_NAME"
+sshpass -e rsync -avz --progress \
+    --exclude '.git' \
+    --exclude 'go-naming' \
+    --exclude 'uploads' \
+    --exclude '.DS_Store' \
+    ./ $USER@$SERVER_IP:$REMOTE_DIR/
 
-# Step 3: Copy new binary to server
-echo "Copying new binary..."
-sshpass -p "$SERVER_PASSWORD" scp -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -o PasswordAuthentication=yes \
-    server-linux \
-    "$SERVER_USER@$DEPLOY_SSH_HOST:$REMOTE_DIR/server"
+# 2. Remote Commands to Restart
+echo "🔧 Restarting Service on Remote..."
+sshpass -e ssh -t $USER@$SERVER_IP "bash -c '
+    cd $REMOTE_DIR
+    
+    # Rename uploaded binary to target name
+    # Systemd expects the binary to be named 'server' based on error logs
+    mv go-naming-linux server
+    chmod +x server
 
-# Step 4: Start service with new binary
-echo "Starting service..."
-sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -o PasswordAuthentication=yes -T \
-    "$SERVER_USER@$DEPLOY_SSH_HOST" "systemctl start $SERVICE_NAME && sleep 2 && systemctl status $SERVICE_NAME --no-pager | head -5"
+    # Attempt Restart (Systemd or Manual)
+    if systemctl list-units --full -all | grep -Fq \"go-naming.service\"; then
+        # Try sudo if needed, but for now try direct
+        echo \"IntelliP24.X\" | sudo -S systemctl restart go-naming
+        echo \"✅ Service restarted via systemd.\"
+    else
+        echo \"⚠️ Service not found in systemd. Restarting manually...\"
+        pkill -f go-naming || true
+        pkill -f server || true
+        # Start with ENV from file if exists, or basic defaults.
+        export DATABASE_URL=\"postgres://tayap:IntelliP24.X@localhost/tayap?sslmode=disable\"
+        nohup ./server > server.log 2>&1 &
+        echo \"✅ Manual start triggered (PID: \$!).\"
+    fi
+'"
 
-echo "Deployment completed successfully!"
+echo "✨ Deployment Finished!"
