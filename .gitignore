@@ -123,4 +123,5 @@ clean_cjk
 embed_dreams
 server-local
 go-naming/server-linux
+"go-naming/sing_started_at = NULL,"
 go-naming/uploads/*.jpg
