@@ -1540,41 +1540,6 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                               fontFamily: 'Sarabun',
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          _buildPhoneticInsightCard(item, showSpeakButton: false),
-                          if ((satMeaning?.description.isNotEmpty ?? false) ||
-                              (shaMeaning?.description.isNotEmpty ??
-                                  false)) ...[
-                            const SizedBox(height: 14),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (satMeaning?.description.isNotEmpty ?? false)
-                                  Expanded(
-                                    child: _buildShareMeaningChip(
-                                      title:
-                                          'เลขศาสตร์ ${satMeaning!.labelNumber}',
-                                      detail: satMeaning.description,
-                                      accent: const Color(0xFF16A34A),
-                                    ),
-                                  ),
-                                if ((satMeaning?.description.isNotEmpty ??
-                                        false) &&
-                                    (shaMeaning?.description.isNotEmpty ??
-                                        false))
-                                  const SizedBox(width: 8),
-                                if (shaMeaning?.description.isNotEmpty ?? false)
-                                  Expanded(
-                                    child: _buildShareMeaningChip(
-                                      title:
-                                          'พลังเงา ${shaMeaning!.labelNumber}',
-                                      detail: shaMeaning.description,
-                                      accent: const Color(0xFF0EA5E9),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
                         ],
                       ),
                     ),
@@ -1602,47 +1567,9 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 14),
+                _buildPhoneticInsightCard(item, showSpeakButton: false),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShareMeaningChip({
-    required String title,
-    required String detail,
-    required Color accent,
-  }) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accent.withValues(alpha: 0.14)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.prompt(
-              color: accent,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            detail.replaceAll("\\n", " "),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.sarabun(
-              color: AppColors.textGray,
-              fontSize: 10.5,
-              height: 1.25,
-              fontWeight: FontWeight.w500,
             ),
           ),
         ],
