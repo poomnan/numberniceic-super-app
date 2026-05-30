@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -41,6 +42,64 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
   final Map<String, String> _meanings = {}; // Cache for fetched meanings
   final GlobalKey _sharePosterKey = GlobalKey();
   final Map<String, NumberMeaningResult?> _numberMeaningCache = {};
+
+  FlutterTts? _flutterTts;
+  String? _speakingName; // Tracks which name is currently speaking
+
+  Future<void> _initTts() async {
+    _flutterTts = FlutterTts();
+    try {
+      await _flutterTts!.setLanguage('th-TH');
+      await _flutterTts!.setSpeechRate(0.35);
+      await _flutterTts!.setPitch(1.0);
+      await _flutterTts!.setVolume(1.0);
+      await _flutterTts!.awaitSpeakCompletion(true);
+    } catch (_) {}
+
+    _flutterTts!.setCompletionHandler(() {
+      if (mounted) setState(() => _speakingName = null);
+    });
+    _flutterTts!.setCancelHandler(() {
+      if (mounted) setState(() => _speakingName = null);
+    });
+    _flutterTts!.setErrorHandler((_) {
+      if (mounted) setState(() => _speakingName = null);
+    });
+  }
+
+  Future<void> _speakNameAndMeaning(UserSavedName item) async {
+    if (_flutterTts == null) {
+      await _initTts();
+    }
+
+    if (_speakingName == item.name) {
+      await _flutterTts!.stop();
+      setState(() => _speakingName = null);
+      return;
+    }
+
+    setState(() => _speakingName = item.name);
+
+    final meaningText = _getDisplayMeaning(item).isNotEmpty
+        ? _getDisplayMeaning(item)
+        : (item.analysis.isNotEmpty
+            ? item.analysis.split('\n').first
+            : item.rootWord);
+
+    final textToSpeak = "${item.name} แปลว่า $meaningText";
+
+    try {
+      await _flutterTts!.speak(textToSpeak);
+    } catch (_) {
+      if (mounted) setState(() => _speakingName = null);
+    }
+  }
+
+  @override
+  void dispose() {
+    _flutterTts?.stop();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -698,33 +757,48 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Name
-                                isGold
-                                    ? PremiumNameTextEffect(
-                                        child: Text(
-                                          item.name,
-                                          style: GoogleFonts.sarabun(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: const Color(0xFF3D2600),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    isGold
+                                        ? PremiumNameTextEffect(
+                                            child: Text(
+                                              item.name,
+                                              style: GoogleFonts.sarabun(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: const Color(0xFF3D2600),
+                                              ),
+                                            ),
+                                          )
+                                        : Text(
+                                            item.name,
+                                            style: GoogleFonts.sarabun(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xFF3D2600),
+                                            ),
                                           ),
-                                        ),
-                                      )
-                                    : Text(
-                                        item.name,
-                                        style: GoogleFonts.sarabun(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFF3D2600),
-                                        ),
-                                      ),
-                                const SizedBox(height: 2),
+                                    const SizedBox(width: 8),
+                                    _buildSectionSpeakButton(
+                                      compact: true,
+                                      isSpeaking: _speakingName == item.name,
+                                      onTap: () => _speakNameAndMeaning(item),
+                                      tooltip: "อ่านออกเสียงภาษาไทย",
+                                      icon: _speakingName == item.name
+                                          ? Icons.volume_up_rounded
+                                          : Icons.mic_rounded,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
                                 // Meaning / Analysis preview
                                 Text(
                                   _getDisplayMeaning(item).isNotEmpty
-                                      ? _getDisplayMeaning(item)
+                                      ? "\"${_getDisplayMeaning(item)}\""
                                       : (item.analysis.isNotEmpty
-                                            ? item.analysis.split('\n').first
-                                            : item.rootWord),
+                                            ? "\"${item.analysis.split('\n').first}\""
+                                            : "\"${item.rootWord}\""),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -1046,6 +1120,45 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionSpeakButton({
+    required bool compact,
+    required bool isSpeaking,
+    required VoidCallback onTap,
+    required String tooltip,
+    required IconData icon,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: compact ? 7 : 8,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isSpeaking
+                ? [const Color(0xFF22C55E), const Color(0xFF16A34A)]
+                : [const Color(0xFFEFF6FF), const Color(0xFFBFDBFE)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: isSpeaking
+                ? const Color(0xFF16A34A)
+                : const Color(0xFF93C5FD),
+            width: 1,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: compact ? 14 : 16,
+          color: isSpeaking ? Colors.white : const Color(0xFF1D4ED8),
         ),
       ),
     );
