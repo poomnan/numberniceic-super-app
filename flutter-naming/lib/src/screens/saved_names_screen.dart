@@ -846,6 +846,12 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
                         ],
                       ),
                     ),
+                    if (_shouldShowPhoneticInsight(item)) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                        child: _buildPhoneticInsightCard(item),
+                      ),
+                    ],
                     // Action row at bottom spanning full width
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -1162,6 +1168,121 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
         ),
       ),
     );
+  }
+
+  bool _shouldShowPhoneticInsight(UserSavedName item) {
+    return item.phoneticSummary.trim().isNotEmpty ||
+        item.phoneticScore != null;
+  }
+
+  String _buildPhoneticInsightText(UserSavedName item) {
+    if (item.phoneticSummary.trim().isNotEmpty) {
+      return item.phoneticSummary.trim();
+    }
+
+    final score = item.phoneticScore ?? 0;
+    if (score >= 94) {
+      return "โทนเสียงละมุน นุ่มลึก และจังหวะลงตัว ฟังแล้วติดหูมาก";
+    }
+    if (score >= 92) {
+      return "ออกเสียงลื่น ปากเปิดง่าย และน้ำเสียงฟังนุ่มละมุน";
+    }
+    if (score >= 88) {
+      return "น้ำหนักเสียงแน่น จังหวะดี เรียกแล้วฟังชัดและมีพลัง";
+    }
+    return "โทนเสียงค่อนข้างเรียบลื่น ฟังง่าย และใช้งานได้ดี";
+  }
+
+  Widget _buildPhoneticInsightCard(UserSavedName item) {
+    final phoneticText = _buildPhoneticInsightText(item);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF9F8),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFBDE8E3), width: 1.2),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 54),
+            child: Text(
+              phoneticText,
+              style: GoogleFonts.sarabun(
+                color: const Color(0xFF245A57),
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 0,
+          bottom: 0,
+          right: 10,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _buildPhoneticSpeakButton(phoneticText),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhoneticSpeakButton(String text) {
+    final key = "phonetic:$text";
+    final isSpeaking = _speakingName == key;
+    return Tooltip(
+      message: "อ่านออกเสียงคำอธิบาย",
+      child: GestureDetector(
+        onTap: () => _speakPhoneticText(text),
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFEFF6FF), Color(0xFFBFDBFE)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: const Color(0xFF93C5FD),
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            isSpeaking ? Icons.volume_up_rounded : Icons.mic_rounded,
+            size: 14,
+            color: const Color(0xFF1D4ED8),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _speakPhoneticText(String text) async {
+    if (_flutterTts == null) {
+      await _initTts();
+    }
+
+    final key = "phonetic:$text";
+    if (_speakingName == key) {
+      await _flutterTts!.stop();
+      setState(() => _speakingName = null);
+      return;
+    }
+
+    setState(() => _speakingName = key);
+
+    try {
+      await _flutterTts!.speak(text);
+    } catch (_) {
+      if (mounted) setState(() => _speakingName = null);
+    }
   }
 
   Widget _buildSavedSharePoster(
