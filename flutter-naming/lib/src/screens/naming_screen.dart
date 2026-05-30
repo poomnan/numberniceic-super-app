@@ -467,9 +467,9 @@ class _NamingScreenState extends State<NamingScreen>
           if (_filterSat && _filterSha) {
             if (!passesSatFilter || !passesShaFilter) return false;
           } else if (_filterSat) {
-            if (!passesSatFilter) return false;
+            if (!passesSatFilter || passesShaFilter) return false;
           } else if (_filterSha) {
-            if (!passesShaFilter) return false;
+            if (passesSatFilter || !passesShaFilter) return false;
           }
 
           return true;
