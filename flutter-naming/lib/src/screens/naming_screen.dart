@@ -1758,13 +1758,39 @@ class _NamingScreenState extends State<NamingScreen>
           return ScaleTransition(scale: animation, child: child);
         },
         child: _showBackToTop
-            ? FloatingActionButton(
+            ? GestureDetector(
                 key: const ValueKey('back_to_top'),
-                onPressed: scrollToTop,
-                mini: true,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.9),
-                elevation: 4,
-                child: const Icon(Icons.arrow_upward, color: Colors.white),
+                onTap: scrollToTop,
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFD946EF), Color(0xFFC026D3)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFD946EF).withValues(alpha: 0.4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.arrow_upward_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
               )
             : const SizedBox.shrink(key: ValueKey('no_back_to_top')),
       ),
