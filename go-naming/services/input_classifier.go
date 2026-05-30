@@ -142,28 +142,6 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 				Signals:    signals,
 			}
 		}
-		// If the input looks like a Thai name structurally but isn't in the
-		// names DB, check if it's a common Thai word (food, animal, object).
-		// These words should be classified as "meaning" to avoid triggering
-		// expensive ranked searches for non-name inputs.
-		if isCommonThaiWord(input) {
-			signals = append(signals, "common_word_match")
-			return InputClassification{
-				Type:       "meaning",
-				Confidence: 0.85,
-				Signals:    signals,
-			}
-		}
-		// If the word is found in meaning columns but not as a name, it's
-		// more likely a meaning/concept query.
-		if existsInMeaning && !existsInDB {
-			signals = append(signals, "meaning_only_match")
-			return InputClassification{
-				Type:       "meaning",
-				Confidence: 0.82,
-				Signals:    signals,
-			}
-		}
 		// Assume valid single name
 		return InputClassification{
 			Type:       "single_name",
@@ -609,58 +587,4 @@ func thaiRhymeTail(runes []rune) string {
 // hasThaiNameRhyme checks if the two parts share a Thai rhyme.
 func hasThaiNameRhyme(part1, part2 string) bool {
 	return HasThaiNameRhyme(part1, part2)
-}
-
-// isCommonThaiWord checks if the input matches common Thai words that are NOT
-// personal names but look structurally similar (short, all Thai chars). This
-// prevents food/animal/object words from being classified as names.
-func isCommonThaiWord(input string) bool {
-	input = strings.TrimSpace(input)
-	if input == "" {
-		return false
-	}
-
-	// Exact-match common Thai words that look like names structurally
-	commonWords := map[string]bool{
-		// Food / ingredients
-		"หอยแครง": true, "กระเพรา": true, "ข้าวผัด": true, "ต้มยำ": true,
-		"สมตำ": true, "ผัดไท": true, "แกงเขียว": true, "ลาบหมู": true,
-		"น้ำพริก": true, "ขนมจีน": true, "ข้าวเหนียว": true, "ไข่เจียว": true,
-		"หมูสับ": true, "ปลาทู": true, "กุ้งเผา": true, "ปูนิ่ม": true,
-		"หมึกกรอบ": true, "ปลาหมึก": true, "กระเทียม": true, "พริกไทย": true,
-		"ตะไคร้": true, "ใบมะกรูด": true, "ข่าแก่": true,
-		// Animals
-		"กระต่าย": true, "กระรอก": true, "กระแต": true, "ช้างป่า": true,
-		"ลิงลม": true, "นกแก้ว": true, "หอยทาก": true, "ปลาวาฬ": true,
-		"แมวน้ำ": true, "จระเข้": true, "กิ้งก่า": true, "ตุ๊กแก": true,
-		"ผีเสื้อ": true, "แมงมุม": true, "ตะขาบ": true,
-		// Objects / places
-		"โทรศัพท์": true, "คอมพิวเตอร์": true, "รถยนต์": true,
-		"เครื่องบิน": true, "โรงเรียน": true, "โรงพยาบาล": true,
-		"ตลาดนัด": true, "ห้างสรรพสินค้า": true,
-		// Actions / states
-		"วิ่งเล่น": true, "นอนหลับ": true, "กินข้าว": true, "ทำงาน": true,
-		"เรียนหนังสือ": true,
-	}
-
-	if commonWords[input] {
-		return true
-	}
-
-	// Prefix-based detection for compound words.
-	// e.g. "หอย*" → likely a shellfish type, not a name
-	commonPrefixes := []string{
-		"หอย",   // shellfish (หอยแครง, หอยนางรม, หอยแมลงภู่)
-		"ปลา",   // fish (ปลาทู, ปลาช่อน, ปลาหมึก)
-		"แมลง",  // insect (แมลงสาบ, แมลงวัน)
-		"ต้น",   // tree/plant (ต้นไม้, ต้นมะม่วง)
-		"ผัก",   // vegetable (ผักบุ้ง, ผักชี)
-	}
-	for _, prefix := range commonPrefixes {
-		if strings.HasPrefix(input, prefix) && input != prefix {
-			return true
-		}
-	}
-
-	return false
 }

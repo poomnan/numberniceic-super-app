@@ -114,3 +114,13 @@ yarn-debug.log*
 *.pem
 .secret
 .local.properties
+
+# Go build artifacts / trash
+*.trash
+scratch/
+go-naming-bin
+clean_cjk
+embed_dreams
+server-local
+go-naming/server-linux
+go-naming/uploads/*.jpg
