@@ -1165,10 +1165,10 @@ class _NameListItemState extends State<NameListItem>
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const SizedBox(width: 44),
-                              Expanded(
+                              Flexible(
                                 child: FittedBox(
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.center,
