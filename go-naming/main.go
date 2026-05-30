@@ -200,6 +200,7 @@ func main() {
 	http.HandleFunc("/api/v1/name-search", handlers.MobileSearchHandler)
 	http.HandleFunc("/api/v1/name-intent", handlers.NameIntentHandler)
 	http.HandleFunc("/api/v1/name-input/resolve", handlers.GetNameInputResolveHandler)
+	http.HandleFunc("/api/v1/input/classify", handlers.InputClassifyHandler)
 	http.HandleFunc("/api/v1/name-root", handlers.GetNameRootHandler)
 	http.HandleFunc("/api/v1/name-keywords", handlers.GetNameKeywordsHandler)
 	http.HandleFunc("/api/v1/number-meaning", handlers.GetNumberMeaningHandler)
