@@ -1945,7 +1945,7 @@ class _NamingScreenState extends State<NamingScreen>
 
                       final card = NameListItem(
                         key: ValueKey(
-                          'matching_${_keywordController.text.hashCode}_${item.name}',
+                          'matching_${_keywordController.text.hashCode}_${item.name}_${_filterSat}_${_filterSha}',
                         ),
                         rank: index + 1,
                         result: item,

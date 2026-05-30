@@ -4047,43 +4047,99 @@ class _LVMonogramPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withValues(alpha: 0.05)
+      ..color = color.withValues(alpha: 0.12)
       ..style = PaintingStyle.fill;
 
     final strokePaint = Paint()
-      ..color = color.withValues(alpha: 0.035)
+      ..color = color.withValues(alpha: 0.10)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
-    final double stepX = 40.0;
-    final double stepY = 40.0;
+    final double stepX = 52.0;
+    final double stepY = 52.0;
 
-    for (double x = 10; x < size.width; x += stepX) {
-      for (double y = 10; y < size.height; y += stepY) {
-        int cellIndex = ((x / stepX).floor() + (y / stepY).floor()) % 3;
-        if (cellIndex == 0) {
-          final path = Path();
-          path.moveTo(x, y - 6);
-          path.quadraticBezierTo(x, y, x + 6, y);
-          path.quadraticBezierTo(x, y, x, y + 6);
-          path.quadraticBezierTo(x, y, x - 6, y);
-          path.quadraticBezierTo(x, y, x, y - 6);
-          canvas.drawPath(path, paint);
-        } else if (cellIndex == 1) {
-          canvas.drawCircle(Offset(x, y), 3, strokePaint);
-          final path = Path();
-          path.moveTo(x, y - 5);
-          path.lineTo(x + 5, y);
-          path.lineTo(x, y + 5);
-          path.lineTo(x - 5, y);
-          path.close();
-          canvas.drawPath(path, strokePaint);
+    for (double x = 20; x < size.width; x += stepX) {
+      for (double y = 20; y < size.height; y += stepY) {
+        int col = (x / stepX).floor();
+        int row = (y / stepY).floor();
+        int patternType = (row % 2 == 0)
+            ? (col % 2 == 0 ? 0 : 1) // Even rows: 0 (LV) or 1 (Star)
+            : (col % 2 == 0 ? 2 : 3); // Odd rows: 2 (Hollow) or 3 (Flower Circle)
+
+        if (patternType == 0) {
+          // --- 1. Stylized overlapping L and V ---
+          final lPath = Path()
+            ..moveTo(x - 5, y - 4)
+            ..lineTo(x - 5, y + 4)
+            ..lineTo(x + 2, y + 4)
+            ..lineTo(x + 2, y + 2.3)
+            ..lineTo(x - 3.2, y + 2.3)
+            ..lineTo(x - 3.2, y - 4)
+            ..close();
+
+          final vPath = Path()
+            ..moveTo(x - 1, y - 4)
+            ..lineTo(x + 2.5, y + 4)
+            ..lineTo(x + 6, y - 4)
+            ..lineTo(x + 4.2, y - 4)
+            ..lineTo(x + 1.6, y + 1.8)
+            ..lineTo(x + 0.6, y - 4)
+            ..close();
+
+          canvas.drawPath(lPath, paint);
+          canvas.drawPath(vPath, paint);
+        } else if (patternType == 1) {
+          // --- 2. Concave four-point star ---
+          final starPath = Path();
+          final double rOuter = 8.0;
+          final double rInner = 2.5;
+          for (int i = 0; i < 4; i++) {
+            double angle1 = i * math.pi / 2;
+            double angle2 = angle1 + math.pi / 4;
+            double x1 = x + math.cos(angle1) * rOuter;
+            double y1 = y + math.sin(angle1) * rOuter;
+            double x2 = x + math.cos(angle2) * rInner;
+            double y2 = y + math.sin(angle2) * rInner;
+            if (i == 0) {
+              starPath.moveTo(x1, y1);
+            } else {
+              starPath.quadraticBezierTo(x, y, x1, y1);
+            }
+            starPath.quadraticBezierTo(x, y, x2, y2);
+          }
+          starPath.quadraticBezierTo(x, y, x + rOuter, y);
+          starPath.close();
+          canvas.drawPath(starPath, paint);
+          canvas.drawCircle(Offset(x, y), 1.5, strokePaint);
+        } else if (patternType == 2) {
+          // --- 3. Hollow four-petal flower (concave flower) ---
+          canvas.drawCircle(Offset(x, y), 2.5, strokePaint);
+          final hollowPath = Path();
+          for (int i = 0; i < 4; i++) {
+            double angle = i * math.pi / 2;
+            double px = x + math.cos(angle) * 7.5;
+            double py = y + math.sin(angle) * 7.5;
+            double plx = x + math.cos(angle - math.pi / 6) * 3.5;
+            double ply = y + math.sin(angle - math.pi / 6) * 3.5;
+            double prx = x + math.cos(angle + math.pi / 6) * 3.5;
+            double pry = y + math.sin(angle + math.pi / 6) * 3.5;
+            hollowPath.moveTo(plx, ply);
+            hollowPath.quadraticBezierTo(x + math.cos(angle) * 5.0, y + math.sin(angle) * 5.0, px, py);
+            hollowPath.quadraticBezierTo(x + math.cos(angle) * 5.0, y + math.sin(angle) * 5.0, prx, pry);
+          }
+          canvas.drawPath(hollowPath, strokePaint);
         } else {
-          canvas.drawCircle(Offset(x, y), 5, strokePaint);
-          canvas.drawCircle(Offset(x, y - 3), 2, paint);
-          canvas.drawCircle(Offset(x, y + 3), 2, paint);
-          canvas.drawCircle(Offset(x - 3, y), 2, paint);
-          canvas.drawCircle(Offset(x + 3, y), 2, paint);
+          // --- 4. Rounded four-petal flower inside circle ---
+          canvas.drawCircle(Offset(x, y), 8, strokePaint);
+          final flowerPath = Path();
+          for (int i = 0; i < 4; i++) {
+            double angle = i * math.pi / 2;
+            double cx = x + math.cos(angle) * 4.2;
+            double cy = y + math.sin(angle) * 4.2;
+            flowerPath.addOval(Rect.fromCircle(center: Offset(cx, cy), radius: 2.0));
+          }
+          flowerPath.addOval(Rect.fromCircle(center: Offset(x, y), radius: 1.0));
+          canvas.drawPath(flowerPath, paint);
         }
       }
     }
