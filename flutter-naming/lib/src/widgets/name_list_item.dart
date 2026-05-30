@@ -24,6 +24,7 @@ class NameListItem extends StatefulWidget {
   comparisonAnalysis; // Analysis for the matching name (for Kaki highlight)
   final bool showMatching;
   final VoidCallback? onTap;
+  final VoidCallback? onScrollToTop;
   final int rank; // Ranking position (1-based)
   final bool isFilterSatActive;
   final bool isFilterShaActive;
@@ -36,6 +37,7 @@ class NameListItem extends StatefulWidget {
     this.comparisonAnalysis,
     this.showMatching = false,
     this.onTap,
+    this.onScrollToTop,
     this.rank = 0,
     this.isFilterSatActive = false,
     this.isFilterShaActive = false,
@@ -408,8 +410,28 @@ class _NameListItemState extends State<NameListItem>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("บันทึกชื่อ ${widget.result.name} แล้ว"),
-              backgroundColor: AppColors.success,
+              content: Row(
+                children: [
+                  const Icon(Icons.stars_rounded, color: Color(0xFFFDE047), size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "✨ บันทึกสิริมงคลชื่อ '${widget.result.name}' สู่ทำเนียบสำเร็จแล้ว",
+                      style: GoogleFonts.sarabun(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF7C3AED),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -1079,9 +1101,9 @@ class _NameListItemState extends State<NameListItem>
                         showShareAction: showShareAction,
                         isSharePreview: isSharePreview,
                       ),
-                      if (!isSharePreview) ...[
+                      if (!isSharePreview && widget.onScrollToTop != null) ...[
                         const SizedBox(width: 10),
-                        _buildBookmarkButton(compact: true),
+                        _buildUpButton(compact: true),
                       ],
                     ],
                   ),
@@ -1292,18 +1314,22 @@ class _NameListItemState extends State<NameListItem>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Flexible(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: _buildRootWordButton(context, compact: true),
-                          ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _buildRootWordButton(context, compact: true),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       Flexible(
-                        child: Align(
-                          alignment: Alignment.centerRight,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _buildBookmarkButton(compact: true),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
                           child: _buildShareCornerButton(compact: true),
                         ),
                       ),
@@ -2473,41 +2499,120 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildBookmarkButton({bool compact = false}) {
-    final Color savedColor = const Color(
-      0xFFD946EF,
-    ); // Purple-Pink (ม่วงอมชมพู)
-
     return GestureDetector(
       onTap: _isSaved ? null : _saveName,
-      child: Container(
-        padding: compact ? const EdgeInsets.all(6) : const EdgeInsets.all(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: compact ? 7 : 8,
+        ),
         decoration: BoxDecoration(
-          color: _isSaved
-              ? savedColor.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(compact ? 10 : 12),
+          gradient: LinearGradient(
+            colors: _isSaved
+                ? [const Color(0xFFFBCFE8), const Color(0xFFF472B6)] // Soft pink when saved
+                : [const Color(0xFFF3E8FF), const Color(0xFFE9D5FF)], // Lavender when unsaved
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: (_isSaved ? const Color(0xFFF472B6) : const Color(0xFFE9D5FF)).withValues(alpha: 0.25),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
           border: Border.all(
             color: _isSaved
-                ? savedColor.withValues(alpha: 0.3)
-                : Colors.black.withValues(alpha: 0.1),
+                ? const Color(0xFFF472B6).withValues(alpha: 0.5)
+                : const Color(0xFFD8B4FE).withValues(alpha: 0.5),
+            width: 1,
           ),
         ),
-        child: _isSaving
-            ? const SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.primary,
-                ),
-              )
-            : Icon(
-                _isSaved ? Icons.favorite : Icons.favorite_border,
-                size: compact ? 18 : 20,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _isSaving
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF7C3AED),
+                    ),
+                  )
+                : Icon(
+                    _isSaved ? Icons.favorite : Icons.favorite_border,
+                    size: compact ? 14 : 15,
+                    color: _isSaved
+                        ? const Color(0xFFDB2777)
+                        : const Color(0xFF7C3AED),
+                  ),
+            const SizedBox(width: 5),
+            Text(
+              _isSaved ? 'บันทึกแล้ว' : 'บันทึกมงคล',
+              style: GoogleFonts.sarabun(
                 color: _isSaved
-                    ? savedColor
-                    : Colors.black.withValues(alpha: 0.3),
+                    ? const Color(0xFFDB2777)
+                    : const Color(0xFF7C3AED),
+                fontSize: compact ? 12 : 13,
+                fontWeight: FontWeight.w800,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpButton({bool compact = true}) {
+    return GestureDetector(
+      onTap: widget.onScrollToTop,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 10 : 12,
+          vertical: compact ? 7 : 8,
+        ),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFE0F2FE), Color(0xFFBAE6FD)], // Premium light blue gradient
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: const Color(0xFFBAE6FD).withValues(alpha: 0.5),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFBAE6FD).withValues(alpha: 0.25),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.arrow_upward_rounded,
+              size: 14,
+              color: Color(0xFF0369A1),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              "ขึ้นบนสุด",
+              style: GoogleFonts.sarabun(
+                color: const Color(0xFF0369A1),
+                fontSize: compact ? 12 : 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
