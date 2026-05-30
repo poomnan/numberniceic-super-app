@@ -962,26 +962,41 @@ class _NameListItemState extends State<NameListItem>
     const bool showSatScore = true;
     const bool showShaScore = true;
 
-    return Container(
-      margin: margin,
-      decoration: BoxDecoration(
-        color: rowBackground,
-        borderRadius: BorderRadius.circular(18),
-        border: Border(
-          bottom: BorderSide(
-            color: AppColors.textGray.withValues(alpha: 0.12),
-            width: 0.8,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        margin: margin,
+        decoration: BoxDecoration(
+          color: rowBackground,
+          borderRadius: BorderRadius.circular(18),
+          border: Border(
+            bottom: BorderSide(
+              color: AppColors.textGray.withValues(alpha: 0.12),
+              width: 0.8,
+            ),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: isEvenRow ? 0.06 : 0.03),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: isEvenRow ? 0.06 : 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
+        child: Stack(
+          children: [
+            // Thai Kanok pattern overlay
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _ThaiKanokPatternPainter(
+                  color: widget.rank <= 3
+                      ? AppColors.accent.withValues(alpha: 0.06)
+                      : AppColors.primary.withValues(alpha: 0.04),
+                  rank: widget.rank,
+                ),
+              ),
+            ),
+            Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
@@ -1283,7 +1298,10 @@ class _NameListItemState extends State<NameListItem>
             ),
         ],
       ),
-    );
+          ],  // Stack children
+        ),   // Stack
+      ),     // Container
+    );       // ClipRRect
   }
 
   Widget _buildBackSide() {
@@ -3816,4 +3834,138 @@ class _LuckyParticlePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_LuckyParticlePainter old) => old.progress != progress;
+}
+
+/// Subtle Thai Kanok (กนก) pattern painter for card backgrounds.
+/// Draws stylized lotus/petal motifs that evoke traditional Thai artistry.
+class _ThaiKanokPatternPainter extends CustomPainter {
+  final Color color;
+  final int rank;
+
+  _ThaiKanokPatternPainter({required this.color, required this.rank});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+
+    final fillPaint = Paint()
+      ..color = color.withValues(alpha: (color.a * 0.3))
+      ..style = PaintingStyle.fill;
+
+    // Draw corner kanok motifs
+    _drawCornerKanok(canvas, size, paint, fillPaint, topRight: true);
+    _drawCornerKanok(canvas, size, paint, fillPaint, topRight: false);
+
+    // Subtle center petal for top-3
+    if (rank > 0 && rank <= 3) {
+      _drawCenterLotus(canvas, size, paint, fillPaint);
+    }
+
+    // Small dot accents scattered
+    _drawDotAccents(canvas, size, paint);
+  }
+
+  void _drawCornerKanok(
+    Canvas canvas,
+    Size size,
+    Paint strokePaint,
+    Paint fillPaint, {
+    required bool topRight,
+  }) {
+    final dx = topRight ? size.width : 0.0;
+    final flipX = topRight ? -1.0 : 1.0;
+
+    canvas.save();
+    canvas.translate(dx, 0);
+
+    // Kanok petal curve (top corner)
+    final petal = Path();
+    final petalSize = size.width * 0.12;
+    petal.moveTo(0, 0);
+    petal.cubicTo(
+      flipX * petalSize * 0.6, petalSize * 0.3,
+      flipX * petalSize * 0.5, petalSize * 0.8,
+      flipX * petalSize * 0.15, petalSize * 1.1,
+    );
+    petal.cubicTo(
+      flipX * petalSize * 0.4, petalSize * 0.7,
+      flipX * petalSize * 0.8, petalSize * 0.4,
+      flipX * petalSize * 1.0, petalSize * 0.1,
+    );
+    petal.cubicTo(
+      flipX * petalSize * 0.7, petalSize * 0.05,
+      flipX * petalSize * 0.3, -petalSize * 0.05,
+      0, 0,
+    );
+
+    canvas.drawPath(petal, fillPaint);
+    canvas.drawPath(petal, strokePaint);
+
+    // Inner swirl detail
+    final swirl = Path();
+    swirl.moveTo(flipX * petalSize * 0.15, petalSize * 0.25);
+    swirl.quadraticBezierTo(
+      flipX * petalSize * 0.4, petalSize * 0.45,
+      flipX * petalSize * 0.3, petalSize * 0.65,
+    );
+    canvas.drawPath(swirl, strokePaint);
+
+    canvas.restore();
+  }
+
+  void _drawCenterLotus(
+    Canvas canvas,
+    Size size,
+    Paint strokePaint,
+    Paint fillPaint,
+  ) {
+    final cx = size.width * 0.92;
+    final cy = size.height * 0.55;
+    final petalLen = size.height * 0.10;
+
+    for (int i = 0; i < 5; i++) {
+      final angle = (i * math.pi * 2 / 5) - math.pi / 2;
+      final path = Path();
+      path.moveTo(cx, cy);
+      path.quadraticBezierTo(
+        cx + math.cos(angle + 0.25) * petalLen * 0.6,
+        cy + math.sin(angle + 0.25) * petalLen * 0.6,
+        cx + math.cos(angle) * petalLen,
+        cy + math.sin(angle) * petalLen,
+      );
+      path.quadraticBezierTo(
+        cx + math.cos(angle - 0.25) * petalLen * 0.6,
+        cy + math.sin(angle - 0.25) * petalLen * 0.6,
+        cx,
+        cy,
+      );
+      canvas.drawPath(path, fillPaint);
+      canvas.drawPath(path, strokePaint);
+    }
+  }
+
+  void _drawDotAccents(Canvas canvas, Size size, Paint paint) {
+    final dotPaint = Paint()
+      ..color = color.withValues(alpha: (color.a * 0.5))
+      ..style = PaintingStyle.fill;
+
+    // Fixed positions for subtle dots (not random, so repaint is stable)
+    final dots = [
+      Offset(size.width * 0.08, size.height * 0.85),
+      Offset(size.width * 0.15, size.height * 0.92),
+      Offset(size.width * 0.85, size.height * 0.88),
+    ];
+
+    for (final dot in dots) {
+      canvas.drawCircle(dot, 1.2, dotPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ThaiKanokPatternPainter old) =>
+      old.color != color || old.rank != rank;
 }
