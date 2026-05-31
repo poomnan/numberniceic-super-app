@@ -1514,7 +1514,8 @@ class _NameListItemState extends State<NameListItem>
                                   runSpacing: 4,
                                   alignment: WrapAlignment.center,
                                   children: [
-                                    if (widget
+                                    if (widget.isFilterKakiActive &&
+                                        widget
                                             .result
                                             .kakiHighlight
                                             .isNotEmpty &&
@@ -1522,9 +1523,10 @@ class _NameListItemState extends State<NameListItem>
                                           (h) => h.isKaki,
                                         ))
                                       _buildNoKakiBadge(),
-                                    if (widget.result.kakiHighlight.any(
-                                      (h) => h.isKaki,
-                                    ))
+                                    if (widget.isFilterKakiActive &&
+                                        widget.result.kakiHighlight.any(
+                                          (h) => h.isKaki,
+                                        ))
                                       _buildKakiWarningBadge(),
                                   ],
                                 ),
@@ -3056,7 +3058,7 @@ class _NameListItemState extends State<NameListItem>
 
     Widget nameWidget;
 
-    if (widget.comparisonAnalysis != null && hasKaki) {
+    if (widget.comparisonAnalysis != null && hasKaki && widget.isFilterKakiActive) {
       final tp = TextPainter(
         text: TextSpan(text: combinedName, style: textStyle),
         textDirection: TextDirection.ltr,
@@ -3074,7 +3076,7 @@ class _NameListItemState extends State<NameListItem>
       nameWidget = Text(combinedName, style: textStyle);
     }
 
-    final nameSection = isGold && !hasKaki
+    final nameSection = isGold && (!hasKaki || !widget.isFilterKakiActive)
         ? ShimmeringGoldText(child: nameWidget)
         : nameWidget;
 
@@ -3133,7 +3135,7 @@ class _NameListItemState extends State<NameListItem>
     );
 
     Widget nameWidget;
-    if (widget.result.kakiHighlight.isEmpty) {
+    if (widget.result.kakiHighlight.isEmpty || !widget.isFilterKakiActive) {
       nameWidget = Text(widget.result.name, style: textStyle);
     } else {
       // Calculate actual width to prevent fixed-size overflow
@@ -3152,7 +3154,7 @@ class _NameListItemState extends State<NameListItem>
       );
     }
 
-    if (isGold && !hasKaki) {
+    if (isGold && (!hasKaki || !widget.isFilterKakiActive)) {
       return PremiumNameTextEffect(child: nameWidget);
     }
     return nameWidget;
