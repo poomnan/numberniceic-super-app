@@ -5764,26 +5764,31 @@ class _NamingScreenState extends State<NamingScreen>
 
   Widget buildFooter() {
     return Container(
+      width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFF2D1E15), // Deep chocolate luxury Louis Vuitton brown background
+        color: Color(0xFFF5EFEB), // Soft, warm light beige-brown background (Luxury Vachetta sand leather)
       ),
       child: Stack(
         children: [
           Positioned.fill(
             child: CustomPaint(
               painter: LouisVuittonMonogramPainter(
-                color: const Color(0xFFC5A059).withValues(alpha: 0.08), // Subtle gold monogram shapes
+                color: const Color(0xFF2D1E15).withValues(alpha: 0.05), // Subtle dark brown monogram shapes
               ),
             ),
           ),
           Container(
+            width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   "ความรู้เรื่องชื่อและเลขศาสตร์",
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.prompt(
-                    color: const Color(0xFFC5A059).withValues(alpha: 0.65), // Elegant subtle gold text
+                    color: const Color(0xFF2D1E15).withValues(alpha: 0.55), // Elegant subtle dark brown text
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -5796,11 +5801,11 @@ class _NamingScreenState extends State<NamingScreen>
                   runSpacing: 8,
                   children: [
                     buildFooterLink("เลขศาสตร์ & พลังเงา", 0),
-                    const Text("•", style: TextStyle(color: Color(0xFFC5A059), fontSize: 12)),
+                    const Text("•", style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12)),
                     buildFooterLink("กาลกิณี", 1),
-                    const Text("•", style: TextStyle(color: Color(0xFFC5A059), fontSize: 12)),
+                    const Text("•", style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12)),
                     buildFooterLink("ระบบอัจฉริยะ (AI)", 2),
-                    const Text("•", style: TextStyle(color: Color(0xFFC5A059), fontSize: 12)),
+                    const Text("•", style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12)),
                     buildFooterLink("การจัดอันดับชื่อ", 3),
                   ],
                 ),
@@ -5809,7 +5814,7 @@ class _NamingScreenState extends State<NamingScreen>
                   "วิเคราะห์จากชื่อจริง +3 แสนชื่อ",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.prompt(
-                    color: Colors.white.withValues(alpha: 0.95), // Highly readable white/cream text
+                    color: const Color(0xFF2D1E15).withValues(alpha: 0.85), // Rich dark brown text
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -5817,8 +5822,9 @@ class _NamingScreenState extends State<NamingScreen>
                 const SizedBox(height: 40),
                 Text(
                   "© 2026 Naming App. All rights reserved.",
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.sarabun(
-                    color: Colors.white.withValues(alpha: 0.25),
+                    color: const Color(0xFF2D1E15).withValues(alpha: 0.25),
                     fontSize: 10,
                   ),
                 ),
@@ -5844,10 +5850,11 @@ class _NamingScreenState extends State<NamingScreen>
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         child: Text(
           label,
+          textAlign: TextAlign.center,
           style: GoogleFonts.prompt(
-            color: const Color(0xFFFFECB3), // Beautiful luxury soft gold link text
+            color: const Color(0xFF8B6B5C), // Beautiful luxury soft warm brown link text
             fontSize: 13,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
           ),
         ),
