@@ -3716,7 +3716,7 @@ class _NamingScreenState extends State<NamingScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 6, bottom: 8, top: 4),
+          padding: const EdgeInsets.only(left: 16, bottom: 8, top: 4),
           child: Row(
             children: [
               const Icon(
@@ -3738,6 +3738,7 @@ class _NamingScreenState extends State<NamingScreen>
         ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           physics: const BouncingScrollPhysics(),
           child: Row(
             children: _days.map((day) {
@@ -4891,7 +4892,7 @@ class _NamingScreenState extends State<NamingScreen>
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -4925,24 +4926,27 @@ class _NamingScreenState extends State<NamingScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ANCHOR: 3 book miracle (หาชื่อตามตำราที่ดีที่สุดจาก 3 แสนรายชื่อ)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "หาชื่อตามตำราที่ดีที่สุด",
-                          style: GoogleFonts.prompt(
-                            color: AppColors.textLight,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.2,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "หาชื่อตามตำราที่ดีที่สุด",
+                            style: GoogleFonts.prompt(
+                              color: AppColors.textLight,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.2,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   if (_hasRankingCriteria && _hasRankableNameTemplate)
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -4996,155 +5000,161 @@ class _NamingScreenState extends State<NamingScreen>
                   const SizedBox(height: 12),
                   buildBirthdayBadges(),
                   const SizedBox(height: 10),
-                  buildUnifiedDayKakiCard(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: buildUnifiedDayKakiCard(),
+                  ),
                   const SizedBox(height: 16),
 
-                  // ANCHOR: 2ButtonPremium (2ปุ่มพรีเมี่ยม)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildCompactFilterTile(
-                              title: "เลขศาสตร์ดี",
-                              icon: Icons.auto_awesome_rounded,
-                              iconColor: const Color(0xFF10B981),
-                              isActive:
-                                  canUseRankingTemplate &&
-                                  _filterSat &&
-                                  !_filterSha,
-                              isDisabled: !canUseRankingTemplate,
-                              activeColor: const Color(0xFF10B981),
-                              onTap: () {
-                                if (!canUseRankingTemplate) return;
-                                final bool currentlyActive =
-                                    _filterSat && !_filterSha;
-                                _handleFilterOptionTap(
-                                  targetSat: !currentlyActive,
-                                  targetSha: false,
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildCompactFilterTile(
-                              title: "พลังเงาดี",
-                              icon: Icons.shield_rounded,
-                              iconColor: const Color(0xFF7C3AED),
-                              isActive:
-                                  canUseRankingTemplate &&
-                                  !_filterSat &&
-                                  _filterSha,
-                              isDisabled: !canUseRankingTemplate,
-                              activeColor: const Color(0xFF7C3AED),
-                              onTap: () {
-                                if (!canUseRankingTemplate) return;
-                                final bool currentlyActive =
-                                    !_filterSat && _filterSha;
-                                _handleFilterOptionTap(
-                                  targetSat: false,
-                                  targetSha: !currentlyActive,
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPremiumFilterOption(
-                        isPremium: PremiumManager().isPremium,
-                        hasFreeDoubleGood:
-                            PremiumManager().canUseDoubleGood || kDebugMode,
-                        isActive:
-                            canUseRankingTemplate && _filterSat && _filterSha,
-                        isDisabled: !canUseRankingTemplate,
-                        onTap: () {
-                          if (!canUseRankingTemplate) return;
-                          final bool currentlyActive = _filterSat && _filterSha;
-                          _handleFilterOptionTap(
-                            targetSat: !currentlyActive,
-                            targetSha: !currentlyActive,
-                          );
-                        },
-                      ),
-                      if (needsSeedName) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.info_outline_rounded,
-                                color: Color(0xFF64748B),
-                                size: 16,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ANCHOR: 2ButtonPremium (2ปุ่มพรีเมี่ยม)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildCompactFilterTile(
+                                title: "เลขศาสตร์ดี",
+                                icon: Icons.auto_awesome_rounded,
+                                iconColor: const Color(0xFF10B981),
+                                isActive:
+                                    canUseRankingTemplate &&
+                                    _filterSat &&
+                                    !_filterSha,
+                                isDisabled: !canUseRankingTemplate,
+                                activeColor: const Color(0xFF10B981),
+                                onTap: () {
+                                  if (!canUseRankingTemplate) return;
+                                  final bool currentlyActive =
+                                      _filterSat && !_filterSha;
+                                  _handleFilterOptionTap(
+                                    targetSat: !currentlyActive,
+                                    targetSha: false,
+                                  );
+                                },
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  "ล็อกอยู่: กรุณาแตะเลือกชื่อที่คุณถูกใจจาก LikeName หรือ Celebrity Avatar ด้านบนก่อน เพื่อเป็นชื่อต้นแบบให้ระบบคัดกรอง",
-                                  style: GoogleFonts.sarabun(
-                                    color: const Color(0xFF475569),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.4,
-                                  ),
-                                ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildCompactFilterTile(
+                                title: "พลังเงาดี",
+                                icon: Icons.shield_rounded,
+                                iconColor: const Color(0xFF7C3AED),
+                                isActive:
+                                    canUseRankingTemplate &&
+                                    !_filterSat &&
+                                    _filterSha,
+                                isDisabled: !canUseRankingTemplate,
+                                activeColor: const Color(0xFF7C3AED),
+                                onTap: () {
+                                  if (!canUseRankingTemplate) return;
+                                  final bool currentlyActive =
+                                      !_filterSat && _filterSha;
+                                  _handleFilterOptionTap(
+                                    targetSat: false,
+                                    targetSha: !currentlyActive,
+                                  );
+                                },
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                      if ((_results.isNotEmpty || _isLoading) && _hasRankingCriteria) ...[
-                        const SizedBox(height: 12),
-                        Builder(
-                          builder: (context) {
-                            final stats = computeStatistics();
-                            return DashboardSummary(
-                              isLoading: _isLoading,
-                              totalNames: _isLoading
-                                  ? 0
-                                  : stats['totalNames'] as int,
-                              excellentNames: _isLoading
-                                  ? '0'
-                                  : stats['excellentNames'].toString(),
-                              numerologyGood: _isLoading
-                                  ? '0'
-                                  : stats['numerologyGood'].toString(),
-                              shadowGood: _isLoading
-                                  ? '0'
-                                  : stats['shadowGood'].toString(),
-                              isSatActive: _filterSat,
-                              isShaActive: _filterSha,
-                              recommendedDays: _isLoading
-                                  ? null
-                                  : stats['recommendedDays'] as String?,
-                              onInfoTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        InformationScreen(
-                                          initialTabIndex: 2,
-                                        ),
-                                  ),
-                                );
-                              },
+                        const SizedBox(height: 8),
+                        _buildPremiumFilterOption(
+                          isPremium: PremiumManager().isPremium,
+                          hasFreeDoubleGood:
+                              PremiumManager().canUseDoubleGood || kDebugMode,
+                          isActive:
+                              canUseRankingTemplate && _filterSat && _filterSha,
+                          isDisabled: !canUseRankingTemplate,
+                          onTap: () {
+                            if (!canUseRankingTemplate) return;
+                            final bool currentlyActive = _filterSat && _filterSha;
+                            _handleFilterOptionTap(
+                              targetSat: !currentlyActive,
+                              targetSha: !currentlyActive,
                             );
                           },
                         ),
+                        if (needsSeedName) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Color(0xFF64748B),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "ล็อกอยู่: กรุณาแตะเลือกชื่อที่คุณถูกใจจาก LikeName หรือ Celebrity Avatar ด้านบนก่อน เพื่อเป็นชื่อต้นแบบให้ระบบคัดกรอง",
+                                    style: GoogleFonts.sarabun(
+                                      color: const Color(0xFF475569),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if ((_results.isNotEmpty || _isLoading) && _hasRankingCriteria) ...[
+                          const SizedBox(height: 12),
+                          Builder(
+                            builder: (context) {
+                              final stats = computeStatistics();
+                              return DashboardSummary(
+                                isLoading: _isLoading,
+                                totalNames: _isLoading
+                                    ? 0
+                                    : stats['totalNames'] as int,
+                                excellentNames: _isLoading
+                                    ? '0'
+                                    : stats['excellentNames'].toString(),
+                                numerologyGood: _isLoading
+                                    ? '0'
+                                    : stats['numerologyGood'].toString(),
+                                shadowGood: _isLoading
+                                    ? '0'
+                                    : stats['shadowGood'].toString(),
+                                isSatActive: _filterSat,
+                                isShaActive: _filterSha,
+                                recommendedDays: _isLoading
+                                    ? null
+                                    : stats['recommendedDays'] as String?,
+                                onInfoTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          InformationScreen(
+                                            initialTabIndex: 2,
+                                          ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ],
               ),
