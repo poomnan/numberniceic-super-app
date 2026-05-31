@@ -778,7 +778,7 @@ class _NamingScreenState extends State<NamingScreen>
     final raw = await _apiService.getSemanticSearchIdeas();
     if (!mounted) return;
     setState(() {
-      _ideaExamples = raw.map((item) {
+      final list = raw.map((item) {
         final iconName = item['icon_name'] as String? ?? 'auto_awesome';
         final colorHex = item['icon_color'] as String? ?? '#8B6CD9';
         return {
@@ -787,6 +787,33 @@ class _NamingScreenState extends State<NamingScreen>
           'iconColor': _hexToColor(colorHex),
         };
       }).toList();
+
+      if (list.isNotEmpty) {
+        _ideaExamples = list;
+      } else {
+        _ideaExamples = [
+          {
+            "text": "เศรษฐีผู้มั่งคั่ง มีทรัพย์สมบัติและบารมี",
+            "icon": Icons.trending_up,
+            "iconColor": const Color(0xFFD4A017),
+          },
+          {
+            "text": "หญิงสาวผู้อ่อนหวาน มีเสน่ห์ และเป็นที่รัก",
+            "icon": Icons.favorite,
+            "iconColor": const Color(0xFFE66A8D),
+          },
+          {
+            "text": "ผู้นำที่กล้าหาญ เจริญรุ่งเรือง ไร้อุปสรรค",
+            "icon": Icons.shield,
+            "iconColor": const Color(0xFF4F8FE8),
+          },
+          {
+            "text": "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน",
+            "icon": Icons.psychology,
+            "iconColor": const Color(0xFF8B6CD9),
+          },
+        ];
+      }
     });
     _applyPickedExamples();
   }
@@ -802,12 +829,19 @@ class _NamingScreenState extends State<NamingScreen>
       );
       shuffled.remove(target);
       picked = [target, ...shuffled.take(5)];
-      _pickedExamples = picked;
-      // Stop/Cancel shuffle timer since user selected an item!
+      if (mounted) {
+        setState(() {
+          _pickedExamples = picked;
+        });
+      }
       _shuffleTimer?.cancel();
     } else {
       picked = shuffled.take(6).toList();
-      _pickedExamples = picked;
+      if (mounted) {
+        setState(() {
+          _pickedExamples = picked;
+        });
+      }
       _startShuffleTimer();
     }
   }
