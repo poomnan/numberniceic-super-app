@@ -4944,45 +4944,7 @@ class _NamingScreenState extends State<NamingScreen>
                       ],
                     ),
                   ),
-                  if (_hasRankingCriteria && _hasRankableNameTemplate)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.auto_awesome_rounded,
-                            color: const Color(
-                              0xFFD4AF37,
-                            ).withValues(alpha: 0.95),
-                            size: 17,
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              runSpacing: 4,
-                              children: [
-                                Text(
-                                  "ใช้ชื่อต้นแบบ ",
-                                  style: GoogleFonts.prompt(
-                                    color: AppColors.textLight.withValues(
-                                      alpha: 0.7,
-                                    ),
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                AnimatedSeedName(
-                                  name: '"${_selectedNameMeaningName ?? _keywordController.text.trim()}"',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+
 
                   const SizedBox(height: 12),
                   buildBirthdayBadges(),
