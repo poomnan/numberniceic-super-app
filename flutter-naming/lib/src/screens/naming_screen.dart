@@ -4604,86 +4604,129 @@ class _NamingScreenState extends State<NamingScreen>
   // ANCHOR: Unified Day & Kaki Filter Switch Card (การ์ดวันเกิดและตัวกรองกาลกิณีแบบรวมชิ้นดีไซน์พรีเมียม)
   Widget buildUnifiedDayKakiCard() {
     final hasSelectedDay = _selectedDay != null;
+    final isActive = hasSelectedDay && _filterKaki;
     
     final Map<String, Map<String, dynamic>> badgeConfigs = {
       'Sunday': {
         'name': 'วันอาทิตย์',
         'color': const Color(0xFFFF3B30),
-        'badgeColor': const Color(0xFFFFECEB),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFECEB), Color(0xFFFFD1CF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFFD32F2F),
       },
       'Monday': {
         'name': 'วันจันทร์',
         'color': const Color(0xFFFFCC00),
-        'badgeColor': const Color(0xFFFFFDE7),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFFDE7), Color(0xFFFFF9C4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFF795548),
       },
       'Tuesday': {
         'name': 'วันอังคาร',
         'color': const Color(0xFFFF2D55),
-        'badgeColor': const Color(0xFFFFF0F5),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFF0F5), Color(0xFFFFD1DC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFFC2185B),
       },
       'Wednesday1': {
         'name': 'วันพุธ (กลางวัน)',
         'color': const Color(0xFF34C759),
-        'badgeColor': const Color(0xFFE8F5E9),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFF2E7D32),
       },
       'Wednesday2': {
         'name': 'วันพุธ (กลางคืน)',
         'color': const Color(0xFF007A7C),
-        'badgeColor': const Color(0xFFE0F2F1),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFE0F2F1), Color(0xFFB2DFDB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFF004D40),
       },
       'Thursday': {
         'name': 'วันพฤหัสบดี',
         'color': const Color(0xFFFF9500),
-        'badgeColor': const Color(0xFFFFF3E0),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFFE65100),
       },
       'Friday': {
         'name': 'วันศุกร์',
         'color': const Color(0xFF5AC8FA),
-        'badgeColor': const Color(0xFFE3F2FD),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFF0D47A1),
       },
       'Saturday': {
         'name': 'วันเสาร์',
         'color': const Color(0xFF5856D6),
-        'badgeColor': const Color(0xFFF3E5F5),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFF3E5F5), Color(0xFFE1BEE7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         'textColor': const Color(0xFF4A148C),
       },
     };
 
-    final activeConfig = hasSelectedDay ? badgeConfigs[_selectedDay] : null;
-    final Color themeColor = hasSelectedDay
-        ? (activeConfig!['color'] as Color)
-        : const Color(0xFF94A3B8);
-    final Color cardBorderColor = hasSelectedDay
-        ? themeColor.withValues(alpha: 0.3)
-        : const Color(0xFFE2E8F0);
-    final Color cardBgColor = hasSelectedDay
-        ? (activeConfig!['badgeColor'] as Color).withValues(alpha: 0.5)
-        : const Color(0xFFF8FAFC);
-    final Color textColor = hasSelectedDay
-        ? (activeConfig!['textColor'] as Color)
-        : const Color(0xFF475569);
+    // Reddish gradient configuration when active is false (Toggle is closed)
+    const inactiveGradient = LinearGradient(
+      colors: [Color(0xFFFFF5F5), Color(0xFFFFE8E8)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+    const Color inactiveBorderColor = Color(0xFFFCA5A5);
+    const Color inactiveTextColor = Color(0xFFC53030);
 
-    final titleText = hasSelectedDay && _filterKaki
-        ? "คัดอักษรกาลกิณีออกเรียบร้อย"
-        : "คัดอักษรกาลกิณีออก (ตามตำราโบราณ)";
+    final activeConfig = hasSelectedDay ? badgeConfigs[_selectedDay] : null;
+    
+    // Background and border colors
+    final Gradient cardGradient = isActive
+        ? (activeConfig!['gradient'] as Gradient)
+        : inactiveGradient;
+        
+    final Color cardBorderColor = isActive
+        ? (activeConfig!['color'] as Color).withValues(alpha: 0.3)
+        : inactiveBorderColor.withValues(alpha: 0.55);
+        
+    final Color titleColor = isActive
+        ? (activeConfig!['textColor'] as Color)
+        : inactiveTextColor;
+
+    final titleText = isActive
+        ? "อันดับชื่อคัดกาลกิณีออกแล้ว"
+        : "ยังไม่ได้คัดกาลกิณีออก";
         
     final subtitleText = hasSelectedDay
-        ? "วิเคราะห์และกรองคำอัปมงคลสำหรับคนเกิด ${activeConfig!['name']}"
-        : "กรุณาแตะเลือกวันเกิดของคุณที่ด้านบนก่อนนะคะ";
+        ? "คำนวณมงคลตามวันเกิด: ${activeConfig!['name']}"
+        : "กรุณาเลือกวันเกิดของคุณที่ด้านบนก่อนนะคะ";
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: cardBgColor,
+        gradient: cardGradient,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: cardBorderColor,
@@ -4691,7 +4734,8 @@ class _NamingScreenState extends State<NamingScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: themeColor.withValues(alpha: hasSelectedDay ? 0.05 : 0.01),
+            color: (isActive ? (activeConfig!['color'] as Color) : const Color(0xFFFF3B30))
+                .withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -4725,16 +4769,14 @@ class _NamingScreenState extends State<NamingScreen>
                   duration: const Duration(milliseconds: 300),
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
-                    color: hasSelectedDay
-                        ? themeColor.withValues(alpha: 0.12)
-                        : const Color(0xFFE2E8F0),
+                    color: isActive
+                        ? (activeConfig!['color'] as Color).withValues(alpha: 0.12)
+                        : const Color(0xFFFFEBEE),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    hasSelectedDay && _filterKaki
-                        ? Icons.security_rounded
-                        : Icons.calendar_month_rounded,
-                    color: themeColor,
+                    isActive ? Icons.security_rounded : Icons.warning_rounded,
+                    color: isActive ? (activeConfig!['color'] as Color) : const Color(0xFFE53935),
                     size: 18,
                   ),
                 ),
@@ -4747,9 +4789,7 @@ class _NamingScreenState extends State<NamingScreen>
                       Text(
                         titleText,
                         style: GoogleFonts.prompt(
-                          color: hasSelectedDay && _filterKaki
-                              ? const Color(0xFF0369A1)
-                              : textColor,
+                          color: titleColor,
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                         ),
@@ -4760,9 +4800,9 @@ class _NamingScreenState extends State<NamingScreen>
                       Text(
                         subtitleText,
                         style: GoogleFonts.prompt(
-                          color: hasSelectedDay
-                              ? textColor.withValues(alpha: 0.7)
-                              : const Color(0xFF94A3B8),
+                          color: isActive
+                              ? titleColor.withValues(alpha: 0.7)
+                              : const Color(0xFFE53935).withValues(alpha: 0.7),
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -4777,12 +4817,12 @@ class _NamingScreenState extends State<NamingScreen>
                   child: Transform.scale(
                     scale: 0.75,
                     child: Switch.adaptive(
-                      value: hasSelectedDay && _filterKaki,
+                      value: isActive,
                       onChanged: null, // Tapped via parent InkWell
                       activeTrackColor: const Color(0xFF38BDF8),
                       activeColor: const Color(0xFF0EA5E9),
                       inactiveThumbColor: Colors.white,
-                      inactiveTrackColor: const Color(0xFFE2E8F0),
+                      inactiveTrackColor: const Color(0xFFEF9A9A),
                     ),
                   ),
                 ),
