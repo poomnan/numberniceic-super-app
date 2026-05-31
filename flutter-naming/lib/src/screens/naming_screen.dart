@@ -2031,57 +2031,6 @@ class _NamingScreenState extends State<NamingScreen>
                         buildHeader(),
                         buildSearchForm(),
                         const SizedBox(height: 16),
-                        if ((_results.isNotEmpty || _isLoading) &&
-                            _hasRankingCriteria)
-                          Padding(
-                            key: _resultsKey,
-                            padding: const EdgeInsets.only(
-                              left: 20,
-                              right: 20,
-                              bottom: 16,
-                            ),
-                            child: Builder(
-                              builder: (context) {
-                                final stats = computeStatistics();
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    DashboardSummary(
-                                      isLoading: _isLoading,
-                                      totalNames: _isLoading
-                                          ? 0
-                                          : stats['totalNames'] as int,
-                                      excellentNames: _isLoading
-                                          ? '0'
-                                          : stats['excellentNames'].toString(),
-                                      numerologyGood: _isLoading
-                                          ? '0'
-                                          : stats['numerologyGood'].toString(),
-                                      shadowGood: _isLoading
-                                          ? '0'
-                                          : stats['shadowGood'].toString(),
-                                      isSatActive: _filterSat,
-                                      isShaActive: _filterSha,
-                                      recommendedDays: _isLoading
-                                          ? null
-                                          : stats['recommendedDays'] as String?,
-                                      onInfoTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                InformationScreen(
-                                                  initialTabIndex: 2,
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
                       ],
                     ),
                   ),
@@ -5153,6 +5102,45 @@ class _NamingScreenState extends State<NamingScreen>
                               ),
                             ],
                           ),
+                        ),
+                      ],
+                      if ((_results.isNotEmpty || _isLoading) && _hasRankingCriteria) ...[
+                        const SizedBox(height: 12),
+                        Builder(
+                          builder: (context) {
+                            final stats = computeStatistics();
+                            return DashboardSummary(
+                              isLoading: _isLoading,
+                              totalNames: _isLoading
+                                  ? 0
+                                  : stats['totalNames'] as int,
+                              excellentNames: _isLoading
+                                  ? '0'
+                                  : stats['excellentNames'].toString(),
+                              numerologyGood: _isLoading
+                                  ? '0'
+                                  : stats['numerologyGood'].toString(),
+                              shadowGood: _isLoading
+                                  ? '0'
+                                  : stats['shadowGood'].toString(),
+                              isSatActive: _filterSat,
+                              isShaActive: _filterSha,
+                              recommendedDays: _isLoading
+                                  ? null
+                                  : stats['recommendedDays'] as String?,
+                              onInfoTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        InformationScreen(
+                                          initialTabIndex: 2,
+                                        ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
                       ],
                     ],
