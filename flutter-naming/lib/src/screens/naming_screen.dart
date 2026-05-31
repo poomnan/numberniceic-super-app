@@ -4092,7 +4092,7 @@ class _NamingScreenState extends State<NamingScreen>
                                     ? (suggestionCount > 0
                                           ? "รายชื่อที่มีความหมายใกล้เคียง ($suggestionCount)"
                                           : "รายชื่อที่มีความหมายใกล้เคียง")
-                                    : "รายชื่อมงคลความหมายสอดคล้อง",
+                                    : "รายชื่อที่มีความหมายสอดคล้อง",
                                 style: GoogleFonts.prompt(
                                   color: const Color(0xFF0F5132),
                                   fontSize: 14,
@@ -4105,8 +4105,8 @@ class _NamingScreenState extends State<NamingScreen>
                                 isExpanded
                                     ? "กำลังแสดงรายชื่อแนะนำที่มีความหมายพิเศษ"
                                     : (suggestionCount > 0
-                                          ? "✨ ค้นพบชื่อแนะนำชั้นเลิศ $suggestionCount รายชื่อ แตะเพื่อเปิดดูพิเศษ"
-                                          : "✨ ค้นพบรายชื่อแนะนำชั้นเลิศ แตะเพื่อเปิดดูพิเศษ"),
+                                          ? "✨ ค้นพบชื่อแนะนำ $suggestionCount รายชื่อ แตะเพื่อเปิดดูพิเศษ"
+                                          : "✨ ค้นพบรายชื่อแนะนำ แตะเพื่อเปิดดูพิเศษ"),
                                 style: GoogleFonts.sarabun(
                                   color: isExpanded
                                       ? const Color(

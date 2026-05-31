@@ -7,19 +7,19 @@ import (
 	"time"
 )
 
-func TestPassesRequestedFiltersSingleToggleIncludesDoubleGood(t *testing.T) {
+func TestPassesRequestedFiltersSingleToggleExcludesDoubleGood(t *testing.T) {
 	doubleGood := MobileNameResult{
 		Name:      "ทดสอบ",
 		IsSatGood: true,
 		IsShaGood: true,
 	}
 
-	if !passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSat: true}) {
-		t.Fatal("sat-only filter should include names that also pass sha")
+	if passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSat: true}) {
+		t.Fatal("sat-only filter should NOT include double-good names")
 	}
 
-	if !passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSha: true}) {
-		t.Fatal("sha-only filter should include names that also pass sat")
+	if passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSha: true}) {
+		t.Fatal("sha-only filter should NOT include double-good names")
 	}
 }
 
@@ -174,5 +174,84 @@ func TestMicroTiebreakerDeterministicAndUnique(t *testing.T) {
 	_, _ = calculateFinalRankScoreAndReasons(&name1Copy, "คำค้นหา", false, true, true, false, false)
 	if name1Copy.FinalRankScoreExact != name1.FinalRankScoreExact {
 		t.Errorf("micro-tiebreaker is not deterministic: %f vs %f", name1Copy.FinalRankScoreExact, name1.FinalRankScoreExact)
+	}
+}
+
+func TestEnforceStrictlyDecreasingScores(t *testing.T) {
+	results := []MobileNameResult{
+		{Name: "Name1", FinalRankScoreExact: 100.0},
+		{Name: "Name2", FinalRankScoreExact: 100.0},
+		{Name: "Name3", FinalRankScoreExact: 100.0},
+		{Name: "Name4", FinalRankScoreExact: 99.99},
+		{Name: "Name5", FinalRankScoreExact: 95.0},
+		{Name: "Name6", FinalRankScoreExact: 95.0},
+		{Name: "Name7", FinalRankScoreExact: 50.0},
+		{Name: "Name8", FinalRankScoreExact: 0.0},
+		{Name: "Name9", FinalRankScoreExact: 0.0},
+	}
+
+	enforceStrictlyDecreasingScores(results)
+
+	expected := []float64{
+		100.0,
+		99.99,
+		99.98,
+		99.97,
+		95.0,
+		94.99,
+		50.0,
+		0.0,
+		0.0,
+	}
+
+	for i, r := range results {
+		if r.FinalRankScoreExact != expected[i] {
+			t.Errorf("at index %d: expected %f, got %f", i, expected[i], r.FinalRankScoreExact)
+		}
+	}
+}
+
+func TestRankingRespectsActiveToggles(t *testing.T) {
+	name := MobileNameResult{
+		Name:         "สมชาย",
+		Meaning:      "ผู้ชายที่เป็นสุข",
+		IsSatGood:    true,
+		IsShaGood:    true,
+		SatPairType:  "D10",
+		ShaPairType:  "D10",
+		SatPairPoint: 80,
+		ShaPairPoint: 80,
+	}
+
+	// Case 1: Both filters active
+	nameBoth := name
+	_, _ = calculateFinalRankScoreAndReasons(&nameBoth, "สมชาย", false, true, true, false, false)
+
+	// Case 2: Only Sat filter active
+	nameSatOnly := name
+	_, _ = calculateFinalRankScoreAndReasons(&nameSatOnly, "สมชาย", false, true, false, false, false)
+
+	if nameBoth.ShaBonus != 20 {
+		t.Errorf("expected ShaBonus to be 20 when filterSha is active, got %d", nameBoth.ShaBonus)
+	}
+	if nameBoth.DoubleBonus != 50 {
+		t.Errorf("expected DoubleBonus to be 50 when both filters are active, got %d", nameBoth.DoubleBonus)
+	}
+
+	if nameSatOnly.ShaBonus != 0 {
+		t.Errorf("expected ShaBonus to be 0 when filterSha is inactive, got %d", nameSatOnly.ShaBonus)
+	}
+	if nameSatOnly.DoubleBonus != 0 {
+		t.Errorf("expected DoubleBonus to be 0 when only filterSat is active, got %d", nameSatOnly.DoubleBonus)
+	}
+
+	if nameSatOnly.NumerologyScore >= nameBoth.NumerologyScore {
+		t.Errorf("expected NumerologyScore with single filter (%d) to be strictly lower than both filters (%d)", nameSatOnly.NumerologyScore, nameBoth.NumerologyScore)
+	}
+	if nameSatOnly.NumerologyScore != 79 {
+		t.Errorf("expected NumerologyScore for single filter to be 79, got %d", nameSatOnly.NumerologyScore)
+	}
+	if nameBoth.NumerologyScore != 100 {
+		t.Errorf("expected NumerologyScore for both filters to be 100, got %d", nameBoth.NumerologyScore)
 	}
 }

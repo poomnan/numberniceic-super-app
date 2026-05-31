@@ -39,4 +39,3 @@ func GetNameMeaningHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResponse(w, http.StatusOK, map[string]string{"name": name, "meaning": meaning.String})
 }
-

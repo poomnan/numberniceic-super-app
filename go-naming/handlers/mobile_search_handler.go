@@ -443,19 +443,33 @@ func calculateFinalRankScoreAndReasons(
 	doubleGoodMode := filterSat && filterSha
 
 	satBonus := 0
-	if satPass {
+	if filterSat && satPass {
 		satBonus = 20
 	}
 	shaBonus := 0
-	if shaPass {
+	if filterSha && shaPass {
 		shaBonus = 20
 	}
 	doubleBonus := 0
-	if satPass && shaPass {
+	if filterSat && filterSha && satPass && shaPass {
 		doubleBonus = 50
 	}
-	pairTypeBonus := pairTypeTierBonus(satPairType) + pairTypeTierBonus(shaPairType)
-	pairPointBonus := pairPointRankBonus(satPairPoint) + pairPointRankBonus(shaPairPoint)
+
+	pairTypeBonus := 0
+	if filterSat {
+		pairTypeBonus += pairTypeTierBonus(satPairType)
+	}
+	if filterSha {
+		pairTypeBonus += pairTypeTierBonus(shaPairType)
+	}
+
+	pairPointBonus := 0
+	if filterSat {
+		pairPointBonus += pairPointRankBonus(satPairPoint)
+	}
+	if filterSha {
+		pairPointBonus += pairPointRankBonus(shaPairPoint)
+	}
 
 	kakiBonus := 0
 	if len(r.KakiHighlight) > 0 {
@@ -509,6 +523,8 @@ func calculateFinalRankScoreAndReasons(
 		kakiBonus,
 		lengthBonus,
 		muPriorityBonus,
+		filterSat,
+		filterSha,
 	)
 	semanticComponent := normalizedSemanticScore(r.SemanticScore, r.RootScore, hasKeywordSignal, shapeBonus, nameNearBonus)
 	phoneticComponent := normalizedPhoneticScore(r.PhoneticScore, r.PronunciationEase, r.EuphonyScore, r.RhythmScore, r.PhoneticSummary)
@@ -552,10 +568,21 @@ func calculateFinalRankScoreAndReasons(
 			eliteBoost -= 6
 		}
 	}
-	if nameLen <= 5 && satPass && shaPass && r.SemanticScore > 0.75 {
+
+	useSatForElite := filterSat || (!filterSat && !filterSha)
+	useShaForElite := filterSha || (!filterSat && !filterSha)
+	passEliteNumerology := true
+	if useSatForElite {
+		passEliteNumerology = passEliteNumerology && satPass
+	}
+	if useShaForElite {
+		passEliteNumerology = passEliteNumerology && shaPass
+	}
+
+	if nameLen <= 5 && passEliteNumerology && r.SemanticScore > 0.75 {
 		eliteBoost += 5
 	}
-	if nameLen <= 6 && satPass && shaPass && numerologyComponent >= 85 {
+	if nameLen <= 6 && passEliteNumerology && numerologyComponent >= 85 {
 		eliteBoost += 3
 	}
 	originalScore := clampScore(baseScore + float64(eliteBoost))
@@ -1068,9 +1095,9 @@ func passesRequestedFiltersWithStage(result MobileNameResult, req MobileSearchRe
 	case req.FilterSat && req.FilterSha:
 		return satPass && shaPass
 	case req.FilterSat:
-		return satPass
+		return satPass && !shaPass
 	case req.FilterSha:
-		return shaPass
+		return shaPass && !satPass
 	default:
 		return true
 	}
@@ -1110,6 +1137,18 @@ func clampScore(value float64) float64 {
 	}
 }
 
+func enforceStrictlyDecreasingScores(results []MobileNameResult) {
+	for i := 1; i < len(results); i++ {
+		if results[i].FinalRankScoreExact >= results[i-1].FinalRankScoreExact {
+			nextScore := results[i-1].FinalRankScoreExact - 0.01
+			if nextScore < 0 {
+				nextScore = 0
+			}
+			results[i].FinalRankScoreExact = math.Round(nextScore*100) / 100
+		}
+	}
+}
+
 func deterministicNameTiebreaker(name string) float64 {
 	hash := uint32(2166136261)
 	for _, r := range name {
@@ -1133,19 +1172,30 @@ func normalizedNumerologyScore(
 	kakiBonus int,
 	lengthBonus int,
 	muPriorityBonus int,
+	filterSat bool,
+	filterSha bool,
 ) float64 {
 	score := 18.0
-	if satPass {
+	useSat := filterSat || (!filterSat && !filterSha)
+	useSha := filterSha || (!filterSat && !filterSha)
+
+	if useSat && satPass {
 		score += 18
 	}
-	if shaPass {
+	if useSha && shaPass {
 		score += 18
 	}
-	if satPass && shaPass {
+	if useSat && useSha && satPass && shaPass {
 		score += 12
 	}
-	score += float64(pairTypeRank(satPairType)+pairTypeRank(shaPairType)) * 6
-	score += (pairPointNormalized(satPairPoint) + pairPointNormalized(shaPairPoint)) * 12
+	if useSat {
+		score += float64(pairTypeRank(satPairType)) * 6
+		score += pairPointNormalized(satPairPoint) * 12
+	}
+	if useSha {
+		score += float64(pairTypeRank(shaPairType)) * 6
+		score += pairPointNormalized(shaPairPoint) * 12
+	}
 	score += float64(kakiBonus) * 0.6
 	score += float64(lengthBonus) * 0.5
 	if muPriorityBonus > 0 {
@@ -1711,14 +1761,32 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 				WHERE char_length(thname) BETWEEN 2 AND 8
 			`, rootExpr, rootExpr, math.Max(searchContext.WordWeight, 1.0))
 
-			if req.FilterSat || req.SimilarMode {
+			if doubleGoodMode || req.SimilarMode {
+				if req.FilterSat || req.SimilarMode {
+					query += fmt.Sprintf(" AND sat_sum = ANY($%d::int[])", argCounter)
+					args = append(args, pq.Array(targetSatSums))
+					argCounter++
+				}
+				if req.FilterSha || req.SimilarMode {
+					query += fmt.Sprintf(" AND sha_sum = ANY($%d::int[])", argCounter)
+					args = append(args, pq.Array(targetShaSums))
+					argCounter++
+				}
+			} else if req.FilterSat && !req.FilterSha {
 				query += fmt.Sprintf(" AND sat_sum = ANY($%d::int[])", argCounter)
 				args = append(args, pq.Array(targetSatSums))
 				argCounter++
-			}
-			if req.FilterSha || req.SimilarMode {
+
+				query += fmt.Sprintf(" AND NOT (sha_sum = ANY($%d::int[]))", argCounter)
+				args = append(args, pq.Array(goodSums))
+				argCounter++
+			} else if req.FilterSha && !req.FilterSat {
 				query += fmt.Sprintf(" AND sha_sum = ANY($%d::int[])", argCounter)
 				args = append(args, pq.Array(targetShaSums))
+				argCounter++
+
+				query += fmt.Sprintf(" AND NOT (sat_sum = ANY($%d::int[]))", argCounter)
+				args = append(args, pq.Array(goodSums))
 				argCounter++
 			}
 			if req.FilterKaki && kakiColumn != "" {
@@ -1884,8 +1952,18 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		} else if satCond != "" {
 			filterCond = satCond
+			if !req.SimilarMode && !doubleGoodMode {
+				filterCond = fmt.Sprintf("(%s AND NOT (sha_sum = ANY($%d::int[])))", satCond, argCounter)
+				args = append(args, pq.Array(goodSums))
+				argCounter++
+			}
 		} else if shaCond != "" {
 			filterCond = shaCond
+			if !req.SimilarMode && !doubleGoodMode {
+				filterCond = fmt.Sprintf("(%s AND NOT (sat_sum = ANY($%d::int[])))", shaCond, argCounter)
+				args = append(args, pq.Array(goodSums))
+				argCounter++
+			}
 		}
 
 		if filterCond != "" {
@@ -2969,6 +3047,10 @@ finalizeAndRespond:
 	if len(results) > 100 {
 		results = results[:100]
 	}
+
+	// Enforce strictly decreasing scores to prevent duplicate scores for different ranks
+	enforceStrictlyDecreasingScores(results)
+
 	log.Printf("MobileSearchHandler sort+trim elapsed=%s", time.Since(sortStart))
 
 	// 5. Build Final Response

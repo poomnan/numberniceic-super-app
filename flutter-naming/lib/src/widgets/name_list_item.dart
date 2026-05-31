@@ -1191,9 +1191,12 @@ class _NameListItemState extends State<NameListItem>
         ? isShaMatch
         : (isSatMatch && isShaMatch);
 
-    final bool hasAnyRedSignal = !isSatMatch || !isShaMatch;
+    final bool hasActiveNumerologyFilter = satSelected || shaSelected;
+    final bool hasAnySelectedRedSignal = hasActiveNumerologyFilter
+        ? ((satSelected && !isSatMatch) || (shaSelected && !isShaMatch))
+        : (!isSatMatch || !isShaMatch);
     final bool isLucky =
-        satisfiesFilters && passesSelectedCriteria && !hasAnyRedSignal;
+        satisfiesFilters && passesSelectedCriteria && !hasAnySelectedRedSignal;
 
     int multiplier = 0;
     if (satSelected && isSatMatch) multiplier++;
@@ -2624,12 +2627,18 @@ class _NameListItemState extends State<NameListItem>
     double size = 44,
     String pairType = '',
   }) {
+    bool isActuallyGood = isGood;
+    if (pairType.isNotEmpty) {
+      isActuallyGood = pairType.toUpperCase().startsWith('D');
+    }
+    final bool shouldRenderNeutral = renderNeutral || (!isActive && isActuallyGood);
+
     Color lightColor;
     Color darkColor;
 
-    if (renderNeutral) {
-      lightColor = const Color(0xFFF8FAFC);
-      darkColor = const Color(0xFFE5E7EB);
+    if (shouldRenderNeutral) {
+      lightColor = const Color(0xFFE2E8F0);
+      darkColor = const Color(0xFFCBD5E1);
     } else if (pairType.isNotEmpty) {
       Color base = _pairTypeColor(pairType);
       String p = pairType.toUpperCase();
@@ -2711,10 +2720,10 @@ class _NameListItemState extends State<NameListItem>
               child: Text(
                 "$score",
                 style: TextStyle(
-                  color: Colors.white,
+                  color: shouldRenderNeutral ? const Color(0xFF64748B) : Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: size * 18 / 44,
-                  shadows: const [
+                  shadows: shouldRenderNeutral ? null : const [
                     Shadow(
                       color: Colors.black26,
                       offset: Offset(0, 1),

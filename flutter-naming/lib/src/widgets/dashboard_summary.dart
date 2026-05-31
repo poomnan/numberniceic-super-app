@@ -32,15 +32,15 @@ class DashboardSummary extends StatelessWidget {
     stats = [
       (
         label: 'เลขศาสตร์',
-        value: isSatActive ? numerologyGood : '-',
+        value: numerologyGood,
         accent: const Color(0xFF10B981),
-        isActive: isSatActive,
+        isActive: true,
       ),
       (
         label: 'พลังเงา',
-        value: isShaActive ? shadowGood : '-',
+        value: shadowGood,
         accent: const Color(0xFF6366F1),
-        isActive: isShaActive,
+        isActive: true,
       ),
     ];
 
