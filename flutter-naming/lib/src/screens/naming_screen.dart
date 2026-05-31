@@ -7285,166 +7285,19 @@ class LouisVuittonMonogramPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class AnimatedSeedName extends StatefulWidget {
+class AnimatedSeedName extends StatelessWidget {
   final String name;
   const AnimatedSeedName({super.key, required this.name});
 
   @override
-  State<AnimatedSeedName> createState() => _AnimatedSeedNameState();
-}
-
-class _AnimatedSeedNameState extends State<AnimatedSeedName>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _shimmerAnimation;
-  late Animation<double> _glowAnimation;
-  late Animation<double> _rotateAnimation;
-  late Animation<double> _starScaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3000),
-    )..repeat(reverse: true);
-
-    _scaleAnimation = Tween<double>(begin: 0.98, end: 1.05).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _shimmerAnimation = Tween<double>(begin: -math.pi, end: math.pi).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.linear,
-      ),
-    );
-
-    _glowAnimation = Tween<double>(begin: 4.0, end: 14.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _rotateAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.linear,
-      ),
-    );
-
-    _starScaleAnimation = Tween<double>(begin: 0.7, end: 1.2).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final shimmerVal = _shimmerAnimation.value;
-        final scaleVal = _scaleAnimation.value;
-        final glowVal = _glowAnimation.value;
-        final rotateVal = _rotateAnimation.value;
-        final starScaleVal = _starScaleAnimation.value;
-
-        return Transform.scale(
-          scale: scaleVal,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD4AF37).withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD4AF37).withValues(alpha: 0.12),
-                  blurRadius: glowVal,
-                  spreadRadius: glowVal * 0.15,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Transform.rotate(
-                  angle: rotateVal,
-                  child: Transform.scale(
-                    scale: starScaleVal,
-                    child: Icon(
-                      Icons.auto_awesome_rounded,
-                      color: const Color(0xFFFFF7C2),
-                      size: 11,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                ShaderMask(
-                  shaderCallback: (bounds) {
-                    return LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: const [
-                        Color(0xFFD4AF37), // Classic Gold
-                        Color(0xFFFFF7C2), // Sparkling gold highlight
-                        Color(0xFFE5C060), // Warm Gold
-                        Color(0xFFFFF7C2), // Sparkling gold highlight
-                        Color(0xFFD4AF37), // Classic Gold
-                      ],
-                      stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
-                      transform: GradientRotation(shimmerVal),
-                    ).createShader(bounds);
-                  },
-                  child: Text(
-                    widget.name,
-                    style: GoogleFonts.prompt(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      shadows: [
-                        Shadow(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
-                          blurRadius: glowVal * 0.5,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Transform.rotate(
-                  angle: -rotateVal - (math.pi / 4),
-                  child: Transform.scale(
-                    scale: starScaleVal,
-                    child: Icon(
-                      Icons.auto_awesome_rounded,
-                      color: const Color(0xFFFFF7C2),
-                      size: 11,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    return Text(
+      name,
+      style: GoogleFonts.prompt(
+        color: const Color(0xFFC5951A), // Beautiful rich dark gold with high contrast
+        fontSize: 14.5,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 }
