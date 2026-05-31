@@ -3682,14 +3682,14 @@ class _NamingScreenState extends State<NamingScreen>
     final Map<String, Map<String, dynamic>> badgeConfigs = {
       'Sunday': {
         'name': 'อาทิตย์',
-        'color': const Color(0xFFFF3B30),
+        'color': const Color(0xFFFF9500),
         'gradient': const LinearGradient(
-          colors: [Color(0xFFFF6B6B), Color(0xFFFF3B30)],
+          colors: [Color(0xFFFFB300), Color(0xFFFF9500)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        'badgeColor': const Color(0xFFFFECEB),
-        'textColor': const Color(0xFFD32F2F),
+        'badgeColor': const Color(0xFFFFF7E6),
+        'textColor': const Color(0xFFE65100),
       },
       'Monday': {
         'name': 'จันทร์',
@@ -3704,14 +3704,14 @@ class _NamingScreenState extends State<NamingScreen>
       },
       'Tuesday': {
         'name': 'อังคาร',
-        'color': const Color(0xFFFF2D55),
+        'color': const Color(0xFFD946EF),
         'gradient': const LinearGradient(
-          colors: [Color(0xFFFF8DA1), Color(0xFFFF2D55)],
+          colors: [Color(0xFFF472B6), Color(0xFFD946EF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        'badgeColor': const Color(0xFFFFF0F5),
-        'textColor': const Color(0xFFC2185B),
+        'badgeColor': const Color(0xFFFDF4FF),
+        'textColor': const Color(0xFF86198F),
       },
       'Wednesday1': {
         'name': 'พุธ (กลางวัน)',
@@ -4609,13 +4609,13 @@ class _NamingScreenState extends State<NamingScreen>
     final Map<String, Map<String, dynamic>> badgeConfigs = {
       'Sunday': {
         'name': 'วันอาทิตย์',
-        'color': const Color(0xFFFF3B30),
+        'color': const Color(0xFFFF9500),
         'gradient': const LinearGradient(
-          colors: [Color(0xFFFFECEB), Color(0xFFFFD1CF)],
+          colors: [Color(0xFFFFF7E6), Color(0xFFFFE0B2)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        'textColor': const Color(0xFFD32F2F),
+        'textColor': const Color(0xFFE65100),
       },
       'Monday': {
         'name': 'วันจันทร์',
@@ -4629,13 +4629,13 @@ class _NamingScreenState extends State<NamingScreen>
       },
       'Tuesday': {
         'name': 'วันอังคาร',
-        'color': const Color(0xFFFF2D55),
+        'color': const Color(0xFFD946EF),
         'gradient': const LinearGradient(
-          colors: [Color(0xFFFFF0F5), Color(0xFFFFD1DC)],
+          colors: [Color(0xFFFDF4FF), Color(0xFFF5D0FF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        'textColor': const Color(0xFFC2185B),
+        'textColor': const Color(0xFF86198F),
       },
       'Wednesday1': {
         'name': 'วันพุธ (กลางวัน)',
