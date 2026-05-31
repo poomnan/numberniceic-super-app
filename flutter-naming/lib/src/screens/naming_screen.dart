@@ -4793,12 +4793,34 @@ class _NamingScreenState extends State<NamingScreen>
           onTap: () {
             if (!hasSelectedDay) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    "กรุณาแตะเลือกวันเกิดที่ด้านบนก่อนนะคะ",
+                SnackBar(
+                  backgroundColor: AppColors.textLight, // Deep brown background
+                  behavior: SnackBarBehavior.floating, // Floating for modern premium feel
+                  margin: const EdgeInsets.all(16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 2),
+                  duration: const Duration(seconds: 2),
+                  content: Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_month_rounded,
+                        color: AppColors.accent, // Gold accent icon
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          "กรุณาแตะเลือกวันเกิดที่ด้านบนก่อนนะคะ",
+                          style: GoogleFonts.sarabun(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
               return;
