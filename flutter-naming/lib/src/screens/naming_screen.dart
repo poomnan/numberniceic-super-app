@@ -5764,48 +5764,61 @@ class _NamingScreenState extends State<NamingScreen>
 
   Widget buildFooter() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       decoration: const BoxDecoration(
         color: AppColors.bgDark, // เปลี่ยนมาใช้สีเดียวกับพื้นหลังแอป
       ),
-      child: Column(
+      child: Stack(
         children: [
-          Text(
-            "ความรู้เรื่องชื่อและเลขศาสตร์",
-            style: GoogleFonts.prompt(
-              color: AppColors.textGray.withValues(alpha: 0.6),
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+          Positioned.fill(
+            child: CustomPaint(
+              painter: LouisVuittonMonogramPainter(
+                color: const Color(0xFFC5A059).withValues(alpha: 0.075),
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              buildFooterLink("เลขศาสตร์ & พลังเงา", 0),
-              buildFooterLink("กาลกิณี", 1),
-              buildFooterLink("ระบบอัจฉริยะ (AI)", 2),
-              buildFooterLink("การจัดอันดับชื่อ", 3),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "วิเคราะห์จากชื่อจริง +3 แสนชื่อ",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.prompt(
-              color: AppColors.textLight.withValues(alpha: 0.9),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 40),
-          Text(
-            "© 2026 Naming App. All rights reserved.",
-            style: GoogleFonts.sarabun(
-              color: AppColors.textGray.withValues(alpha: 0.3),
-              fontSize: 10,
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+            child: Column(
+              children: [
+                Text(
+                  "ความรู้เรื่องชื่อและเลขศาสตร์",
+                  style: GoogleFonts.prompt(
+                    color: AppColors.textGray.withValues(alpha: 0.6),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    buildFooterLink("เลขศาสตร์ & พลังเงา", 0),
+                    buildFooterLink("กาลกิณี", 1),
+                    buildFooterLink("ระบบอัจฉริยะ (AI)", 2),
+                    buildFooterLink("การจัดอันดับชื่อ", 3),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "วิเคราะห์จากชื่อจริง +3 แสนชื่อ",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.prompt(
+                    color: AppColors.textLight.withValues(alpha: 0.9),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                Text(
+                  "© 2026 Naming App. All rights reserved.",
+                  style: GoogleFonts.sarabun(
+                    color: AppColors.textGray.withValues(alpha: 0.3),
+                    fontSize: 10,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -6908,4 +6921,138 @@ class _PulsingBarState extends State<_PulsingBar>
       },
     );
   }
+}
+
+
+class LouisVuittonMonogramPainter extends CustomPainter {
+  final Color color;
+  LouisVuittonMonogramPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    const double spacingX = 60.0;
+    const double spacingY = 60.0;
+
+    for (double x = 0; x < size.width + spacingX; x += spacingX) {
+      int row = 0;
+      for (double y = 0; y < size.height + spacingY; y += spacingY) {
+        final double offset = (row % 2 == 0) ? 0 : spacingX / 2;
+        final double posX = x + offset;
+        final double posY = y;
+
+        final int patternType = (row + (x / spacingX).round()) % 4;
+
+        if (patternType == 0) {
+          _drawMonogramNA(canvas, posX, posY, paint);
+        } else if (patternType == 1) {
+          _drawQuatrefoilInCircle(canvas, posX, posY, paint);
+        } else if (patternType == 2) {
+          _drawFourPointedStar(canvas, posX, posY, paint);
+        } else if (patternType == 3) {
+          _drawOpenQuatrefoil(canvas, posX, posY, paint);
+        }
+        row++;
+      }
+    }
+  }
+
+  void _drawMonogramNA(Canvas canvas, double cx, double cy, Paint paint) {
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: 'N',
+        style: TextStyle(
+          fontFamily: 'serif',
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: paint.color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter.paint(canvas, Offset(cx - 7, cy - 8));
+
+    final textPainter2 = TextPainter(
+      text: TextSpan(
+        text: 'A',
+        style: TextStyle(
+          fontFamily: 'serif',
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: paint.color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    textPainter2.paint(canvas, Offset(cx + 1, cy - 1));
+  }
+
+  void _drawQuatrefoilInCircle(Canvas canvas, double cx, double cy, Paint paint) {
+    final strokePaint = Paint()
+      ..color = paint.color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    canvas.drawCircle(Offset(cx, cy), 9, strokePaint);
+
+    final path = Path();
+    for (int i = 0; i < 4; i++) {
+      final double angle = i * 3.14159 / 2;
+      final double dx = cx + 7.5 * math.cos(angle);
+      final double dy = cy + 7.5 * math.sin(angle);
+      path.moveTo(cx, cy);
+      path.quadraticBezierTo(
+        cx + 5.5 * math.cos(angle - 0.45),
+        cy + 5.5 * math.sin(angle - 0.45),
+        dx,
+        dy,
+      );
+      path.quadraticBezierTo(
+        cx + 5.5 * math.cos(angle + 0.45),
+        cy + 5.5 * math.sin(angle + 0.45),
+        cx,
+        cy,
+      );
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawFourPointedStar(Canvas canvas, double cx, double cy, Paint paint) {
+    final path = Path();
+    path.moveTo(cx, cy - 9);
+    path.quadraticBezierTo(cx, cy, cx + 9, cy);
+    path.quadraticBezierTo(cx, cy, cx, cy + 9);
+    path.quadraticBezierTo(cx, cy, cx - 9, cy);
+    path.quadraticBezierTo(cx, cy, cx, cy - 9);
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawOpenQuatrefoil(Canvas canvas, double cx, double cy, Paint paint) {
+    final path = Path();
+    for (int i = 0; i < 4; i++) {
+      final double angle = i * 3.14159 / 2;
+      final double dx = cx + 8.5 * math.cos(angle);
+      final double dy = cy + 8.5 * math.sin(angle);
+      path.moveTo(cx, cy);
+      path.quadraticBezierTo(
+        cx + 6.5 * math.cos(angle - 0.5),
+        cy + 6.5 * math.sin(angle - 0.5),
+        dx,
+        dy,
+      );
+      path.quadraticBezierTo(
+        cx + 6.5 * math.cos(angle + 0.5),
+        cy + 6.5 * math.sin(angle + 0.5),
+        cx,
+        cy,
+      );
+    }
+    canvas.drawPath(path, paint);
+    canvas.drawCircle(Offset(cx, cy), 1.2, Paint()..color = paint.color);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
