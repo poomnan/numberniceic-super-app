@@ -5765,14 +5765,14 @@ class _NamingScreenState extends State<NamingScreen>
   Widget buildFooter() {
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.bgDark, // เปลี่ยนมาใช้สีเดียวกับพื้นหลังแอป
+        color: Color(0xFF2D1E15), // Deep chocolate luxury Louis Vuitton brown background
       ),
       child: Stack(
         children: [
           Positioned.fill(
             child: CustomPaint(
               painter: LouisVuittonMonogramPainter(
-                color: const Color(0xFFC5A059).withValues(alpha: 0.075),
+                color: const Color(0xFFC5A059).withValues(alpha: 0.08), // Subtle gold monogram shapes
               ),
             ),
           ),
@@ -5783,29 +5783,33 @@ class _NamingScreenState extends State<NamingScreen>
                 Text(
                   "ความรู้เรื่องชื่อและเลขศาสตร์",
                   style: GoogleFonts.prompt(
-                    color: AppColors.textGray.withValues(alpha: 0.6),
+                    color: const Color(0xFFC5A059).withValues(alpha: 0.65), // Elegant subtle gold text
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Wrap(
                   alignment: WrapAlignment.center,
-                  spacing: 12,
-                  runSpacing: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 4,
+                  runSpacing: 8,
                   children: [
                     buildFooterLink("เลขศาสตร์ & พลังเงา", 0),
+                    const Text("•", style: TextStyle(color: Color(0xFFC5A059), fontSize: 12)),
                     buildFooterLink("กาลกิณี", 1),
+                    const Text("•", style: TextStyle(color: Color(0xFFC5A059), fontSize: 12)),
                     buildFooterLink("ระบบอัจฉริยะ (AI)", 2),
+                    const Text("•", style: TextStyle(color: Color(0xFFC5A059), fontSize: 12)),
                     buildFooterLink("การจัดอันดับชื่อ", 3),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Text(
                   "วิเคราะห์จากชื่อจริง +3 แสนชื่อ",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.prompt(
-                    color: AppColors.textLight.withValues(alpha: 0.9),
+                    color: Colors.white.withValues(alpha: 0.95), // Highly readable white/cream text
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -5814,7 +5818,7 @@ class _NamingScreenState extends State<NamingScreen>
                 Text(
                   "© 2026 Naming App. All rights reserved.",
                   style: GoogleFonts.sarabun(
-                    color: AppColors.textGray.withValues(alpha: 0.3),
+                    color: Colors.white.withValues(alpha: 0.25),
                     fontSize: 10,
                   ),
                 ),
@@ -5836,19 +5840,15 @@ class _NamingScreenState extends State<NamingScreen>
           ),
         );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          color: AppColors.bgDarker,
-          border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
-          borderRadius: BorderRadius.circular(8),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         child: Text(
           label,
           style: GoogleFonts.prompt(
-            color: AppColors.secondary,
-            fontSize: 12,
+            color: const Color(0xFFFFECB3), // Beautiful luxury soft gold link text
+            fontSize: 13,
             fontWeight: FontWeight.w600,
+            letterSpacing: 0.3,
           ),
         ),
       ),
