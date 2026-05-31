@@ -4604,6 +4604,7 @@ class _NamingScreenState extends State<NamingScreen>
   // ANCHOR: Unified Day & Kaki Filter Switch Card (การ์ดวันเกิดและตัวกรองกาลกิณีแบบรวมชิ้นดีไซน์พรีเมียม)
   Widget buildUnifiedDayKakiCard() {
     final hasSelectedDay = _selectedDay != null;
+    
     final Map<String, Map<String, dynamic>> badgeConfigs = {
       'Sunday': {
         'name': 'วันอาทิตย์',
@@ -4656,12 +4657,26 @@ class _NamingScreenState extends State<NamingScreen>
     };
 
     final activeConfig = hasSelectedDay ? badgeConfigs[_selectedDay] : null;
+    final Color themeColor = hasSelectedDay
+        ? (activeConfig!['color'] as Color)
+        : const Color(0xFF94A3B8);
     final Color cardBorderColor = hasSelectedDay
-        ? (activeConfig!['color'] as Color).withValues(alpha: 0.35)
+        ? themeColor.withValues(alpha: 0.3)
         : const Color(0xFFE2E8F0);
     final Color cardBgColor = hasSelectedDay
         ? (activeConfig!['badgeColor'] as Color).withValues(alpha: 0.5)
         : const Color(0xFFF8FAFC);
+    final Color textColor = hasSelectedDay
+        ? (activeConfig!['textColor'] as Color)
+        : const Color(0xFF475569);
+
+    final titleText = hasSelectedDay && _filterKaki
+        ? "คัดอักษรกาลกิณีออกเรียบร้อย"
+        : "คัดอักษรกาลกิณีออก (ตามตำราโบราณ)";
+        
+    final subtitleText = hasSelectedDay
+        ? "วิเคราะห์และกรองคำอัปมงคลสำหรับคนเกิด ${activeConfig!['name']}"
+        : "กรุณาแตะเลือกวันเกิดของคุณที่ด้านบนก่อนนะคะ";
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -4669,188 +4684,116 @@ class _NamingScreenState extends State<NamingScreen>
       width: double.infinity,
       decoration: BoxDecoration(
         color: cardBgColor,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: cardBorderColor,
-          width: 1.8,
+          width: 1.6,
         ),
         boxShadow: [
           BoxShadow(
-            color: (hasSelectedDay ? (activeConfig!['color'] as Color) : Colors.black)
-                .withValues(alpha: hasSelectedDay ? 0.05 : 0.02),
+            color: themeColor.withValues(alpha: hasSelectedDay ? 0.05 : 0.01),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left Section: Selected Birthday display
-              Expanded(
-                flex: 11,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  child: Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (!hasSelectedDay) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    "กรุณาแตะเลือกวันเกิดที่ด้านบนก่อนนะคะ",
+                  ),
+                  backgroundColor: Colors.orange,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              return;
+            }
+            setState(() => _filterKaki = !_filterKaki);
+            unawaited(_refreshResultsKeepingStep2Anchor());
+          },
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  padding: const EdgeInsets.all(9),
+                  decoration: BoxDecoration(
+                    color: hasSelectedDay
+                        ? themeColor.withValues(alpha: 0.12)
+                        : const Color(0xFFE2E8F0),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    hasSelectedDay && _filterKaki
+                        ? Icons.security_rounded
+                        : Icons.calendar_month_rounded,
+                    color: themeColor,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: hasSelectedDay
-                              ? (activeConfig!['color'] as Color).withValues(alpha: 0.15)
-                              : const Color(0xFFE2E8F0),
-                          shape: BoxShape.circle,
+                      Text(
+                        titleText,
+                        style: GoogleFonts.prompt(
+                          color: hasSelectedDay && _filterKaki
+                              ? const Color(0xFF0369A1)
+                              : textColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
                         ),
-                        child: Icon(
-                          Icons.calendar_month_rounded,
-                          color: hasSelectedDay
-                              ? (activeConfig!['color'] as Color)
-                              : const Color(0xFF94A3B8),
-                          size: 15,
-                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "วันเกิดที่ระบุ",
-                              style: GoogleFonts.prompt(
-                                color: hasSelectedDay
-                                    ? (activeConfig!['textColor'] as Color).withValues(alpha: 0.6)
-                                    : const Color(0xFF94A3B8),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              hasSelectedDay
-                                  ? "เกิด${activeConfig!['name']}"
-                                  : "ยังไม่ได้เลือกวันเกิด",
-                              style: GoogleFonts.prompt(
-                                color: hasSelectedDay
-                                    ? (activeConfig!['textColor'] as Color)
-                                    : const Color(0xFF64748B),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitleText,
+                        style: GoogleFonts.prompt(
+                          color: hasSelectedDay
+                              ? textColor.withValues(alpha: 0.7)
+                              : const Color(0xFF94A3B8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-              ),
-
-              // Vertical Divider line
-              Container(
-                width: 1.5,
-                color: cardBorderColor.withValues(alpha: 0.5),
-              ),
-
-              // Right Section: Switch logic (Tap target)
-              Expanded(
-                flex: 12,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      if (!hasSelectedDay) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "กรุณาแตะเลือกวันเกิดที่ด้านบนก่อนนะคะ",
-                            ),
-                            backgroundColor: Colors.orange,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                        return;
-                      }
-                      setState(() => _filterKaki = !_filterKaki);
-                      unawaited(_refreshResultsKeepingStep2Anchor());
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.security_rounded,
-                            color: hasSelectedDay && _filterKaki
-                                ? const Color(0xFF0EA5E9)
-                                : const Color(0xFF94A3B8),
-                            size: 15,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "ความปลอดภัย",
-                                  style: GoogleFonts.prompt(
-                                    color: hasSelectedDay && _filterKaki
-                                        ? const Color(0xFF0EA5E9).withValues(alpha: 0.6)
-                                        : const Color(0xFF94A3B8),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 1),
-                                Text(
-                                  "คัดกาลกิณีออก",
-                                  style: GoogleFonts.prompt(
-                                    color: hasSelectedDay && _filterKaki
-                                        ? const Color(0xFF0369A1)
-                                        : const Color(0xFF475569),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          IgnorePointer(
-                            child: Transform.scale(
-                              scale: 0.72,
-                              child: Switch.adaptive(
-                                value: hasSelectedDay && _filterKaki,
-                                onChanged: null, // Tap handled by InkWell parent
-                                activeTrackColor: const Color(0xFF38BDF8),
-                                activeColor: const Color(0xFF0EA5E9),
-                                inactiveThumbColor: Colors.white,
-                                inactiveTrackColor: const Color(0xFFE2E8F0),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                const SizedBox(width: 8),
+                IgnorePointer(
+                  child: Transform.scale(
+                    scale: 0.75,
+                    child: Switch.adaptive(
+                      value: hasSelectedDay && _filterKaki,
+                      onChanged: null, // Tapped via parent InkWell
+                      activeTrackColor: const Color(0xFF38BDF8),
+                      activeColor: const Color(0xFF0EA5E9),
+                      inactiveThumbColor: Colors.white,
+                      inactiveTrackColor: const Color(0xFFE2E8F0),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
 
 
 
