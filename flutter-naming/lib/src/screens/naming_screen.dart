@@ -4717,9 +4717,7 @@ class _NamingScreenState extends State<NamingScreen>
         ? "อันดับชื่อคัดกาลกิณีออกแล้ว"
         : "ยังไม่ได้คัดกาลกิณีออก";
         
-    final subtitleText = hasSelectedDay
-        ? "คำนวณมงคลตามวันเกิด: ${activeConfig!['name']}"
-        : "กรุณาเลือกวันเกิดของคุณที่ด้านบนก่อนนะคะ";
+
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -4797,18 +4795,43 @@ class _NamingScreenState extends State<NamingScreen>
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
-                      Text(
-                        subtitleText,
-                        style: GoogleFonts.prompt(
-                          color: isActive
-                              ? titleColor.withValues(alpha: 0.7)
-                              : const Color(0xFFE53935).withValues(alpha: 0.7),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                      if (hasSelectedDay)
+                        RichText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          text: TextSpan(
+                            style: GoogleFonts.prompt(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isActive
+                                  ? titleColor.withValues(alpha: 0.65)
+                                  : const Color(0xFFE53935).withValues(alpha: 0.65),
+                            ),
+                            children: [
+                              const TextSpan(text: "คำนวณมงคลตามวันเกิด: "),
+                              TextSpan(
+                                text: activeConfig!['name'] as String,
+                                style: GoogleFonts.prompt(
+                                  fontWeight: FontWeight.w900,
+                                  color: isActive
+                                      ? titleColor
+                                      : const Color(0xFFC53030),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Text(
+                          "กรุณาเลือกวันเกิดของคุณที่ด้านบนก่อนนะคะ",
+                          style: GoogleFonts.prompt(
+                            color: const Color(0xFFE53935).withValues(alpha: 0.7),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
                     ],
                   ),
                 ),
