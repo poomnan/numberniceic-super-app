@@ -134,16 +134,7 @@ class _NamingScreenState extends State<NamingScreen>
     'Saturday',
   ];
 
-  final Map<String, String> _dayLabels = {
-    'Sunday': 'เกิดวันอาทิตย์',
-    'Monday': 'เกิดวันจันทร์',
-    'Tuesday': 'เกิดวันอังคาร',
-    'Wednesday1': 'เกิดวันพุธ (กลางวัน)',
-    'Wednesday2': 'เกิดวันพุธ (กลางคืน)',
-    'Thursday': 'เกิดวันพฤหัสบดี',
-    'Friday': 'เกิดวันศุกร์',
-    'Saturday': 'เกิดวันเสาร์',
-  };
+
 
   List<Map<String, dynamic>> _ideaExamples = [];
   List<Map<String, dynamic>> _pickedExamples = [];
@@ -2929,7 +2920,7 @@ class _NamingScreenState extends State<NamingScreen>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(child: buildDropdown()),
+                    Expanded(child: buildAestheticDayIndicator()),
                     const SizedBox(width: 8),
                     Expanded(
                       child: GestureDetector(
@@ -4714,211 +4705,177 @@ class _NamingScreenState extends State<NamingScreen>
     );
   }
 
-  // ANCHOR: dropdown birthday (เลือกวันเกิด)
-  Widget buildDropdown() {
-    final bool hasSelectedDay = _selectedDay != null;
-    Widget buildDayLabel(
-      String day,
-      TextStyle style, {
-      bool detailOnNewLine = false,
-    }) {
-      final label = _dayLabels[day]!;
-      if (day.startsWith("Wednesday")) {
-        final core = "เกิดวันพุธ";
-        final detail = day == 'Wednesday1' ? "(กลางวัน)" : "(กลางคืน)";
-        if (detailOnNewLine) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(core, style: style),
-              const SizedBox(height: 2),
-              Text(
-                detail,
-                style: style.copyWith(
-                  fontSize: style.fontSize! * 0.9,
-                  fontWeight: FontWeight.w600,
-                  color: style.color?.withValues(alpha: 0.8),
-                  height: 1.2,
-                ),
-              ),
-            ],
-          );
-        }
-        return Row(
-          mainAxisSize: MainAxisSize.min,
+  // ANCHOR: Aesthetic Birthday Day Indicator (แสดงผลวันเกิดที่เลือก)
+  Widget buildAestheticDayIndicator() {
+    final hasSelectedDay = _selectedDay != null;
+    
+    if (!hasSelectedDay) {
+      return Container(
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFFE2E8F0),
+            width: 1.5,
+          ),
+        ),
+        child: Row(
           children: [
-            Text(core, style: style),
-            const SizedBox(width: 6),
-            Text(
-              detail,
-              style: style.copyWith(
-                fontSize: style.fontSize! * 0.9,
-                fontWeight: FontWeight.w600,
-                color: style.color?.withValues(alpha: 0.8),
-                height: 1.1,
+            const Icon(
+              Icons.calendar_today_rounded,
+              color: Color(0xFF94A3B8),
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                "ยังไม่ได้เลือกวันเกิด",
+                style: GoogleFonts.prompt(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
-        );
-      }
-      return Text(label, style: style);
+        ),
+      );
     }
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
+    final Map<String, Map<String, dynamic>> badgeConfigs = {
+      'Sunday': {
+        'name': 'เกิดวันอาทิตย์',
+        'color': const Color(0xFFFF3B30),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFECEB), Color(0xFFFFD1CF)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: hasSelectedDay
-              ? [const Color(0xFFFFF8DF), Colors.white, const Color(0xFFFDF2FF)]
-              : [Colors.white, const Color(0xFFFFFCF2)],
         ),
+        'textColor': const Color(0xFFD32F2F),
+      },
+      'Monday': {
+        'name': 'เกิดวันจันทร์',
+        'color': const Color(0xFFFFCC00),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFFDE7), Color(0xFFFFF9C4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'textColor': const Color(0xFF795548),
+      },
+      'Tuesday': {
+        'name': 'เกิดวันอังคาร',
+        'color': const Color(0xFFFF2D55),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFF0F5), Color(0xFFFFD1DC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'textColor': const Color(0xFFC2185B),
+      },
+      'Wednesday1': {
+        'name': 'เกิดวันพุธ (กลางวัน)',
+        'color': const Color(0xFF34C759),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'textColor': const Color(0xFF2E7D32),
+      },
+      'Wednesday2': {
+        'name': 'เกิดวันพุธ (กลางคืน)',
+        'color': const Color(0xFF007A7C),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFE0F2F1), Color(0xFFB2DFDB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'textColor': const Color(0xFF004D40),
+      },
+      'Thursday': {
+        'name': 'เกิดวันพฤหัสบดี',
+        'color': const Color(0xFFFF9500),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'textColor': const Color(0xFFE65100),
+      },
+      'Friday': {
+        'name': 'เกิดวันศุกร์',
+        'color': const Color(0xFF5AC8FA),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'textColor': const Color(0xFF0D47A1),
+      },
+      'Saturday': {
+        'name': 'เกิดวันเสาร์',
+        'color': const Color(0xFF5856D6),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFF3E5F5), Color(0xFFE1BEE7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'textColor': const Color(0xFF4A148C),
+      },
+    };
+
+    final config = badgeConfigs[_selectedDay]!;
+    final dayColor = config['color'] as Color;
+    final dayGradient = config['gradient'] as Gradient;
+    final textColor = config['textColor'] as Color;
+    final dayLabel = config['name'] as String;
+
+    return Container(
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        gradient: dayGradient,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: hasSelectedDay
-              ? const Color(0xFFD4AF37)
-              : AppColors.secondary.withValues(alpha: 0.18),
-          width: hasSelectedDay ? 1.8 : 1.4,
+          color: dayColor.withValues(alpha: 0.3),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: hasSelectedDay
-                ? const Color(0xFFD4AF37).withValues(alpha: 0.14)
-                : Colors.black.withValues(alpha: 0.04),
-            blurRadius: hasSelectedDay ? 16 : 10,
-            offset: const Offset(0, 6),
+            color: dayColor.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
-          if (hasSelectedDay)
-            BoxShadow(
-              color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
-              blurRadius: 18,
-              spreadRadius: 1,
-              offset: const Offset(0, 8),
-            ),
         ],
       ),
       child: Row(
         children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: hasSelectedDay
-                    ? [const Color(0xFFF7D046), const Color(0xFFD4AF37)]
-                    : [const Color(0xFFE6FBF7), const Color(0xFFD7F4EE)],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color:
-                      (hasSelectedDay
-                              ? const Color(0xFFD4AF37)
-                              : AppColors.primary)
-                          .withValues(alpha: 0.18),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.calendar_month_rounded,
-              color: hasSelectedDay
-                  ? const Color(0xFF6B4E16)
-                  : AppColors.primary,
-              size: 12,
-            ),
+          Icon(
+            Icons.calendar_month_rounded,
+            color: dayColor,
+            size: 16,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedDay,
-                menuWidth: MediaQuery.of(context).size.width - 48,
-                hint: Text(
-                  "เลือกวันเกิด...",
-                  style: GoogleFonts.prompt(
-                    color: AppColors.textGray.withValues(alpha: 0.62),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: GoogleFonts.prompt(
-                  color: AppColors.textLight,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-                itemHeight: null,
-                dropdownColor: Colors.white,
-                isExpanded: true,
-                icon: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: hasSelectedDay
-                        ? const Color(0xFFFFF4CC)
-                        : AppColors.secondary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: hasSelectedDay
-                        ? const Color(0xFFC58B00)
-                        : AppColors.secondary,
-                    size: 16,
-                  ),
-                ),
-                selectedItemBuilder: (context) {
-                  return _days.map((day) {
-                    return Align(
-                      alignment: Alignment.centerLeft,
-                      child: buildDayLabel(
-                        day,
-                        GoogleFonts.prompt(
-                          color: AppColors.textLight,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          height: 1.2,
-                        ),
-                        detailOnNewLine: true,
-                      ),
-                    );
-                  }).toList();
-                },
-                items: _days.map((String day) {
-                  return DropdownMenuItem<String>(
-                    value: day,
-                    child: buildDayLabel(
-                      day,
-                      GoogleFonts.prompt(
-                        color: AppColors.textLight,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.2,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedDay = newValue;
-                    if (newValue == null) {
-                      _filterKaki = false;
-                    } else {
-                      _filterKaki = true;
-                    }
-                  });
-                  unawaited(_refreshResultsKeepingStep2Anchor());
-                },
+            child: Text(
+              dayLabel,
+              style: GoogleFonts.prompt(
+                color: textColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
       ),
     );
   }
+
 
   Widget buildFilterChipsSection() {
     final bool canUseRankingTemplate =
