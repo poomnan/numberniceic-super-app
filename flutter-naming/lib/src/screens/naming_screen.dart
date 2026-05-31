@@ -336,7 +336,7 @@ class _NamingScreenState extends State<NamingScreen>
         if (mounted) {
           setState(() {
             _isLoadingSelectedNameMeaning = true;
-            _hideSelectedMeaningCard = false;
+            _hideSelectedMeaningCard = true;
           });
         }
         try {
@@ -349,8 +349,14 @@ class _NamingScreenState extends State<NamingScreen>
                 _selectedNameMeaning = originalInput;
                 _selectedNameMissingInDb = false;
                 _selectedNameAnalysis = null;
+                _inputClassification = const InputClassification(
+                  type: "meaning",
+                  confidence: 0.96,
+                  signals: ["semantic_phrase"],
+                );
                 _hasRankableNameTemplate = true;
                 _isLoadingSelectedNameMeaning = false;
+                _hideSelectedMeaningCard = true;
                 _isSuggestionBoxExpanded = false;
               });
             }
@@ -363,8 +369,14 @@ class _NamingScreenState extends State<NamingScreen>
                 _selectedNameMeaning = originalInput;
                 _selectedNameMissingInDb = false;
                 _selectedNameAnalysis = null;
+                _inputClassification = const InputClassification(
+                  type: "meaning",
+                  confidence: 0.96,
+                  signals: ["semantic_phrase"],
+                );
                 _hasRankableNameTemplate = true;
                 _isLoadingSelectedNameMeaning = false;
+                _hideSelectedMeaningCard = true;
                 _isSuggestionBoxExpanded = false;
               });
             }
@@ -380,11 +392,16 @@ class _NamingScreenState extends State<NamingScreen>
           // Seed name is already resolved from DB suggestion/avatar.
         } else if (isSemanticIntent && !looksLikeTypedName) {
           setState(() {
-            _hideSelectedMeaningCard = false;
+            _hideSelectedMeaningCard = true;
             _selectedNameMeaningName = originalInput;
             _selectedNameMeaning = originalInput;
             _selectedNameMissingInDb = false;
             _selectedNameAnalysis = null;
+            _inputClassification = const InputClassification(
+              type: "meaning",
+              confidence: 0.96,
+              signals: ["semantic_phrase"],
+            );
             _hasRankableNameTemplate = true;
             _isLoadingSelectedNameMeaning = false;
           });

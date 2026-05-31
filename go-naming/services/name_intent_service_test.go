@@ -61,6 +61,13 @@ func TestClassifyIntentCandidates(t *testing.T) {
 			wantScore: 0,
 		},
 		{
+			name:      "multi-word phrase means meaning",
+			input:     "ผู้นำที่กล้าหาญ เจริญรุ่งเรือง ไร้อุปสรรค",
+			nameLike:  false,
+			wantMode:  nameIntentModeMeaning,
+			wantScore: 0,
+		},
+		{
 			name:     "high score means name",
 			input:    "ณัฐพล",
 			nameLike: true,

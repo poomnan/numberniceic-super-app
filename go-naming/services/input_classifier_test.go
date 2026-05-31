@@ -42,6 +42,11 @@ func TestMeaningPhraseSignals(t *testing.T) {
 			input:       "หอยแครง แสงตะวัน",
 			wantSignals: []string{"long_phrase"},
 		},
+		{
+			name:        "multi-word leadership phrase is semantic meaning",
+			input:       "ผู้นำที่กล้าหาญ เจริญรุ่งเรือง ไร้อุปสรรค",
+			wantSignals: []string{"meaning_keywords", "descriptive_phrase", "long_phrase"},
+		},
 	}
 
 	for _, tt := range tests {
