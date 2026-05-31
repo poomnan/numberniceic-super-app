@@ -2915,12 +2915,7 @@ class _NamingScreenState extends State<NamingScreen>
 
                 // ===== STEP 2: ตั้งค่าเพิ่มเติม (SECONDARY) =====
                 buildMagicRankingHeader(),
-                const SizedBox(height: 18), // Increased from 12
-
-                buildUnifiedDayKakiCard(),
-                const SizedBox(
-                  height: 24,
-                ), // Increased from 16 to give VIP Badge space
+                const SizedBox(height: 14),
                 buildFilterChipsSection(),
                 const SizedBox(height: 6),
               ],
@@ -3672,8 +3667,6 @@ class _NamingScreenState extends State<NamingScreen>
             );
           },
         ),
-        const SizedBox(height: 12),
-        buildBirthdayBadges(),
       ],
     );
   }
@@ -5050,7 +5043,12 @@ class _NamingScreenState extends State<NamingScreen>
                       ),
                     ),
 
+                  const SizedBox(height: 12),
+                  buildBirthdayBadges(),
                   const SizedBox(height: 10),
+                  buildUnifiedDayKakiCard(),
+                  const SizedBox(height: 16),
+
                   // ANCHOR: 2ButtonPremium (2ปุ่มพรีเมี่ยม)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
