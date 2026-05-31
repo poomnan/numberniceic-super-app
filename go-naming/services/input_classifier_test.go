@@ -75,15 +75,16 @@ func TestClassifyTwoPartThaiInputAlgorithm(t *testing.T) {
 		wantConfidence float64
 	}{
 		{
-			name:           "first token in database wins as name even with semantic companion",
+			name:           "first token in database makes two-token input a full name",
 			input:          "ใบเตย ร่ำรวย",
 			first:          "ใบเตย",
 			last:           "ร่ำรวย",
 			firstInDB:      true,
 			wantMatched:    true,
-			wantType:       "single_name",
+			wantType:       "full_name",
 			wantFirstName:  "ใบเตย",
-			wantConfidence: 0.98,
+			wantSurname:    "ร่ำรวย",
+			wantConfidence: 0.96,
 		},
 		{
 			name:           "database first token plus plausible surname becomes full name",
@@ -107,15 +108,16 @@ func TestClassifyTwoPartThaiInputAlgorithm(t *testing.T) {
 			wantConfidence: 0.94,
 		},
 		{
-			name:           "second token in database wins as name without rhyme",
+			name:           "second token in database makes two-token input a full name",
 			input:          "ความสุข ใบเตย",
 			first:          "ความสุข",
 			last:           "ใบเตย",
 			lastInDB:       true,
 			wantMatched:    true,
-			wantType:       "single_name",
-			wantFirstName:  "ใบเตย",
-			wantConfidence: 0.98,
+			wantType:       "full_name",
+			wantFirstName:  "ความสุข",
+			wantSurname:    "ใบเตย",
+			wantConfidence: 0.96,
 		},
 		{
 			name:        "pure rhyme is handled by structural full-name fallback",
@@ -158,6 +160,24 @@ func TestClassifyTwoPartThaiInputAlgorithm(t *testing.T) {
 				t.Fatalf("Confidence = %v, want %v", got.Confidence, tt.wantConfidence)
 			}
 		})
+	}
+}
+
+func TestFinalizeInputClassificationSearchFields(t *testing.T) {
+	got := finalizeInputClassification("หอยแครง แสงตะวัน", InputClassification{
+		Type:       "full_name",
+		Confidence: 1,
+		FirstName:  "หอยแครง",
+		Surname:    "แสงตะวัน",
+	})
+	if got.SearchMode != "semantic_from_full_name" {
+		t.Fatalf("SearchMode = %q, want semantic_from_full_name", got.SearchMode)
+	}
+	if got.SeedName != "หอยแครง" {
+		t.Fatalf("SeedName = %q, want หอยแครง", got.SeedName)
+	}
+	if got.SemanticQuery != "หอยแครง แสงตะวัน" {
+		t.Fatalf("SemanticQuery = %q, want full input", got.SemanticQuery)
 	}
 }
 

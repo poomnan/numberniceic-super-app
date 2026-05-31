@@ -23,6 +23,10 @@ type NameInputResolveResponse struct {
 	InputType           string               `json:"input_type"`
 	FirstName           string               `json:"first_name,omitempty"`
 	Surname             string               `json:"surname,omitempty"`
+	SearchMode          string               `json:"search_mode,omitempty"`
+	SeedName            string               `json:"seed_name,omitempty"`
+	SemanticQuery       string               `json:"semantic_query,omitempty"`
+	SemanticMeaning     string               `json:"semantic_meaning,omitempty"`
 	ExistsInDatabase    bool                 `json:"exists_in_database"`
 	CanDecode           bool                 `json:"can_decode"`
 	CanRankFromTemplate bool                 `json:"can_rank_from_template"`
@@ -64,7 +68,9 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 
 	classification := services.ClassifyInput(input, database.DB)
 	lookupName := input
-	if classification.Type == "full_name" && strings.TrimSpace(classification.FirstName) != "" {
+	if strings.TrimSpace(classification.SeedName) != "" {
+		lookupName = strings.TrimSpace(classification.SeedName)
+	} else if classification.Type == "full_name" && strings.TrimSpace(classification.FirstName) != "" {
 		lookupName = strings.TrimSpace(classification.FirstName)
 	} else if classification.Type == "single_name" && strings.TrimSpace(classification.FirstName) != "" {
 		lookupName = strings.TrimSpace(classification.FirstName)
@@ -119,9 +125,9 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 
 	var decode *models.DecodeResult
 	if canDecode {
-		decodeTarget := input
-		if inputType == "full_name" && classification.FirstName != "" {
-			decodeTarget = classification.FirstName
+		decodeTarget := lookupName
+		if decodeTarget == "" {
+			decodeTarget = input
 		}
 		if decoded, err := services.DecodeName(decodeTarget, day); err == nil {
 			decode = decoded
@@ -135,6 +141,10 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 		InputType:           inputType,
 		FirstName:           classification.FirstName,
 		Surname:             classification.Surname,
+		SearchMode:          classification.SearchMode,
+		SeedName:            classification.SeedName,
+		SemanticQuery:       classification.SemanticQuery,
+		SemanticMeaning:     classification.SemanticQuery,
 		ExistsInDatabase:    existsInDB,
 		CanDecode:           canDecode,
 		CanRankFromTemplate: canRankFromTemplate,

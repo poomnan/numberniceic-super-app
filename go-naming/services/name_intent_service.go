@@ -82,7 +82,11 @@ func DetectNameIntent(ctx context.Context, db *sql.DB, input string) (Result, er
 						BestScore:  0,
 					}, nil
 				}
+				classification = finalizeInputClassification(normalized, classification)
 				candidate := classification.FirstName
+				if candidate == "" {
+					candidate = classification.SeedName
+				}
 				if candidate == "" {
 					candidate = first
 				}

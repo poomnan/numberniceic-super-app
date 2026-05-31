@@ -8,15 +8,22 @@ import (
 )
 
 type InputClassification struct {
-	Type       string   `json:"type"`       // "single_name", "full_name", "meaning"
-	Confidence float64  `json:"confidence"` // 0.0–1.0
-	FirstName  string   `json:"first_name,omitempty"`
-	Surname    string   `json:"surname,omitempty"`
-	Signals    []string `json:"signals"` // ["exact_db_match", "structural", "rhyme"]
+	Type          string   `json:"type"`       // "single_name", "full_name", "meaning"
+	Confidence    float64  `json:"confidence"` // 0.0–1.0
+	FirstName     string   `json:"first_name,omitempty"`
+	Surname       string   `json:"surname,omitempty"`
+	SearchMode    string   `json:"search_mode,omitempty"`
+	SeedName      string   `json:"seed_name,omitempty"`
+	SemanticQuery string   `json:"semantic_query,omitempty"`
+	Signals       []string `json:"signals"` // ["exact_db_match", "structural", "rhyme"]
 }
 
 // ClassifyInput classifies user input into single_name, full_name, or meaning.
 func ClassifyInput(input string, db *sql.DB) InputClassification {
+	return finalizeInputClassification(input, classifyInputRaw(input, db))
+}
+
+func classifyInputRaw(input string, db *sql.DB) InputClassification {
 	input = strings.TrimSpace(input)
 	if input == "" {
 		return InputClassification{
@@ -195,6 +202,56 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 }
 
 // Local Structural Helpers to avoid cyclic package dependency
+func finalizeInputClassification(input string, classification InputClassification) InputClassification {
+	input = strings.TrimSpace(input)
+	if classification.SeedName != "" && classification.SemanticQuery != "" && classification.SearchMode != "" {
+		return classification
+	}
+
+	switch classification.Type {
+	case "single_name":
+		if strings.TrimSpace(classification.SeedName) == "" {
+			if strings.TrimSpace(classification.FirstName) != "" {
+				classification.SeedName = strings.TrimSpace(classification.FirstName)
+			} else {
+				classification.SeedName = input
+			}
+		}
+		if strings.TrimSpace(classification.SemanticQuery) == "" {
+			classification.SemanticQuery = input
+		}
+		if strings.TrimSpace(classification.SearchMode) == "" {
+			classification.SearchMode = "name"
+		}
+	case "full_name":
+		if strings.TrimSpace(classification.SeedName) == "" {
+			if strings.TrimSpace(classification.FirstName) != "" {
+				classification.SeedName = strings.TrimSpace(classification.FirstName)
+			} else {
+				parts := strings.Fields(input)
+				if len(parts) > 0 {
+					classification.SeedName = parts[0]
+				}
+			}
+		}
+		if strings.TrimSpace(classification.SemanticQuery) == "" {
+			classification.SemanticQuery = input
+		}
+		if strings.TrimSpace(classification.SearchMode) == "" {
+			classification.SearchMode = "semantic_from_full_name"
+		}
+	case "meaning":
+		if strings.TrimSpace(classification.SemanticQuery) == "" {
+			classification.SemanticQuery = input
+		}
+		if strings.TrimSpace(classification.SearchMode) == "" {
+			classification.SearchMode = "meaning"
+		}
+	}
+
+	return classification
+}
+
 func exactNameExists(db *sql.DB, name string) bool {
 	name = strings.TrimSpace(name)
 	if db == nil || name == "" {
@@ -233,26 +290,7 @@ func classifyTwoPartThaiInput(input, first, last string, firstInDB, lastInDB, rh
 		signals = append(signals, "second_token_db_match")
 	}
 
-	if firstInDB && len(meaningSignals) > 0 && !rhyme {
-		signals = append(signals, meaningSignals...)
-		return InputClassification{
-			Type:       "single_name",
-			Confidence: 0.98,
-			FirstName:  first,
-			Signals:    uniqueSignals(signals),
-		}, true
-	}
-	if lastInDB && !firstInDB && len(meaningSignals) > 0 && !rhyme {
-		signals = append(signals, meaningSignals...)
-		return InputClassification{
-			Type:       "single_name",
-			Confidence: 0.98,
-			FirstName:  last,
-			Signals:    uniqueSignals(signals),
-		}, true
-	}
-
-	if firstInDB || (lastInDB && rhyme) {
+	if firstInDB || lastInDB {
 		confidence := 0.96
 		if rhyme {
 			confidence = 1.0
@@ -262,14 +300,6 @@ func classifyTwoPartThaiInput(input, first, last string, firstInDB, lastInDB, rh
 			Confidence: confidence,
 			FirstName:  first,
 			Surname:    last,
-			Signals:    uniqueSignals(signals),
-		}, true
-	}
-	if lastInDB {
-		return InputClassification{
-			Type:       "single_name",
-			Confidence: 0.98,
-			FirstName:  last,
 			Signals:    uniqueSignals(signals),
 		}, true
 	}

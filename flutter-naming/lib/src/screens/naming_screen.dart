@@ -404,6 +404,10 @@ class _NamingScreenState extends State<NamingScreen>
     if (isSemanticSearch && _selectedNameMeaningName != null) {
       actualTarget = _selectedNameMeaningName!;
     }
+    if (_inputClassification?.type == "full_name" &&
+        _selectedNameMeaningName?.trim().isNotEmpty == true) {
+      actualTarget = _selectedNameMeaningName!.trim();
+    }
     const String finalLastname = "";
     final String apiSearchKeyword = actualTarget;
     final bool shouldFetchMeaningSuggestions =
@@ -935,6 +939,11 @@ class _NamingScreenState extends State<NamingScreen>
         _nameIntentResult = null;
         _isLoadingNameIntent = false;
         _inputClassification = null;
+        _selectedNameMeaningName = null;
+        _selectedNameMeaning = null;
+        _selectedNameAnalysis = null;
+        _hasRankableNameTemplate = false;
+        _isLoadingSelectedNameMeaning = false;
 
         // Improved Logic: Be more forgiving with string comparison (trim both)
         if (_selectedExampleIndex != null) {
@@ -1101,21 +1110,32 @@ class _NamingScreenState extends State<NamingScreen>
       if (!mounted) return;
       if (_keywordController.text.trim() != text) return;
       setState(() {
-        _inputClassification = result;
-        if (result != null &&
-            (result.type == "single_name" ||
-                result.type == "full_name" ||
-                result.type == "meaning")) {
-          _filterSha = true;
-          _filterSat = false;
-          _hasRankableNameTemplate = true;
+        if (result != null) {
+          _inputClassification = result;
+          if (result.type == "single_name" ||
+              result.type == "full_name" ||
+              result.type == "meaning") {
+            _filterSha = true;
+            _filterSat = false;
+            _hasRankableNameTemplate = true;
+          }
         }
       });
       if (result != null) {
         if (result.type == "full_name" && result.firstName != null) {
-          _resolveSeedName(result.firstName!);
+          final String semanticQuery =
+              result.semanticQuery?.trim().isNotEmpty == true
+              ? result.semanticQuery!.trim()
+              : text;
+          final String seedName = result.seedName?.trim().isNotEmpty == true
+              ? result.seedName!.trim()
+              : result.firstName!.trim();
+          _resolveSeedName(seedName, meaningHint: semanticQuery);
         } else if (result.type == "single_name") {
-          _resolveSeedName(result.firstName ?? text);
+          final String seedName = result.seedName?.trim().isNotEmpty == true
+              ? result.seedName!.trim()
+              : (result.firstName ?? text);
+          _resolveSeedName(seedName);
         }
         if (result.type == "single_name" ||
             result.type == "full_name" ||
@@ -1246,16 +1266,10 @@ class _NamingScreenState extends State<NamingScreen>
     bool expandSuggestions = false,
   }) {
     setState(() {
-      _selectedNameMeaningName = name;
-      _selectedNameMeaning = meaningHint;
-      _selectedNameAnalysis = null;
-      _nameSuggestions = null;
       _isSuggestionBoxExpanded = expandSuggestions;
-      _hasRankableNameTemplate = true;
-      _isLoadingSelectedNameMeaning = false;
+      _nameSuggestions = null;
     });
-    unawaited(_loadSeedNameAnalysis(name));
-    unawaited(fetchNameSuggestions(name, meaning: meaningHint));
+    unawaited(loadSelectedNameMeaning(name, meaning: meaningHint));
   }
 
   Future<void> _loadSeedNameAnalysis(String name) async {
@@ -1293,18 +1307,42 @@ class _NamingScreenState extends State<NamingScreen>
       final bool shouldUsePgTrgmSuggestions =
           resolved?.shouldUsePgTrgmSuggestions ??
           (_looksLikeTypedThaiName(trimmed) && meaning == null);
+      final bool isResolvedFullName = resolved?.isFullName == true;
+      final String? resolvedSeedName =
+          resolved?.seedName?.trim().isNotEmpty == true
+          ? resolved!.seedName!.trim()
+          : (isResolvedFullName &&
+                    resolved?.firstName?.trim().isNotEmpty == true
+                ? resolved!.firstName!.trim()
+                : null);
+      final String? resolvedSemanticQuery =
+          resolved?.semanticQuery?.trim().isNotEmpty == true
+          ? resolved!.semanticQuery!.trim()
+          : (resolved?.semanticMeaning?.trim().isNotEmpty == true
+                ? resolved!.semanticMeaning!.trim()
+                : null);
       final bool canRankFromCurrentInput =
           resolved?.canRankFromTemplate == true ||
           resolved?.inputType == "name" ||
           _looksLikeTypedThaiName(trimmed) ||
           (meaning != null && meaning.trim().isNotEmpty);
       final bool isSemanticQuery =
-          resolved?.isMeaning ?? !_looksLikeTypedThaiName(trimmed);
-      final String? resolvedMeaning = meaning?.trim().isNotEmpty == true
+          resolved?.isMeaning == true ||
+          resolved?.usesSemanticFromFullName == true ||
+          (resolved == null && !_looksLikeTypedThaiName(trimmed));
+      String? resolvedMeaning = meaning?.trim().isNotEmpty == true
           ? meaning!.trim()
-          : (resolved?.dbMeaning?.trim().isNotEmpty == true
-                ? resolved!.dbMeaning!.trim()
-                : (isSemanticQuery ? trimmed : null));
+          : (isResolvedFullName && resolvedSemanticQuery != null
+                ? resolvedSemanticQuery
+                : (resolved?.dbMeaning?.trim().isNotEmpty == true
+                      ? resolved!.dbMeaning!.trim()
+                      : (isSemanticQuery
+                            ? (resolvedSemanticQuery ?? trimmed)
+                            : null)));
+
+      if (resolvedMeaning == null && _looksLikeTypedThaiName(trimmed)) {
+        resolvedMeaning = await _apiService.getNameMeaning(trimmed);
+      }
       NameAnalysisResult? analysis = resolved?.decode;
 
       if (!useResolve && (forceDecode || _looksLikeTypedThaiName(trimmed))) {
@@ -1317,22 +1355,50 @@ class _NamingScreenState extends State<NamingScreen>
         if (resolved?.intent != null) {
           _nameIntentResult = resolved!.intent;
         }
+        if (resolved != null) {
+          String mappedType = "meaning";
+          if (resolved.inputType == "name") {
+            mappedType = "single_name";
+          } else if (resolved.inputType == "full_name") {
+            mappedType = "full_name";
+          }
+          _inputClassification = InputClassification(
+            type: mappedType,
+            confidence: resolved.intent?.confidence ?? 1.0,
+            firstName: resolved.firstName,
+            surname: resolved.surname,
+            searchMode: resolved.searchMode,
+            seedName: resolved.seedName,
+            semanticQuery: resolved.semanticQuery,
+            signals: const ["backend_resolved"],
+          );
+        } else if (_looksLikeTypedThaiName(trimmed)) {
+          _inputClassification = const InputClassification(
+            type: "single_name",
+            confidence: 0.85,
+            signals: ["local_thai_name"],
+          );
+        }
+        if (resolvedSeedName != null) {
+          _selectedNameMeaningName = resolvedSeedName;
+        }
         _selectedNameMeaning = canRankFromCurrentInput ? resolvedMeaning : null;
         _selectedNameAnalysis = analysis;
         _hasRankableNameTemplate = canRankFromCurrentInput;
         _isLoadingSelectedNameMeaning = false;
       });
 
+      final String suggestionSeedName = resolvedSeedName ?? trimmed;
       // Names that are not in DB must use q-only pg_trgm suggestions.
       if (shouldUsePgTrgmSuggestions) {
-        fetchNameSuggestions(trimmed);
+        fetchNameSuggestions(suggestionSeedName);
       } else if (canRankFromCurrentInput &&
           resolvedMeaning != null &&
           resolvedMeaning.isNotEmpty &&
           (isSemanticQuery || resolvedMeaning != name)) {
-        fetchNameSuggestions(trimmed, meaning: resolvedMeaning);
+        fetchNameSuggestions(suggestionSeedName, meaning: resolvedMeaning);
       } else {
-        fetchNameSuggestions(trimmed);
+        fetchNameSuggestions(suggestionSeedName);
       }
     } catch (e) {
       debugPrint("Error loading selected name meaning: $e");
@@ -3511,9 +3577,20 @@ class _NamingScreenState extends State<NamingScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  _nameIntentResult?.isMeaning == true
-                                      ? "ระบบจะค้นหาชื่อที่มีความหมายใกล้เคียง"
-                                      : "ระบบจะวิเคราะห์ชื่อและถอดเลขศาสตร์ให้",
+                                  _isLoadingSelectedNameMeaning
+                                      ? "กำลังดึงข้อมูลความหมาย..."
+                                      : (_selectedNameMeaning != null &&
+                                            _selectedNameMeaning!
+                                                .trim()
+                                                .isNotEmpty &&
+                                            _selectedNameMeaningName?.trim() ==
+                                                value.text.trim() &&
+                                            _selectedNameMeaning!.trim() !=
+                                                value.text.trim())
+                                      ? "ความหมาย: $_selectedNameMeaning"
+                                      : (_nameIntentResult?.isMeaning == true
+                                            ? "ระบบจะค้นหาชื่อที่มีความหมายใกล้เคียง"
+                                            : "ระบบจะวิเคราะห์ชื่อและถอดเลขศาสตร์ให้"),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.sarabun(

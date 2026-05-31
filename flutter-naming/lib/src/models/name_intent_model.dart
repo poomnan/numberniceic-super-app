@@ -40,6 +40,11 @@ class NameInputResolveResult {
   final bool canDecode;
   final bool canRankFromTemplate;
   final String suggestionStrategy;
+  final String? firstName;
+  final String? surname;
+  final String? searchMode;
+  final String? seedName;
+  final String? semanticQuery;
   final String? dbMeaning;
   final String? semanticMeaning;
   final NameIntentResult? intent;
@@ -52,6 +57,11 @@ class NameInputResolveResult {
     required this.canDecode,
     required this.canRankFromTemplate,
     required this.suggestionStrategy,
+    this.firstName,
+    this.surname,
+    this.searchMode,
+    this.seedName,
+    this.semanticQuery,
     this.dbMeaning,
     this.semanticMeaning,
     this.intent,
@@ -69,6 +79,11 @@ class NameInputResolveResult {
       canRankFromTemplate: json['can_rank_from_template'] == true,
       suggestionStrategy: (json['suggestion_strategy'] as String? ?? 'semantic')
           .trim(),
+      firstName: (json['first_name'] as String?)?.trim(),
+      surname: (json['surname'] as String?)?.trim(),
+      searchMode: (json['search_mode'] as String?)?.trim(),
+      seedName: (json['seed_name'] as String?)?.trim(),
+      semanticQuery: (json['semantic_query'] as String?)?.trim(),
       dbMeaning: (json['db_meaning'] as String?)?.trim(),
       semanticMeaning: (json['semantic_meaning'] as String?)?.trim(),
       intent: intentJson is Map<String, dynamic>
@@ -89,6 +104,8 @@ class NameInputResolveResult {
       (inputType == 'name' && !existsInDatabase);
 
   bool get isMeaning => inputType == 'meaning';
+  bool get isFullName => inputType == 'full_name';
+  bool get usesSemanticFromFullName => searchMode == 'semantic_from_full_name';
 }
 
 class InputClassification {
@@ -96,6 +113,9 @@ class InputClassification {
   final double confidence;
   final String? firstName;
   final String? surname;
+  final String? searchMode;
+  final String? seedName;
+  final String? semanticQuery;
   final List<String> signals;
 
   const InputClassification({
@@ -103,6 +123,9 @@ class InputClassification {
     required this.confidence,
     this.firstName,
     this.surname,
+    this.searchMode,
+    this.seedName,
+    this.semanticQuery,
     required this.signals,
   });
 
@@ -112,6 +135,9 @@ class InputClassification {
       confidence: (json['confidence'] ?? 0.0).toDouble(),
       firstName: json['first_name'] as String?,
       surname: json['surname'] as String?,
+      searchMode: json['search_mode'] as String?,
+      seedName: json['seed_name'] as String?,
+      semanticQuery: json['semantic_query'] as String?,
       signals: List<String>.from(json['signals'] ?? const <String>[]),
     );
   }
