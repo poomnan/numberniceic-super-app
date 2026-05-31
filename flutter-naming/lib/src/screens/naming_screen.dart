@@ -4973,21 +4973,9 @@ class _NamingScreenState extends State<NamingScreen>
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 2),
                                 AnimatedSeedName(
-                                  name: _selectedNameMeaningName ??
-                                      _keywordController.text.trim(),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  " จาก 3 แสนรายชื่อ",
-                                  style: GoogleFonts.prompt(
-                                    color: AppColors.textLight.withValues(
-                                      alpha: 0.7,
-                                    ),
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  name: '"${_selectedNameMeaningName ?? _keywordController.text.trim()}"',
                                 ),
                               ],
                             ),
