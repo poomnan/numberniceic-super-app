@@ -116,11 +116,25 @@ type mobileSearchCacheEntry struct {
 	expiresAt time.Time
 }
 
+type mobileSearchInflightCall struct {
+	done     chan struct{}
+	response MobileSearchResponse
+	status   int
+	ok       bool
+}
+
 var mobileSearchCache = struct {
 	sync.RWMutex
 	items map[string]mobileSearchCacheEntry
 }{
 	items: map[string]mobileSearchCacheEntry{},
+}
+
+var mobileSearchInflight = struct {
+	sync.Mutex
+	calls map[string]*mobileSearchInflightCall
+}{
+	calls: map[string]*mobileSearchInflightCall{},
 }
 
 const mobileSearchCacheTTL = 3 * time.Minute
@@ -266,6 +280,49 @@ func setCachedMobileSearchResponse(key string, resp MobileSearchResponse) {
 		expiresAt: now.Add(mobileSearchCacheTTL),
 	}
 	mobileSearchCache.Unlock()
+}
+
+func beginMobileSearchFlight(key string) (*mobileSearchInflightCall, bool) {
+	mobileSearchInflight.Lock()
+	defer mobileSearchInflight.Unlock()
+
+	if call, ok := mobileSearchInflight.calls[key]; ok {
+		return call, false
+	}
+
+	call := &mobileSearchInflightCall{done: make(chan struct{})}
+	mobileSearchInflight.calls[key] = call
+	return call, true
+}
+
+func waitMobileSearchFlight(ctx context.Context, call *mobileSearchInflightCall) (MobileSearchResponse, int, bool) {
+	select {
+	case <-call.done:
+		if !call.ok {
+			return MobileSearchResponse{}, http.StatusOK, false
+		}
+		return cloneMobileSearchResponse(call.response), call.status, true
+	case <-ctx.Done():
+		return MobileSearchResponse{
+			Success: false,
+			Error:   map[string]any{"message": "Search request timed out while waiting for shared result"},
+			Results: []MobileNameResult{},
+			Total:   0,
+		}, http.StatusGatewayTimeout, true
+	}
+}
+
+func finishMobileSearchFlight(key string, call *mobileSearchInflightCall, status int, resp MobileSearchResponse, ok bool) {
+	call.response = cloneMobileSearchResponse(resp)
+	call.status = status
+	call.ok = ok
+	close(call.done)
+
+	mobileSearchInflight.Lock()
+	if mobileSearchInflight.calls[key] == call {
+		delete(mobileSearchInflight.calls, key)
+	}
+	mobileSearchInflight.Unlock()
 }
 
 func makeSeedAnalysisCacheKey(req MobileSearchRequest, lastnameSat int, lastnameSha int) string {
@@ -1376,6 +1433,59 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), searchTimeout)
 	defer cancel()
 
+	log.Printf("Search param: Keyword='%s', Meaning='%s'", req.Keyword, req.SemanticMeaning)
+	cacheKey := makeMobileSearchCacheKey(req)
+	if cachedResp, ok := getCachedMobileSearchResponse(cacheKey); ok {
+		log.Printf("name-search cache hit key=%s", cacheKey)
+		jsonResponse(w, http.StatusOK, cachedResp)
+		log.Printf("MobileSearchHandler total elapsed=%s (cache hit)", time.Since(handlerStart))
+		return
+	}
+
+	flight, isLeader := beginMobileSearchFlight(cacheKey)
+	if !isLeader {
+		resp, status, ok := waitMobileSearchFlight(ctx, flight)
+		if ok {
+			log.Printf("name-search shared flight key=%s", cacheKey)
+			jsonResponse(w, status, resp)
+			log.Printf("MobileSearchHandler total elapsed=%s (shared flight)", time.Since(handlerStart))
+			return
+		}
+		if cachedResp, ok := getCachedMobileSearchResponse(cacheKey); ok {
+			log.Printf("name-search cache hit after shared flight key=%s", cacheKey)
+			jsonResponse(w, http.StatusOK, cachedResp)
+			log.Printf("MobileSearchHandler total elapsed=%s (cache hit after shared flight)", time.Since(handlerStart))
+			return
+		}
+		unavailableResp := MobileSearchResponse{
+			Success: false,
+			Error:   map[string]any{"message": "Search request could not share the active result"},
+			Results: []MobileNameResult{},
+			Total:   0,
+		}
+		jsonResponse(w, http.StatusServiceUnavailable, unavailableResp)
+		log.Printf("MobileSearchHandler total elapsed=%s (shared flight unavailable)", time.Since(handlerStart))
+		return
+	}
+	flightFinished := false
+	finishFlight := func(status int, resp MobileSearchResponse, ok bool) {
+		if flightFinished {
+			return
+		}
+		finishMobileSearchFlight(cacheKey, flight, status, resp, ok)
+		flightFinished = true
+	}
+	defer func() {
+		if !flightFinished {
+			finishFlight(http.StatusInternalServerError, MobileSearchResponse{
+				Success: false,
+				Error:   map[string]any{"message": "Search request ended before producing a response"},
+				Results: []MobileNameResult{},
+				Total:   0,
+			}, false)
+		}
+	}()
+
 	_, err := database.DB.ExecContext(
 		ctx,
 		fmt.Sprintf(
@@ -1388,15 +1498,6 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := database.DB.ExecContext(ctx, "SET LOCAL work_mem = '256MB'"); err != nil {
 		log.Printf("Failed to set work_mem: %v", err)
-	}
-
-	log.Printf("Search param: Keyword='%s', Meaning='%s'", req.Keyword, req.SemanticMeaning)
-	cacheKey := makeMobileSearchCacheKey(req)
-	if cachedResp, ok := getCachedMobileSearchResponse(cacheKey); ok {
-		log.Printf("name-search cache hit key=%s", cacheKey)
-		jsonResponse(w, http.StatusOK, cachedResp)
-		log.Printf("MobileSearchHandler total elapsed=%s (cache hit)", time.Since(handlerStart))
-		return
 	}
 
 	var meaningDB string
@@ -1425,7 +1526,9 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	if searchContext.WordContext == "" &&
 		searchContext.MeaningContext == "" &&
 		!searchContext.IsBroadSearch {
-		jsonResponse(w, http.StatusOK, MobileSearchResponse{Success: true, Results: []MobileNameResult{}, Total: 0})
+		resp := MobileSearchResponse{Success: true, Results: []MobileNameResult{}, Total: 0}
+		finishFlight(http.StatusOK, resp, true)
+		jsonResponse(w, http.StatusOK, resp)
 		return
 	}
 
@@ -1448,7 +1551,9 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	// 2. Get Good Sums
 	goodSums, err := services.GetGoodSums()
 	if err != nil {
-		jsonResponse(w, http.StatusInternalServerError, MobileSearchResponse{Success: false, Error: map[string]any{"message": "Failed to calculate good sums"}, Results: []MobileNameResult{}, Total: 0})
+		resp := MobileSearchResponse{Success: false, Error: map[string]any{"message": "Failed to calculate good sums"}, Results: []MobileNameResult{}, Total: 0}
+		finishFlight(http.StatusInternalServerError, resp, true)
+		jsonResponse(w, http.StatusInternalServerError, resp)
 		return
 	}
 	goodSumMap := make(map[int]bool)
@@ -2902,8 +3007,9 @@ finalizeAndRespond:
 		}
 	}
 
-	jsonResponse(w, http.StatusOK, resp)
 	setCachedMobileSearchResponse(cacheKey, resp)
+	finishFlight(http.StatusOK, resp, true)
+	jsonResponse(w, http.StatusOK, resp)
 	log.Printf("[PERF] stage=%s results=%d time=%v", "total", len(resp.Results), time.Since(handlerStart))
 }
 
