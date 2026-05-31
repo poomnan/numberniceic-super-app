@@ -110,7 +110,7 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	canDecode := inputType == "name" || inputType == "hybrid" || inputType == "full_name"
-	canRankFromTemplate := existsInDB || inputType == "meaning" || inputType == "full_name"
+	canRankFromTemplate := inputType == "name" || inputType == "meaning" || inputType == "full_name"
 	suggestionStrategy := "semantic"
 	switch {
 	case inputType == "full_name":
