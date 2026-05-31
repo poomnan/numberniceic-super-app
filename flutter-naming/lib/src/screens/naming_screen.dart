@@ -3609,7 +3609,7 @@ class _NamingScreenState extends State<NamingScreen>
                                     : const Color(
                                         0xFFFF4FA3,
                                       ).withValues(alpha: 0.55),
-                                const Color(0xFFB517FF),
+                                    const Color(0xFFB517FF),
                                 value,
                               ),
                               size: 18 + (value * 4),
@@ -3784,6 +3784,224 @@ class _NamingScreenState extends State<NamingScreen>
               ),
             );
           },
+        ),
+        const SizedBox(height: 12),
+        buildBirthdayBadges(),
+      ],
+    );
+  }
+
+  Widget buildBirthdayBadges() {
+    final Map<String, Map<String, dynamic>> badgeConfigs = {
+      'Sunday': {
+        'name': 'อาทิตย์',
+        'color': const Color(0xFFFF3B30),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFF6B6B), Color(0xFFFF3B30)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFFFECEB),
+        'textColor': const Color(0xFFD32F2F),
+      },
+      'Monday': {
+        'name': 'จันทร์',
+        'color': const Color(0xFFFFCC00),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFF59D), Color(0xFFFFD54F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFFFFDE7),
+        'textColor': const Color(0xFF8D6E63),
+      },
+      'Tuesday': {
+        'name': 'อังคาร',
+        'color': const Color(0xFFFF2D55),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFF8DA1), Color(0xFFFF2D55)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFFFF0F5),
+        'textColor': const Color(0xFFC2185B),
+      },
+      'Wednesday1': {
+        'name': 'พุธ (กลางวัน)',
+        'color': const Color(0xFF34C759),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFF81C784), Color(0xFF34C759)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFE8F5E9),
+        'textColor': const Color(0xFF2E7D32),
+      },
+      'Wednesday2': {
+        'name': 'พุธ (กลางคืน)',
+        'color': const Color(0xFF007A7C),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFF26A69A), Color(0xFF007A7C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFE0F2F1),
+        'textColor': const Color(0xFF004D40),
+      },
+      'Thursday': {
+        'name': 'พฤหัสฯ',
+        'color': const Color(0xFFFF9500),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFFFB74D), Color(0xFFFF9500)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFFFF3E0),
+        'textColor': const Color(0xFFE65100),
+      },
+      'Friday': {
+        'name': 'ศุกร์',
+        'color': const Color(0xFF5AC8FA),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFF90CAF9), Color(0xFF007AFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFE3F2FD),
+        'textColor': const Color(0xFF0D47A1),
+      },
+      'Saturday': {
+        'name': 'เสาร์',
+        'color': const Color(0xFF5856D6),
+        'gradient': const LinearGradient(
+          colors: [Color(0xFFB39DDB), Color(0xFF5856D6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        'badgeColor': const Color(0xFFF3E5F5),
+        'textColor': const Color(0xFF4A148C),
+      },
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 6, bottom: 8, top: 4),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.auto_awesome_rounded,
+                color: Color(0xFFD946EF),
+                size: 14,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                "วันเกิดของคุณ เพื่อคัดชื่อกาลกิณีออก",
+                style: GoogleFonts.prompt(
+                  color: const Color(0xFF7E22CE).withValues(alpha: 0.8),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: _days.map((day) {
+              final isSelected = _selectedDay == day;
+              final config = badgeConfigs[day]!;
+              final dayColor = config['color'] as Color;
+              final dayGradient = config['gradient'] as Gradient;
+              final badgeColor = config['badgeColor'] as Color;
+              final textColor = config['textColor'] as Color;
+              final dayName = config['name'] as String;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8, bottom: 4),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutBack,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            _selectedDay = null;
+                            _filterKaki = false;
+                          } else {
+                            _selectedDay = day;
+                            _filterKaki = true;
+                          }
+                        });
+                        unawaited(_refreshResultsKeepingStep2Anchor());
+                      },
+                      borderRadius: BorderRadius.circular(999),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: isSelected ? dayGradient : null,
+                          color: isSelected ? null : badgeColor.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: isSelected
+                                ? dayColor.withValues(alpha: 0.8)
+                                : dayColor.withValues(alpha: 0.25),
+                            width: isSelected ? 2 : 1.2,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: dayColor.withValues(alpha: 0.4),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              width: isSelected ? 16 : 0,
+                              child: isSelected
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(right: 4),
+                                      child: const Icon(
+                                        Icons.check_circle_rounded,
+                                        color: Colors.white,
+                                        size: 13,
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                            Text(
+                              dayName,
+                              style: GoogleFonts.prompt(
+                                color: isSelected ? Colors.white : textColor,
+                                fontSize: 13,
+                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
