@@ -29,16 +29,18 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 	signals := []string{}
 
 	// 1. DATABASE EXACT MATCH (Highest Priority)
-	var dummy int
-	err := db.QueryRow("SELECT 1 FROM names_miracle WHERE thname = $1 LIMIT 1", input).Scan(&dummy)
-	if err == nil {
+	if exactNameExists(db, input) {
 		signals = append(signals, "exact_db_match")
 		return InputClassification{
 			Type:       "single_name",
 			Confidence: 1.0,
+			FirstName:  input,
 			Signals:    signals,
 		}
 	}
+
+	parts := strings.Fields(input)
+	tokenNameMatches := exactNameTokenMatches(db, parts)
 
 	// 2. STRUCTURAL CHECKS (Layer 1)
 	isFullName, first, last := looksLikeThaiFullNameLocal(input)
@@ -63,6 +65,12 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 	}
 
 	meaningSignals := meaningPhraseSignals(input)
+
+	if len(parts) == 2 && isFullName {
+		if result, ok := classifyTwoPartThaiInput(input, first, last, tokenNameMatches[first], tokenNameMatches[last], rhyme, meaningSignals, signals); ok {
+			return result
+		}
+	}
 
 	// Strong structural names should win before weak semantic keywords. When a
 	// two-part phrase has no name-like rhyme and carries meaning vocabulary,
@@ -107,19 +115,18 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 	}
 
 	// 3. DATABASE CHECKS (Layer 2)
-	existsInDB := false
-	var dbMeaning string
-	err = db.QueryRow("SELECT COALESCE(meaning, '') FROM names_miracle WHERE thname = $1 LIMIT 1", input).Scan(&dbMeaning)
-	if err == nil && strings.TrimSpace(dbMeaning) != "" {
-		existsInDB = true
+	existsInDB := exactNameExists(db, input)
+	if existsInDB {
 		signals = append(signals, "exact_db_match")
 	}
 
 	// Check if any word appears in a meaning column
 	var existsInMeaning bool
-	err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM names_miracle WHERE meaning ILIKE $1 LIMIT 1)", "%"+input+"%").Scan(&existsInMeaning)
-	if err == nil && existsInMeaning {
-		signals = append(signals, "meaning_db_match")
+	if db != nil {
+		err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM names_miracle WHERE meaning ILIKE $1 LIMIT 1)", "%"+input+"%").Scan(&existsInMeaning)
+		if err == nil && existsInMeaning {
+			signals = append(signals, "meaning_db_match")
+		}
 	}
 
 	if isSingleName {
@@ -127,6 +134,7 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 			return InputClassification{
 				Type:       "single_name",
 				Confidence: 1.0,
+				FirstName:  input,
 				Signals:    signals,
 			}
 		}
@@ -146,6 +154,7 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 		return InputClassification{
 			Type:       "single_name",
 			Confidence: 0.80,
+			FirstName:  input,
 			Signals:    signals,
 		}
 	}
@@ -186,6 +195,80 @@ func ClassifyInput(input string, db *sql.DB) InputClassification {
 }
 
 // Local Structural Helpers to avoid cyclic package dependency
+func exactNameExists(db *sql.DB, name string) bool {
+	name = strings.TrimSpace(name)
+	if db == nil || name == "" {
+		return false
+	}
+	var exists bool
+	err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM names_miracle WHERE thname = $1 LIMIT 1)", name).Scan(&exists)
+	return err == nil && exists
+}
+
+func exactNameTokenMatches(db *sql.DB, tokens []string) map[string]bool {
+	matches := map[string]bool{}
+	if db == nil || len(tokens) == 0 {
+		return matches
+	}
+	seen := map[string]bool{}
+	for _, token := range tokens {
+		token = strings.TrimSpace(token)
+		if token == "" || seen[token] {
+			continue
+		}
+		seen[token] = true
+		if exactNameExists(db, token) {
+			matches[token] = true
+		}
+	}
+	return matches
+}
+
+func classifyTwoPartThaiInput(input, first, last string, firstInDB, lastInDB, rhyme bool, meaningSignals []string, baseSignals []string) (InputClassification, bool) {
+	signals := append([]string{}, baseSignals...)
+	if firstInDB {
+		signals = append(signals, "first_token_db_match")
+	}
+	if lastInDB {
+		signals = append(signals, "second_token_db_match")
+	}
+
+	if firstInDB && len(meaningSignals) > 0 && !rhyme {
+		signals = append(signals, meaningSignals...)
+		return InputClassification{
+			Type:       "single_name",
+			Confidence: 0.98,
+			FirstName:  first,
+			Signals:    uniqueSignals(signals),
+		}, true
+	}
+
+	if firstInDB || (lastInDB && rhyme) {
+		confidence := 0.96
+		if rhyme {
+			confidence = 1.0
+		}
+		return InputClassification{
+			Type:       "full_name",
+			Confidence: confidence,
+			FirstName:  first,
+			Surname:    last,
+			Signals:    uniqueSignals(signals),
+		}, true
+	}
+
+	if !rhyme && len(meaningSignals) > 0 {
+		signals = append(signals, meaningSignals...)
+		return InputClassification{
+			Type:       "meaning",
+			Confidence: 0.94,
+			Signals:    uniqueSignals(signals),
+		}, true
+	}
+
+	return InputClassification{}, false
+}
+
 func containsMeaningKeywords(input string) bool {
 	keywords := []string{
 		"ความ", "การ", "ผู้", "แห่ง", "อย่าง", "เพื่อ", "ให้", "และ", "ของ",

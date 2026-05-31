@@ -58,6 +58,44 @@ func DetectNameIntent(ctx context.Context, db *sql.DB, input string) (Result, er
 		return Result{}, err
 	}
 
+	parts := strings.Fields(normalized)
+	if len(parts) == 2 {
+		if isFullName, first, last := looksLikeThaiFullNameLocal(normalized); isFullName {
+			rhyme := hasThaiNameRhyme(first, last)
+			meaningSignals := meaningPhraseSignals(normalized)
+			tokenMatches := exactNameTokenMatches(db, parts)
+			if classification, ok := classifyTwoPartThaiInput(
+				normalized,
+				first,
+				last,
+				tokenMatches[first],
+				tokenMatches[last],
+				rhyme,
+				meaningSignals,
+				[]string{"intent_structural_full_name"},
+			); ok {
+				if classification.Type == "meaning" {
+					return Result{
+						Mode:       nameIntentModeMeaning,
+						Confidence: classification.Confidence,
+						Candidates: []string{},
+						BestScore:  0,
+					}, nil
+				}
+				candidate := classification.FirstName
+				if candidate == "" {
+					candidate = first
+				}
+				return Result{
+					Mode:       nameIntentModeName,
+					Confidence: classification.Confidence,
+					Candidates: []string{candidate},
+					BestScore:  classification.Confidence,
+				}, nil
+			}
+		}
+	}
+
 	nameLike := looksLikePersonName(normalized)
 	similarityThreshold := 0.3
 	if shouldUseRelaxedThreshold(normalized, nameLike) {

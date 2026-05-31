@@ -21,6 +21,8 @@ import (
 type NameInputResolveResponse struct {
 	Input               string               `json:"input"`
 	InputType           string               `json:"input_type"`
+	FirstName           string               `json:"first_name,omitempty"`
+	Surname             string               `json:"surname,omitempty"`
 	ExistsInDatabase    bool                 `json:"exists_in_database"`
 	CanDecode           bool                 `json:"can_decode"`
 	CanRankFromTemplate bool                 `json:"can_rank_from_template"`
@@ -60,9 +62,17 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	day := strings.TrimSpace(r.URL.Query().Get("day"))
 
+	classification := services.ClassifyInput(input, database.DB)
+	lookupName := input
+	if classification.Type == "full_name" && strings.TrimSpace(classification.FirstName) != "" {
+		lookupName = strings.TrimSpace(classification.FirstName)
+	} else if classification.Type == "single_name" && strings.TrimSpace(classification.FirstName) != "" {
+		lookupName = strings.TrimSpace(classification.FirstName)
+	}
+
 	var dbMeaning string
 	existsInDB := false
-	if err := database.DB.QueryRow("SELECT COALESCE(meaning, '') FROM names_miracle WHERE thname = $1 LIMIT 1", input).Scan(&dbMeaning); err == nil && strings.TrimSpace(dbMeaning) != "" {
+	if err := database.DB.QueryRow("SELECT COALESCE(meaning, '') FROM names_miracle WHERE thname = $1 LIMIT 1", lookupName).Scan(&dbMeaning); err == nil && strings.TrimSpace(dbMeaning) != "" {
 		existsInDB = true
 		dbMeaning = strings.TrimSpace(dbMeaning)
 	}
@@ -72,19 +82,33 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("GetNameInputResolveHandler intent error input=%q: %v", input, err)
 		intent = services.Result{Mode: "MEANING", Confidence: 0, Candidates: []string{}, BestScore: 0}
 	}
+	if classification.Type == "full_name" {
+		intent = services.Result{
+			Mode:       "NAME",
+			Confidence: classification.Confidence,
+			Candidates: []string{classification.FirstName},
+			BestScore:  classification.Confidence,
+		}
+	}
 	typedName := looksLikeTypedThaiName(input)
 	inputType := "meaning"
 	switch {
-	case existsInDB || typedName || intent.Mode == "NAME":
+	case classification.Type == "full_name":
+		inputType = "full_name"
+	case classification.Type == "single_name" || existsInDB || typedName || intent.Mode == "NAME":
 		inputType = "name"
+	case classification.Type == "meaning":
+		inputType = "meaning"
 	case intent.Mode == "HYBRID":
 		inputType = "hybrid"
 	}
 
-	canDecode := inputType == "name" || inputType == "hybrid"
-	canRankFromTemplate := existsInDB || inputType == "meaning"
+	canDecode := inputType == "name" || inputType == "hybrid" || inputType == "full_name"
+	canRankFromTemplate := existsInDB || inputType == "meaning" || inputType == "full_name"
 	suggestionStrategy := "semantic"
 	switch {
+	case inputType == "full_name":
+		suggestionStrategy = "hybrid"
 	case existsInDB:
 		suggestionStrategy = "hybrid"
 	case inputType == "name" && !existsInDB:
@@ -95,16 +119,22 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 
 	var decode *models.DecodeResult
 	if canDecode {
-		if decoded, err := services.DecodeName(input, day); err == nil {
+		decodeTarget := input
+		if inputType == "full_name" && classification.FirstName != "" {
+			decodeTarget = classification.FirstName
+		}
+		if decoded, err := services.DecodeName(decodeTarget, day); err == nil {
 			decode = decoded
 		} else {
-			log.Printf("GetNameInputResolveHandler decode error input=%q: %v", input, err)
+			log.Printf("GetNameInputResolveHandler decode error input=%q target=%q: %v", input, decodeTarget, err)
 		}
 	}
 
 	resp := NameInputResolveResponse{
 		Input:               input,
 		InputType:           inputType,
+		FirstName:           classification.FirstName,
+		Surname:             classification.Surname,
 		ExistsInDatabase:    existsInDB,
 		CanDecode:           canDecode,
 		CanRankFromTemplate: canRankFromTemplate,
