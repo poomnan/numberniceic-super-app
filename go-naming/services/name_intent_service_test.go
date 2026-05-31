@@ -43,6 +43,7 @@ func TestClassifyIntentCandidates(t *testing.T) {
 		candidates []fuzzyCandidate
 		wantMode   string
 		wantScore  float64
+		wantFirst  string
 	}{
 		{
 			name:      "no results but name-like stays name",
@@ -50,6 +51,7 @@ func TestClassifyIntentCandidates(t *testing.T) {
 			nameLike:  true,
 			wantMode:  nameIntentModeName,
 			wantScore: 0.55,
+			wantFirst: "ทญา",
 		},
 		{
 			name:      "no results means meaning",
@@ -70,15 +72,16 @@ func TestClassifyIntentCandidates(t *testing.T) {
 			wantScore: 0.91,
 		},
 		{
-			name:     "mid score means hybrid",
+			name:     "name-like fuzzy match keeps typed input first",
 			input:    "ณัฐพล",
 			nameLike: true,
 			candidates: []fuzzyCandidate{
 				{Name: "ณัฐพล", Score: 0.72},
 				{Name: "ณัฐพน", Score: 0.68},
 			},
-			wantMode:  nameIntentModeHybrid,
+			wantMode:  nameIntentModeName,
 			wantScore: 0.72,
+			wantFirst: "ณัฐพล",
 		},
 		{
 			name:     "low score means meaning",
@@ -91,14 +94,15 @@ func TestClassifyIntentCandidates(t *testing.T) {
 			wantScore: 0.44,
 		},
 		{
-			name:     "low score but name-like becomes hybrid",
-			input:    "ทญา",
+			name:     "low score but name-like does not substitute fuzzy candidate",
+			input:    "หอยแครง",
 			nameLike: true,
 			candidates: []fuzzyCandidate{
-				{Name: "ณัทญา", Score: 0.25},
+				{Name: "หัง", Score: 0.25},
 			},
-			wantMode:  nameIntentModeHybrid,
+			wantMode:  nameIntentModeName,
 			wantScore: 0.25,
+			wantFirst: "หอยแครง",
 		},
 	}
 
@@ -110,6 +114,11 @@ func TestClassifyIntentCandidates(t *testing.T) {
 			}
 			if got.BestScore != tt.wantScore {
 				t.Fatalf("classifyIntentCandidates best score = %v, want %v", got.BestScore, tt.wantScore)
+			}
+			if tt.wantFirst != "" {
+				if len(got.Candidates) == 0 || got.Candidates[0] != tt.wantFirst {
+					t.Fatalf("classifyIntentCandidates first candidate = %v, want %q", got.Candidates, tt.wantFirst)
+				}
 			}
 		})
 	}

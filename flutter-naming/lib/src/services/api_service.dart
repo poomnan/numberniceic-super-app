@@ -248,9 +248,11 @@ class ApiService {
         if (data is Map<String, dynamic>) {
           final meaning = data['meaning'];
           if (meaning is String) {
-            return meaning
+            final cleaned = meaning
                 .replaceAll(RegExp(r'\s*\([^)]*[\u4e00-\u9fa5]+[^)]*\)'), '')
-                .replaceAll(RegExp(r'\s*\(含[^\)]+\)'), '');
+                .replaceAll(RegExp(r'\s*\(含[^\)]+\)'), '')
+                .trim();
+            return cleaned.isEmpty ? null : cleaned;
           }
         }
       }

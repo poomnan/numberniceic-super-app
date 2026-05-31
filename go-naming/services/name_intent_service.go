@@ -124,6 +124,16 @@ func DetectNameIntent(ctx context.Context, db *sql.DB, input string) (Result, er
 		return Result{}, err
 	}
 
+	meaningSignals := meaningPhraseSignals(normalized)
+	if len(meaningSignals) > 0 {
+		return Result{
+			Mode:       nameIntentModeMeaning,
+			Confidence: 0.94,
+			Candidates: []string{},
+			BestScore:  0,
+		}, nil
+	}
+
 	if utf8.RuneCountInString(normalized) < 3 {
 		return Result{
 			Mode:       classifyShortInputMode(nameLike),
@@ -267,12 +277,31 @@ func classifyIntentCandidates(input string, candidates []fuzzyCandidate, nameLik
 	}
 
 	bestScore := candidates[0].Score
-	names := make([]string, 0, len(candidates))
+	names := make([]string, 0, len(candidates)+1)
+	if nameLike {
+		names = append(names, input)
+	}
 	for _, candidate := range candidates {
 		if candidate.Score > bestScore {
 			bestScore = candidate.Score
 		}
+		if nameLike && normalizeIntentInput(candidate.Name) == input {
+			continue
+		}
 		names = append(names, candidate.Name)
+	}
+
+	if nameLike {
+		confidence := bestScore
+		if confidence < 0.55 {
+			confidence = 0.55
+		}
+		return Result{
+			Mode:       nameIntentModeName,
+			Confidence: confidence,
+			Candidates: names,
+			BestScore:  bestScore,
+		}
 	}
 
 	mode := nameIntentModeMeaning

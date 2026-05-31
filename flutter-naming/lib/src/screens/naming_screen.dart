@@ -39,6 +39,7 @@ class _NamingScreenState extends State<NamingScreen>
   final TextEditingController _keywordController = TextEditingController();
   String? _selectedNameMeaningName;
   String? _selectedNameMeaning;
+  bool _selectedNameMissingInDb = false;
   bool _isLoadingSelectedNameMeaning = false;
   NameAnalysisResult? _selectedNameAnalysis;
   bool _hasRankableNameTemplate = false;
@@ -346,6 +347,7 @@ class _NamingScreenState extends State<NamingScreen>
               setState(() {
                 _selectedNameMeaningName = bestName;
                 _selectedNameMeaning = originalInput;
+                _selectedNameMissingInDb = false;
                 _selectedNameAnalysis = null;
                 _hasRankableNameTemplate = true;
                 _isLoadingSelectedNameMeaning = false;
@@ -359,6 +361,7 @@ class _NamingScreenState extends State<NamingScreen>
               setState(() {
                 _selectedNameMeaningName = originalInput;
                 _selectedNameMeaning = originalInput;
+                _selectedNameMissingInDb = false;
                 _selectedNameAnalysis = null;
                 _hasRankableNameTemplate = true;
                 _isLoadingSelectedNameMeaning = false;
@@ -380,6 +383,7 @@ class _NamingScreenState extends State<NamingScreen>
             _hideSelectedMeaningCard = false;
             _selectedNameMeaningName = originalInput;
             _selectedNameMeaning = originalInput;
+            _selectedNameMissingInDb = false;
             _selectedNameAnalysis = null;
             _hasRankableNameTemplate = true;
             _isLoadingSelectedNameMeaning = false;
@@ -395,6 +399,7 @@ class _NamingScreenState extends State<NamingScreen>
           _selectedNameAnalysis = null;
           _selectedNameMeaningName = null;
           _selectedNameMeaning = null;
+          _selectedNameMissingInDb = false;
         });
       }
     }
@@ -941,6 +946,7 @@ class _NamingScreenState extends State<NamingScreen>
         _inputClassification = null;
         _selectedNameMeaningName = null;
         _selectedNameMeaning = null;
+        _selectedNameMissingInDb = false;
         _selectedNameAnalysis = null;
         _hasRankableNameTemplate = false;
         _isLoadingSelectedNameMeaning = false;
@@ -974,6 +980,7 @@ class _NamingScreenState extends State<NamingScreen>
         _hideSelectedMeaningCard = false;
         _selectedNameMeaningName = null;
         _selectedNameMeaning = null;
+        _selectedNameMissingInDb = false;
         _selectedNameAnalysis = null;
         _hasRankableNameTemplate = false;
         _isLoadingSelectedNameMeaning = false;
@@ -1292,6 +1299,7 @@ class _NamingScreenState extends State<NamingScreen>
     setState(() {
       _selectedNameMeaningName = trimmed;
       _selectedNameMeaning = meaning; // Use provided meaning if available
+      _selectedNameMissingInDb = false;
       _selectedNameAnalysis = null;
       _hasRankableNameTemplate = false;
       _isLoadingSelectedNameMeaning = true;
@@ -1308,6 +1316,11 @@ class _NamingScreenState extends State<NamingScreen>
           resolved?.shouldUsePgTrgmSuggestions ??
           (_looksLikeTypedThaiName(trimmed) && meaning == null);
       final bool isResolvedFullName = resolved?.isFullName == true;
+      final bool isTypedNameMissingInDb =
+          resolved?.isNameMissingInDatabase == true &&
+          !isResolvedFullName &&
+          _looksLikeTypedThaiName(trimmed) &&
+          (meaning == null || meaning.trim().isEmpty);
       final String? resolvedSeedName =
           resolved?.seedName?.trim().isNotEmpty == true
           ? resolved!.seedName!.trim()
@@ -1340,7 +1353,10 @@ class _NamingScreenState extends State<NamingScreen>
                             ? (resolvedSemanticQuery ?? trimmed)
                             : null)));
 
-      if (resolvedMeaning == null && _looksLikeTypedThaiName(trimmed)) {
+      if (resolvedMeaning == null &&
+          _looksLikeTypedThaiName(trimmed) &&
+          !isTypedNameMissingInDb &&
+          (resolved == null || resolved.existsInDatabase)) {
         resolvedMeaning = await _apiService.getNameMeaning(trimmed);
       }
       NameAnalysisResult? analysis = resolved?.decode;
@@ -1383,6 +1399,7 @@ class _NamingScreenState extends State<NamingScreen>
           _selectedNameMeaningName = resolvedSeedName;
         }
         _selectedNameMeaning = canRankFromCurrentInput ? resolvedMeaning : null;
+        _selectedNameMissingInDb = isTypedNameMissingInDb;
         _selectedNameAnalysis = analysis;
         _hasRankableNameTemplate = canRankFromCurrentInput;
         _isLoadingSelectedNameMeaning = false;
@@ -1405,6 +1422,7 @@ class _NamingScreenState extends State<NamingScreen>
       if (mounted && _selectedNameMeaningName == trimmed) {
         setState(() {
           _selectedNameMeaning = meaning;
+          _selectedNameMissingInDb = false;
           _selectedNameAnalysis = null;
           _hasRankableNameTemplate =
               meaning != null && meaning.trim().isNotEmpty;
@@ -2338,6 +2356,7 @@ class _NamingScreenState extends State<NamingScreen>
                       _selectedCelebrityIndex = null;
                       _selectedNameMeaningName = semanticQuery;
                       _selectedNameMeaning = meaning;
+                      _selectedNameMissingInDb = false;
                       _selectedNameAnalysis = null;
                       _isLoadingSelectedNameMeaning = false;
                       _nameSuggestions = null;
@@ -2607,7 +2626,12 @@ class _NamingScreenState extends State<NamingScreen>
     if (_hideSelectedMeaningCard) return const SizedBox.shrink();
 
     if (_isLoadingSelectedNameMeaning) return const SizedBox.shrink();
-    if (_selectedNameMeaning == null && _selectedNameAnalysis == null) {
+    final bool showMissingNameNotice =
+        _selectedNameMissingInDb && _selectedNameMeaning == null;
+    final String? selectedMeaningText = showMissingNameNotice
+        ? "ยังไม่พบความหมายของชื่อนี้ในฐานข้อมูล ระบบจะวิเคราะห์เลขศาสตร์จากชื่อที่พิมพ์จริง และใช้เป็นต้นแบบเสียง/รูปคำเพื่อค้นชื่อที่ใกล้เคียงให้"
+        : _selectedNameMeaning;
+    if (selectedMeaningText == null && _selectedNameAnalysis == null) {
       return const SizedBox.shrink();
     }
 
@@ -2616,7 +2640,7 @@ class _NamingScreenState extends State<NamingScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_selectedNameMeaning != null)
+          if (selectedMeaningText != null)
             Padding(
               padding: const EdgeInsets.only(
                 top: 4,
@@ -2652,8 +2676,10 @@ class _NamingScreenState extends State<NamingScreen>
                             color: AppColors.primary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.menu_book_rounded,
+                          child: Icon(
+                            showMissingNameNotice
+                                ? Icons.info_outline_rounded
+                                : Icons.menu_book_rounded,
                             color: AppColors.secondary,
                             size: 20,
                           ),
@@ -2669,7 +2695,9 @@ class _NamingScreenState extends State<NamingScreen>
                                   Expanded(
                                     child: Text.rich(
                                       TextSpan(
-                                        text: "ความหมายของชื่อ ",
+                                        text: showMissingNameNotice
+                                            ? "ชื่อใหม่ที่ยังไม่มีในฐานข้อมูล "
+                                            : "ความหมายของชื่อ ",
                                         style: GoogleFonts.sarabun(
                                           color: const Color(
                                             0xFF3D2600,
@@ -2691,29 +2719,30 @@ class _NamingScreenState extends State<NamingScreen>
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  _buildSpeechIconButton(
-                                    icon:
-                                        _isSpeakingKey(
-                                          _selectedNameMeaningName
-                                                      ?.trim()
-                                                      .isNotEmpty ??
-                                                  false
-                                              ? 'selected-meaning:${_selectedNameMeaningName!.trim()}'
-                                              : 'selected-meaning',
-                                        )
-                                        ? Icons.volume_up_rounded
-                                        : Icons.record_voice_over_rounded,
-                                    onTap: _speakSelectedMeaning,
-                                    tooltip: 'ฟังความหมายของชื่อ',
-                                    variant: SpeechButtonVariant.secondary,
-                                  ),
+                                  if (!showMissingNameNotice)
+                                    _buildSpeechIconButton(
+                                      icon:
+                                          _isSpeakingKey(
+                                            _selectedNameMeaningName
+                                                        ?.trim()
+                                                        .isNotEmpty ??
+                                                    false
+                                                ? 'selected-meaning:${_selectedNameMeaningName!.trim()}'
+                                                : 'selected-meaning',
+                                          )
+                                          ? Icons.volume_up_rounded
+                                          : Icons.record_voice_over_rounded,
+                                      onTap: _speakSelectedMeaning,
+                                      tooltip: 'ฟังความหมายของชื่อ',
+                                      variant: SpeechButtonVariant.secondary,
+                                    ),
                                 ],
                               ),
                               const SizedBox(height: 12),
                               Padding(
                                 padding: const EdgeInsets.only(right: 120),
                                 child: Text(
-                                  _selectedNameMeaning!,
+                                  selectedMeaningText,
                                   style: GoogleFonts.prompt(
                                     color: AppColors.textGray,
                                     fontSize: 16,
@@ -3579,6 +3608,10 @@ class _NamingScreenState extends State<NamingScreen>
                                 Text(
                                   _isLoadingSelectedNameMeaning
                                       ? "กำลังดึงข้อมูลความหมาย..."
+                                      : (_selectedNameMissingInDb &&
+                                            _selectedNameMeaningName?.trim() ==
+                                                value.text.trim())
+                                      ? "ยังไม่มีความหมายในฐานข้อมูล แต่ยังวิเคราะห์ชื่อได้"
                                       : (_selectedNameMeaning != null &&
                                             _selectedNameMeaning!
                                                 .trim()

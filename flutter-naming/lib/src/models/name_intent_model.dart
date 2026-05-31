@@ -105,6 +105,7 @@ class NameInputResolveResult {
 
   bool get isMeaning => inputType == 'meaning';
   bool get isFullName => inputType == 'full_name';
+  bool get isNameMissingInDatabase => inputType == 'name' && !existsInDatabase;
   bool get usesSemanticFromFullName => searchMode == 'semantic_from_full_name';
 }
 
