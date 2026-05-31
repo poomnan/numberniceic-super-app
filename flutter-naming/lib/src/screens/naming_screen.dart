@@ -338,35 +338,82 @@ class _NamingScreenState extends State<NamingScreen>
       _isLoadingNameIntent = false;
     });
 
-    // Always attempt to load numerology/meaning for the search query if it's not a long example phrase
-    if (reloadSelectedName && _selectedExampleIndex == null) {
-      if (_hasRankableNameTemplate) {
-        // Seed name is already resolved from DB suggestion/avatar.
-      } else if (isSemanticIntent && !looksLikeTypedName) {
-        setState(() {
-          _hideSelectedMeaningCard = false;
-          _selectedNameMeaningName = originalInput;
-          _selectedNameMeaning = originalInput;
-          _selectedNameAnalysis = null;
-          _hasRankableNameTemplate = true;
-          _isLoadingSelectedNameMeaning = false;
-        });
-      } else {
-        await loadSelectedNameMeaning(
-          originalInput,
-          forceDecode: isNameOrHybridIntent,
-        );
+    final bool isSemanticSearch = (_selectedExampleIndex != null) || (isSemanticIntent && !looksLikeTypedName);
+
+    if (isSemanticSearch) {
+      if (reloadSelectedName && (!_hasRankableNameTemplate || _selectedNameMeaning != originalInput)) {
+        if (mounted) {
+          setState(() {
+            _isLoadingSelectedNameMeaning = true;
+            _hideSelectedMeaningCard = false;
+          });
+        }
+        try {
+          final suggRes = await _apiService.getNameSuggestions(originalInput);
+          if (suggRes != null && suggRes.names.isNotEmpty) {
+            final bestName = suggRes.names.first.name;
+            if (mounted) {
+              setState(() {
+                _selectedNameMeaningName = bestName;
+                _selectedNameMeaning = originalInput;
+                _selectedNameAnalysis = null;
+                _hasRankableNameTemplate = true;
+                _isLoadingSelectedNameMeaning = false;
+                _isSuggestionBoxExpanded = true;
+              });
+            }
+            unawaited(_loadSeedNameAnalysis(bestName));
+            unawaited(fetchNameSuggestions(bestName, meaning: originalInput));
+          } else {
+            if (mounted) {
+              setState(() {
+                _selectedNameMeaningName = originalInput;
+                _selectedNameMeaning = originalInput;
+                _selectedNameAnalysis = null;
+                _hasRankableNameTemplate = true;
+                _isLoadingSelectedNameMeaning = false;
+                _isSuggestionBoxExpanded = true;
+              });
+            }
+          }
+        } catch (e) {
+          debugPrint('Error loading semantic seed name: $e');
+        }
       }
-    } else if (reloadSelectedName) {
-      setState(() {
-        _selectedNameAnalysis = null;
-        _selectedNameMeaningName = null;
-        _selectedNameMeaning = null;
-      });
+    } else {
+      // Always attempt to load numerology/meaning for the search query if it's not a long example phrase
+      if (reloadSelectedName && _selectedExampleIndex == null) {
+        if (_hasRankableNameTemplate) {
+          // Seed name is already resolved from DB suggestion/avatar.
+        } else if (isSemanticIntent && !looksLikeTypedName) {
+          setState(() {
+            _hideSelectedMeaningCard = false;
+            _selectedNameMeaningName = originalInput;
+            _selectedNameMeaning = originalInput;
+            _selectedNameAnalysis = null;
+            _hasRankableNameTemplate = true;
+            _isLoadingSelectedNameMeaning = false;
+          });
+        } else {
+          await loadSelectedNameMeaning(
+            originalInput,
+            forceDecode: isNameOrHybridIntent,
+          );
+        }
+      } else if (reloadSelectedName) {
+        setState(() {
+          _selectedNameAnalysis = null;
+          _selectedNameMeaningName = null;
+          _selectedNameMeaning = null;
+        });
+      }
     }
 
     // --- 1. SET PARAMETERS ---
     String actualTarget = overrideKeyword ?? finalKeyword;
+    if (isSemanticSearch && _selectedNameMeaningName != null) {
+      actualTarget = _selectedNameMeaningName!;
+    }
     const String finalLastname = "";
     final String apiSearchKeyword = actualTarget;
     final bool shouldFetchMeaningSuggestions =
@@ -765,6 +812,37 @@ class _NamingScreenState extends State<NamingScreen>
     }
   }
 
+  void _shuffleNext() {
+    if (_ideaExamples.isEmpty) return;
+    setState(() {
+      final textToClear = _selectedExampleText;
+      _selectedExampleIndex = null;
+      _selectedExampleText = null;
+      if (textToClear != null &&
+          _keywordController.text.trim() == textToClear.trim()) {
+        _keywordController.clear();
+      }
+
+      if (_pickedExamples.length >= 2 &&
+          _ideaExamples.length > _pickedExamples.length) {
+        _pickedExamples.removeAt(0);
+        final currentTexts = _pickedExamples.map((e) => e['text'] as String).toSet();
+        final available = _ideaExamples.where((e) => !currentTexts.contains(e['text'] as String)).toList();
+        if (available.isNotEmpty) {
+          final nextItem = available[math.Random().nextInt(available.length)];
+          _pickedExamples.add(nextItem);
+        } else {
+          final first = _pickedExamples.removeAt(0);
+          _pickedExamples.add(first);
+        }
+      } else if (_pickedExamples.length >= 2) {
+        final first = _pickedExamples.removeAt(0);
+        _pickedExamples.add(first);
+      }
+    });
+    _startShuffleTimer();
+  }
+
   void _startShuffleTimer() {
     // Only run timer if no item is currently selected
     if (_selectedExampleText != null) {
@@ -1138,13 +1216,13 @@ class _NamingScreenState extends State<NamingScreen>
     return const Color(0xFFD97706);
   }
 
-  void _resolveSeedName(String name, {String? meaningHint}) {
+  void _resolveSeedName(String name, {String? meaningHint, bool expandSuggestions = false}) {
     setState(() {
       _selectedNameMeaningName = name;
       _selectedNameMeaning = meaningHint;
       _selectedNameAnalysis = null;
       _nameSuggestions = null;
-      _isSuggestionBoxExpanded = false;
+      _isSuggestionBoxExpanded = expandSuggestions;
       _hasRankableNameTemplate = true;
       _isLoadingSelectedNameMeaning = false;
     });
@@ -2944,22 +3022,14 @@ class _NamingScreenState extends State<NamingScreen>
               "icon": Icons.trending_up,
               "iconColor": const Color(0xFFD4A017),
             },
-            {
-              "text": "หญิงสาวผู้อ่อนหวาน มีเสน่ห์ และเป็นที่รัก",
-              "icon": Icons.favorite,
-              "iconColor": const Color(0xFFE66A8D),
-            },
-            {
-              "text": "ผู้นำที่กล้าหาญ เจริญรุ่งเรือง ไร้อุปสรรค",
-              "icon": Icons.shield,
-              "iconColor": const Color(0xFF4F8FE8),
-            },
-            {
-              "text": "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน",
-              "icon": Icons.psychology,
-              "iconColor": const Color(0xFF8B6CD9),
-            },
           ];
+
+    if (examples.isEmpty) return const SizedBox.shrink();
+    final item = examples.first;
+    final text = item['text'] as String;
+    final icon = item['icon'] as IconData;
+    final iconColor = item['iconColor'] as Color? ?? AppColors.accent;
+    final bool isActive = _selectedExampleText == text;
 
     return Container(
       decoration: BoxDecoration(
@@ -2978,210 +3048,214 @@ class _NamingScreenState extends State<NamingScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Row(
               children: [
                 Container(
                   width: 4,
                   height: 18,
                   decoration: BoxDecoration(
-                    color: AppColors.accent,
+                    color: AppColors.secondary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 0, bottom: 0),
-                    child: Text(
-                      'หาชื่อจากความหมาย (Semantic Search)',
-                      style: TextStyle(
-                        fontFamily: 'Sarabun',
-                        color: AppColors.textLight,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        height: 1.4,
-                      ),
-                      overflow: TextOverflow.visible,
-                      maxLines: 1,
+                Expanded(
+                  child: Text(
+                    'หาชื่อจากความหมาย (Semantic Search)',
+                    style: GoogleFonts.sarabun(
+                      color: AppColors.textLight,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      height: 1.4,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: _shuffleNext,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          size: 14,
+                          color: Color(0xFF4E342E),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'สุ่มต่อ',
+                          style: TextStyle(
+                            fontFamily: 'Sarabun',
+                            color: Color(0xFF4E342E),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                if (_selectedExampleText != null) ...[
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        final textToClear = _selectedExampleText;
-                        _selectedExampleIndex = null;
-                        _selectedExampleText = null;
-                        if (textToClear != null &&
-                            _keywordController.text.trim() ==
-                                textToClear.trim()) {
-                          _keywordController.clear();
-                        }
-                        _startShuffleTimer();
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.goldGradient,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFFFFD700,
-                            ).withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 14,
-                            color: Color(0xFF4E342E),
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'สุ่มต่อ',
-                            style: TextStyle(
-                              fontFamily: 'Sarabun',
-                              color: Color(0xFF4E342E),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
-          SizedBox(
-            height: 48 * examples.length.toDouble(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 350),
-              child: Column(
-                key: ValueKey(examples.map((e) => e['text']).join(',')),
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: examples.asMap().entries.map((entry) {
-                  final int index = entry.key;
-                  final item = entry.value;
-                  final text = item['text'] as String;
-                  final icon = item['icon'] as IconData;
-                  final iconColor =
-                      item['iconColor'] as Color? ?? AppColors.accent;
-                  final bool isActive = _selectedExampleText == text;
-                  return SizedBox(
-                    height: 48,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 0,
+              duration: const Duration(milliseconds: 600),
+              switchInCurve: Curves.easeOutBack,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                final slideAnimation = Tween<Offset>(
+                  begin: const Offset(0.15, 0.0),
+                  end: Offset.zero,
+                ).animate(animation);
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: slideAnimation,
+                    child: child,
+                  ),
+                );
+              },
+              child: Container(
+                key: ValueKey<String>(text),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: isActive ? AppColors.goldGradient : null,
+                ),
+                padding: isActive ? const EdgeInsets.all(2) : EdgeInsets.zero,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? const Color(0xFFFFFDF5)
+                        : Colors.white.withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(isActive ? 18 : 20),
+                    border: isActive
+                        ? null
+                        : Border.all(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            width: 1.0,
+                          ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isActive
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.15)
+                            : Colors.black.withValues(alpha: 0.03),
+                        blurRadius: isActive ? 16 : 8,
+                        spreadRadius: isActive ? 1 : 0,
+                        offset: const Offset(0, 4),
                       ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (isActive) {
+                            _selectedExampleIndex = null;
+                            _selectedExampleText = null;
+                            _keywordController.clear();
+                            _startShuffleTimer();
+                          } else {
+                            _setKeywordWithoutTriggeringListener(text);
+                            _selectedExampleIndex = 0;
+                            _selectedExampleText = text;
+                            _selectedCelebrityIndex = null;
+                            _filterSat = false;
+                            _filterSha = true;
+                          }
+                        });
+                        _search();
+                        maybeScrollToSearchField();
+                      },
+                      borderRadius: BorderRadius.circular(isActive ? 18 : 20),
                       child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: isActive
-                              ? [
-                                  BoxShadow(
-                                    color: AppColors.accent.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    blurRadius: 15,
-                                    spreadRadius: 2,
-                                  ),
-                                ]
-                              : null,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
                         ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _setKeywordWithoutTriggeringListener(text);
-                                _selectedExampleIndex = index;
-                                _selectedExampleText = text;
-                                _selectedCelebrityIndex = null;
-                                _filterSat = false;
-                                _filterSha = true;
-                                _applyPickedExamples(bringToTop: text);
-                              });
-                              _search();
-                              maybeScrollToSearchField();
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 0,
-                              ),
-                              height: 48,
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: isActive
-                                    ? const Color(0xFFFDF4FF)
-                                    : Colors.white.withValues(alpha: 0.9),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isActive
-                                      ? AppColors.accent
-                                      : Colors.white.withValues(alpha: 0.15),
-                                  width: isActive ? 2.0 : 1.0,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    iconColor.withValues(alpha: 0.18),
+                                    iconColor.withValues(alpha: 0.05),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                shape: BoxShape.circle,
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    icon,
-                                    size: 20,
-                                    color: isActive
-                                        ? iconColor
-                                        : iconColor.withValues(alpha: 0.75),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      text,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.sarabun(
-                                        color: isActive
-                                            ? const Color(0xFF5C3C10)
-                                            : AppColors.textLight.withValues(
-                                                alpha: 0.8,
-                                              ),
-                                        fontSize: 14,
-                                        fontWeight: isActive
-                                            ? FontWeight.w700
-                                            : FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  if (isActive)
-                                    const Icon(
-                                      Icons.check_circle_rounded,
-                                      color: AppColors.accent,
-                                      size: 18,
-                                    ),
-                                ],
+                              child: Icon(
+                                icon,
+                                size: 22,
+                                color: iconColor,
                               ),
                             ),
-                          ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                text,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.sarabun(
+                                  color: isActive
+                                      ? const Color(0xFF5C3C10)
+                                      : AppColors.textLight.withValues(
+                                          alpha: 0.85,
+                                        ),
+                                  fontSize: 14.5,
+                                  fontWeight: isActive
+                                      ? FontWeight.w800
+                                      : FontWeight.w600,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                            if (isActive) ...[
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: AppColors.goldGradient,
+                                ),
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  color: Color(0xFF5C3C10),
+                                  size: 14,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ),
               ),
             ),
           ),
