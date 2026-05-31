@@ -2,27 +2,19 @@ package handlers
 
 import "testing"
 
-func TestPassesRequestedFiltersSingleToggleRejectsDoubleGood(t *testing.T) {
+func TestPassesRequestedFiltersSingleToggleIncludesDoubleGood(t *testing.T) {
 	doubleGood := MobileNameResult{
 		Name:      "ทดสอบ",
 		IsSatGood: true,
 		IsShaGood: true,
 	}
 
-	if passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSat: true, IsPremium: true}) {
-		t.Fatal("premium sat-only filter should reject names that also pass sha")
+	if !passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSat: true}) {
+		t.Fatal("sat-only filter should include names that also pass sha")
 	}
 
-	if passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSha: true, IsPremium: true}) {
-		t.Fatal("premium sha-only filter should reject names that also pass sat")
-	}
-
-	if passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSat: true}) {
-		t.Fatal("non-premium sat-only filter should reject names that also pass sha")
-	}
-
-	if passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSha: true}) {
-		t.Fatal("non-premium sha-only filter should reject names that also pass sat")
+	if !passesRequestedFilters(doubleGood, MobileSearchRequest{FilterSha: true}) {
+		t.Fatal("sha-only filter should include names that also pass sat")
 	}
 }
 
@@ -70,8 +62,8 @@ func TestRankingPrefersUsableShorterNameWhenSignalsAreComparable(t *testing.T) {
 		RootScore:     0.62,
 	}
 
-	shortScore, _, _ := calculateFinalRankScoreAndReasons(&shorter, "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน", false, true, true, false, false)
-	longScore, _, _ := calculateFinalRankScoreAndReasons(&longPhrase, "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน", false, true, true, false, false)
+	shortScore, _ := calculateFinalRankScoreAndReasons(&shorter, "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน", false, true, true, false, false)
+	longScore, _ := calculateFinalRankScoreAndReasons(&longPhrase, "ปราชญ์ผู้มีสติปัญญาเฉลียวฉลาด และอายุยืน", false, true, true, false, false)
 
 	if shortScore <= longScore {
 		t.Fatalf("shorter usable name score = %d, long phrase-like name score = %d; want shorter to rank higher", shortScore, longScore)
@@ -111,8 +103,8 @@ func TestMicroTiebreakerDeterministicAndUnique(t *testing.T) {
 		RootScore:     0.50,
 	}
 
-	score1, _, _ := calculateFinalRankScoreAndReasons(&name1, "คำค้นหา", false, true, true, false, false)
-	score2, _, _ := calculateFinalRankScoreAndReasons(&name2, "คำค้นหา", false, true, true, false, false)
+	score1, _ := calculateFinalRankScoreAndReasons(&name1, "คำค้นหา", false, true, true, false, false)
+	score2, _ := calculateFinalRankScoreAndReasons(&name2, "คำค้นหา", false, true, true, false, false)
 
 	// They should have the same integer score
 	if score1 != score2 {
@@ -126,7 +118,7 @@ func TestMicroTiebreakerDeterministicAndUnique(t *testing.T) {
 
 	// Test determinism
 	name1Copy := name1
-	_, _, _ = calculateFinalRankScoreAndReasons(&name1Copy, "คำค้นหา", false, true, true, false, false)
+	_, _ = calculateFinalRankScoreAndReasons(&name1Copy, "คำค้นหา", false, true, true, false, false)
 	if name1Copy.FinalRankScoreExact != name1.FinalRankScoreExact {
 		t.Errorf("micro-tiebreaker is not deterministic: %f vs %f", name1Copy.FinalRankScoreExact, name1.FinalRankScoreExact)
 	}

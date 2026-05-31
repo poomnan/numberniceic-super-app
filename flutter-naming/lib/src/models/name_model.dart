@@ -422,46 +422,78 @@ class UserSavedName {
   int get displayRankScore {
     if (finalRankScore > 0) return finalRankScore;
     int score = 0;
-    if (isSatGood) score += 20;
-    if (isShaGood) score += 20;
-    if (isSatGood && isShaGood) score += 50;
-    
+    if (isSatGood) {
+      score += 20;
+    }
+    if (isShaGood) {
+      score += 20;
+    }
+    if (isSatGood && isShaGood) {
+      score += 50;
+    }
+
     int len = name.length;
-    if (len == 2) score += 40;
-    else if (len == 3) score += 30;
-    else if (len == 4) score += 20;
-    else if (len == 5) score += 10;
-    else score -= 10;
-    
+    if (len == 2) {
+      score += 40;
+    } else if (len == 3) {
+      score += 30;
+    } else if (len == 4) {
+      score += 20;
+    } else if (len == 5) {
+      score += 10;
+    } else {
+      score -= 10;
+    }
+
     int pScore = phoneticScore ?? 80;
     score += (pScore * 0.1).round();
     score += 50; // Base score
-    if (score > 100) score = 100;
-    if (score < 0) score = 0;
+    if (score > 100) {
+      score = 100;
+    }
+    if (score < 0) {
+      score = 0;
+    }
     return score;
   }
 
   double get displayRankScoreExact {
     if (finalRankScoreExact > 0) return finalRankScoreExact;
     double score = 0.0;
-    if (isSatGood) score += 20.0;
-    if (isShaGood) score += 20.0;
-    if (isSatGood && isShaGood) score += 50.0;
-    
+    if (isSatGood) {
+      score += 20.0;
+    }
+    if (isShaGood) {
+      score += 20.0;
+    }
+    if (isSatGood && isShaGood) {
+      score += 50.0;
+    }
+
     int len = name.length;
-    if (len == 2) score += 40.0;
-    else if (len == 3) score += 30.0;
-    else if (len == 4) score += 20.0;
-    else if (len == 5) score += 10.0;
-    else score -= 10.0;
-    
+    if (len == 2) {
+      score += 40.0;
+    } else if (len == 3) {
+      score += 30.0;
+    } else if (len == 4) {
+      score += 20.0;
+    } else if (len == 5) {
+      score += 10.0;
+    } else {
+      score -= 10.0;
+    }
+
     double pScore = (phoneticScore ?? 80).toDouble();
     score += pScore * 0.15;
     score += (satSum % 10) * 0.2;
     score += (shaSum % 10) * 0.25;
     score += 42.0; // Base
-    if (score > 100.0) score = 100.0;
-    if (score < 0.0) score = 0.0;
+    if (score > 100.0) {
+      score = 100.0;
+    }
+    if (score < 0.0) {
+      score = 0.0;
+    }
     return double.parse(score.toStringAsFixed(2));
   }
 

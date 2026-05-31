@@ -523,7 +523,13 @@ func extractSuggestionTokens(texts ...string) []string {
 		"แปลว่า":  true,
 		"หมายถึง": true,
 		"คือ":     true,
+		"ผู้":     true,
 		"ผู้ที่":  true,
+		"ผู้มี":   true,
+		"มี":      true,
+		"อัน":     true,
+		"ด้วย":    true,
+		"แห่ง":    true,
 		"ความ":    true,
 		"การ":     true,
 		"และ":     true,
@@ -532,16 +538,50 @@ func extractSuggestionTokens(texts ...string) []string {
 		"ที่":     true,
 		"ชื่อ":    true,
 	}
+	phraseBreakers := []string{
+		"แปลว่า",
+		"หมายถึง",
+		"ผู้ที่",
+		"ผู้มี",
+		"อัน",
+		"และ",
+		"ด้วย",
+		"แห่ง",
+		"คือ",
+		"ความ",
+		"การ",
+	}
+	commonMeaningTerms := map[string]bool{
+		"ชีวิต":    true,
+		"งดงาม":    true,
+		"เปี่ยม":   true,
+		"พลัง":     true,
+		"หวัง":     true,
+		"ความหวัง": true,
+	}
 
 	tokenSet := make(map[string]bool)
 	tokens := make([]string, 0, 6)
 	replacer := strings.NewReplacer(",", " ", ".", " ", "(", " ", ")", " ")
 
 	for _, text := range texts {
-		for _, token := range strings.Fields(replacer.Replace(text)) {
+		normalized := replacer.Replace(text)
+		for _, breaker := range phraseBreakers {
+			normalized = strings.ReplaceAll(normalized, breaker, " ")
+		}
+		for _, token := range strings.Fields(normalized) {
 			token = strings.TrimSpace(token)
 			if token == "" || stopWords[token] {
 				continue
+			}
+			token = strings.TrimPrefix(token, "มีความ")
+			token = strings.TrimPrefix(token, "ความ")
+			token = strings.TrimPrefix(token, "การ")
+			if strings.HasPrefix(token, "มี") {
+				withoutPrefix := strings.TrimPrefix(token, "มี")
+				if commonMeaningTerms[withoutPrefix] {
+					token = withoutPrefix
+				}
 			}
 			runeLen := len([]rune(token))
 			if runeLen < 2 || runeLen > 12 {

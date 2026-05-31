@@ -128,10 +128,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                       ],
                     ),
                   ),
-                  child: SizedBox(
-                    width: 120 * scale,
-                    height: 120 * scale,
-                  ),
+                  child: SizedBox(width: 120 * scale, height: 120 * scale),
                 ),
                 // Outer Ring: Electric Magenta Astrological Compass with zodiac tick markers
                 RotationTransition(
@@ -197,11 +194,8 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                 ),
                 // Pulsing Cosmic Central Orb with orbiting elemental light points
                 ScaleTransition(
-                  scale:
-                      Tween<double>(
-                        begin: 0.92 * scale,
-                        end: 1.08 * scale,
-                      ).animate(
+                  scale: Tween<double>(begin: 0.92 * scale, end: 1.08 * scale)
+                      .animate(
                         CurvedAnimation(
                           parent: _pulseController,
                           curve: Curves.easeInOut,
@@ -223,17 +217,23 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFD500F9).withValues(alpha: 0.65),
+                              color: const Color(
+                                0xFFD500F9,
+                              ).withValues(alpha: 0.65),
                               blurRadius: 18 * scale,
                               spreadRadius: 2 * scale,
                             ),
                             BoxShadow(
-                              color: const Color(0xFF00E5FF).withValues(alpha: 0.55),
+                              color: const Color(
+                                0xFF00E5FF,
+                              ).withValues(alpha: 0.55),
                               blurRadius: 28 * scale,
                               spreadRadius: 1 * scale,
                             ),
                             BoxShadow(
-                              color: const Color(0xFFFFD54F).withValues(alpha: 0.45),
+                              color: const Color(
+                                0xFFFFD54F,
+                              ).withValues(alpha: 0.45),
                               blurRadius: 10 * scale,
                               spreadRadius: 0.5 * scale,
                             ),
@@ -257,19 +257,31 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
                             children: [
                               Align(
                                 alignment: Alignment.topCenter,
-                                child: _glowingOrbDot(scale, const Color(0xFFFFD54F)),
+                                child: _glowingOrbDot(
+                                  scale,
+                                  const Color(0xFFFFD54F),
+                                ),
                               ),
                               Align(
                                 alignment: Alignment.bottomCenter,
-                                child: _glowingOrbDot(scale, const Color(0xFFFFD54F)),
+                                child: _glowingOrbDot(
+                                  scale,
+                                  const Color(0xFFFFD54F),
+                                ),
                               ),
                               Align(
                                 alignment: Alignment.centerLeft,
-                                child: _glowingOrbDot(scale, const Color(0xFF00E5FF)),
+                                child: _glowingOrbDot(
+                                  scale,
+                                  const Color(0xFF00E5FF),
+                                ),
                               ),
                               Align(
                                 alignment: Alignment.centerRight,
-                                child: _glowingOrbDot(scale, const Color(0xFFD500F9)),
+                                child: _glowingOrbDot(
+                                  scale,
+                                  const Color(0xFFD500F9),
+                                ),
                               ),
                             ],
                           ),
@@ -287,7 +299,7 @@ class _MagicLoadingViewState extends State<MagicLoadingView>
   }
 }
 
-
+// ignore: unused_element
 class _MagicCirclePainter extends CustomPainter {
   final Color color;
   final double strokeWidth;
@@ -452,6 +464,7 @@ class _AnimatedLoadingText extends StatefulWidget {
   final Color color;
   const _AnimatedLoadingText({
     required this.text,
+    // ignore: unused_element_parameter
     this.fontSize = 14,
     required this.color,
   });

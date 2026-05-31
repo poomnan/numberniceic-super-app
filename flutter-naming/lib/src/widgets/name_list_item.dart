@@ -57,10 +57,13 @@ class _NameListItemState extends State<NameListItem>
   bool _isSaved = false;
   bool _isFlipped = false;
   String _flipType = 'score'; // 'score' or 'luck'
+  // ignore: unused_field
   NameRootResult? _rootData;
+  // ignore: unused_field
   final bool _isLoadingRoot = false;
   late AnimationController _controller;
   late AnimationController _flipController;
+  // ignore: unused_field
   late Animation<double> _flipAnimation;
   static FlutterTts? _sharedTts;
   static Completer<void>? _ttsInitCompleter;
@@ -314,10 +317,12 @@ class _NameListItemState extends State<NameListItem>
     }
   }
 
+  // ignore: unused_element
   Future<void> _speakNameOnly() async {
     await _speakNameAndMeaning();
   }
 
+  // ignore: unused_element
   Future<void> _speakMeaningOnly() async {
     await _speakSectionText(
       _prepareSpeakableThaiText(widget.result.meaning),
@@ -1514,8 +1519,7 @@ class _NameListItemState extends State<NameListItem>
                                   runSpacing: 4,
                                   alignment: WrapAlignment.center,
                                   children: [
-                                    if (widget.isFilterKakiActive &&
-                                        widget
+                                    if (widget
                                             .result
                                             .kakiHighlight
                                             .isNotEmpty &&
@@ -1523,10 +1527,9 @@ class _NameListItemState extends State<NameListItem>
                                           (h) => h.isKaki,
                                         ))
                                       _buildNoKakiBadge(),
-                                    if (widget.isFilterKakiActive &&
-                                        widget.result.kakiHighlight.any(
-                                          (h) => h.isKaki,
-                                        ))
+                                    if (widget.result.kakiHighlight.any(
+                                      (h) => h.isKaki,
+                                    ))
                                       _buildKakiWarningBadge(),
                                   ],
                                 ),
@@ -2379,6 +2382,7 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
+  // ignore: unused_element
   Widget _scoreRow(String label, String value, bool isPositive) {
     return Row(
       children: [
@@ -2911,6 +2915,7 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
+  // ignore: unused_element
   Widget _buildVoiceButton() {
     return const SizedBox.shrink();
   }
@@ -2950,6 +2955,7 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
+  // ignore: unused_element
   Widget _buildNumerologyBadge() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -2979,6 +2985,7 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
+  // ignore: unused_element
   Widget _buildShadowBadge() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -3058,7 +3065,9 @@ class _NameListItemState extends State<NameListItem>
 
     Widget nameWidget;
 
-    if (widget.comparisonAnalysis != null && hasKaki && widget.isFilterKakiActive) {
+    if (widget.comparisonAnalysis != null &&
+        hasKaki &&
+        widget.isFilterKakiActive) {
       final tp = TextPainter(
         text: TextSpan(text: combinedName, style: textStyle),
         textDirection: TextDirection.ltr,
@@ -3135,7 +3144,7 @@ class _NameListItemState extends State<NameListItem>
     );
 
     Widget nameWidget;
-    if (widget.result.kakiHighlight.isEmpty || !widget.isFilterKakiActive) {
+    if (widget.result.kakiHighlight.isEmpty) {
       nameWidget = Text(widget.result.name, style: textStyle);
     } else {
       // Calculate actual width to prevent fixed-size overflow
@@ -3154,7 +3163,7 @@ class _NameListItemState extends State<NameListItem>
       );
     }
 
-    if (isGold && (!hasKaki || !widget.isFilterKakiActive)) {
+    if (isGold && !hasKaki) {
       return PremiumNameTextEffect(child: nameWidget);
     }
     return nameWidget;
@@ -3319,6 +3328,7 @@ class _NameListItemState extends State<NameListItem>
                                     Future.delayed(
                                       const Duration(milliseconds: 1000),
                                       () {
+                                        if (!dialogContext.mounted) return;
                                         if (Navigator.canPop(dialogContext)) {
                                           Navigator.pop(dialogContext);
                                         }
@@ -3380,15 +3390,15 @@ class _NameListItemState extends State<NameListItem>
       },
     ).then((_) {
       // Update parent state and show toast only after dialog is closed
-      if (didSave && mounted) {
-        setState(() => _isSaved = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("บันทึกชื่อ ${widget.result.name} แล้ว"),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
+      if (!didSave || !mounted) return;
+      setState(() => _isSaved = true);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("บันทึกชื่อ ${widget.result.name} แล้ว"),
+          backgroundColor: AppColors.success,
+        ),
+      );
     });
   }
 
@@ -3837,11 +3847,7 @@ class _ThaiHighlightPainter extends CustomPainter {
         );
       } else {
         // Mixed Case (e.g. White Base + Red Vowel)
-        // Draw layers from full cluster down to base to ensure proper stacking
-        // The "Full Cluster" (i=length) determines the baseline for this position.
-
-        // We use the full cluster's metrics for the "Base" of alignment.
-        final fullClusterBaseline = clusterBaseline;
+        // Draw layers from full cluster down to base to ensure proper stacking.
 
         for (int i = cluster.length; i >= 1; i--) {
           final subCluster = cluster.sublist(0, i);
@@ -4309,6 +4315,7 @@ class _LuckyParticlePainter extends CustomPainter {
 
 /// Subtle Thai Kanok (กนก) pattern painter for card backgrounds.
 /// Draws stylized lotus/petal motifs that evoke traditional Thai artistry.
+// ignore: unused_element
 class _ThaiKanokPatternPainter extends CustomPainter {
   final Color color;
   final int rank;

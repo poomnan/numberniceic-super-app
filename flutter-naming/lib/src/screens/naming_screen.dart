@@ -18,7 +18,6 @@ import '../widgets/name_list_item.dart';
 import '../widgets/paywall_dialog.dart';
 import 'saved_names_screen.dart';
 import 'info_screen.dart';
-import '../widgets/filter_chip.dart' show FilterChipWidget;
 import '../widgets/dashboard_summary.dart' show DashboardSummary;
 import '../widgets/magic_loading.dart';
 
@@ -63,8 +62,6 @@ class _NamingScreenState extends State<NamingScreen>
   bool _hasSearched = false;
   bool _isRelaxedSearch =
       false; // New state to track if we show fallback results
-  bool _isSatLoading = false;
-  bool _isShaLoading = false;
   int _searchRequestId = 0;
   int _suggestionRequestId = 0;
   int _suggestionDebounceRequestId = 0;
@@ -133,8 +130,6 @@ class _NamingScreenState extends State<NamingScreen>
     'Friday',
     'Saturday',
   ];
-
-
 
   List<Map<String, dynamic>> _ideaExamples = [];
   List<Map<String, dynamic>> _pickedExamples = [];
@@ -329,10 +324,14 @@ class _NamingScreenState extends State<NamingScreen>
       _isLoadingNameIntent = false;
     });
 
-    final bool isSemanticSearch = (_selectedExampleIndex != null) || (isSemanticIntent && !looksLikeTypedName);
+    final bool isSemanticSearch =
+        (_selectedExampleIndex != null) ||
+        (isSemanticIntent && !looksLikeTypedName);
 
     if (isSemanticSearch) {
-      if (reloadSelectedName && (!_hasRankableNameTemplate || _selectedNameMeaning != originalInput)) {
+      if (reloadSelectedName &&
+          (!_hasRankableNameTemplate ||
+              _selectedNameMeaning != originalInput)) {
         if (mounted) {
           setState(() {
             _isLoadingSelectedNameMeaning = true;
@@ -508,13 +507,8 @@ class _NamingScreenState extends State<NamingScreen>
 
           final bool passesSatFilter = r.isSatGood;
           final bool passesShaFilter = r.isShaGood;
-          if (_filterSat && _filterSha) {
-            if (!passesSatFilter || !passesShaFilter) return false;
-          } else if (_filterSat) {
-            if (!passesSatFilter || passesShaFilter) return false;
-          } else if (_filterSha) {
-            if (passesSatFilter || !passesShaFilter) return false;
-          }
+          if (_filterSat && !passesSatFilter) return false;
+          if (_filterSha && !passesShaFilter) return false;
 
           return true;
         }).toList();
@@ -851,8 +845,12 @@ class _NamingScreenState extends State<NamingScreen>
       if (_pickedExamples.length >= 2 &&
           _ideaExamples.length > _pickedExamples.length) {
         _pickedExamples.removeAt(0);
-        final currentTexts = _pickedExamples.map((e) => e['text'] as String).toSet();
-        final available = _ideaExamples.where((e) => !currentTexts.contains(e['text'] as String)).toList();
+        final currentTexts = _pickedExamples
+            .map((e) => e['text'] as String)
+            .toSet();
+        final available = _ideaExamples
+            .where((e) => !currentTexts.contains(e['text'] as String))
+            .toList();
         if (available.isNotEmpty) {
           final nextItem = available[math.Random().nextInt(available.length)];
           _pickedExamples.add(nextItem);
@@ -1136,6 +1134,7 @@ class _NamingScreenState extends State<NamingScreen>
     });
   }
 
+  // ignore: unused_element
   Widget _buildClassificationChip(InputClassification c) {
     final isName = c.type == "single_name";
     final isFullName = c.type == "full_name";
@@ -1241,7 +1240,11 @@ class _NamingScreenState extends State<NamingScreen>
     return const Color(0xFFD97706);
   }
 
-  void _resolveSeedName(String name, {String? meaningHint, bool expandSuggestions = false}) {
+  void _resolveSeedName(
+    String name, {
+    String? meaningHint,
+    bool expandSuggestions = false,
+  }) {
     setState(() {
       _selectedNameMeaningName = name;
       _selectedNameMeaning = meaningHint;
@@ -1525,13 +1528,6 @@ class _NamingScreenState extends State<NamingScreen>
               backgroundColor: Colors.red,
             ),
           );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isSatLoading = false;
-            _isShaLoading = false;
-          });
         }
       }
     });
@@ -2124,7 +2120,12 @@ class _NamingScreenState extends State<NamingScreen>
 
                       final card = NameListItem(
                         key: ValueKey(
-                          'matching_${_keywordController.text.hashCode}_${item.name}_${_filterSat}_${_filterSha}',
+                          Object.hash(
+                            _keywordController.text,
+                            item.name,
+                            _filterSat,
+                            _filterSha,
+                          ),
                         ),
                         rank: index + 1,
                         result: item,
@@ -3071,11 +3072,7 @@ class _NamingScreenState extends State<NamingScreen>
                                 ),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(
-                                icon,
-                                size: 22,
-                                color: iconColor,
-                              ),
+                              child: Icon(icon, size: 22, color: iconColor),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -3440,7 +3437,7 @@ class _NamingScreenState extends State<NamingScreen>
                                     : const Color(
                                         0xFFFF4FA3,
                                       ).withValues(alpha: 0.55),
-                                    const Color(0xFFB517FF),
+                                const Color(0xFFB517FF),
                                 value,
                               ),
                               size: 18 + (value * 4),
@@ -3779,7 +3776,9 @@ class _NamingScreenState extends State<NamingScreen>
                         ),
                         decoration: BoxDecoration(
                           gradient: isSelected ? dayGradient : null,
-                          color: isSelected ? null : badgeColor.withValues(alpha: 0.7),
+                          color: isSelected
+                              ? null
+                              : badgeColor.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: isSelected
@@ -3820,7 +3819,9 @@ class _NamingScreenState extends State<NamingScreen>
                               style: GoogleFonts.prompt(
                                 color: isSelected ? Colors.white : textColor,
                                 fontSize: 13,
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w700,
                               ),
                             ),
                           ],
@@ -3894,7 +3895,9 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.secondary.withValues(alpha: isExpanded ? 0.06 : 0.12),
+                  color: AppColors.secondary.withValues(
+                    alpha: isExpanded ? 0.06 : 0.12,
+                  ),
                   blurRadius: isExpanded ? 16 : 22,
                   spreadRadius: isExpanded ? -2 : 0,
                   offset: isExpanded ? const Offset(0, 6) : const Offset(0, 8),
@@ -3926,7 +3929,9 @@ class _NamingScreenState extends State<NamingScreen>
                             gradient: LinearGradient(
                               colors: isExpanded
                                   ? [
-                                      AppColors.secondary.withValues(alpha: 0.8),
+                                      AppColors.secondary.withValues(
+                                        alpha: 0.8,
+                                      ),
                                       AppColors.secondary,
                                     ]
                                   : [
@@ -3939,7 +3944,9 @@ class _NamingScreenState extends State<NamingScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.secondary.withValues(alpha: 0.3),
+                                color: AppColors.secondary.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: isExpanded ? 4 : 10,
                                 offset: const Offset(0, 2),
                               ),
@@ -3962,8 +3969,8 @@ class _NamingScreenState extends State<NamingScreen>
                               Text(
                                 isExpanded
                                     ? (suggestionCount > 0
-                                        ? "รายชื่อที่มีความหมายใกล้เคียง ($suggestionCount)"
-                                        : "รายชื่อที่มีความหมายใกล้เคียง")
+                                          ? "รายชื่อที่มีความหมายใกล้เคียง ($suggestionCount)"
+                                          : "รายชื่อที่มีความหมายใกล้เคียง")
                                     : "รายชื่อมงคลความหมายสอดคล้อง",
                                 style: GoogleFonts.prompt(
                                   color: const Color(0xFF0F5132),
@@ -3977,14 +3984,18 @@ class _NamingScreenState extends State<NamingScreen>
                                 isExpanded
                                     ? "กำลังแสดงรายชื่อแนะนำที่มีความหมายพิเศษ"
                                     : (suggestionCount > 0
-                                        ? "✨ ค้นพบชื่อแนะนำชั้นเลิศ $suggestionCount รายชื่อ แตะเพื่อเปิดดูพิเศษ"
-                                        : "✨ ค้นพบรายชื่อแนะนำชั้นเลิศ แตะเพื่อเปิดดูพิเศษ"),
+                                          ? "✨ ค้นพบชื่อแนะนำชั้นเลิศ $suggestionCount รายชื่อ แตะเพื่อเปิดดูพิเศษ"
+                                          : "✨ ค้นพบรายชื่อแนะนำชั้นเลิศ แตะเพื่อเปิดดูพิเศษ"),
                                 style: GoogleFonts.sarabun(
                                   color: isExpanded
-                                      ? const Color(0xFF1E7E34).withValues(alpha: 0.75)
+                                      ? const Color(
+                                          0xFF1E7E34,
+                                        ).withValues(alpha: 0.75)
                                       : const Color(0xFF0F5132),
                                   fontSize: 11,
-                                  fontWeight: isExpanded ? FontWeight.w600 : FontWeight.w800,
+                                  fontWeight: isExpanded
+                                      ? FontWeight.w600
+                                      : FontWeight.w800,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -4009,7 +4020,9 @@ class _NamingScreenState extends State<NamingScreen>
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
-                            color: AppColors.secondary.withValues(alpha: isExpanded ? 0.08 : 0.15),
+                            color: AppColors.secondary.withValues(
+                              alpha: isExpanded ? 0.08 : 0.15,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           padding: const EdgeInsets.all(5),
@@ -4596,7 +4609,7 @@ class _NamingScreenState extends State<NamingScreen>
   Widget buildUnifiedDayKakiCard() {
     final hasSelectedDay = _selectedDay != null;
     final isActive = hasSelectedDay && _filterKaki;
-    
+
     final Map<String, Map<String, dynamic>> badgeConfigs = {
       'Sunday': {
         'name': 'วันอาทิตย์',
@@ -4690,16 +4703,16 @@ class _NamingScreenState extends State<NamingScreen>
     const Color inactiveTextColor = Color(0xFF475569);
 
     final activeConfig = hasSelectedDay ? badgeConfigs[_selectedDay] : null;
-    
+
     // Background and border colors
     final Gradient cardGradient = isActive
         ? (activeConfig!['gradient'] as Gradient)
         : inactiveGradient;
-        
+
     final Color cardBorderColor = isActive
         ? (activeConfig!['color'] as Color).withValues(alpha: 0.3)
         : inactiveBorderColor.withValues(alpha: 0.55);
-        
+
     final Color titleColor = isActive
         ? (activeConfig!['textColor'] as Color)
         : inactiveTextColor;
@@ -4707,8 +4720,6 @@ class _NamingScreenState extends State<NamingScreen>
     final titleText = isActive
         ? "อันดับชื่อคัดกาลกิณีออกแล้ว"
         : "ยังไม่ได้คัดกาลกิณีออก";
-        
-
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -4717,14 +4728,14 @@ class _NamingScreenState extends State<NamingScreen>
       decoration: BoxDecoration(
         gradient: cardGradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: cardBorderColor,
-          width: 1.6,
-        ),
+        border: Border.all(color: cardBorderColor, width: 1.6),
         boxShadow: [
           BoxShadow(
-            color: (isActive ? (activeConfig!['color'] as Color) : const Color(0xFF64748B))
-                .withValues(alpha: 0.04),
+            color:
+                (isActive
+                        ? (activeConfig!['color'] as Color)
+                        : const Color(0xFF64748B))
+                    .withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -4738,7 +4749,8 @@ class _NamingScreenState extends State<NamingScreen>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   backgroundColor: AppColors.textLight, // Deep brown background
-                  behavior: SnackBarBehavior.floating, // Floating for modern premium feel
+                  behavior: SnackBarBehavior
+                      .floating, // Floating for modern premium feel
                   margin: const EdgeInsets.all(16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -4781,13 +4793,17 @@ class _NamingScreenState extends State<NamingScreen>
                   padding: const EdgeInsets.all(9),
                   decoration: BoxDecoration(
                     color: isActive
-                        ? (activeConfig!['color'] as Color).withValues(alpha: 0.12)
+                        ? (activeConfig!['color'] as Color).withValues(
+                            alpha: 0.12,
+                          )
                         : const Color(0xFFE2E8F0),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     isActive ? Icons.security_rounded : Icons.security_rounded,
-                    color: isActive ? (activeConfig!['color'] as Color) : const Color(0xFF64748B),
+                    color: isActive
+                        ? (activeConfig!['color'] as Color)
+                        : const Color(0xFF64748B),
                     size: 18,
                   ),
                 ),
@@ -4856,7 +4872,7 @@ class _NamingScreenState extends State<NamingScreen>
                       value: isActive,
                       onChanged: null, // Tapped via parent InkWell
                       activeTrackColor: const Color(0xFF38BDF8),
-                      activeColor: const Color(0xFF0EA5E9),
+                      activeThumbColor: const Color(0xFF0EA5E9),
                       inactiveThumbColor: Colors.white,
                       inactiveTrackColor: const Color(0xFFCBD5E1),
                     ),
@@ -4870,9 +4886,6 @@ class _NamingScreenState extends State<NamingScreen>
     );
   }
 
-
-
-
   Widget buildFilterChipsSection() {
     final bool canUseRankingTemplate =
         _keywordController.text.trim().isNotEmpty &&
@@ -4882,6 +4895,13 @@ class _NamingScreenState extends State<NamingScreen>
                     _inputClassification!.type == "full_name")));
     final bool needsSeedName =
         _keywordController.text.trim().isNotEmpty && !canUseRankingTemplate;
+
+    final String? prototypeName =
+        _selectedNameMeaningName?.trim().isNotEmpty == true
+        ? _selectedNameMeaningName!.trim()
+        : _keywordController.text.trim().isNotEmpty == true
+        ? _keywordController.text.trim()
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -4945,6 +4965,32 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                   ),
 
+                  if (canUseRankingTemplate && prototypeName != null) ...[
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text.rich(
+                        TextSpan(
+                          text: "วิเคราะห์ต้นแบบจากชื่อ: ",
+                          style: GoogleFonts.sarabun(
+                            color: const Color(0xFF64748B),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: prototypeName,
+                              style: GoogleFonts.prompt(
+                                color: const Color(0xFF7E22CE),
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
 
                   const SizedBox(height: 12),
                   buildBirthdayBadges(),
@@ -5020,7 +5066,8 @@ class _NamingScreenState extends State<NamingScreen>
                           isDisabled: !canUseRankingTemplate,
                           onTap: () {
                             if (!canUseRankingTemplate) return;
-                            final bool currentlyActive = _filterSat && _filterSha;
+                            final bool currentlyActive =
+                                _filterSat && _filterSha;
                             _handleFilterOptionTap(
                               targetSat: !currentlyActive,
                               targetSha: !currentlyActive,
@@ -5037,7 +5084,9 @@ class _NamingScreenState extends State<NamingScreen>
                             decoration: BoxDecoration(
                               color: const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -5063,7 +5112,8 @@ class _NamingScreenState extends State<NamingScreen>
                             ),
                           ),
                         ],
-                        if ((_results.isNotEmpty || _isLoading) && _hasRankingCriteria) ...[
+                        if ((_results.isNotEmpty || _isLoading) &&
+                            _hasRankingCriteria) ...[
                           const SizedBox(height: 12),
                           Builder(
                             builder: (context) {
@@ -5092,9 +5142,7 @@ class _NamingScreenState extends State<NamingScreen>
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          InformationScreen(
-                                            initialTabIndex: 2,
-                                          ),
+                                          InformationScreen(initialTabIndex: 2),
                                     ),
                                   );
                                 },
@@ -5219,7 +5267,7 @@ class _NamingScreenState extends State<NamingScreen>
               child: Switch.adaptive(
                 value: isActive,
                 onChanged: isDisabled ? null : (_) => onTap(),
-                activeColor: activeColor,
+                activeThumbColor: activeColor,
                 activeTrackColor: activeColor.withValues(alpha: 0.3),
                 inactiveThumbColor: Colors.white,
                 inactiveTrackColor: const Color(0xFFCBD5E1),
@@ -5371,7 +5419,11 @@ class _NamingScreenState extends State<NamingScreen>
                           ),
                         ),
                         child: Text(
-                          isActive ? "VIP ACTIVE" : "ทดลองใช้ฟรี",
+                          isActive
+                              ? "VIP ACTIVE"
+                              : canUse
+                              ? "ทดลองใช้ฟรี"
+                              : "VIP",
                           style: GoogleFonts.prompt(
                             color: isActive
                                 ? activeGold
@@ -5405,7 +5457,7 @@ class _NamingScreenState extends State<NamingScreen>
               child: Switch.adaptive(
                 value: isActive,
                 onChanged: isDisabled ? null : (_) => onTap(),
-                activeColor: activeGold,
+                activeThumbColor: activeGold,
                 activeTrackColor: activeGold.withValues(alpha: 0.3),
                 inactiveThumbColor: Colors.white,
                 inactiveTrackColor: const Color(0xFFCBD5E1),
@@ -5937,20 +5989,29 @@ class _NamingScreenState extends State<NamingScreen>
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Color(0xFFF5EFEB), // Soft, warm light beige-brown background (Luxury Vachetta sand leather)
+        color: Color(
+          0xFFF5EFEB,
+        ), // Soft, warm light beige-brown background (Luxury Vachetta sand leather)
       ),
       child: Stack(
         children: [
           Positioned.fill(
             child: CustomPaint(
               painter: LouisVuittonMonogramPainter(
-                color: const Color(0xFF2D1E15).withValues(alpha: 0.05), // Subtle dark brown monogram shapes
+                color: const Color(
+                  0xFF2D1E15,
+                ).withValues(alpha: 0.05), // Subtle dark brown monogram shapes
               ),
             ),
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(24, 40, 24, 100), // Integrated bottom space for FAB
+            padding: const EdgeInsets.fromLTRB(
+              24,
+              40,
+              24,
+              100,
+            ), // Integrated bottom space for FAB
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -5959,7 +6020,9 @@ class _NamingScreenState extends State<NamingScreen>
                   "ความรู้เรื่องชื่อและเลขศาสตร์",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.prompt(
-                    color: const Color(0xFF2D1E15).withValues(alpha: 0.55), // Elegant subtle dark brown text
+                    color: const Color(
+                      0xFF2D1E15,
+                    ).withValues(alpha: 0.55), // Elegant subtle dark brown text
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -5972,11 +6035,20 @@ class _NamingScreenState extends State<NamingScreen>
                   runSpacing: 8,
                   children: [
                     buildFooterLink("เลขศาสตร์ & พลังเงา", 0),
-                    const Text("•", style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12)),
+                    const Text(
+                      "•",
+                      style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12),
+                    ),
                     buildFooterLink("กาลกิณี", 1),
-                    const Text("•", style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12)),
+                    const Text(
+                      "•",
+                      style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12),
+                    ),
                     buildFooterLink("ระบบอัจฉริยะ (AI)", 2),
-                    const Text("•", style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12)),
+                    const Text(
+                      "•",
+                      style: TextStyle(color: Color(0xFF8B6B5C), fontSize: 12),
+                    ),
                     buildFooterLink("การจัดอันดับชื่อ", 3),
                   ],
                 ),
@@ -5985,7 +6057,9 @@ class _NamingScreenState extends State<NamingScreen>
                   "วิเคราะห์จากชื่อจริง +3 แสนชื่อ",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.prompt(
-                    color: const Color(0xFF2D1E15).withValues(alpha: 0.85), // Rich dark brown text
+                    color: const Color(
+                      0xFF2D1E15,
+                    ).withValues(alpha: 0.85), // Rich dark brown text
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -6023,7 +6097,9 @@ class _NamingScreenState extends State<NamingScreen>
           label,
           textAlign: TextAlign.center,
           style: GoogleFonts.prompt(
-            color: const Color(0xFF8B6B5C), // Beautiful luxury soft warm brown link text
+            color: const Color(
+              0xFF8B6B5C,
+            ), // Beautiful luxury soft warm brown link text
             fontSize: 13,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -7101,7 +7177,6 @@ class _PulsingBarState extends State<_PulsingBar>
   }
 }
 
-
 class LouisVuittonMonogramPainter extends CustomPainter {
   final Color color;
   LouisVuittonMonogramPainter({required this.color});
@@ -7168,7 +7243,12 @@ class LouisVuittonMonogramPainter extends CustomPainter {
     textPainter2.paint(canvas, Offset(cx + 1, cy - 1));
   }
 
-  void _drawQuatrefoilInCircle(Canvas canvas, double cx, double cy, Paint paint) {
+  void _drawQuatrefoilInCircle(
+    Canvas canvas,
+    double cx,
+    double cy,
+    Paint paint,
+  ) {
     final strokePaint = Paint()
       ..color = paint.color
       ..style = PaintingStyle.stroke
@@ -7244,7 +7324,9 @@ class AnimatedSeedName extends StatelessWidget {
     return Text(
       name,
       style: GoogleFonts.prompt(
-        color: const Color(0xFFC5951A), // Beautiful rich dark gold with high contrast
+        color: const Color(
+          0xFFC5951A,
+        ), // Beautiful rich dark gold with high contrast
         fontSize: 14.5,
         fontWeight: FontWeight.bold,
       ),

@@ -88,6 +88,7 @@ type MobileNameResult struct {
 	PhoneticBonus       int             `json:"phonetic_bonus"`
 	PhoneticPenalty     int             `json:"phonetic_penalty,omitempty"`
 	IsRelaxedNumerology bool            `json:"is_relaxed_numerology,omitempty"`
+	FinalRankScoreExact float64         `json:"final_rank_score_exact,omitempty"`
 	RankReasons         []string        `json:"rank_reasons"`
 }
 
@@ -509,7 +510,9 @@ func calculateFinalRankScoreAndReasons(
 			safeInt(r.RhythmScore),
 		)
 	}
-	finalScore := int(clampScore(originalScore) + 0.5)
+	exactScore := clampScore(originalScore)
+	r.FinalRankScoreExact = clampScore(exactScore + deterministicNameTiebreaker(r.Name))
+	finalScore := int(exactScore + 0.5)
 
 	r.SemanticRankScore = int(semanticComponent + 0.5)
 	r.NumerologyScore = int(numerologyComponent + 0.5)
@@ -1008,9 +1011,9 @@ func passesRequestedFiltersWithStage(result MobileNameResult, req MobileSearchRe
 	case req.FilterSat && req.FilterSha:
 		return satPass && shaPass
 	case req.FilterSat:
-		return satPass && !shaPass
+		return satPass
 	case req.FilterSha:
-		return !satPass && shaPass
+		return shaPass
 	default:
 		return true
 	}
@@ -1048,6 +1051,19 @@ func clampScore(value float64) float64 {
 	default:
 		return value
 	}
+}
+
+func deterministicNameTiebreaker(name string) float64 {
+	hash := uint32(2166136261)
+	for _, r := range name {
+		hash ^= uint32(r)
+		hash *= 16777619
+	}
+	return float64(hash%1000) / 100000.0
+}
+
+func nameUsabilityPenalty(name string) float64 {
+	return (1 - computeHumanNameScore(name)) * 100
 }
 
 func normalizedNumerologyScore(
@@ -1564,6 +1580,77 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		isBroadSearch := searchContext.IsBroadSearch
 		keywordLen := utf8.RuneCountInString(req.Keyword)
 
+		if pool == "indexed_filter_fill" {
+			args := []interface{}{}
+			argCounter := 1
+			rootExpr := "0.0"
+			if searchContext.HasKeywordSignal {
+				args = append(args, searchContext.WordContext)
+				rootExpr = fmt.Sprintf(
+					"GREATEST(COALESCE(similarity(thname, $%d), 0), COALESCE(word_similarity(thname, $%d), 0))",
+					argCounter,
+					argCounter,
+				)
+				argCounter++
+			}
+
+			query := fmt.Sprintf(`
+				SELECT name_id, thname, meaning, gender, sat_sum, sha_sum,
+				       0.0 as distance,
+				       %s as root_score,
+				       0.0 as semantic_score,
+				       (%s * %.2f) as hybrid_score,
+				       0.0 as bonus_calculated,
+				       phonetic_summary, phonetic_score, pronunciation_ease, euphony_score, rhythm_score
+				FROM names_miracle
+				WHERE char_length(thname) BETWEEN 2 AND 8
+			`, rootExpr, rootExpr, math.Max(searchContext.WordWeight, 1.0))
+
+			if req.FilterSat || req.SimilarMode {
+				query += fmt.Sprintf(" AND sat_sum = ANY($%d::int[])", argCounter)
+				args = append(args, pq.Array(targetSatSums))
+				argCounter++
+			}
+			if req.FilterSha || req.SimilarMode {
+				query += fmt.Sprintf(" AND sha_sum = ANY($%d::int[])", argCounter)
+				args = append(args, pq.Array(targetShaSums))
+				argCounter++
+			}
+			if req.FilterKaki && kakiColumn != "" {
+				query += fmt.Sprintf(" AND %s = false", kakiColumn)
+			}
+			if req.Lastname != "" {
+				query += fmt.Sprintf(" AND thname != $%d", argCounter)
+				args = append(args, req.Lastname)
+				argCounter++
+			}
+			if req.Keyword != "" && !req.SimilarMode {
+				query += fmt.Sprintf(" AND thname != $%d", argCounter)
+				args = append(args, req.Keyword)
+				argCounter++
+			}
+
+			if searchContext.HasKeywordSignal {
+				query += " ORDER BY " + rootExpr + " DESC, char_length(thname) ASC, name_id DESC"
+			} else {
+				query += " ORDER BY char_length(thname) ASC, name_id DESC"
+			}
+
+			limitVal := searchContext.CandidateLimit
+			if doubleGoodMode && limitVal < 600 {
+				limitVal = 600
+			} else if limitVal < 360 {
+				limitVal = 360
+			}
+			if relaxFilters && limitVal < 800 {
+				limitVal = 800
+			}
+			query += fmt.Sprintf(" LIMIT %d", limitVal)
+
+			log.Printf("DB Query pool=%s relax=%v: %s, Args: %+v", pool, relaxFilters, query, args)
+			return query, args
+		}
+
 		if pool == "spiritual" && doubleGoodMode && searchContext.HasKeywordSignal {
 			selectCols := "name_id, thname, meaning, gender, sat_sum, sha_sum, " +
 				searchContext.SelectProjection() +
@@ -1828,15 +1915,15 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	runAndScanWithContext := func(queryCtx context.Context, stage string, pool string, relax bool, dgStage *doubleGoodStageConfig) ([]MobileNameResult, retrievalScanStats, error) {
 		query, args := buildQuery(relax, pool, dgStage)
-		
+
 		var rows *sql.Rows
 		var err error
-		
+
 		if pool == "trigram" || pool == "spiritual" {
 			tx, txErr := database.DB.BeginTx(queryCtx, &sql.TxOptions{ReadOnly: true})
 			if txErr == nil {
 				defer tx.Rollback()
-				
+
 				minTrigram := 0.02
 				if relax {
 					minTrigram = 0.005
@@ -1850,10 +1937,10 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 				if dgStage != nil && dgStage.MinTrigram > 0 {
 					minTrigram = dgStage.MinTrigram
 				}
-				
+
 				_, _ = tx.ExecContext(queryCtx, fmt.Sprintf("SET LOCAL pg_trgm.similarity_threshold = %g", minTrigram))
 				_, _ = tx.ExecContext(queryCtx, fmt.Sprintf("SET LOCAL pg_trgm.word_similarity_threshold = %g", minTrigram))
-				
+
 				rows, err = tx.QueryContext(queryCtx, query, args...)
 			} else {
 				rows, err = database.DB.QueryContext(queryCtx, query, args...)
@@ -1861,7 +1948,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			rows, err = database.DB.QueryContext(queryCtx, query, args...)
 		}
-		
+
 		if err != nil {
 			return nil, retrievalScanStats{Stage: stage, Pool: pool}, err
 		}
@@ -2210,49 +2297,8 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var results []MobileNameResult
+	minResults := 100
 	targetUniqueResults := 0
-
-	appendRelaxedDoubleGoodTopUp := func(incoming []MobileNameResult, strongSoftPenalty bool) {
-		if len(incoming) == 0 {
-			return
-		}
-		missingSlots := 50 - len(results)
-		if missingSlots <= 0 {
-			return
-		}
-		filteredTopUp := make([]MobileNameResult, 0, len(incoming))
-		for _, result := range incoming {
-			satPass, shaPass, _, _, satPairPoint, shaPairPoint := activeNumerologySignals(result, req.SimilarMode && req.Lastname != "")
-			if isHardRejectedPairPoints(satPairPoint, shaPairPoint) {
-				continue
-			}
-			if satPass || shaPass {
-				result.IsRelaxedNumerology = true
-				result.PhoneticPenalty = phoneticSoftPenalty(
-					result.PhoneticScore,
-					result.PronunciationEase,
-					result.EuphonyScore,
-					result.RhythmScore,
-					result.PhoneticSummary,
-					strongSoftPenalty,
-				)
-				result.FinalRankScore, result.RankReasons = calculateFinalRankScoreAndReasons(
-					&result,
-					req.Keyword,
-					req.SimilarMode && req.Lastname != "",
-					req.FilterSat,
-					req.FilterSha,
-					req.FilterKaki,
-					searchContext.HasKeywordSignal,
-				)
-				filteredTopUp = append(filteredTopUp, result)
-				if len(filteredTopUp) >= missingSlots {
-					break
-				}
-			}
-		}
-		results, _ = mergeUniqueResultsWithCount(results, filteredTopUp)
-	}
 
 	stageCounters := []RetrievalStageMeta{}
 	appendStage := func(stats retrievalScanStats) {
@@ -2268,6 +2314,55 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		logRetrievalStage(stats, len(results))
 	}
 
+	countPassingResults := func(items []MobileNameResult) int {
+		count := 0
+		for _, item := range items {
+			if passesRequestedFilters(item, req) {
+				count++
+			}
+		}
+		return count
+	}
+
+	appendPassingTopUp := func(incoming []MobileNameResult) {
+		missingSlots := minResults - countPassingResults(results)
+		if missingSlots <= 0 {
+			return
+		}
+		filteredTopUp := make([]MobileNameResult, 0, minInt(len(incoming), missingSlots))
+		for _, result := range incoming {
+			if !passesRequestedFilters(result, req) {
+				continue
+			}
+			filteredTopUp = append(filteredTopUp, result)
+			if len(filteredTopUp) >= missingSlots {
+				break
+			}
+		}
+		results, _ = mergeUniqueResultsWithCount(results, filteredTopUp)
+	}
+
+	runIndexedFilterFill := func(stage string, relaxLevel int, strongSoftPenalty bool) bool {
+		if !(req.FilterSat || req.FilterSha) || countPassingResults(results) >= minResults {
+			return countPassingResults(results) >= minResults
+		}
+		var cfg *doubleGoodStageConfig
+		if relaxLevel > 0 {
+			cfg = &doubleGoodStageConfig{
+				PhoneticRelaxLevel: relaxLevel,
+				StrongSoftPenalty:  strongSoftPenalty,
+			}
+		}
+		topUpResults, stats, runErr := runAndScan(stage, "indexed_filter_fill", relaxLevel > 0, cfg)
+		if runErr != nil {
+			log.Printf("%s failed: %v", stage, runErr)
+			return false
+		}
+		appendPassingTopUp(topUpResults)
+		appendStage(stats)
+		return countPassingResults(results) >= minResults
+	}
+
 	runParallelPools := func(stage string, pools []string, relax bool, dgStage *doubleGoodStageConfig) error {
 		if len(pools) == 0 {
 			return nil
@@ -2280,6 +2375,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		var wg sync.WaitGroup
 		var dedupe sync.Map
 		var stateMu sync.Mutex
+		poolSem := make(chan struct{}, 2)
 		for _, item := range results {
 			dedupe.Store(item.Name, struct{}{})
 		}
@@ -2298,6 +2394,12 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
+				select {
+				case poolSem <- struct{}{}:
+					defer func() { <-poolSem }()
+				case <-poolCtx.Done():
+					return
+				}
 				poolStart := time.Now()
 				poolResults, stats, runErr := runAndScanWithContext(poolCtx, stage, poolName, relax, dgStage)
 				log.Printf(
@@ -2386,14 +2488,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		appendStage(stats)
 	}
 
-	minResults := 100
-	if req.Limit > minResults {
-		minResults = req.Limit
-	}
 	targetUniqueResults = minResults
-	if doubleGoodMode && targetUniqueResults < 200 {
-		targetUniqueResults = 200
-	}
 
 	// We use the package-level DB. If you want transaction isolation for ef_search,
 	// you would need to pass tx into runAndScan. Here we just set it globally or skip it.
@@ -2452,7 +2547,23 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-		if len(results) < minResults {
+		if countPassingResults(results) < minResults {
+			fillStart := time.Now()
+			if runIndexedFilterFill("double_good_indexed_fill", 0, false) {
+				log.Printf("[PERF] stage=%s results=%d passing=%d time=%v", "double_good_indexed_fill", len(results), countPassingResults(results), time.Since(fillStart))
+				goto finalizeResults
+			}
+			log.Printf("[PERF] stage=%s results=%d passing=%d time=%v", "double_good_indexed_fill", len(results), countPassingResults(results), time.Since(fillStart))
+		}
+		if countPassingResults(results) < minResults {
+			fillStart := time.Now()
+			if runIndexedFilterFill("double_good_indexed_fill_relaxed", 2, true) {
+				log.Printf("[PERF] stage=%s results=%d passing=%d time=%v", "double_good_indexed_fill_relaxed", len(results), countPassingResults(results), time.Since(fillStart))
+				goto finalizeResults
+			}
+			log.Printf("[PERF] stage=%s results=%d passing=%d time=%v", "double_good_indexed_fill_relaxed", len(results), countPassingResults(results), time.Since(fillStart))
+		}
+		if countPassingResults(results) < minResults {
 			topUpStart := time.Now()
 			topUpResults, stats, runErr := runDesperateSearch("double_good_topup", 2, true)
 			if runErr != nil {
@@ -2463,11 +2574,11 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				log.Printf("double-good top-up failed: %v", runErr)
 			} else {
-				appendRelaxedDoubleGoodTopUp(topUpResults, true)
+				appendPassingTopUp(topUpResults)
 				appendStage(stats)
 			}
-			log.Printf("[PERF] stage=%s results=%d time=%v", "double_good_topup", len(results), time.Since(topUpStart))
-			if len(results) >= 100 {
+			log.Printf("[PERF] stage=%s results=%d passing=%d time=%v", "double_good_topup", len(results), countPassingResults(results), time.Since(topUpStart))
+			if countPassingResults(results) >= minResults {
 				goto finalizeResults
 			}
 		}
@@ -2583,6 +2694,17 @@ finalizeResults:
 		}
 	}
 	results = filteredResults
+
+	if (req.FilterSat || req.FilterSha) && len(results) < minResults {
+		fillStart := time.Now()
+		runIndexedFilterFill("post_filter_indexed_fill", 0, false)
+		log.Printf("[PERF] stage=%s results=%d time=%v", "post_filter_indexed_fill", len(results), time.Since(fillStart))
+	}
+	if (req.FilterSat || req.FilterSha) && len(results) < minResults {
+		fillStart := time.Now()
+		runIndexedFilterFill("post_filter_indexed_fill_relaxed", 2, true)
+		log.Printf("[PERF] stage=%s results=%d time=%v", "post_filter_indexed_fill_relaxed", len(results), time.Since(fillStart))
+	}
 
 	needsSingleFilterTopUp := false
 

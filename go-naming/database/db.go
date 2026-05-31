@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -113,9 +114,9 @@ func Connect() {
 		log.Fatalf("Error opening database connection: %v", err)
 	}
 
-	// Set pool settings for 100+ concurrent users
-	DB.SetMaxOpenConns(80)
-	DB.SetMaxIdleConns(20)
+	// Set pool settings for 100+ concurrent users.
+	DB.SetMaxOpenConns(envInt("DB_MAX_OPEN_CONNS", 120))
+	DB.SetMaxIdleConns(envInt("DB_MAX_IDLE_CONNS", 40))
 	DB.SetConnMaxLifetime(10 * time.Minute)
 	DB.SetConnMaxIdleTime(5 * time.Minute)
 
@@ -132,6 +133,18 @@ func Connect() {
 	initArticlesTable()
 
 	fmt.Println("Database connection established")
+}
+
+func envInt(key string, fallback int) int {
+	raw := os.Getenv(key)
+	if raw == "" {
+		return fallback
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value <= 0 {
+		return fallback
+	}
+	return value
 }
 
 func initArticlesTable() {
