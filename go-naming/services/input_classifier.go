@@ -242,6 +242,15 @@ func classifyTwoPartThaiInput(input, first, last string, firstInDB, lastInDB, rh
 			Signals:    uniqueSignals(signals),
 		}, true
 	}
+	if lastInDB && !firstInDB && len(meaningSignals) > 0 && !rhyme {
+		signals = append(signals, meaningSignals...)
+		return InputClassification{
+			Type:       "single_name",
+			Confidence: 0.98,
+			FirstName:  last,
+			Signals:    uniqueSignals(signals),
+		}, true
+	}
 
 	if firstInDB || (lastInDB && rhyme) {
 		confidence := 0.96
@@ -253,6 +262,14 @@ func classifyTwoPartThaiInput(input, first, last string, firstInDB, lastInDB, rh
 			Confidence: confidence,
 			FirstName:  first,
 			Surname:    last,
+			Signals:    uniqueSignals(signals),
+		}, true
+	}
+	if lastInDB {
+		return InputClassification{
+			Type:       "single_name",
+			Confidence: 0.98,
+			FirstName:  last,
 			Signals:    uniqueSignals(signals),
 		}, true
 	}

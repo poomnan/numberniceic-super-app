@@ -107,6 +107,17 @@ func TestClassifyTwoPartThaiInputAlgorithm(t *testing.T) {
 			wantConfidence: 0.94,
 		},
 		{
+			name:           "second token in database wins as name without rhyme",
+			input:          "ความสุข ใบเตย",
+			first:          "ความสุข",
+			last:           "ใบเตย",
+			lastInDB:       true,
+			wantMatched:    true,
+			wantType:       "single_name",
+			wantFirstName:  "ใบเตย",
+			wantConfidence: 0.98,
+		},
+		{
 			name:        "pure rhyme is handled by structural full-name fallback",
 			input:       "หอยแครง แสงตะวัน",
 			first:       "หอยแครง",
