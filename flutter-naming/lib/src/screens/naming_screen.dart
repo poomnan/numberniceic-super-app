@@ -2220,9 +2220,6 @@ class _NamingScreenState extends State<NamingScreen>
                   ),
                 ],
                 SliverToBoxAdapter(child: buildFooter()),
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 60),
-                ), // Space for FAB/BottomNav
               ],
             ),
           ),
@@ -5779,7 +5776,7 @@ class _NamingScreenState extends State<NamingScreen>
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+            padding: const EdgeInsets.fromLTRB(24, 40, 24, 100), // Integrated bottom space for FAB
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
