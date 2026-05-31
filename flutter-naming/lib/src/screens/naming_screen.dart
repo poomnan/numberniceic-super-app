@@ -4730,14 +4730,14 @@ class _NamingScreenState extends State<NamingScreen>
       },
     };
 
-    // Reddish gradient configuration when active is false (Toggle is closed)
+    // Grey gradient configuration when active is false (Toggle is closed)
     const inactiveGradient = LinearGradient(
-      colors: [Color(0xFFFFF5F5), Color(0xFFFFE8E8)],
+      colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
-    const Color inactiveBorderColor = Color(0xFFFCA5A5);
-    const Color inactiveTextColor = Color(0xFFC53030);
+    const Color inactiveBorderColor = Color(0xFFE2E8F0);
+    const Color inactiveTextColor = Color(0xFF475569);
 
     final activeConfig = hasSelectedDay ? badgeConfigs[_selectedDay] : null;
     
@@ -4773,7 +4773,7 @@ class _NamingScreenState extends State<NamingScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: (isActive ? (activeConfig!['color'] as Color) : const Color(0xFFFF3B30))
+            color: (isActive ? (activeConfig!['color'] as Color) : const Color(0xFF64748B))
                 .withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -4832,12 +4832,12 @@ class _NamingScreenState extends State<NamingScreen>
                   decoration: BoxDecoration(
                     color: isActive
                         ? (activeConfig!['color'] as Color).withValues(alpha: 0.12)
-                        : const Color(0xFFFFEBEE),
+                        : const Color(0xFFE2E8F0),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isActive ? Icons.security_rounded : Icons.warning_rounded,
-                    color: isActive ? (activeConfig!['color'] as Color) : const Color(0xFFE53935),
+                    isActive ? Icons.security_rounded : Icons.security_rounded,
+                    color: isActive ? (activeConfig!['color'] as Color) : const Color(0xFF64748B),
                     size: 18,
                   ),
                 ),
@@ -4868,7 +4868,7 @@ class _NamingScreenState extends State<NamingScreen>
                               fontWeight: FontWeight.w600,
                               color: isActive
                                   ? titleColor.withValues(alpha: 0.65)
-                                  : const Color(0xFFE53935).withValues(alpha: 0.65),
+                                  : const Color(0xFF64748B),
                             ),
                             children: [
                               const TextSpan(text: "คำนวณมงคลตามวันเกิด: "),
@@ -4878,7 +4878,7 @@ class _NamingScreenState extends State<NamingScreen>
                                   fontWeight: FontWeight.w900,
                                   color: isActive
                                       ? titleColor
-                                      : const Color(0xFFC53030),
+                                      : const Color(0xFF475569),
                                 ),
                               ),
                             ],
@@ -4888,7 +4888,7 @@ class _NamingScreenState extends State<NamingScreen>
                         Text(
                           "กรุณาเลือกวันเกิดของคุณที่ด้านบนก่อนนะคะ",
                           style: GoogleFonts.prompt(
-                            color: const Color(0xFFE53935).withValues(alpha: 0.7),
+                            color: const Color(0xFF64748B),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -4908,7 +4908,7 @@ class _NamingScreenState extends State<NamingScreen>
                       activeTrackColor: const Color(0xFF38BDF8),
                       activeColor: const Color(0xFF0EA5E9),
                       inactiveThumbColor: Colors.white,
-                      inactiveTrackColor: const Color(0xFFEF9A9A),
+                      inactiveTrackColor: const Color(0xFFCBD5E1),
                     ),
                   ),
                 ),
