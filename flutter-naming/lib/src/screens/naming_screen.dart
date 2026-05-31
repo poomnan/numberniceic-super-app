@@ -2626,11 +2626,10 @@ class _NamingScreenState extends State<NamingScreen>
     if (_hideSelectedMeaningCard) return const SizedBox.shrink();
 
     if (_isLoadingSelectedNameMeaning) return const SizedBox.shrink();
-    final bool showMissingNameNotice =
-        _selectedNameMissingInDb && _selectedNameMeaning == null;
-    final String? selectedMeaningText = showMissingNameNotice
-        ? "ยังไม่พบความหมายของชื่อนี้ในฐานข้อมูล ระบบจะวิเคราะห์เลขศาสตร์จากชื่อที่พิมพ์จริง และใช้เป็นต้นแบบเสียง/รูปคำเพื่อค้นชื่อที่ใกล้เคียงให้"
-        : _selectedNameMeaning;
+    if (_selectedNameMissingInDb && _selectedNameMeaning == null) {
+      return const SizedBox.shrink();
+    }
+    final String? selectedMeaningText = _selectedNameMeaning;
     if (selectedMeaningText == null && _selectedNameAnalysis == null) {
       return const SizedBox.shrink();
     }
@@ -2676,10 +2675,8 @@ class _NamingScreenState extends State<NamingScreen>
                             color: AppColors.primary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
-                            showMissingNameNotice
-                                ? Icons.info_outline_rounded
-                                : Icons.menu_book_rounded,
+                          child: const Icon(
+                            Icons.menu_book_rounded,
                             color: AppColors.secondary,
                             size: 20,
                           ),
@@ -2695,9 +2692,7 @@ class _NamingScreenState extends State<NamingScreen>
                                   Expanded(
                                     child: Text.rich(
                                       TextSpan(
-                                        text: showMissingNameNotice
-                                            ? "ชื่อใหม่ที่ยังไม่มีในฐานข้อมูล "
-                                            : "ความหมายของชื่อ ",
+                                        text: "ความหมายของชื่อ ",
                                         style: GoogleFonts.sarabun(
                                           color: const Color(
                                             0xFF3D2600,
@@ -2719,23 +2714,22 @@ class _NamingScreenState extends State<NamingScreen>
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  if (!showMissingNameNotice)
-                                    _buildSpeechIconButton(
-                                      icon:
-                                          _isSpeakingKey(
-                                            _selectedNameMeaningName
-                                                        ?.trim()
-                                                        .isNotEmpty ??
-                                                    false
-                                                ? 'selected-meaning:${_selectedNameMeaningName!.trim()}'
-                                                : 'selected-meaning',
-                                          )
-                                          ? Icons.volume_up_rounded
-                                          : Icons.record_voice_over_rounded,
-                                      onTap: _speakSelectedMeaning,
-                                      tooltip: 'ฟังความหมายของชื่อ',
-                                      variant: SpeechButtonVariant.secondary,
-                                    ),
+                                  _buildSpeechIconButton(
+                                    icon:
+                                        _isSpeakingKey(
+                                          _selectedNameMeaningName
+                                                      ?.trim()
+                                                      .isNotEmpty ??
+                                                  false
+                                              ? 'selected-meaning:${_selectedNameMeaningName!.trim()}'
+                                              : 'selected-meaning',
+                                        )
+                                        ? Icons.volume_up_rounded
+                                        : Icons.record_voice_over_rounded,
+                                    onTap: _speakSelectedMeaning,
+                                    tooltip: 'ฟังความหมายของชื่อ',
+                                    variant: SpeechButtonVariant.secondary,
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -3611,7 +3605,7 @@ class _NamingScreenState extends State<NamingScreen>
                                       : (_selectedNameMissingInDb &&
                                             _selectedNameMeaningName?.trim() ==
                                                 value.text.trim())
-                                      ? "ยังไม่มีความหมายในฐานข้อมูล แต่ยังวิเคราะห์ชื่อได้"
+                                      ? "ระบบจะวิเคราะห์ชื่อและถอดเลขศาสตร์ให้"
                                       : (_selectedNameMeaning != null &&
                                             _selectedNameMeaning!
                                                 .trim()
