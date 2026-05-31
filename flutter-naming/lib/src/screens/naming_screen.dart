@@ -2917,111 +2917,7 @@ class _NamingScreenState extends State<NamingScreen>
                 buildMagicRankingHeader(),
                 const SizedBox(height: 18), // Increased from 12
 
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(child: buildAestheticDayIndicator()),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          if (_selectedDay == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "ระบุวันเกิด เพื่อคัดอักษรกาลกิณีตามตำราโบราณนะคะ",
-                                ),
-                                backgroundColor: Colors.orange,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                            return;
-                          }
-                          setState(() => _filterKaki = !_filterKaki);
-                          unawaited(_refreshResultsKeepingStep2Anchor());
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: const Color(0xFFE2E8F0),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.03),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.warning_amber_rounded,
-                                color: Color(0xFF64748B),
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  "คัดกาลกิณีออก",
-                                  style: GoogleFonts.prompt(
-                                    color: const Color(0xFF1E293B),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  overflow: TextOverflow.visible,
-                                  maxLines: 1,
-                                ),
-                              ),
-                              const SizedBox(width: 2),
-                              Transform.scale(
-                                scale: 0.7,
-                                child: Switch.adaptive(
-                                  value: _selectedDay != null && _filterKaki,
-                                  onChanged: (_) {
-                                    if (_selectedDay == null) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "ระบุวันเกิด เพื่อคัดอักษรกาลกิณีตามตำราโบราณนะคะ",
-                                          ),
-                                          backgroundColor: Colors.orange,
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                      return;
-                                    }
-                                    setState(() => _filterKaki = !_filterKaki);
-                                    unawaited(
-                                      _refreshResultsKeepingStep2Anchor(),
-                                    );
-                                  },
-                                  activeColor: const Color(0xFF0EA5E9),
-                                  activeTrackColor: const Color(
-                                    0xFF0EA5E9,
-                                  ).withValues(alpha: 0.3),
-                                  inactiveThumbColor: Colors.white,
-                                  inactiveTrackColor: const Color(0xFFCBD5E1),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                buildUnifiedDayKakiCard(),
                 const SizedBox(
                   height: 24,
                 ), // Increased from 16 to give VIP Badge space
@@ -4705,176 +4601,257 @@ class _NamingScreenState extends State<NamingScreen>
     );
   }
 
-  // ANCHOR: Aesthetic Birthday Day Indicator (แสดงผลวันเกิดที่เลือก)
-  Widget buildAestheticDayIndicator() {
+  // ANCHOR: Unified Day & Kaki Filter Switch Card (การ์ดวันเกิดและตัวกรองกาลกิณีแบบรวมชิ้นดีไซน์พรีเมียม)
+  Widget buildUnifiedDayKakiCard() {
     final hasSelectedDay = _selectedDay != null;
-    
-    if (!hasSelectedDay) {
-      return Container(
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFFE2E8F0),
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.calendar_today_rounded,
-              color: Color(0xFF94A3B8),
-              size: 16,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                "ยังไม่ได้เลือกวันเกิด",
-                style: GoogleFonts.prompt(
-                  color: const Color(0xFF94A3B8),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     final Map<String, Map<String, dynamic>> badgeConfigs = {
       'Sunday': {
-        'name': 'เกิดวันอาทิตย์',
+        'name': 'วันอาทิตย์',
         'color': const Color(0xFFFF3B30),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFFFECEB), Color(0xFFFFD1CF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFFFECEB),
         'textColor': const Color(0xFFD32F2F),
       },
       'Monday': {
-        'name': 'เกิดวันจันทร์',
+        'name': 'วันจันทร์',
         'color': const Color(0xFFFFCC00),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFFFFDE7), Color(0xFFFFF9C4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFFFFDE7),
         'textColor': const Color(0xFF795548),
       },
       'Tuesday': {
-        'name': 'เกิดวันอังคาร',
+        'name': 'วันอังคาร',
         'color': const Color(0xFFFF2D55),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFFFF0F5), Color(0xFFFFD1DC)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFFFF0F5),
         'textColor': const Color(0xFFC2185B),
       },
       'Wednesday1': {
-        'name': 'เกิดวันพุธ (กลางวัน)',
+        'name': 'วันพุธ (กลางวัน)',
         'color': const Color(0xFF34C759),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFE8F5E9), Color(0xFFC8E6C9)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFE8F5E9),
         'textColor': const Color(0xFF2E7D32),
       },
       'Wednesday2': {
-        'name': 'เกิดวันพุธ (กลางคืน)',
+        'name': 'วันพุธ (กลางคืน)',
         'color': const Color(0xFF007A7C),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFE0F2F1), Color(0xFFB2DFDB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFE0F2F1),
         'textColor': const Color(0xFF004D40),
       },
       'Thursday': {
-        'name': 'เกิดวันพฤหัสบดี',
+        'name': 'วันพฤหัสบดี',
         'color': const Color(0xFFFF9500),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFFFF3E0), Color(0xFFFFE0B2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFFFF3E0),
         'textColor': const Color(0xFFE65100),
       },
       'Friday': {
-        'name': 'เกิดวันศุกร์',
+        'name': 'วันศุกร์',
         'color': const Color(0xFF5AC8FA),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFE3F2FD),
         'textColor': const Color(0xFF0D47A1),
       },
       'Saturday': {
-        'name': 'เกิดวันเสาร์',
+        'name': 'วันเสาร์',
         'color': const Color(0xFF5856D6),
-        'gradient': const LinearGradient(
-          colors: [Color(0xFFF3E5F5), Color(0xFFE1BEE7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        'badgeColor': const Color(0xFFF3E5F5),
         'textColor': const Color(0xFF4A148C),
       },
     };
 
-    final config = badgeConfigs[_selectedDay]!;
-    final dayColor = config['color'] as Color;
-    final dayGradient = config['gradient'] as Gradient;
-    final textColor = config['textColor'] as Color;
-    final dayLabel = config['name'] as String;
+    final activeConfig = hasSelectedDay ? badgeConfigs[_selectedDay] : null;
+    final Color cardBorderColor = hasSelectedDay
+        ? (activeConfig!['color'] as Color).withValues(alpha: 0.35)
+        : const Color(0xFFE2E8F0);
+    final Color cardBgColor = hasSelectedDay
+        ? (activeConfig!['badgeColor'] as Color).withValues(alpha: 0.5)
+        : const Color(0xFFF8FAFC);
 
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      width: double.infinity,
       decoration: BoxDecoration(
-        gradient: dayGradient,
-        borderRadius: BorderRadius.circular(20),
+        color: cardBgColor,
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: dayColor.withValues(alpha: 0.3),
-          width: 1.5,
+          color: cardBorderColor,
+          width: 1.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: dayColor.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: (hasSelectedDay ? (activeConfig!['color'] as Color) : Colors.black)
+                .withValues(alpha: hasSelectedDay ? 0.05 : 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.calendar_month_rounded,
-            color: dayColor,
-            size: 16,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              dayLabel,
-              style: GoogleFonts.prompt(
-                color: textColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Left Section: Selected Birthday display
+              Expanded(
+                flex: 11,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  child: Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: hasSelectedDay
+                              ? (activeConfig!['color'] as Color).withValues(alpha: 0.15)
+                              : const Color(0xFFE2E8F0),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.calendar_month_rounded,
+                          color: hasSelectedDay
+                              ? (activeConfig!['color'] as Color)
+                              : const Color(0xFF94A3B8),
+                          size: 15,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "วันเกิดที่ระบุ",
+                              style: GoogleFonts.prompt(
+                                color: hasSelectedDay
+                                    ? (activeConfig!['textColor'] as Color).withValues(alpha: 0.6)
+                                    : const Color(0xFF94A3B8),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              hasSelectedDay
+                                  ? "เกิด${activeConfig!['name']}"
+                                  : "ยังไม่ได้เลือกวันเกิด",
+                              style: GoogleFonts.prompt(
+                                color: hasSelectedDay
+                                    ? (activeConfig!['textColor'] as Color)
+                                    : const Color(0xFF64748B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
-            ),
+
+              // Vertical Divider line
+              Container(
+                width: 1.5,
+                color: cardBorderColor.withValues(alpha: 0.5),
+              ),
+
+              // Right Section: Switch logic (Tap target)
+              Expanded(
+                flex: 12,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      if (!hasSelectedDay) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "กรุณาแตะเลือกวันเกิดที่ด้านบนก่อนนะคะ",
+                            ),
+                            backgroundColor: Colors.orange,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() => _filterKaki = !_filterKaki);
+                      unawaited(_refreshResultsKeepingStep2Anchor());
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.security_rounded,
+                            color: hasSelectedDay && _filterKaki
+                                ? const Color(0xFF0EA5E9)
+                                : const Color(0xFF94A3B8),
+                            size: 15,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "ความปลอดภัย",
+                                  style: GoogleFonts.prompt(
+                                    color: hasSelectedDay && _filterKaki
+                                        ? const Color(0xFF0EA5E9).withValues(alpha: 0.6)
+                                        : const Color(0xFF94A3B8),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 1),
+                                Text(
+                                  "คัดกาลกิณีออก",
+                                  style: GoogleFonts.prompt(
+                                    color: hasSelectedDay && _filterKaki
+                                        ? const Color(0xFF0369A1)
+                                        : const Color(0xFF475569),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          IgnorePointer(
+                            child: Transform.scale(
+                              scale: 0.72,
+                              child: Switch.adaptive(
+                                value: hasSelectedDay && _filterKaki,
+                                onChanged: null, // Tap handled by InkWell parent
+                                activeTrackColor: const Color(0xFF38BDF8),
+                                activeColor: const Color(0xFF0EA5E9),
+                                inactiveThumbColor: Colors.white,
+                                inactiveTrackColor: const Color(0xFFE2E8F0),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
+
 
 
   Widget buildFilterChipsSection() {
