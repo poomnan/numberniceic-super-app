@@ -2329,11 +2329,19 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		if missingSlots <= 0 {
 			return
 		}
+		existingNames := make(map[string]struct{}, len(results))
+		for _, result := range results {
+			existingNames[result.Name] = struct{}{}
+		}
 		filteredTopUp := make([]MobileNameResult, 0, minInt(len(incoming), missingSlots))
 		for _, result := range incoming {
 			if !passesRequestedFilters(result, req) {
 				continue
 			}
+			if _, exists := existingNames[result.Name]; exists {
+				continue
+			}
+			existingNames[result.Name] = struct{}{}
 			filteredTopUp = append(filteredTopUp, result)
 			if len(filteredTopUp) >= missingSlots {
 				break
