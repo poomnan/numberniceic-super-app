@@ -3722,15 +3722,15 @@ class _NamingScreenState extends State<NamingScreen>
               const Icon(
                 Icons.auto_awesome_rounded,
                 color: Color(0xFFD946EF),
-                size: 14,
+                size: 17,
               ),
-              const SizedBox(width: 5),
+              const SizedBox(width: 6),
               Text(
                 "วันเกิดของคุณ เพื่อคัดชื่อกาลกิณีออก",
                 style: GoogleFonts.prompt(
-                  color: const Color(0xFF7E22CE).withValues(alpha: 0.8),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF7E22CE),
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],
@@ -4932,8 +4932,9 @@ class _NamingScreenState extends State<NamingScreen>
                           "หาชื่อตามตำราที่ดีที่สุด",
                           style: GoogleFonts.prompt(
                             color: AppColors.textLight,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ),
@@ -4949,8 +4950,8 @@ class _NamingScreenState extends State<NamingScreen>
                             Icons.auto_awesome_rounded,
                             color: const Color(
                               0xFFD4AF37,
-                            ).withValues(alpha: 0.9),
-                            size: 14,
+                            ).withValues(alpha: 0.95),
+                            size: 17,
                           ),
                           const SizedBox(width: 6),
                           Flexible(
@@ -4958,26 +4959,26 @@ class _NamingScreenState extends State<NamingScreen>
                               text: TextSpan(
                                 style: GoogleFonts.prompt(
                                   color: AppColors.textLight.withValues(
-                                    alpha: 0.55,
+                                    alpha: 0.7,
                                   ),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w600,
                                 ),
                                 children: [
-                                  const TextSpan(text: "✨ ใช้ชื่อต้นแบบ "),
+                                  const TextSpan(text: "ใช้ชื่อต้นแบบ "),
                                   TextSpan(
                                     text:
                                         _selectedNameMeaningName ??
                                         _keywordController.text.trim(),
                                     style: GoogleFonts.prompt(
                                       color: const Color(0xFFD4AF37),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
                                       shadows: [
                                         Shadow(
                                           color: const Color(
                                             0xFFD4AF37,
-                                          ).withValues(alpha: 0.25),
+                                          ).withValues(alpha: 0.35),
                                           blurRadius: 8,
                                         ),
                                       ],
