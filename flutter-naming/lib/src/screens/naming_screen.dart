@@ -350,7 +350,7 @@ class _NamingScreenState extends State<NamingScreen>
                 _selectedNameAnalysis = null;
                 _hasRankableNameTemplate = true;
                 _isLoadingSelectedNameMeaning = false;
-                _isSuggestionBoxExpanded = true;
+                _isSuggestionBoxExpanded = false;
               });
             }
             unawaited(_loadSeedNameAnalysis(bestName));
@@ -363,7 +363,7 @@ class _NamingScreenState extends State<NamingScreen>
                 _selectedNameAnalysis = null;
                 _hasRankableNameTemplate = true;
                 _isLoadingSelectedNameMeaning = false;
-                _isSuggestionBoxExpanded = true;
+                _isSuggestionBoxExpanded = false;
               });
             }
           }
@@ -3913,6 +3913,9 @@ class _NamingScreenState extends State<NamingScreen>
           return const SizedBox.shrink();
         }
 
+        final int suggestionCount = _nameSuggestions?.names.length ?? 0;
+        final isExpanded = _isSuggestionBoxExpanded;
+
         return AnimatedSize(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
@@ -3921,26 +3924,37 @@ class _NamingScreenState extends State<NamingScreen>
             margin: EdgeInsets.only(top: hasNames ? 10 : 14),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.bgDark,
-              borderRadius: BorderRadius.circular(16),
+              color: isExpanded ? AppColors.bgDark : const Color(0xFFE8F5E9),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                width: 1.5,
+                color: isExpanded
+                    ? AppColors.secondary.withValues(alpha: 0.25)
+                    : AppColors.secondary.withValues(alpha: 0.45),
+                width: isExpanded ? 1.5 : 2.0,
               ),
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.bgDark,
-                  AppColors.bgDarker.withValues(alpha: 0.5),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+              gradient: isExpanded
+                  ? LinearGradient(
+                      colors: [
+                        AppColors.bgDark,
+                        AppColors.bgDarker.withValues(alpha: 0.5),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    )
+                  : const LinearGradient(
+                      colors: [
+                        Color(0xFFE8F5E9), // Soft green
+                        Color(0xFFE0F2F1), // Soft teal
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  blurRadius: 16,
-                  spreadRadius: -2,
-                  offset: const Offset(0, 6),
+                  color: AppColors.secondary.withValues(alpha: isExpanded ? 0.06 : 0.12),
+                  blurRadius: isExpanded ? 16 : 22,
+                  spreadRadius: isExpanded ? -2 : 0,
+                  offset: isExpanded ? const Offset(0, 6) : const Offset(0, 8),
                 ),
               ],
             ),
@@ -3962,51 +3976,84 @@ class _NamingScreenState extends State<NamingScreen>
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [
-                                AppColors.secondary.withValues(alpha: 0.8),
-                                AppColors.secondary,
-                              ],
+                              colors: isExpanded
+                                  ? [
+                                      AppColors.secondary.withValues(alpha: 0.8),
+                                      AppColors.secondary,
+                                    ]
+                                  : [
+                                      const Color(0xFF00B894),
+                                      const Color(0xFF00D1B2),
+                                    ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.secondary.withValues(
-                                  alpha: 0.25,
-                                ),
-                                blurRadius: 4,
+                                color: AppColors.secondary.withValues(alpha: 0.3),
+                                blurRadius: isExpanded ? 4 : 10,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: const Icon(
-                            Icons.auto_awesome_rounded,
+                          child: Icon(
+                            isExpanded
+                                ? Icons.auto_awesome_rounded
+                                : Icons.auto_awesome_motion_rounded,
                             color: Colors.white,
-                            size: 14,
+                            size: 15,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          hasNames
-                              ? "รายชื่อที่มีความหมายใกล้เคียง (${_nameSuggestions!.names.length})"
-                              : "รายชื่อที่มีความหมายใกล้เคียง",
-                          style: GoogleFonts.sarabun(
-                            color: AppColors.secondary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.15,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                isExpanded
+                                    ? (suggestionCount > 0
+                                        ? "รายชื่อที่มีความหมายใกล้เคียง ($suggestionCount)"
+                                        : "รายชื่อที่มีความหมายใกล้เคียง")
+                                    : "รายชื่อมงคลความหมายสอดคล้อง",
+                                style: GoogleFonts.prompt(
+                                  color: const Color(0xFF0F5132),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.1,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isExpanded
+                                    ? "กำลังแสดงรายชื่อแนะนำที่มีความหมายพิเศษ"
+                                    : (suggestionCount > 0
+                                        ? "✨ ค้นพบชื่อแนะนำชั้นเลิศ $suggestionCount รายชื่อ แตะเพื่อเปิดดูพิเศษ"
+                                        : "✨ ค้นพบรายชื่อแนะนำชั้นเลิศ แตะเพื่อเปิดดูพิเศษ"),
+                                style: GoogleFonts.sarabun(
+                                  color: isExpanded
+                                      ? const Color(0xFF1E7E34).withValues(alpha: 0.75)
+                                      : const Color(0xFF0F5132),
+                                  fontSize: 11,
+                                  fontWeight: isExpanded ? FontWeight.w600 : FontWeight.w800,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
                         if (_loadingSuggestions) ...[
                           const SizedBox(width: 8),
                           const SizedBox(
-                            width: 12,
-                            height: 12,
+                            width: 14,
+                            height: 14,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
@@ -4015,19 +4062,20 @@ class _NamingScreenState extends State<NamingScreen>
                             ),
                           ),
                         ],
-                        const Spacer(),
-                        Container(
+                        const SizedBox(width: 8),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
-                            color: AppColors.secondary.withValues(alpha: 0.08),
+                            color: AppColors.secondary.withValues(alpha: isExpanded ? 0.08 : 0.15),
                             shape: BoxShape.circle,
                           ),
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(5),
                           child: Icon(
-                            _isSuggestionBoxExpanded
+                            isExpanded
                                 ? Icons.keyboard_arrow_up_rounded
                                 : Icons.keyboard_arrow_down_rounded,
                             color: AppColors.secondary,
-                            size: 18,
+                            size: 20,
                           ),
                         ),
                       ],
