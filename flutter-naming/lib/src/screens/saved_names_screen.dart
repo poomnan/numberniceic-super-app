@@ -588,18 +588,16 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
   Future<void> _clearAllNames() async {
     setState(() => _isLoading = true);
     try {
-      final List<int> idsToDelete = _savedNames.map((n) => n.id).toList();
-      for (final id in idsToDelete) {
-        await _apiService.deleteSavedName(id);
-      }
-      ApiService.savedNamesCache.clear();
-      setState(() {
-        _savedNames.clear();
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("ล้างข้อมูลรายชื่อทั้งหมดเรียบร้อยแล้วค่ะ")),
-        );
+      final success = await _apiService.clearAllSavedNames();
+      if (success) {
+        setState(() {
+          _savedNames.clear();
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("ล้างข้อมูลรายชื่อทั้งหมดเรียบร้อยแล้วค่ะ")),
+          );
+        }
       }
     } catch (_) {
       if (mounted) {

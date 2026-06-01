@@ -421,18 +421,44 @@ class ApiService {
     return saveName(savedData);
   }
 
-  // User Saved Names APIs
+  // User Saved Names APIs (Local storage implementation using SharedPreferences)
   Future<bool> saveName(Map<String, dynamic> savedData) async {
-    final url = Uri.parse('$baseUrl/api/v1/saved-names/save');
     try {
-      final response = await http
-          .post(
-            url,
-            headers: {"Content-Type": "application/json"},
-            body: jsonEncode(savedData),
-          )
-          .timeout(_timeout);
-      return response.statusCode == 200;
+      final prefs = await SharedPreferences.getInstance();
+      final listJson = prefs.getString('local_saved_names') ?? '[]';
+      final List<dynamic> rawList = jsonDecode(listJson);
+      
+      final int newId = DateTime.now().millisecondsSinceEpoch;
+      final Map<String, dynamic> newEntry = {
+        "id": newId,
+        "name": savedData["name"] ?? "",
+        "sat_sum": savedData["sat_sum"] ?? 0,
+        "sha_sum": savedData["sha_sum"] ?? 0,
+        "is_sat_good": savedData["is_sat_good"] ?? false,
+        "is_sha_good": savedData["is_sha_good"] ?? false,
+        "root_word": savedData["root_word"] ?? "",
+        "meaning": savedData["meaning"] ?? "",
+        "analysis": savedData["analysis"] ?? "",
+        "created_at": DateTime.now().toIso8601String(),
+        "sat_pair_type": savedData["sat_pair_type"] ?? "",
+        "sha_pair_type": savedData["sha_pair_type"] ?? "",
+        "birth_day": savedData["birth_day"] ?? "",
+        "no_kaki": savedData["no_kaki"] ?? false,
+        "kaki_chars": savedData["kaki_chars"] ?? "",
+        "sat_pair_point": savedData["sat_pair_point"] ?? 0,
+        "sha_pair_point": savedData["sha_pair_point"] ?? 0,
+        "phonetic_score": savedData["phonetic_score"] ?? 80,
+        "phonetic_summary": savedData["phonetic_summary"] ?? "",
+        "final_rank_score": savedData["final_rank_score"] ?? 0,
+        "final_rank_score_exact": savedData["final_rank_score_exact"] ?? 0.0,
+        "rank_position": savedData["rank_position"] ?? 0,
+      };
+
+      rawList.add(newEntry);
+      await prefs.setString('local_saved_names', jsonEncode(rawList));
+      
+      savedNamesCache.add(savedData["name"] ?? "");
+      return true;
     } catch (e) {
       return false;
     }
@@ -442,40 +468,53 @@ class ApiService {
     int? userId,
     String? deviceId,
   }) async {
-    String query = "";
-    if (userId != null) {
-      query = "user_id=$userId";
-    } else if (deviceId != null) {
-      query = "device_id=$deviceId";
-    }
-
-    final url = Uri.parse('$baseUrl/api/v1/saved-names/list?$query');
     try {
-      final response = await http.get(url).timeout(_timeout);
-      if (response.statusCode == 200) {
-        final List<dynamic> data = _decodeJsonBody(
-          response,
-          fallbackMessage: 'ไม่สามารถอ่านรายชื่อที่บันทึกไว้ได้ในขณะนี้',
-        );
-        return data.map((e) => UserSavedName.fromJson(e)).toList();
-      }
-      return [];
+      final prefs = await SharedPreferences.getInstance();
+      final listJson = prefs.getString('local_saved_names') ?? '[]';
+      final List<dynamic> rawList = jsonDecode(listJson);
+      
+      final List<UserSavedName> list = rawList
+          .map((e) => UserSavedName.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return list;
     } catch (e) {
       return [];
     }
   }
 
   Future<bool> deleteSavedName(int id) async {
-    final url = Uri.parse('$baseUrl/api/v1/saved-names/delete');
     try {
-      final response = await http
-          .post(
-            url,
-            headers: {"Content-Type": "application/json"},
-            body: jsonEncode({"id": id}),
-          )
-          .timeout(_timeout);
-      return response.statusCode == 200;
+      final prefs = await SharedPreferences.getInstance();
+      final listJson = prefs.getString('local_saved_names') ?? '[]';
+      final List<dynamic> rawList = jsonDecode(listJson);
+      
+      String? removedName;
+      rawList.removeWhere((item) {
+        if (item["id"] == id) {
+          removedName = item["name"];
+          return true;
+        }
+        return false;
+      });
+
+      await prefs.setString('local_saved_names', jsonEncode(rawList));
+      if (removedName != null) {
+        savedNamesCache.remove(removedName);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> clearAllSavedNames() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('local_saved_names');
+      savedNamesCache.clear();
+      return true;
     } catch (e) {
       return false;
     }
@@ -485,8 +524,7 @@ class ApiService {
   static final Set<String> savedNamesCache = {};
 
   Future<void> loadSavedNamesCache() async {
-    final did = await getDeviceId();
-    final list = await listSavedNames(deviceId: did);
+    final list = await listSavedNames();
     savedNamesCache.clear();
     savedNamesCache.addAll(list.map((e) => e.name));
   }
