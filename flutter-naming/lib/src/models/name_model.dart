@@ -5,6 +5,25 @@ int? _jsonInt(dynamic value) {
   return int.tryParse(value.toString());
 }
 
+double? _jsonDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is double) return value;
+  if (value is num) return value.toDouble();
+  return double.tryParse(value.toString());
+}
+
+bool _jsonBool(dynamic value) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  final normalized = value?.toString().trim().toLowerCase();
+  return normalized == 'true' || normalized == '1' || normalized == 'yes';
+}
+
+DateTime _jsonDateTime(dynamic value) {
+  if (value is DateTime) return value;
+  return DateTime.tryParse(value?.toString() ?? '') ?? DateTime.now();
+}
+
 class MobileNameResult {
   final String name;
   final String meaning;
@@ -527,36 +546,33 @@ class UserSavedName {
     final anal = json['analysis'] ?? '';
     final mn = json['meaning'] ?? '';
     return UserSavedName(
-      id: json['id'] ?? 0,
+      id: _jsonInt(json['id']) ?? 0,
       name: json['name'] ?? '',
-      satSum: json['sat_sum'] ?? 0,
-      shaSum: json['sha_sum'] ?? 0,
-      isSatGood: json['is_sat_good'] ?? false,
-      isShaGood: json['is_sha_good'] ?? false,
+      satSum: _jsonInt(json['sat_sum']) ?? 0,
+      shaSum: _jsonInt(json['sha_sum']) ?? 0,
+      isSatGood: _jsonBool(json['is_sat_good']),
+      isShaGood: _jsonBool(json['is_sha_good']),
       rootWord: root,
       meaning: mn,
       analysis: (anal.isEmpty ? root : anal)
           .replaceAll(RegExp(r'\s*\([^)]*[\u4e00-\u9fa5]+[^)]*\)'), '')
           .replaceAll(RegExp(r'\s*\(含[^\)]+\)'), ''),
-      createdAt: DateTime.parse(
-        json['created_at'] ?? DateTime.now().toIso8601String(),
-      ),
+      createdAt: _jsonDateTime(json['created_at']),
       satPairType: json['sat_pair_type'] ?? '',
       shaPairType: json['sha_pair_type'] ?? '',
       birthDay: (json['birth_day'] ?? '').toString(),
-      noKaki: json['no_kaki'] == true,
+      noKaki: _jsonBool(json['no_kaki']),
       kakiChars: (json['kaki_chars'] ?? '').toString(),
-      satPairPoint: json['sat_pair_point'] ?? 0,
-      shaPairPoint: json['sha_pair_point'] ?? 0,
+      satPairPoint: _jsonInt(json['sat_pair_point']) ?? 0,
+      shaPairPoint: _jsonInt(json['sha_pair_point']) ?? 0,
       phoneticScore: _jsonInt(json['phonetic_score']),
       phoneticSummary: json['phonetic_summary'] ?? '',
-      finalRankScore: json['final_rank_score'] ?? 0,
-      finalRankScoreExact: json['final_rank_score_exact'] != null
-          ? (json['final_rank_score_exact'] as num).toDouble()
-          : json['final_rank_score'] != null
-          ? (json['final_rank_score'] as num).toDouble()
-          : 0.0,
-      rankPosition: json['rank_position'] ?? 0,
+      finalRankScore: _jsonInt(json['final_rank_score']) ?? 0,
+      finalRankScoreExact:
+          _jsonDouble(json['final_rank_score_exact']) ??
+          _jsonDouble(json['final_rank_score']) ??
+          0.0,
+      rankPosition: _jsonInt(json['rank_position']) ?? 0,
     );
   }
 }

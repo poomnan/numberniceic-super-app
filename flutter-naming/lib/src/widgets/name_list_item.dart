@@ -399,74 +399,96 @@ class _NameListItemState extends State<NameListItem>
 
   String _phoneticSpeakingKey() => 'phonetic:${widget.result.name}';
 
+  Map<String, dynamic> _buildSavedNamePayload({NameRootResult? rootData}) {
+    final kakiChars = widget.result.kakiHighlight
+        .where((highlight) => highlight.isKaki)
+        .map((highlight) => highlight.char)
+        .join();
+    final noKaki = widget.result.kakiHighlight.isNotEmpty && kakiChars.isEmpty;
+    final rootAnalysis = rootData?.analysis.trim();
+    final meaning = widget.result.meaning.trim();
+
+    return {
+      "name": widget.result.name,
+      "sat_sum": widget.result.satSum,
+      "sha_sum": widget.result.shaSum,
+      "is_sat_good": widget.result.isSatGood,
+      "is_sha_good": widget.result.isShaGood,
+      "root_word": rootData?.rootWord.trim() ?? "",
+      "meaning": meaning,
+      "analysis": (rootAnalysis != null && rootAnalysis.isNotEmpty)
+          ? rootAnalysis
+          : meaning,
+      "sat_pair_type": widget.result.satPairType,
+      "sha_pair_type": widget.result.shaPairType,
+      "no_kaki": noKaki,
+      "kaki_chars": kakiChars,
+      "sat_pair_point": widget.result.satPairPoint,
+      "sha_pair_point": widget.result.shaPairPoint,
+      "phonetic_score": widget.result.phoneticScore,
+      "phonetic_summary": widget.result.phoneticSummary,
+      "final_rank_score": widget.result.finalRankScore,
+      "final_rank_score_exact": widget.result.finalRankScoreExact,
+      "rank_position": widget.rank,
+    };
+  }
+
+  void _showSaveResultSnackBar({required bool success}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              success ? Icons.stars_rounded : Icons.error_outline_rounded,
+              color: success ? const Color(0xFFFDE047) : Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                success
+                    ? "✨ บันทึกชื่อสำเร็จแล้ว กดปุ่ม UP เพื่อดูรายการด้านบน"
+                    : "ยังบันทึกชื่อไม่ได้ ลองกดอีกครั้งนะคะ",
+                style: GoogleFonts.sarabun(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: success
+            ? const Color(0xFF7C3AED)
+            : const Color(0xFFDC2626),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> _saveName() async {
-    if (_isSaved) return;
+    if (_isSaved || _isSaving) return;
 
     setState(() => _isSaving = true);
 
     try {
-      final deviceId = await ApiService().getDeviceId();
-      
-      NameRootResult? rootData;
-      try {
-        rootData = await ApiService()
-            .getNameRoot(widget.result.name)
-            .timeout(const Duration(seconds: 3));
-      } catch (e) {
-        debugPrint("Skipping remote name root analysis: $e");
-      }
-
-      final payload = {
-        "name": widget.result.name,
-        "sat_sum": widget.result.satSum,
-        "sha_sum": widget.result.shaSum,
-        "is_sat_good": widget.result.isSatGood,
-        "is_sha_good": widget.result.isShaGood,
-        "root_word": rootData?.rootWord ?? "",
-        "meaning": widget.result.meaning,
-        "analysis": rootData?.analysis ?? widget.result.meaning,
-        "device_id": deviceId,
-      };
-
-      final success = await ApiService().saveName(payload);
+      final success = await ApiService().saveNameLocally(
+        _buildSavedNamePayload(rootData: _cachedRootData),
+      );
+      if (!mounted) return;
       if (success) {
         setState(() => _isSaved = true);
-        ApiService.savedNamesCache.add(widget.result.name);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(
-                    Icons.stars_rounded,
-                    color: Color(0xFFFDE047),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      "✨ บันทึกชื่อสำเร็จแล้ว กดปุ่ม UP เพื่อดูรายการด้านบน",
-                      style: GoogleFonts.sarabun(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFF7C3AED),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
+        _showSaveResultSnackBar(success: true);
+      } else {
+        _showSaveResultSnackBar(success: false);
       }
     } catch (e) {
-      // Error
+      debugPrint("Failed to save ranking name locally: $e");
+      if (mounted) {
+        _showSaveResultSnackBar(success: false);
+      }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -2651,7 +2673,8 @@ class _NameListItemState extends State<NameListItem>
     if (pairType.isNotEmpty) {
       isActuallyGood = pairType.toUpperCase().startsWith('D');
     }
-    final bool shouldRenderNeutral = renderNeutral || (!isActive && isActuallyGood);
+    final bool shouldRenderNeutral =
+        renderNeutral || (!isActive && isActuallyGood);
 
     Color lightColor;
     Color darkColor;
@@ -2740,16 +2763,20 @@ class _NameListItemState extends State<NameListItem>
               child: Text(
                 "$score",
                 style: TextStyle(
-                  color: shouldRenderNeutral ? const Color(0xFF64748B) : Colors.white,
+                  color: shouldRenderNeutral
+                      ? const Color(0xFF64748B)
+                      : Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: size * 18 / 44,
-                  shadows: shouldRenderNeutral ? null : const [
-                    Shadow(
-                      color: Colors.black26,
-                      offset: Offset(0, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
+                  shadows: shouldRenderNeutral
+                      ? null
+                      : const [
+                          Shadow(
+                            color: Colors.black26,
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
                 ),
               ),
             ),
@@ -2830,7 +2857,8 @@ class _NameListItemState extends State<NameListItem>
 
   Widget _buildBookmarkButton({bool compact = false}) {
     return GestureDetector(
-      onTap: _isSaved ? null : _saveName,
+      behavior: HitTestBehavior.opaque,
+      onTap: (_isSaved || _isSaving) ? null : _saveName,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: EdgeInsets.symmetric(
@@ -3332,22 +3360,12 @@ class _NameListItemState extends State<NameListItem>
                             : () async {
                                 setDialogState(() => dialogSaving = true);
                                 try {
-                                  final deviceId = await ApiService()
-                                      .getDeviceId();
-                                  final payload = {
-                                    "name": widget.result.name,
-                                    "sat_sum": widget.result.satSum,
-                                    "sha_sum": widget.result.shaSum,
-                                    "is_sat_good": widget.result.isSatGood,
-                                    "is_sha_good": widget.result.isShaGood,
-                                    "root_word": rootData!.rootWord,
-                                    "meaning": widget.result.meaning,
-                                    "analysis": rootData.analysis,
-                                    "device_id": deviceId,
-                                  };
-                                  final success = await ApiService().saveName(
-                                    payload,
-                                  );
+                                  final success = await ApiService()
+                                      .saveNameLocally(
+                                        _buildSavedNamePayload(
+                                          rootData: rootData,
+                                        ),
+                                      );
                                   if (success) {
                                     didSave = true;
                                     setDialogState(() {

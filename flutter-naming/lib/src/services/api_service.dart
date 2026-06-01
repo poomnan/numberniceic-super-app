@@ -21,6 +21,7 @@ class ApiException implements Exception {
 
 class ApiService {
   static const Duration _timeout = Duration(seconds: 60);
+  static const String _localSavedNamesKey = 'local_saved_names';
 
   Duration _getTimeout(bool filterSat, bool filterSha) {
     return (filterSat && filterSha)
@@ -424,46 +425,63 @@ class ApiService {
   // User Saved Names APIs (Local storage implementation using SharedPreferences)
   Future<bool> saveName(Map<String, dynamic> savedData) async {
     try {
+      final savedName = _normalizeSavedName(savedData["name"]);
+      if (savedName.isEmpty) return false;
+
       final prefs = await SharedPreferences.getInstance();
-      final listJson = prefs.getString('local_saved_names') ?? '[]';
-      List<dynamic> rawList;
-      try {
-        rawList = jsonDecode(listJson);
-      } catch (e) {
-        debugPrint("Error decoding local saved names: $e");
-        rawList = [];
-      }
-      
+      final rawList = _readLocalSavedNames(prefs);
+
+      final now = DateTime.now();
       final int newId = DateTime.now().millisecondsSinceEpoch;
       final Map<String, dynamic> newEntry = {
         "id": newId,
-        "name": savedData["name"] ?? "",
-        "sat_sum": savedData["sat_sum"] ?? 0,
-        "sha_sum": savedData["sha_sum"] ?? 0,
-        "is_sat_good": savedData["is_sat_good"] ?? false,
-        "is_sha_good": savedData["is_sha_good"] ?? false,
-        "root_word": savedData["root_word"] ?? "",
-        "meaning": savedData["meaning"] ?? "",
-        "analysis": savedData["analysis"] ?? "",
-        "created_at": DateTime.now().toIso8601String(),
-        "sat_pair_type": savedData["sat_pair_type"] ?? "",
-        "sha_pair_type": savedData["sha_pair_type"] ?? "",
-        "birth_day": savedData["birth_day"] ?? "",
-        "no_kaki": savedData["no_kaki"] ?? false,
-        "kaki_chars": savedData["kaki_chars"] ?? "",
-        "sat_pair_point": savedData["sat_pair_point"] ?? 0,
-        "sha_pair_point": savedData["sha_pair_point"] ?? 0,
-        "phonetic_score": savedData["phonetic_score"] ?? 80,
-        "phonetic_summary": savedData["phonetic_summary"] ?? "",
-        "final_rank_score": savedData["final_rank_score"] ?? 0,
-        "final_rank_score_exact": savedData["final_rank_score_exact"] ?? 0.0,
-        "rank_position": savedData["rank_position"] ?? 0,
+        "name": savedName,
+        "sat_sum": _toInt(savedData["sat_sum"]) ?? 0,
+        "sha_sum": _toInt(savedData["sha_sum"]) ?? 0,
+        "is_sat_good": _toBool(savedData["is_sat_good"]),
+        "is_sha_good": _toBool(savedData["is_sha_good"]),
+        "root_word": (savedData["root_word"] ?? "").toString(),
+        "meaning": (savedData["meaning"] ?? "").toString(),
+        "analysis": (savedData["analysis"] ?? "").toString(),
+        "created_at": now.toIso8601String(),
+        "sat_pair_type": (savedData["sat_pair_type"] ?? "").toString(),
+        "sha_pair_type": (savedData["sha_pair_type"] ?? "").toString(),
+        "birth_day": (savedData["birth_day"] ?? "").toString(),
+        "no_kaki": _toBool(savedData["no_kaki"]),
+        "kaki_chars": (savedData["kaki_chars"] ?? "").toString(),
+        "sat_pair_point": _toInt(savedData["sat_pair_point"]) ?? 0,
+        "sha_pair_point": _toInt(savedData["sha_pair_point"]) ?? 0,
+        "phonetic_score": _toInt(savedData["phonetic_score"]) ?? 80,
+        "phonetic_summary": (savedData["phonetic_summary"] ?? "").toString(),
+        "final_rank_score": _toInt(savedData["final_rank_score"]) ?? 0,
+        "final_rank_score_exact":
+            _toDouble(savedData["final_rank_score_exact"]) ?? 0.0,
+        "rank_position": _toInt(savedData["rank_position"]) ?? 0,
       };
 
-      rawList.add(newEntry);
-      await prefs.setString('local_saved_names', jsonEncode(rawList));
-      
-      savedNamesCache.add(savedData["name"] ?? "");
+      final existingIndex = rawList.indexWhere((item) {
+        if (item is! Map) return false;
+        return _normalizeSavedName(item["name"]) == savedName;
+      });
+
+      if (existingIndex >= 0) {
+        final existing = Map<String, dynamic>.from(
+          rawList[existingIndex] as Map,
+        );
+        rawList[existingIndex] = {
+          ...existing,
+          ...newEntry,
+          "id": _toInt(existing["id"]) ?? newId,
+          "created_at": (existing["created_at"] ?? newEntry["created_at"])
+              .toString(),
+        };
+      } else {
+        rawList.add(newEntry);
+      }
+
+      await _writeLocalSavedNames(prefs, rawList);
+
+      savedNamesCache.add(savedName);
       return true;
     } catch (e) {
       debugPrint("Failed to save name locally: $e");
@@ -477,15 +495,8 @@ class ApiService {
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final listJson = prefs.getString('local_saved_names') ?? '[]';
-      List<dynamic> rawList;
-      try {
-        rawList = jsonDecode(listJson);
-      } catch (e) {
-        debugPrint("Error decoding local saved names in list: $e");
-        rawList = [];
-      }
-      
+      final rawList = _readLocalSavedNames(prefs);
+
       final List<UserSavedName> list = [];
       for (var item in rawList) {
         try {
@@ -496,7 +507,7 @@ class ApiService {
           debugPrint("Error parsing UserSavedName item: $e");
         }
       }
-      
+
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     } catch (e) {
@@ -508,25 +519,19 @@ class ApiService {
   Future<bool> deleteSavedName(int id) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final listJson = prefs.getString('local_saved_names') ?? '[]';
-      List<dynamic> rawList;
-      try {
-        rawList = jsonDecode(listJson);
-      } catch (e) {
-        rawList = [];
-      }
-      
+      final rawList = _readLocalSavedNames(prefs);
+
       String? removedName;
       rawList.removeWhere((item) {
-        if (item["id"] == id) {
-          removedName = item["name"];
+        if (item is Map && _toInt(item["id"]) == id) {
+          removedName = _normalizeSavedName(item["name"]);
           return true;
         }
         return false;
       });
 
-      await prefs.setString('local_saved_names', jsonEncode(rawList));
-      if (removedName != null) {
+      await _writeLocalSavedNames(prefs, rawList);
+      if (removedName != null && removedName!.isNotEmpty) {
         savedNamesCache.remove(removedName);
       }
       return true;
@@ -538,7 +543,7 @@ class ApiService {
   Future<bool> clearAllSavedNames() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('local_saved_names');
+      await prefs.remove(_localSavedNamesKey);
       savedNamesCache.clear();
       return true;
     } catch (e) {
@@ -552,7 +557,103 @@ class ApiService {
   Future<void> loadSavedNamesCache() async {
     final list = await listSavedNames();
     savedNamesCache.clear();
-    savedNamesCache.addAll(list.map((e) => e.name));
+    savedNamesCache.addAll(
+      list
+          .map((e) => _normalizeSavedName(e.name))
+          .where((name) => name.isNotEmpty),
+    );
+  }
+
+  List<dynamic> _readLocalSavedNames(SharedPreferences prefs) {
+    Object? storedValue;
+    try {
+      storedValue = prefs.get(_localSavedNamesKey);
+    } catch (e) {
+      debugPrint("Error reading local saved names: $e");
+      return [];
+    }
+
+    if (storedValue == null) return [];
+    if (storedValue is String) {
+      return _decodeLocalSavedNames(storedValue);
+    }
+    if (storedValue is List<String>) {
+      return storedValue
+          .map(_decodeLegacySavedNameString)
+          .whereType<Map<String, dynamic>>()
+          .toList();
+    }
+
+    debugPrint(
+      "Unsupported local saved names type: ${storedValue.runtimeType}",
+    );
+    return [];
+  }
+
+  Future<void> _writeLocalSavedNames(
+    SharedPreferences prefs,
+    List<dynamic> rawList,
+  ) async {
+    await prefs.remove(_localSavedNamesKey);
+    await prefs.setString(_localSavedNamesKey, jsonEncode(rawList));
+  }
+
+  Map<String, dynamic>? _decodeLegacySavedNameString(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+
+    try {
+      final decoded = jsonDecode(trimmed);
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
+    } catch (_) {
+      // Legacy string-list entries may be plain names, not JSON.
+    }
+
+    return {
+      "id": DateTime.now().microsecondsSinceEpoch,
+      "name": trimmed,
+      "created_at": DateTime.now().toIso8601String(),
+    };
+  }
+
+  List<dynamic> _decodeLocalSavedNames(String listJson) {
+    try {
+      final decoded = jsonDecode(listJson);
+      if (decoded is List) {
+        return List<dynamic>.from(decoded);
+      }
+      debugPrint("Local saved names data is not a list");
+    } catch (e) {
+      debugPrint("Error decoding local saved names: $e");
+    }
+    return [];
+  }
+
+  static String _normalizeSavedName(dynamic value) {
+    return (value ?? '').toString().trim();
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.round();
+    return int.tryParse(value.toString());
+  }
+
+  static double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
+
+  static bool _toBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    final normalized = value?.toString().trim().toLowerCase();
+    return normalized == 'true' || normalized == '1' || normalized == 'yes';
   }
 
   static T _decodeJsonBody<T>(
