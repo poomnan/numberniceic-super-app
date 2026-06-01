@@ -597,6 +597,7 @@ class SuggestionNameItem {
   final int id;
   final String name;
   final String meaning;
+  final String gender;
   final String phoneticSummary;
   final int? phoneticScore;
   final int? pronunciationEase;
@@ -608,6 +609,7 @@ class SuggestionNameItem {
     required this.id,
     required this.name,
     required this.meaning,
+    this.gender = 'neutral',
     required this.phoneticSummary,
     this.phoneticScore,
     this.pronunciationEase,
@@ -621,6 +623,7 @@ class SuggestionNameItem {
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       meaning: json['meaning'] ?? '',
+      gender: (json['gender'] as String? ?? 'neutral').trim(),
       phoneticSummary: json['phonetic_summary'] ?? '',
       phoneticScore: _jsonInt(json['phonetic_score']),
       pronunciationEase: _jsonInt(json['pronunciation_ease']),

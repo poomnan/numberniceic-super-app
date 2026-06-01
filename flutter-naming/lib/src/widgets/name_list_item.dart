@@ -1199,14 +1199,18 @@ class _NameListItemState extends State<NameListItem>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    widget.result.name,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.sarabun(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: style.nameColor,
-                                    ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.center,
+                                          child: _buildNameText(context, fontSize: 28),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   if (meaning.isNotEmpty) ...[
                                     const SizedBox(height: 6),
@@ -3259,13 +3263,13 @@ class _NameListItemState extends State<NameListItem>
     );
   }
 
-  Widget _buildNameText(BuildContext context) {
+  Widget _buildNameText(BuildContext context, {double fontSize = 22}) {
     final bool isGold = widget.result.isSatGood && widget.result.isShaGood;
     final bool hasKaki = widget.result.kakiHighlight.any((h) => h.isKaki);
 
     final style = _getDynamicCardStyle();
     final textStyle = TextStyle(
-      fontSize: 22,
+      fontSize: fontSize,
       fontWeight: FontWeight.w900,
       fontFamily: 'Sarabun',
       color: style.nameColor, // Themed text color

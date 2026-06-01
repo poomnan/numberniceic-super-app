@@ -53,6 +53,51 @@ func looksLikeTypedThaiName(input string) bool {
 	return true
 }
 
+var femaleSuggestionKeywords = []string{
+	"หญิง", "สาว", "ผู้หญิง", "อ่อนหวาน", "อ่อนโยน", "น่ารัก",
+	"สวย", "งาม", "เสน่ห์", "แม่", "นาง", "กุลสตรี",
+}
+
+var maleSuggestionKeywords = []string{
+	"ชาย", "หนุ่ม", "ผู้ชาย", "เข้มแข็ง", "กล้าหาญ", "แข็งแรง",
+	"สง่า", "ยิ่งใหญ่", "บารมี", "พ่อ", "ผู้นำ",
+}
+
+func detectGenderFromText(text string) string {
+	detectedGender, _ := detectGenderSignalsFromText(text)
+	return detectedGender
+}
+
+func detectGenderSignalsFromText(text string) (string, bool) {
+	normalizedText := strings.TrimSpace(text)
+	if normalizedText == "" {
+		return "neutral", false
+	}
+
+	foundFemale := containsAnyThaiKeyword(normalizedText, femaleSuggestionKeywords)
+	foundMale := containsAnyThaiKeyword(normalizedText, maleSuggestionKeywords)
+
+	switch {
+	case foundFemale && !foundMale:
+		return "female", true
+	case foundMale && !foundFemale:
+		return "male", true
+	case foundFemale || foundMale:
+		return "neutral", true
+	default:
+		return "neutral", false
+	}
+}
+
+func containsAnyThaiKeyword(text string, keywords []string) bool {
+	for _, keyword := range keywords {
+		if strings.Contains(text, keyword) {
+			return true
+		}
+	}
+	return false
+}
+
 func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -184,6 +229,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 		ID                int    `json:"id"`
 		Name              string `json:"name"`
 		Meaning           string `json:"meaning"`
+		Gender            string `json:"gender,omitempty"`
 		PhoneticSummary   string `json:"phonetic_summary,omitempty"`
 		PhoneticScore     *int   `json:"phonetic_score,omitempty"`
 		PronunciationEase *int   `json:"pronunciation_ease,omitempty"`
@@ -202,6 +248,8 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	normalizedQuery := strings.TrimSpace(q)
 	candidates := make(map[string]suggestionCandidate)
+	detectedGender, hasGenderSignal := detectGenderSignalsFromText(queryText)
+	log.Printf("GetNameSuggestionsHandler: detected gender=%s for queryText=%q", detectedGender, queryText)
 
 	// 1. Semantic search for meanings (embeddings). If embedding is unavailable,
 	// keep going with pg_trgm so typed names that are not in DB still get suggestions.
@@ -217,7 +265,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	addCandidate := func(
 		id int,
-		name, meaning string,
+		name, meaning, gender string,
 		score float64,
 		phoneticSummary sql.NullString,
 		phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64,
@@ -239,12 +287,15 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 		tokenCoverage := countTokenCoverage(cleanMeaning, extractSuggestionTokens(queryText, q))
 		score += float64(tokenCoverage * 25)
 		score += suggestionPhoneticBonus(phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+		normalizedGender := normalizeSuggestionGender(gender)
+		score += suggestionGenderBonus(detectedGender, normalizedGender, hasGenderSignal)
 
 		if existing, ok := candidates[name]; !ok || score > existing.Score {
 			candidates[name] = suggestionCandidate{
 				ID:                id,
 				Name:              name,
 				Meaning:           cleanMeaning,
+				Gender:            normalizedGender,
 				Score:             score,
 				PhoneticSummary:   strings.TrimSpace(phoneticSummary.String),
 				PhoneticScore:     nullIntToPtr(phoneticScore),
@@ -258,7 +309,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	// 2. Exact/near-exact seed so the typed name can surface first if present.
 	if normalizedQuery != "" {
 		exactRows, exactErr := database.DB.Query(`
-				SELECT name_id, thname, COALESCE(meaning, ''), COALESCE(phonetic_summary, ''),
+				SELECT name_id, thname, COALESCE(meaning, ''), COALESCE(gender, 'neutral'), COALESCE(phonetic_summary, ''),
 				       phonetic_score, pronunciation_ease, euphony_score, rhythm_score
 				FROM names_miracle
 				WHERE thname = $1
@@ -268,14 +319,14 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 			defer exactRows.Close()
 			for exactRows.Next() {
 				var id int
-				var name, meaning string
+				var name, meaning, gender string
 				var phoneticSummary sql.NullString
 				var phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64
 				if err := exactRows.Scan(
-					&id, &name, &meaning, &phoneticSummary,
+					&id, &name, &meaning, &gender, &phoneticSummary,
 					&phoneticScore, &pronunciationEase, &euphonyScore, &rhythmScore,
 				); err == nil {
-					addCandidate(id, name, meaning, 5000, phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+					addCandidate(id, name, meaning, gender, 5000, phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
 				}
 			}
 		}
@@ -283,7 +334,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 		trigramRows, trigramErr := database.DB.Query(`
 				SELECT name_id, thname, COALESCE(meaning, ''),
 				       GREATEST(COALESCE(similarity(thname, $1), 0), COALESCE(word_similarity(thname, $1), 0)) AS trigram_score,
-				       COALESCE(phonetic_summary, ''),
+				       COALESCE(gender, 'neutral'), COALESCE(phonetic_summary, ''),
 				       phonetic_score, pronunciation_ease, euphony_score, rhythm_score
 				FROM names_miracle
 				WHERE thname != $1
@@ -296,15 +347,15 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 			defer trigramRows.Close()
 			for trigramRows.Next() {
 				var id int
-				var name, meaning string
+				var name, meaning, gender string
 				var trigramScore float64
 				var phoneticSummary sql.NullString
 				var phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64
 				if err := trigramRows.Scan(
-					&id, &name, &meaning, &trigramScore, &phoneticSummary,
+					&id, &name, &meaning, &trigramScore, &gender, &phoneticSummary,
 					&phoneticScore, &pronunciationEase, &euphonyScore, &rhythmScore,
 				); err == nil {
-					addCandidate(id, name, meaning, 1400+(trigramScore*450), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+					addCandidate(id, name, meaning, gender, 1400+(trigramScore*450), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
 				}
 			}
 		} else {
@@ -315,7 +366,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	// 3. Semantic core search from the meaning embedding.
 	if hasEmbedding {
 		semRows, semErr := database.DB.Query(`
-			SELECT name_id, thname, COALESCE(meaning, ''), COALESCE((meaning_vector <=> $1), 1), COALESCE(phonetic_summary, ''),
+			SELECT name_id, thname, COALESCE(meaning, ''), COALESCE((meaning_vector <=> $1), 1), COALESCE(gender, 'neutral'), COALESCE(phonetic_summary, ''),
 			       phonetic_score, pronunciation_ease, euphony_score, rhythm_score
 			FROM names_miracle 
 			WHERE meaning_vector IS NOT NULL AND meaning != thname AND char_length(meaning) > 10
@@ -327,15 +378,15 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 			defer semRows.Close()
 			for semRows.Next() {
 				var id int
-				var name, meaning string
+				var name, meaning, gender string
 				var distance float64
 				var phoneticSummary sql.NullString
 				var phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64
 				if err := semRows.Scan(
-					&id, &name, &meaning, &distance, &phoneticSummary,
+					&id, &name, &meaning, &distance, &gender, &phoneticSummary,
 					&phoneticScore, &pronunciationEase, &euphonyScore, &rhythmScore,
 				); err == nil {
-					addCandidate(id, name, meaning, 1000-(distance*100), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+					addCandidate(id, name, meaning, gender, 1000-(distance*100), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
 				}
 			}
 		} else {
@@ -352,7 +403,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		keywordRows, keywordErr := database.DB.Query(`
-				SELECT name_id, thname, COALESCE(meaning, ''), COALESCE(word_similarity(thname, $2), 0), COALESCE(phonetic_summary, ''),
+				SELECT name_id, thname, COALESCE(meaning, ''), COALESCE(word_similarity(thname, $2), 0), COALESCE(gender, 'neutral'), COALESCE(phonetic_summary, ''),
 				       phonetic_score, pronunciation_ease, euphony_score, rhythm_score
 				FROM names_miracle
 				WHERE char_length(meaning) > 10
@@ -364,15 +415,15 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 			defer keywordRows.Close()
 			for keywordRows.Next() {
 				var id int
-				var name, meaning string
+				var name, meaning, gender string
 				var rootScore float64
 				var phoneticSummary sql.NullString
 				var phoneticScore, pronunciationEase, euphonyScore, rhythmScore sql.NullInt64
 				if err := keywordRows.Scan(
-					&id, &name, &meaning, &rootScore, &phoneticSummary,
+					&id, &name, &meaning, &rootScore, &gender, &phoneticSummary,
 					&phoneticScore, &pronunciationEase, &euphonyScore, &rhythmScore,
 				); err == nil {
-					addCandidate(id, name, meaning, 650+(rootScore*100), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
+					addCandidate(id, name, meaning, gender, 650+(rootScore*100), phoneticSummary, phoneticScore, pronunciationEase, euphonyScore, rhythmScore)
 				}
 			}
 		}
@@ -406,6 +457,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 			ID:                candidate.ID,
 			Name:              candidate.Name,
 			Meaning:           candidate.Meaning,
+			Gender:            candidate.Gender,
 			PhoneticSummary:   candidate.PhoneticSummary,
 			PhoneticScore:     candidate.PhoneticScore,
 			PronunciationEase: candidate.PronunciationEase,
@@ -436,6 +488,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 				ID:                candidate.ID,
 				Name:              candidate.Name,
 				Meaning:           candidate.Meaning,
+				Gender:            candidate.Gender,
 				PhoneticSummary:   candidate.PhoneticSummary,
 				PhoneticScore:     candidate.PhoneticScore,
 				PronunciationEase: candidate.PronunciationEase,
@@ -497,12 +550,42 @@ type suggestionCandidate struct {
 	ID                int
 	Name              string
 	Meaning           string
+	Gender            string
 	Score             float64
 	PhoneticSummary   string
 	PhoneticScore     *int
 	PronunciationEase *int
 	EuphonyScore      *int
 	RhythmScore       *int
+}
+
+func normalizeSuggestionGender(gender string) string {
+	switch strings.ToLower(strings.TrimSpace(gender)) {
+	case "male", "female":
+		return strings.ToLower(strings.TrimSpace(gender))
+	default:
+		return "neutral"
+	}
+}
+
+func suggestionGenderBonus(detectedGender, rowGender string, hasGenderSignal bool) float64 {
+	if !hasGenderSignal {
+		return 0
+	}
+
+	detectedGender = normalizeSuggestionGender(detectedGender)
+	rowGender = normalizeSuggestionGender(rowGender)
+
+	if detectedGender == "female" && rowGender == "female" {
+		return 300
+	}
+	if detectedGender == "male" && rowGender == "male" {
+		return 300
+	}
+	if detectedGender == "neutral" && (rowGender == "female" || rowGender == "male") {
+		return 100
+	}
+	return 0
 }
 
 func nullIntToPtr(value sql.NullInt64) *int {

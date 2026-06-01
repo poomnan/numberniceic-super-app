@@ -5224,7 +5224,40 @@ class _NamingScreenState extends State<NamingScreen>
                                 isDisabled: !canUseRankingTemplate,
                                 activeColor: const Color(0xFFB45309),
                                 onTap: () {
-                                  if (!canUseRankingTemplate) return;
+                                  if (!canUseRankingTemplate) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: AppColors.textLight,
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: const EdgeInsets.all(16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        duration: const Duration(seconds: 2),
+                                        content: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.info_outline_rounded,
+                                              color: AppColors.accent,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                "กรุณาแตะเลือกชื่อ หรือความหมายที่ถูกใจด้านบน เพื่อเป็นต้นแบบก่อนนะคะ",
+                                                style: GoogleFonts.sarabun(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   final bool currentlyActive =
                                       _filterSat && !_filterSha;
                                   _handleFilterOptionTap(
@@ -5247,7 +5280,40 @@ class _NamingScreenState extends State<NamingScreen>
                                 isDisabled: !canUseRankingTemplate,
                                 activeColor: const Color(0xFF7C3AED),
                                 onTap: () {
-                                  if (!canUseRankingTemplate) return;
+                                  if (!canUseRankingTemplate) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: AppColors.textLight,
+                                        behavior: SnackBarBehavior.floating,
+                                        margin: const EdgeInsets.all(16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        duration: const Duration(seconds: 2),
+                                        content: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.info_outline_rounded,
+                                              color: AppColors.accent,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                "กรุณาแตะเลือกชื่อ หรือความหมายที่ถูกใจด้านบน เพื่อเป็นต้นแบบก่อนนะคะ",
+                                                style: GoogleFonts.sarabun(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   final bool currentlyActive =
                                       !_filterSat && _filterSha;
                                   _handleFilterOptionTap(
@@ -5268,7 +5334,40 @@ class _NamingScreenState extends State<NamingScreen>
                               canUseRankingTemplate && _filterSat && _filterSha,
                           isDisabled: !canUseRankingTemplate,
                           onTap: () {
-                            if (!canUseRankingTemplate) return;
+                            if (!canUseRankingTemplate) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppColors.textLight,
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: const EdgeInsets.all(16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                  content: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.info_outline_rounded,
+                                        color: AppColors.accent,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          "กรุณาแตะเลือกชื่อ หรือความหมายที่ถูกใจด้านบน เพื่อเป็นต้นแบบก่อนนะคะ",
+                                          style: GoogleFonts.sarabun(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
                             final bool currentlyActive =
                                 _filterSat && _filterSha;
                             _handleFilterOptionTap(
@@ -5428,7 +5527,7 @@ class _NamingScreenState extends State<NamingScreen>
     final Color iconFinalColor = isActive ? activeColor : textColor;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: isDisabled ? null : onTap,
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -5469,7 +5568,7 @@ class _NamingScreenState extends State<NamingScreen>
               scale: 0.7,
               child: Switch.adaptive(
                 value: isActive,
-                onChanged: isDisabled ? null : (_) => onTap(),
+                onChanged: (_) => onTap(),
                 activeThumbColor: activeColor,
                 activeTrackColor: activeColor.withValues(alpha: 0.3),
                 inactiveThumbColor: Colors.white,
@@ -5546,7 +5645,7 @@ class _NamingScreenState extends State<NamingScreen>
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: isDisabled ? null : onTap,
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         width: double.infinity,
@@ -5634,7 +5733,7 @@ class _NamingScreenState extends State<NamingScreen>
               scale: 0.8,
               child: Switch.adaptive(
                 value: isActive,
-                onChanged: isDisabled ? null : (_) => onTap(),
+                onChanged: (_) => onTap(),
                 activeThumbColor: activeGold,
                 activeTrackColor: activeGold.withValues(alpha: 0.3),
                 inactiveThumbColor: const Color(0xFFD1FAE5), // Mint green switch thumb
