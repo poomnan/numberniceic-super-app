@@ -1197,10 +1197,11 @@ class _NameListItemState extends State<NameListItem>
                           children: [
                             Expanded(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     widget.result.name,
+                                    textAlign: TextAlign.center,
                                     style: GoogleFonts.sarabun(
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold,
@@ -1211,6 +1212,7 @@ class _NameListItemState extends State<NameListItem>
                                     const SizedBox(height: 6),
                                     Text(
                                       '"$meaning"',
+                                      textAlign: TextAlign.center,
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
