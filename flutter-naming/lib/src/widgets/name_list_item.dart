@@ -395,7 +395,15 @@ class _NameListItemState extends State<NameListItem>
 
     try {
       final deviceId = await ApiService().getDeviceId();
-      final rootData = await ApiService().getNameRoot(widget.result.name);
+      
+      NameRootResult? rootData;
+      try {
+        rootData = await ApiService()
+            .getNameRoot(widget.result.name)
+            .timeout(const Duration(seconds: 3));
+      } catch (e) {
+        debugPrint("Skipping remote name root analysis: $e");
+      }
 
       final payload = {
         "name": widget.result.name,
@@ -404,6 +412,7 @@ class _NameListItemState extends State<NameListItem>
         "is_sat_good": widget.result.isSatGood,
         "is_sha_good": widget.result.isShaGood,
         "root_word": rootData?.rootWord ?? "",
+        "meaning": widget.result.meaning,
         "analysis": rootData?.analysis ?? widget.result.meaning,
         "device_id": deviceId,
       };
@@ -3321,6 +3330,7 @@ class _NameListItemState extends State<NameListItem>
                                     "is_sat_good": widget.result.isSatGood,
                                     "is_sha_good": widget.result.isShaGood,
                                     "root_word": rootData!.rootWord,
+                                    "meaning": widget.result.meaning,
                                     "analysis": rootData.analysis,
                                     "device_id": deviceId,
                                   };
