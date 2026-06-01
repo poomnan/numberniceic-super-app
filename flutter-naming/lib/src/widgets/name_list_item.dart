@@ -109,6 +109,17 @@ class _NameListItemState extends State<NameListItem>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant NameListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final saved = ApiService.savedNamesCache.contains(widget.result.name);
+    if (_isSaved != saved) {
+      setState(() {
+        _isSaved = saved;
+      });
+    }
+  }
+
   Future<void> _initTts() async {
     // Use a static completer to ensure TTS is initialized only once
     if (_ttsInitCompleter != null) {
