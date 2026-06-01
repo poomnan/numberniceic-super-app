@@ -115,6 +115,20 @@ class _NamingScreenState extends State<NamingScreen>
     }
   }
 
+  double _displayedRankScore(MobileNameResult item) {
+    return item.finalRankScoreExact > 0
+        ? item.finalRankScoreExact
+        : item.finalRankScore.toDouble();
+  }
+
+  int _compareDisplayedRankScore(MobileNameResult a, MobileNameResult b) {
+    final scoreCompare = _displayedRankScore(
+      b,
+    ).compareTo(_displayedRankScore(a));
+    if (scoreCompare != 0) return scoreCompare;
+    return b.finalRankScore.compareTo(a.finalRankScore);
+  }
+
   // ignore: unused_element
   bool _isRedPairType(String? pairType) {
     final normalized = pairType?.toUpperCase().trim() ?? '';
@@ -564,6 +578,9 @@ class _NamingScreenState extends State<NamingScreen>
         try {
           results.sort((a, b) {
             if (!(_filterSat || _filterSha)) return 0;
+
+            final displayedScoreCompare = _compareDisplayedRankScore(a, b);
+            if (displayedScoreCompare != 0) return displayedScoreCompare;
 
             if (_filterSat && _filterSha) {
               if (a.finalRankScore != b.finalRankScore) {

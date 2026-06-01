@@ -211,6 +211,18 @@ func TestEnforceStrictlyDecreasingScores(t *testing.T) {
 	}
 }
 
+func TestCompareVisibleFinalRankScoreDescUsesExactScore(t *testing.T) {
+	hundred := MobileNameResult{Name: "ปราช", FinalRankScore: 100, FinalRankScoreExact: 100.00}
+	ninetyNine := MobileNameResult{Name: "ปราชญา", FinalRankScore: 100, FinalRankScoreExact: 99.99}
+
+	if got := compareVisibleFinalRankScoreDesc(hundred, ninetyNine); got >= 0 {
+		t.Fatalf("expected 100.00 exact score to sort before 99.99, got compare=%d", got)
+	}
+	if got := compareVisibleFinalRankScoreDesc(ninetyNine, hundred); got <= 0 {
+		t.Fatalf("expected 99.99 exact score to sort after 100.00, got compare=%d", got)
+	}
+}
+
 func TestRankingRespectsActiveToggles(t *testing.T) {
 	name := MobileNameResult{
 		Name:         "สมชาย",

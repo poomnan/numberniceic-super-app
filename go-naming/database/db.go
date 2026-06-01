@@ -114,10 +114,14 @@ func Connect() {
 		log.Fatalf("Error opening database connection: %v", err)
 	}
 
-	// Set pool settings for 100+ concurrent users.
-	DB.SetMaxOpenConns(envInt("DB_MAX_OPEN_CONNS", 120))
-	DB.SetMaxIdleConns(envInt("DB_MAX_IDLE_CONNS", 40))
-	DB.SetConnMaxLifetime(10 * time.Minute)
+	// Keep the app below PostgreSQL's common default max_connections=100.
+	// Mobile search can run two DB pools per active search, so 60 open
+	// connections supports the guarded search concurrency while leaving room for
+	// admin, chat, health, and maintenance queries. Operators can raise this
+	// with DB_MAX_OPEN_CONNS only after confirming PostgreSQL capacity.
+	DB.SetMaxOpenConns(envInt("DB_MAX_OPEN_CONNS", 60))
+	DB.SetMaxIdleConns(envInt("DB_MAX_IDLE_CONNS", 20))
+	DB.SetConnMaxLifetime(30 * time.Minute)
 	DB.SetConnMaxIdleTime(5 * time.Minute)
 
 	if err := DB.Ping(); err != nil {

@@ -10,7 +10,9 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -139,6 +141,8 @@ var mobileSearchInflight = struct {
 
 const mobileSearchCacheTTL = 3 * time.Minute
 const mobileSearchCacheMaxEntries = 2000
+
+var mobileSearchLeaderSem = make(chan struct{}, envIntDefault("SEARCH_MAX_CONCURRENT", 24))
 
 type seedAnalysisCacheEntry struct {
 	targetSatSums []int
@@ -323,6 +327,34 @@ func finishMobileSearchFlight(key string, call *mobileSearchInflightCall, status
 		delete(mobileSearchInflight.calls, key)
 	}
 	mobileSearchInflight.Unlock()
+}
+
+func envIntDefault(key string, fallback int) int {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return fallback
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil || value <= 0 {
+		return fallback
+	}
+	return value
+}
+
+func acquireMobileSearchLeaderSlot(ctx context.Context) bool {
+	select {
+	case mobileSearchLeaderSem <- struct{}{}:
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
+func releaseMobileSearchLeaderSlot() {
+	select {
+	case <-mobileSearchLeaderSem:
+	default:
+	}
 }
 
 func makeSeedAnalysisCacheKey(req MobileSearchRequest, lastnameSat int, lastnameSha int) string {
@@ -1149,6 +1181,25 @@ func enforceStrictlyDecreasingScores(results []MobileNameResult) {
 	}
 }
 
+func visibleFinalRankScore(result MobileNameResult) float64 {
+	if result.FinalRankScoreExact > 0 {
+		return result.FinalRankScoreExact
+	}
+	return float64(result.FinalRankScore)
+}
+
+func compareVisibleFinalRankScoreDesc(a, b MobileNameResult) int {
+	scoreA := visibleFinalRankScore(a)
+	scoreB := visibleFinalRankScore(b)
+	if scoreA > scoreB {
+		return -1
+	}
+	if scoreA < scoreB {
+		return 1
+	}
+	return 0
+}
+
 func deterministicNameTiebreaker(name string) float64 {
 	hash := uint32(2166136261)
 	for _, r := range name {
@@ -1535,6 +1586,23 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 			}, false)
 		}
 	}()
+
+	// Limit only unique leader searches. Duplicate concurrent requests still
+	// share the leader through singleflight above, while this guard prevents a
+	// storm of distinct expensive searches from exhausting PostgreSQL.
+	if !acquireMobileSearchLeaderSlot(ctx) {
+		resp := MobileSearchResponse{
+			Success: false,
+			Error:   map[string]any{"message": "Search request timed out while waiting for capacity"},
+			Results: []MobileNameResult{},
+			Total:   0,
+		}
+		finishFlight(http.StatusGatewayTimeout, resp, true)
+		jsonResponse(w, http.StatusGatewayTimeout, resp)
+		log.Printf("MobileSearchHandler total elapsed=%s (capacity timeout)", time.Since(handlerStart))
+		return
+	}
+	defer releaseMobileSearchLeaderSlot()
 
 	_, err := database.DB.ExecContext(
 		ctx,
@@ -2980,6 +3048,9 @@ finalizeAndRespond:
 	sortStart := time.Now()
 	sortResults := func() {
 		sort.SliceStable(results, func(i, j int) bool {
+			if rankCompare := compareVisibleFinalRankScoreDesc(results[i], results[j]); rankCompare != 0 {
+				return rankCompare < 0
+			}
 			noKakiI := len(results[i].KakiHighlight) == 0 || !containsKaki(results[i].KakiHighlight)
 			noKakiJ := len(results[j].KakiHighlight) == 0 || !containsKaki(results[j].KakiHighlight)
 			muI := activeMuPriorityBonus(

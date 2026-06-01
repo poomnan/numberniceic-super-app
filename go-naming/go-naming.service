@@ -9,9 +9,22 @@ WorkingDirectory=/usr/local/bin
 ExecStart=/usr/local/bin/go-naming
 Restart=always
 RestartSec=5
+TimeoutStopSec=135
+KillSignal=SIGTERM
+LimitNOFILE=65535
+LimitNPROC=4096
+TasksMax=512
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0027
 Environment="DATABASE_URL=postgres://tayap:IntelliP24.X@localhost:5432/tayap?sslmode=disable"
 Environment="PORT=8095"
+Environment="DB_MAX_OPEN_CONNS=60"
+Environment="DB_MAX_IDLE_CONNS=20"
+Environment="SEARCH_MAX_CONCURRENT=24"
 Environment="OPENAI_API_KEY=sk-dummy"
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

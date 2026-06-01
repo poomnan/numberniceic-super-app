@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"go-naming/astro"
 	"go-naming/database"
 	"go-naming/handlers"
@@ -10,8 +12,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
+	"time"
 )
 
 // Helper to send JSON response
@@ -108,6 +113,13 @@ func main() {
 			"status":  "ok",
 			"version": "1.0.9-landing-v1",
 		})
+	})
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		jsonResponse(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
 
 	// Handler: /users
@@ -477,9 +489,38 @@ func main() {
 	// Wanpra API Endpoints
 	http.HandleFunc("/api/v1/wanpra/calculate", astro.WanpraHandler)
 
-	log.Println("Server starting on port 8095...")
-	// Run the server
-	if err := http.ListenAndServe(":8095", nil); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+	port := strings.TrimSpace(os.Getenv("PORT"))
+	if port == "" {
+		port = "8095"
 	}
+	server := &http.Server{
+		Addr:              ":" + port,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      130 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    1 << 20,
+	}
+
+	go func() {
+		log.Printf("Server starting on port %s...", port)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Server failed to start: %v", err)
+		}
+	}()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+	log.Println("Server shutdown signal received; waiting for in-flight requests")
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Graceful shutdown timed out: %v", err)
+		if closeErr := server.Close(); closeErr != nil {
+			log.Printf("Forced server close failed: %v", closeErr)
+		}
+	}
+	log.Println("Server stopped")
 }
