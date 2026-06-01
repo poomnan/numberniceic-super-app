@@ -5263,7 +5263,7 @@ class _NamingScreenState extends State<NamingScreen>
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          InformationScreen(initialTabIndex: 2),
+                                          InformationScreen(initialTabIndex: 3),
                                     ),
                                   );
                                 },
@@ -6236,7 +6236,7 @@ class _NamingScreenState extends State<NamingScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => InformationScreen(initialTabIndex: 2),
+            builder: (context) => InformationScreen(initialTabIndex: 3),
           ),
         );
       },

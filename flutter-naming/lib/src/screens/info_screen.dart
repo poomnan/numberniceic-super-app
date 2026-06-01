@@ -286,9 +286,9 @@ class InformationScreen extends StatelessWidget {
           _buildBonusCard(
             label: "คุณภาพคู่เลข",
             sublabel: "PairType / Pairpoint",
-            points: "Tie-break",
+            points: "สูงสุด +34pt",
             description:
-                "เมื่อคะแนนอันดับใกล้กัน ระบบให้คู่เลขที่แข็งแรงกว่า เช่น D10, D8, D5 และ pairpoint สูงกว่า ขึ้นก่อนตามแกนที่คุณเลือกคัด",
+                "คะแนนเพิ่มตามความแข็งแรงของคู่เลข (D10: +14, D8: +8, D5: +3) และคะแนนละเอียด pairpoint (>=80: +20, >=65: +14, >=50: +9, >=30: +5, >=10: +2, <0: -4, <=-20: -8)",
             icon: Icons.linear_scale_rounded,
             color: const Color(0xFF38BDF8),
             highlight: false,
@@ -306,10 +306,10 @@ class InformationScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _buildBonusCard(
-            label: "ความทันสมัย-กระชับ",
-            sublabel: "Aesthetic Bonus",
-            points: "+10pt",
-            description: "ชื่อที่มีความยาวเหมาะสมและเลือกใช้พยัญชนะที่สละสลวย",
+            label: "โบนัสความยาวชื่อ",
+            sublabel: "Length Bonus",
+            points: "+10 ถึง +40pt",
+            description: "ส่งเสริมความกระชับ (2 พยางค์: +40, 3 พยางค์: +30, 4 พยางค์: +20, 5 พยางค์: +10, 6 พยางค์ขึ้นไป: -10)",
             icon: Icons.short_text_rounded,
             color: const Color(0xFFFBBF24),
             highlight: false,
