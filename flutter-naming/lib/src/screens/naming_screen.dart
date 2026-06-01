@@ -5520,16 +5520,26 @@ class _NamingScreenState extends State<NamingScreen>
       ],
     );
 
-    // Inactive VIP Theme (Sophisticated Glassmorphic Off-White)
+    // Inactive VIP Theme (Sophisticated Glassmorphic Lavender-tinted Light Card)
     final BoxDecoration inactiveDecoration = BoxDecoration(
-      color: const Color(0xFFFDFCFE),
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFFFBF9FF), // Very soft lavender-white
+          Color(0xFFF5FBF9), // Very soft mint-white
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+      border: Border.all(
+        color: const Color(0xFF8B5CF6).withValues(alpha: 0.16), // Soft lavender border
+        width: 1.5,
+      ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.02),
-          blurRadius: 8,
-          offset: const Offset(0, 3),
+          color: const Color(0xFF8B5CF6).withValues(alpha: 0.05),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
         ),
       ],
     );
@@ -5571,14 +5581,20 @@ class _NamingScreenState extends State<NamingScreen>
                           spreadRadius: 1,
                         ),
                       ]
-                    : null,
+                    : [
+                        BoxShadow(
+                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Icon(
                 isActive
                     ? Icons.stars_rounded
-                    : Icons.star_border_purple500_rounded,
+                    : Icons.star_rounded,
                 size: 20,
-                color: isActive ? const Color(0xFF1E1B4B) : Colors.white,
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 12),
@@ -5597,7 +5613,7 @@ class _NamingScreenState extends State<NamingScreen>
                         style: GoogleFonts.prompt(
                           color: isActive
                               ? Colors.white
-                              : const Color(0xFF1E293B),
+                              : const Color(0xFF1E1B4B), // Premium Indigo text color
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.2,
@@ -5612,12 +5628,12 @@ class _NamingScreenState extends State<NamingScreen>
                         decoration: BoxDecoration(
                           color: isActive
                               ? activeGold.withValues(alpha: 0.2)
-                              : const Color(0xFFE0F2FE),
+                              : const Color(0xFFF3E8FF), // Lavender-tinted background
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: isActive
                                 ? activeGold
-                                : const Color(0xFF38BDF8),
+                                : const Color(0xFFC084FC), // Lavender border
                             width: 1,
                           ),
                         ),
@@ -5630,7 +5646,7 @@ class _NamingScreenState extends State<NamingScreen>
                           style: GoogleFonts.prompt(
                             color: isActive
                                 ? activeGold
-                                : const Color(0xFF0369A1),
+                                : const Color(0xFF7E22CE), // Royal purple text color
                             fontSize: 9,
                             fontWeight: FontWeight.w900,
                             height: 1,
@@ -5645,7 +5661,7 @@ class _NamingScreenState extends State<NamingScreen>
                     style: GoogleFonts.sarabun(
                       color: isActive
                           ? Colors.white.withValues(alpha: 0.7)
-                          : const Color(0xFF64748B),
+                          : const Color(0xFF7C3AED).withValues(alpha: 0.8), // Softer purple-slate subtitle
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                       height: 1.2,
@@ -5662,8 +5678,8 @@ class _NamingScreenState extends State<NamingScreen>
                 onChanged: isDisabled ? null : (_) => onTap(),
                 activeThumbColor: activeGold,
                 activeTrackColor: activeGold.withValues(alpha: 0.3),
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: const Color(0xFFCBD5E1),
+                inactiveThumbColor: const Color(0xFFF3E8FF),
+                inactiveTrackColor: const Color(0xFFDDD6FE),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
