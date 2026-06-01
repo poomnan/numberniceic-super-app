@@ -342,7 +342,11 @@ class _NamingScreenState extends State<NamingScreen>
         try {
           final suggRes = await _apiService.getNameSuggestions(originalInput);
           if (suggRes != null && suggRes.names.isNotEmpty) {
-            final bestName = suggRes.names.first.name;
+            final seedSuggestion = _selectSemanticSeedSuggestion(
+              suggRes.names,
+              originalInput,
+            );
+            final bestName = seedSuggestion.name;
             if (mounted) {
               setState(() {
                 _selectedNameMeaningName = bestName;
@@ -1282,6 +1286,60 @@ class _NamingScreenState extends State<NamingScreen>
     if (type == "full_name") return const Color(0xFF7C3AED);
     if (type == "number") return const Color(0xFFEA580C);
     return const Color(0xFFD97706);
+  }
+
+  String _detectSuggestionGenderFromText(String text) {
+    final normalized = text.trim();
+    if (normalized.isEmpty) return 'neutral';
+
+    const femaleKeywords = [
+      'หญิง',
+      'สาว',
+      'ผู้หญิง',
+      'อ่อนหวาน',
+      'อ่อนโยน',
+      'น่ารัก',
+      'สวย',
+      'งาม',
+      'เสน่ห์',
+      'แม่',
+      'นาง',
+      'กุลสตรี',
+    ];
+    const maleKeywords = [
+      'ชาย',
+      'หนุ่ม',
+      'ผู้ชาย',
+      'เข้มแข็ง',
+      'กล้าหาญ',
+      'แข็งแรง',
+      'สง่า',
+      'ยิ่งใหญ่',
+      'บารมี',
+      'พ่อ',
+      'ผู้นำ',
+    ];
+
+    final hasFemale = femaleKeywords.any(normalized.contains);
+    final hasMale = maleKeywords.any(normalized.contains);
+    if (hasFemale && !hasMale) return 'female';
+    if (hasMale && !hasFemale) return 'male';
+    return 'neutral';
+  }
+
+  SuggestionNameItem _selectSemanticSeedSuggestion(
+    List<SuggestionNameItem> suggestions,
+    String queryText,
+  ) {
+    final detectedGender = _detectSuggestionGenderFromText(queryText);
+    if (detectedGender == 'female' || detectedGender == 'male') {
+      for (final suggestion in suggestions) {
+        if (suggestion.gender == detectedGender) {
+          return suggestion;
+        }
+      }
+    }
+    return suggestions.first;
   }
 
   void _resolveSeedName(
@@ -3843,12 +3901,26 @@ class _NamingScreenState extends State<NamingScreen>
                 size: 17,
               ),
               const SizedBox(width: 6),
-              Text(
-                "วันเกิดของคุณ เพื่อคัดชื่อกาลกิณีออก",
-                style: GoogleFonts.prompt(
-                  color: const Color(0xFF7E22CE),
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w900,
+              Expanded(
+                child: Text.rich(
+                  TextSpan(
+                    text: "วันเกิดของคุณ ",
+                    style: GoogleFonts.prompt(
+                      color: AppColors.textLight,
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w900,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: "เพื่อคัดชื่อกาลกิณีออก",
+                        style: GoogleFonts.sarabun(
+                          color: const Color(0xFF8B5CF6),
+                          fontSize: 13.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -5017,12 +5089,22 @@ class _NamingScreenState extends State<NamingScreen>
     final bool needsSeedName =
         _keywordController.text.trim().isNotEmpty && !canUseRankingTemplate;
 
-    final String? prototypeName =
-        _selectedNameMeaningName?.trim().isNotEmpty == true
-        ? _selectedNameMeaningName!.trim()
-        : _keywordController.text.trim().isNotEmpty == true
-        ? _keywordController.text.trim()
+    final String? semanticPrototype = _inputClassification?.type == "meaning"
+        ? _selectedNameMeaning?.trim()
         : null;
+    final bool shouldShowSemanticPrototype =
+        semanticPrototype?.isNotEmpty == true &&
+        semanticPrototype != _selectedNameMeaningName?.trim();
+    final String prototypeLabel = shouldShowSemanticPrototype
+        ? "วิเคราะห์จากความหมาย: "
+        : "วิเคราะห์ต้นแบบจากชื่อ: ";
+    final String? prototypeName = shouldShowSemanticPrototype
+        ? semanticPrototype
+        : (_selectedNameMeaningName?.trim().isNotEmpty == true
+              ? _selectedNameMeaningName!.trim()
+              : _keywordController.text.trim().isNotEmpty == true
+              ? _keywordController.text.trim()
+              : null);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -5092,7 +5174,7 @@ class _NamingScreenState extends State<NamingScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text.rich(
                         TextSpan(
-                          text: "วิเคราะห์ต้นแบบจากชื่อ: ",
+                          text: prototypeLabel,
                           style: GoogleFonts.sarabun(
                             color: const Color(0xFF64748B),
                             fontSize: 13,
@@ -5101,10 +5183,10 @@ class _NamingScreenState extends State<NamingScreen>
                           children: [
                             TextSpan(
                               text: prototypeName,
-                              style: GoogleFonts.prompt(
-                                color: const Color(0xFF7E22CE),
-                                fontSize: 16.5,
-                                fontWeight: FontWeight.w900,
+                              style: GoogleFonts.sarabun(
+                                color: const Color(0xFF6D28D9),
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ],
