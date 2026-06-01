@@ -539,6 +539,82 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
     }
   }
 
+  Future<void> _confirmClearAll() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.bgDark,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.primary, width: 2),
+          ),
+          title: Text(
+            "ล้างคลังรายชื่อทั้งหมด?",
+            style: GoogleFonts.sarabun(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textLight,
+            ),
+          ),
+          content: Text(
+            "แน่ใจนะคะว่าจะล้างรายชื่อทั้งหมดออกเพื่อความปลอดภัยของข้อมูลส่วนตัว? การกระทำนี้ไม่สามารถย้อนคืนได้",
+            style: GoogleFonts.sarabun(color: AppColors.textGray),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text(
+                "ยกเลิก",
+                style: TextStyle(color: AppColors.textGray),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(
+                "ล้างข้อมูลทั้งหมด",
+                style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (ok == true) {
+      await _clearAllNames();
+    }
+  }
+
+  Future<void> _clearAllNames() async {
+    setState(() => _isLoading = true);
+    try {
+      final List<int> idsToDelete = _savedNames.map((n) => n.id).toList();
+      for (final id in idsToDelete) {
+        await _apiService.deleteSavedName(id);
+      }
+      ApiService.savedNamesCache.clear();
+      setState(() {
+        _savedNames.clear();
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("ล้างข้อมูลรายชื่อทั้งหมดเรียบร้อยแล้วค่ะ")),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("เกิดข้อผิดพลาดในการล้างข้อมูล"),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _chooseUseMode(UserSavedName item) async {
     await showModalBottomSheet(
       context: context,
@@ -645,6 +721,18 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
+        actions: _savedNames.isEmpty
+            ? null
+            : [
+                IconButton(
+                  tooltip: "ล้างคลังรายชื่อทั้งหมด",
+                  icon: const Icon(
+                    Icons.delete_sweep_rounded,
+                    color: Color(0xFF3D2600),
+                  ),
+                  onPressed: _confirmClearAll,
+                ),
+              ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
