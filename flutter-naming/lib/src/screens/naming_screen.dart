@@ -6325,8 +6325,7 @@ class _NamingScreenState extends State<NamingScreen>
       context: context,
       builder: (dialogContext) {
         bool dialogSaving = false;
-        bool dialogSaved =
-            false; // We don't easily know if it's saved from here without a global state or check
+        bool dialogSaved = ApiService.savedNamesCache.contains(name);
 
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
@@ -6578,6 +6577,7 @@ class _NamingScreenState extends State<NamingScreen>
       },
     ).then((_) {
       if (didSave && mounted) {
+        setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("บันทึกชื่อ $name แล้ว"),

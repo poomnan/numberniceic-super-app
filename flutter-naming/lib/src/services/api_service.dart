@@ -426,7 +426,13 @@ class ApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final listJson = prefs.getString('local_saved_names') ?? '[]';
-      final List<dynamic> rawList = jsonDecode(listJson);
+      List<dynamic> rawList;
+      try {
+        rawList = jsonDecode(listJson);
+      } catch (e) {
+        debugPrint("Error decoding local saved names: $e");
+        rawList = [];
+      }
       
       final int newId = DateTime.now().millisecondsSinceEpoch;
       final Map<String, dynamic> newEntry = {
@@ -460,6 +466,7 @@ class ApiService {
       savedNamesCache.add(savedData["name"] ?? "");
       return true;
     } catch (e) {
+      debugPrint("Failed to save name locally: $e");
       return false;
     }
   }
@@ -471,15 +478,29 @@ class ApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final listJson = prefs.getString('local_saved_names') ?? '[]';
-      final List<dynamic> rawList = jsonDecode(listJson);
+      List<dynamic> rawList;
+      try {
+        rawList = jsonDecode(listJson);
+      } catch (e) {
+        debugPrint("Error decoding local saved names in list: $e");
+        rawList = [];
+      }
       
-      final List<UserSavedName> list = rawList
-          .map((e) => UserSavedName.fromJson(Map<String, dynamic>.from(e)))
-          .toList();
+      final List<UserSavedName> list = [];
+      for (var item in rawList) {
+        try {
+          if (item is Map) {
+            list.add(UserSavedName.fromJson(Map<String, dynamic>.from(item)));
+          }
+        } catch (e) {
+          debugPrint("Error parsing UserSavedName item: $e");
+        }
+      }
       
       list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return list;
     } catch (e) {
+      debugPrint("Failed to list saved names locally: $e");
       return [];
     }
   }
@@ -488,7 +509,12 @@ class ApiService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final listJson = prefs.getString('local_saved_names') ?? '[]';
-      final List<dynamic> rawList = jsonDecode(listJson);
+      List<dynamic> rawList;
+      try {
+        rawList = jsonDecode(listJson);
+      } catch (e) {
+        rawList = [];
+      }
       
       String? removedName;
       rawList.removeWhere((item) {
