@@ -822,6 +822,7 @@ class _NameListItemState extends State<NameListItem>
     bool isGood,
     String label, {
     String pairType = '',
+    Color? labelColor,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -831,7 +832,7 @@ class _NameListItemState extends State<NameListItem>
         Text(
           label,
           style: GoogleFonts.sarabun(
-            color: AppColors.textGray,
+            color: labelColor ?? AppColors.textGray,
             fontSize: 10,
             fontWeight: FontWeight.w500,
           ),
@@ -916,11 +917,51 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildSharePoster() {
+    final style = _getDynamicCardStyle();
     final bool isLucky = widget.result.isSatGood && widget.result.isShaGood;
-    final luckText = isLucky ? 'Double Lucky x2' : 'น่าเสียดาย!?';
-    final gradientColors = isLucky
-        ? [const Color(0xFFDBB632), const Color(0xFFFF8C00)]
-        : [const Color(0xFF71717A), const Color(0xFF3F3F46)];
+    final lucky = _computeLuckyBreakdown();
+    String luckText;
+    List<Color> magicGradientColors;
+
+    if (lucky.isLucky) {
+      if (lucky.multiplier <= 1) {
+        luckText = 'Lucky ✨';
+      } else {
+        String prefix = lucky.multiplier >= 4
+            ? 'Super'
+            : (lucky.multiplier == 3
+                  ? 'Triple'
+                  : 'Double');
+        luckText = '$prefix Lucky x${lucky.multiplier}';
+      }
+
+      if (lucky.multiplier >= 4) {
+        magicGradientColors = [
+          const Color(0xFFDBB632),
+          const Color(0xFFFF8C00),
+          const Color(0xFFFF4FA3),
+          const Color(0xFFB517FF),
+        ];
+      } else if (lucky.multiplier == 3) {
+        magicGradientColors = [
+          const Color(0xFFDBB632),
+          const Color(0xFFFF8C00),
+          const Color(0xFFFF4FA3),
+        ];
+      } else {
+        magicGradientColors = [
+          const Color(0xFFDBB632),
+          const Color(0xFFFF8C00),
+        ];
+      }
+    } else {
+      luckText = 'น่าเสียดาย!?';
+      magicGradientColors = [
+        const Color(0xFF71717A),
+        const Color(0xFF3F3F46),
+      ];
+    }
+
     final meaning =
         (widget.result.meaning.isNotEmpty ? widget.result.meaning : '').trim();
 
@@ -944,7 +985,7 @@ class _NameListItemState extends State<NameListItem>
               color: Colors.white.withValues(alpha: 0.72),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.12),
+                color: style.borderColor.withValues(alpha: 0.25),
               ),
             ),
             child: Row(
@@ -953,7 +994,11 @@ class _NameListItemState extends State<NameListItem>
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
+                    gradient: LinearGradient(
+                      colors: [style.accentColor, style.patternColor],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -970,7 +1015,7 @@ class _NameListItemState extends State<NameListItem>
                       Text(
                         'ชื่อดี.com',
                         style: GoogleFonts.prompt(
-                          color: AppColors.textLight,
+                          color: style.nameColor,
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
                         ),
@@ -978,7 +1023,7 @@ class _NameListItemState extends State<NameListItem>
                       Text(
                         'เปลี่ยนชีวิตด้วยแรงดึงดูดจากชื่อดี',
                         style: GoogleFonts.sarabun(
-                          color: AppColors.textGray,
+                          color: style.meaningColor,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -992,212 +1037,229 @@ class _NameListItemState extends State<NameListItem>
             ),
           ),
           const SizedBox(height: 14),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(18, 26, 18, 18),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFCF4),
-              borderRadius: BorderRadius.circular(26),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            (widget.rank == 1 || (widget.rank == 0 && isLucky)
-                                    ? const Color(0xFFD4AF37)
-                                    : widget.rank == 2
-                                    ? const Color(0xFFC0C0C0)
-                                    : widget.rank == 3
-                                    ? const Color(0xFFCD7F32)
-                                    : const Color(0xFF7C3AED))
-                                .withValues(alpha: 0.16),
-                            (widget.rank == 1 || (widget.rank == 0 && isLucky)
-                                    ? const Color(0xFFD4AF37)
-                                    : widget.rank == 2
-                                    ? const Color(0xFFC0C0C0)
-                                    : widget.rank == 3
-                                    ? const Color(0xFFCD7F32)
-                                    : const Color(0xFF7C3AED))
-                                .withValues(alpha: 0.04),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color:
-                              (widget.rank == 1 || (widget.rank == 0 && isLucky)
-                                      ? const Color(0xFFD4AF37)
-                                      : widget.rank == 2
-                                      ? const Color(0xFFC0C0C0)
-                                      : widget.rank == 3
-                                      ? const Color(0xFFCD7F32)
-                                      : const Color(0xFF7C3AED))
-                                  .withValues(alpha: 0.35),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (widget.rank <= 3 || widget.rank == 0) ...[
-                            Icon(
-                              Icons.emoji_events,
-                              size: 12,
-                              color:
-                                  widget.rank == 1 ||
-                                      (widget.rank == 0 && isLucky)
-                                  ? const Color(0xFFD4AF37)
-                                  : widget.rank == 2
-                                  ? const Color(0xFFC0C0C0)
-                                  : widget.rank == 3
-                                  ? const Color(0xFFCD7F32)
-                                  : const Color(0xFF7C3AED),
-                            ),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            widget.rank > 0
-                                ? 'อันดับ #${widget.rank} | ${widget.result.finalRankScoreExact.toStringAsFixed(2)} คะแนน'
-                                : 'คะแนนชื่อดี | ${widget.result.finalRankScoreExact.toStringAsFixed(2)} คะแนน',
-                            style: GoogleFonts.prompt(
-                              color:
-                                  widget.rank == 1 ||
-                                      (widget.rank == 0 && isLucky)
-                                  ? const Color(0xFFB8860B)
-                                  : widget.rank == 2
-                                  ? const Color(0xFF64748B)
-                                  : widget.rank == 3
-                                  ? const Color(0xFFCD7F32)
-                                  : const Color(0xFF7C3AED),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ],
-                      ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: style.bgGradient,
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: style.borderColor, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: style.glowColor,
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _LVMonogramPatternPainter(color: style.patternColor),
                     ),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(12, 6, 10, 6),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: gradientColors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.14),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            isLucky
-                                ? Icons.auto_awesome
-                                : Icons.info_outline_rounded,
-                            color: Colors.white,
-                            size: 13,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            luckText,
-                            style: GoogleFonts.prompt(
-                              color: Colors.white,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 26, 18, 18),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    (widget.rank == 1 || (widget.rank == 0 && isLucky)
+                                            ? const Color(0xFFD4AF37)
+                                            : widget.rank == 2
+                                            ? const Color(0xFFC0C0C0)
+                                            : widget.rank == 3
+                                            ? const Color(0xFFCD7F32)
+                                            : style.accentColor)
+                                        .withValues(alpha: 0.16),
+                                    (widget.rank == 1 || (widget.rank == 0 && isLucky)
+                                            ? const Color(0xFFD4AF37)
+                                            : widget.rank == 2
+                                            ? const Color(0xFFC0C0C0)
+                                            : widget.rank == 3
+                                            ? const Color(0xFFCD7F32)
+                                            : style.accentColor)
+                                        .withValues(alpha: 0.04),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color:
+                                      (widget.rank == 1 || (widget.rank == 0 && isLucky)
+                                              ? const Color(0xFFD4AF37)
+                                              : widget.rank == 2
+                                              ? const Color(0xFFC0C0C0)
+                                              : widget.rank == 3
+                                              ? const Color(0xFFCD7F32)
+                                              : style.accentColor)
+                                          .withValues(alpha: 0.35),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (widget.rank <= 3 || widget.rank == 0) ...[
+                                    Icon(
+                                      Icons.emoji_events,
+                                      size: 12,
+                                      color:
+                                          widget.rank == 1 ||
+                                              (widget.rank == 0 && isLucky)
+                                          ? const Color(0xFFD4AF37)
+                                          : widget.rank == 2
+                                          ? const Color(0xFFC0C0C0)
+                                          : widget.rank == 3
+                                          ? const Color(0xFFCD7F32)
+                                          : style.accentColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                  ],
+                                  Text(
+                                    widget.rank > 0
+                                        ? 'อันดับ #${widget.rank} | ${widget.result.finalRankScoreExact.toStringAsFixed(2)} คะแนน'
+                                        : 'คะแนนชื่อดี | ${widget.result.finalRankScoreExact.toStringAsFixed(2)} คะแนน',
+                                    style: GoogleFonts.prompt(
+                                      color:
+                                          widget.rank == 1 ||
+                                              (widget.rank == 0 && isLucky)
+                                          ? const Color(0xFFB8860B)
+                                          : widget.rank == 2
+                                          ? const Color(0xFF64748B)
+                                          : widget.rank == 3
+                                          ? const Color(0xFFCD7F32)
+                                          : style.nameColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.result.name,
-                            style: GoogleFonts.sarabun(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF3D2600),
-                            ),
-                          ),
-                          if (meaning.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
-                              '"$meaning"',
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.textGray,
-                                fontSize: 15,
-                                height: 1.5,
-                                fontFamily: 'Sarabun',
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(12, 6, 10, 6),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: magicGradientColors,
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.14),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    lucky.isLucky
+                                        ? Icons.auto_awesome
+                                        : Icons.info_outline_rounded,
+                                    color: Colors.white,
+                                    size: 13,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    luckText,
+                                    style: GoogleFonts.prompt(
+                                      color: Colors.white,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
-                        ],
-                      ),
-                    ),
-                    if (!widget.showMatching ||
-                        widget.result.satSum == widget.result.totalSat) ...[
-                      const SizedBox(width: 10),
-                      SizedBox(
-                        width: 92,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildShareScoreDisplay(
-                              widget.result.satSum,
-                              widget.result.isSatGood,
-                              'เลขศาสตร์',
-                              pairType: widget.result.satPairType,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.result.name,
+                                    style: GoogleFonts.sarabun(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: style.nameColor,
+                                    ),
+                                  ),
+                                  if (meaning.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '"$meaning"',
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: style.meaningColor,
+                                        fontSize: 15,
+                                        height: 1.5,
+                                        fontFamily: 'Sarabun',
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 10),
-                            _buildShareScoreDisplay(
-                              widget.result.shaSum,
-                              widget.result.isShaGood,
-                              'พลังเงา',
-                              pairType: widget.result.shaPairType,
-                            ),
+                            if (!widget.showMatching ||
+                                widget.result.satSum == widget.result.totalSat) ...[
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: 92,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    _buildShareScoreDisplay(
+                                      widget.result.satSum,
+                                      widget.result.isSatGood,
+                                      'เลขศาสตร์',
+                                      pairType: widget.result.satPairType,
+                                      labelColor: style.meaningColor,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _buildShareScoreDisplay(
+                                      widget.result.shaSum,
+                                      widget.result.isShaGood,
+                                      'พลังเงา',
+                                      pairType: widget.result.shaPairType,
+                                      labelColor: style.meaningColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 14),
-                _buildPhoneticInsightCard(),
-              ],
+                        const SizedBox(height: 14),
+                        _buildPhoneticInsightCard(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
