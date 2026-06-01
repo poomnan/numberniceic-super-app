@@ -2098,6 +2098,7 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildPhoneticInsightCard() {
+    final style = _getDynamicCardStyle();
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -2105,16 +2106,19 @@ class _NameListItemState extends State<NameListItem>
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFAF6F2), // Soft warm sand/linen
+            color: style.accentColor.withValues(alpha: 0.08), // Dynamic background tint matching active style
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE8D3C3), width: 1.2), // Soft warm tan/beige border
+            border: Border.all(
+              color: style.accentColor.withValues(alpha: 0.25), // Dynamic border matching active style
+              width: 1.2,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.only(right: 54),
             child: Text(
               _buildPhoneticInsightText(),
               style: GoogleFonts.sarabun(
-                color: const Color(0xFF4E3629), // Elegant dark warm-brown text
+                color: style.nameColor, // Dynamic elegant dark text color
                 fontSize: 14,
                 height: 1.35,
                 fontWeight: FontWeight.w700,
@@ -2136,6 +2140,7 @@ class _NameListItemState extends State<NameListItem>
   }
 
   Widget _buildPhoneticSpeakButton() {
+    final style = _getDynamicCardStyle();
     final isSpeaking = _isSpeaking(_phoneticSpeakingKey());
     return Tooltip(
       message: _getSpeakTooltip(),
@@ -2147,24 +2152,24 @@ class _NameListItemState extends State<NameListItem>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isSpeaking
-                  ? [const Color(0xFFD97706), const Color(0xFFB45309)] // Warm gold/amber when active
-                  : [const Color(0xFFFDFBF7), const Color(0xFFE8DCD0)], // Warm cream to soft tan
+                  ? [style.accentColor, style.patternColor] // Dynamic active colors
+                  : [Colors.white, style.accentColor.withValues(alpha: 0.12)], // Dynamic passive gradient
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             shape: BoxShape.circle,
             border: Border.all(
               color: isSpeaking
-                  ? const Color(0xFFB45309)
-                  : const Color(0xFFD2B48C),
+                  ? style.patternColor
+                  : style.accentColor.withValues(alpha: 0.4),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
                 color:
                     (isSpeaking
-                            ? const Color(0xFFD97706)
-                            : const Color(0xFFD2B48C))
+                            ? style.patternColor
+                            : style.accentColor)
                         .withValues(alpha: 0.15),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
@@ -2173,7 +2178,7 @@ class _NameListItemState extends State<NameListItem>
           ),
           child: Icon(
             Icons.record_voice_over_rounded,
-            color: isSpeaking ? Colors.white : const Color(0xFF8B5A2B), // White when active, warm brown otherwise
+            color: isSpeaking ? Colors.white : style.patternColor, // Dynamic icon color
             size: 16,
           ),
         ),
