@@ -5628,12 +5628,12 @@ class _NamingScreenState extends State<NamingScreen>
                         decoration: BoxDecoration(
                           color: isActive
                               ? activeGold.withValues(alpha: 0.2)
-                              : const Color(0xFFF3E8FF), // Lavender-tinted background
+                              : const Color(0xFFE0F2FE), // Sky blue background
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: isActive
                                 ? activeGold
-                                : const Color(0xFFC084FC), // Lavender border
+                                : const Color(0xFF38BDF8), // Sky blue border
                             width: 1,
                           ),
                         ),
@@ -5646,7 +5646,7 @@ class _NamingScreenState extends State<NamingScreen>
                           style: GoogleFonts.prompt(
                             color: isActive
                                 ? activeGold
-                                : const Color(0xFF7E22CE), // Royal purple text color
+                                : const Color(0xFF0369A1), // Dark sky blue text color
                             fontSize: 9,
                             fontWeight: FontWeight.w900,
                             height: 1,
@@ -5661,7 +5661,7 @@ class _NamingScreenState extends State<NamingScreen>
                     style: GoogleFonts.sarabun(
                       color: isActive
                           ? Colors.white.withValues(alpha: 0.7)
-                          : const Color(0xFF7C3AED).withValues(alpha: 0.8), // Softer purple-slate subtitle
+                          : const Color(0xFF64748B), // Slate grey subtitle
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                       height: 1.2,
