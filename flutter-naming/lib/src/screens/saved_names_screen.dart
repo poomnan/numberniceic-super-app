@@ -1298,16 +1298,16 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF9F8),
+            color: const Color(0xFFFAF6F2), // Soft warm sand/linen
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFBDE8E3), width: 1.2),
+            border: Border.all(color: const Color(0xFFE8D3C3), width: 1.2), // Soft warm tan/beige border
           ),
           child: Padding(
             padding: EdgeInsets.only(right: showSpeakButton ? 54 : 14),
             child: Text(
               phoneticText,
               style: GoogleFonts.sarabun(
-                color: const Color(0xFF245A57),
+                color: const Color(0xFF4E3629), // Elegant dark warm-brown text
                 fontSize: 14,
                 height: 1.35,
                 fontWeight: FontWeight.w700,
@@ -1340,21 +1340,36 @@ class _SavedNamesScreenState extends State<SavedNamesScreen> {
           width: 34,
           height: 34,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFEFF6FF), Color(0xFFBFDBFE)],
+            gradient: LinearGradient(
+              colors: isSpeaking
+                  ? [const Color(0xFFD97706), const Color(0xFFB45309)] // Warm gold/amber when active
+                  : [const Color(0xFFFDFBF7), const Color(0xFFE8DCD0)], // Warm cream to soft tan
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             shape: BoxShape.circle,
             border: Border.all(
-              color: const Color(0xFF93C5FD),
-              width: 1,
+              color: isSpeaking
+                  ? const Color(0xFFB45309)
+                  : const Color(0xFFD2B48C),
+              width: 1.2,
             ),
+            boxShadow: [
+              BoxShadow(
+                color:
+                    (isSpeaking
+                            ? const Color(0xFFD97706)
+                            : const Color(0xFFD2B48C))
+                        .withValues(alpha: 0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Icon(
             isSpeaking ? Icons.volume_up_rounded : Icons.mic_rounded,
             size: 14,
-            color: const Color(0xFF1D4ED8),
+            color: isSpeaking ? Colors.white : const Color(0xFF8B5A2B), // White when active, warm brown otherwise
           ),
         ),
       ),
