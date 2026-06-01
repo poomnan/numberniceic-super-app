@@ -5616,7 +5616,7 @@ class _NamingScreenState extends State<NamingScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "จัดอันดับ Double Lucky x2 ขั้นสูง",
+                    "จัดอันดับสูงสุดได้ Triple Lucky x3",
                     style: GoogleFonts.sarabun(
                       color: isActive
                           ? Colors.white.withValues(alpha: 0.7)
@@ -7536,16 +7536,46 @@ class _PulsingPremiumIconState extends State<_PulsingPremiumIcon>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 2200),
+    )..repeat();
 
-    _scaleAnimation = Tween<double>(begin: 0.94, end: 1.06).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.25).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 15,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.25, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 15,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.25).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 15,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.25, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 15,
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween<double>(1.0),
+        weight: 40,
+      ),
+    ]).animate(_controller);
 
-    _glowAnimation = Tween<double>(begin: 0.12, end: 0.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _glowAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.15, end: 0.65).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 30,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.65, end: 0.15).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 30,
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween<double>(0.15),
+        weight: 40,
+      ),
+    ]).animate(_controller);
   }
 
   @override
@@ -7580,8 +7610,8 @@ class _PulsingPremiumIconState extends State<_PulsingPremiumIcon>
               BoxShadow(
                 color: (widget.isActive ? widget.activeGold : const Color(0xFF8B5CF6))
                     .withValues(alpha: widget.isActive ? 0.5 : _glowAnimation.value),
-                blurRadius: widget.isActive ? 10 : 8 + (4 * _controller.value),
-                spreadRadius: widget.isActive ? 1 : 1 + (2 * _controller.value),
+                blurRadius: widget.isActive ? 10 : 8 + (10 * _controller.value),
+                spreadRadius: widget.isActive ? 1 : 1 + (3 * _controller.value),
               ),
             ],
           ),
