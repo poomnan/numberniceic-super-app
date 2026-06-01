@@ -1354,19 +1354,19 @@ class _NameListItemState extends State<NameListItem>
         glowColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
       );
     } else if (isSat) {
-      // Emerald Green LV (เลขศาสตร์ดี ONLY) - Bright Mint Green
+      // Warm Caramel/Light Brown LV (เลขศาสตร์ดี ONLY) - Soft Luxury Sand to Caramel
       return (
         bgGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
+          colors: [Color(0xFFFFFDF9), Color(0xFFF9EFE6)],
         ),
-        patternColor: const Color(0xFF047857),
-        borderColor: const Color(0xFF10B981).withValues(alpha: 0.4),
-        nameColor: const Color(0xFF064E3B),
-        meaningColor: const Color(0xFF065F46),
-        accentColor: const Color(0xFF10B981),
-        glowColor: const Color(0xFF10B981).withValues(alpha: 0.12),
+        patternColor: const Color(0xFF8B5A2B),
+        borderColor: const Color(0xFFB45309).withValues(alpha: 0.35),
+        nameColor: const Color(0xFF451A03),
+        meaningColor: const Color(0xFF78350F),
+        accentColor: const Color(0xFFB45309),
+        glowColor: const Color(0xFFB45309).withValues(alpha: 0.12),
       );
     } else if (isSha) {
       // Royal Amethyst/Purple LV (พลังเงาดี ONLY) - Bright Lavender Purple

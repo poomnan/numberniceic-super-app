@@ -33,7 +33,7 @@ class DashboardSummary extends StatelessWidget {
       (
         label: 'เลขศาสตร์',
         value: numerologyGood,
-        accent: const Color(0xFF10B981),
+        accent: const Color(0xFFB45309),
         isActive: true,
       ),
       (

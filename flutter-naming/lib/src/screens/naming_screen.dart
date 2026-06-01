@@ -5216,13 +5216,13 @@ class _NamingScreenState extends State<NamingScreen>
                               child: _buildCompactFilterTile(
                                 title: "เลขศาสตร์ดี",
                                 icon: Icons.auto_awesome_rounded,
-                                iconColor: const Color(0xFF10B981),
+                                iconColor: const Color(0xFFB45309),
                                 isActive:
                                     canUseRankingTemplate &&
                                     _filterSat &&
                                     !_filterSha,
                                 isDisabled: !canUseRankingTemplate,
-                                activeColor: const Color(0xFF10B981),
+                                activeColor: const Color(0xFFB45309),
                                 onTap: () {
                                   if (!canUseRankingTemplate) return;
                                   final bool currentlyActive =
