@@ -5520,24 +5520,24 @@ class _NamingScreenState extends State<NamingScreen>
       ],
     );
 
-    // Inactive VIP Theme (Sophisticated Glassmorphic Lavender-tinted Light Card)
+    // Inactive VIP Theme (Sophisticated Glassmorphic Green-tinted Light Card)
     final BoxDecoration inactiveDecoration = BoxDecoration(
       gradient: const LinearGradient(
         colors: [
-          Color(0xFFFBF9FF), // Very soft lavender-white
-          Color(0xFFF5FBF9), // Very soft mint-white
+          Color(0xFFF4FDF7), // Soft money-attracting light mint green
+          Color(0xFFEAFDF2), // Light emerald-tinted off-white
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
       borderRadius: BorderRadius.circular(18),
       border: Border.all(
-        color: const Color(0xFF8B5CF6).withValues(alpha: 0.16), // Soft lavender border
+        color: const Color(0xFF10B981).withValues(alpha: 0.2), // Soft green border
         width: 1.5,
       ),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFF8B5CF6).withValues(alpha: 0.05),
+          color: const Color(0xFF10B981).withValues(alpha: 0.05), // Soft green glow shadow
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),
@@ -5572,7 +5572,7 @@ class _NamingScreenState extends State<NamingScreen>
                         style: GoogleFonts.prompt(
                           color: isActive
                               ? Colors.white
-                              : const Color(0xFF1E1B4B), // Premium Indigo text color
+                              : const Color(0xFF064E3B), // Deep emerald green title text
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.2,
@@ -5620,7 +5620,7 @@ class _NamingScreenState extends State<NamingScreen>
                     style: GoogleFonts.sarabun(
                       color: isActive
                           ? Colors.white.withValues(alpha: 0.7)
-                          : const Color(0xFF64748B), // Slate grey subtitle
+                          : const Color(0xFF047857), // Medium emerald green subtitle
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                       height: 1.2,
@@ -5637,8 +5637,8 @@ class _NamingScreenState extends State<NamingScreen>
                 onChanged: isDisabled ? null : (_) => onTap(),
                 activeThumbColor: activeGold,
                 activeTrackColor: activeGold.withValues(alpha: 0.3),
-                inactiveThumbColor: const Color(0xFFF3E8FF),
-                inactiveTrackColor: const Color(0xFFDDD6FE),
+                inactiveThumbColor: const Color(0xFFD1FAE5), // Mint green switch thumb
+                inactiveTrackColor: const Color(0xFFA7F3D0), // Soft emerald switch track
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
@@ -7600,15 +7600,15 @@ class _PulsingPremiumIconState extends State<_PulsingPremiumIcon>
                       const Color(0xFFD4AF37),
                     ] // Pure gold gradient
                   : [
-                      const Color(0xFF8B5CF6),
-                      const Color(0xFF10B981),
-                    ], // Purple to green
+                      const Color(0xFF34D399),
+                      const Color(0xFF047857),
+                    ], // Mint green to deep emerald
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: (widget.isActive ? widget.activeGold : const Color(0xFF8B5CF6))
+                color: (widget.isActive ? widget.activeGold : const Color(0xFF10B981))
                     .withValues(alpha: widget.isActive ? 0.5 : _glowAnimation.value),
                 blurRadius: widget.isActive ? 10 : 8 + (10 * _controller.value),
                 spreadRadius: widget.isActive ? 1 : 1 + (3 * _controller.value),
