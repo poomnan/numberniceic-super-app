@@ -5554,49 +5554,8 @@ class _NamingScreenState extends State<NamingScreen>
         decoration: isActive ? activeDecoration : inactiveDecoration,
         child: Row(
           children: [
-            // Glowing Premium Icon Badge
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: isActive
-                      ? [
-                          const Color(0xFFFFDF00),
-                          const Color(0xFFD4AF37),
-                        ] // Pure gold gradient
-                      : [
-                          const Color(0xFF8B5CF6),
-                          const Color(0xFF10B981),
-                        ], // Purple to green
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: isActive
-                    ? [
-                        BoxShadow(
-                          color: activeGold.withValues(alpha: 0.5),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : [
-                        BoxShadow(
-                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-              ),
-              child: Icon(
-                isActive
-                    ? Icons.stars_rounded
-                    : Icons.star_rounded,
-                size: 20,
-                color: Colors.white,
-              ),
-            ),
+            // Glowing Premium Icon Badge (Pulsing Animation)
+            _PulsingPremiumIcon(isActive: isActive, activeGold: activeGold),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -7549,6 +7508,95 @@ class AnimatedSeedName extends StatelessWidget {
         fontSize: 14.5,
         fontWeight: FontWeight.bold,
       ),
+    );
+  }
+}
+
+class _PulsingPremiumIcon extends StatefulWidget {
+  final bool isActive;
+  final Color activeGold;
+
+  const _PulsingPremiumIcon({
+    required this.isActive,
+    required this.activeGold,
+  });
+
+  @override
+  State<_PulsingPremiumIcon> createState() => _PulsingPremiumIconState();
+}
+
+class _PulsingPremiumIconState extends State<_PulsingPremiumIcon>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(begin: 0.94, end: 1.06).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    _glowAnimation = Tween<double>(begin: 0.12, end: 0.5).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: widget.isActive
+                  ? [
+                      const Color(0xFFFFDF00),
+                      const Color(0xFFD4AF37),
+                    ] // Pure gold gradient
+                  : [
+                      const Color(0xFF8B5CF6),
+                      const Color(0xFF10B981),
+                    ], // Purple to green
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (widget.isActive ? widget.activeGold : const Color(0xFF8B5CF6))
+                    .withValues(alpha: widget.isActive ? 0.5 : _glowAnimation.value),
+                blurRadius: widget.isActive ? 10 : 8 + (4 * _controller.value),
+                spreadRadius: widget.isActive ? 1 : 1 + (2 * _controller.value),
+              ),
+            ],
+          ),
+          child: Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Icon(
+              widget.isActive
+                  ? Icons.stars_rounded
+                  : Icons.star_rounded,
+              size: 20,
+              color: Colors.white,
+            ),
+          ),
+        );
+      },
     );
   }
 }
