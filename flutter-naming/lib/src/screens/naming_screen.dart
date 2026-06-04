@@ -5179,7 +5179,7 @@ class _NamingScreenState extends State<NamingScreen>
                             TextSpan(
                               text: prototypeName,
                               style: GoogleFonts.sarabun(
-                                color: const Color(0xFF6D28D9),
+                                color: const Color(0xFF1D4ED8), // Beautiful royal blue
                                 fontSize: 15.5,
                                 fontWeight: FontWeight.w800,
                               ),
