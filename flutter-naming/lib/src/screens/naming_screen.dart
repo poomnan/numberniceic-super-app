@@ -2199,7 +2199,6 @@ class _NamingScreenState extends State<NamingScreen>
                       children: [
                         buildHeader(),
                         buildSearchForm(),
-                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
