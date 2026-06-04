@@ -294,8 +294,9 @@ JSON Format:
 				COALESCE(rhythm_score, 0) AS rhythm_score,
 				word_similarity((SELECT ai_roots FROM ai_output), thname) AS root_score,
 				GREATEST(0, 1 - (meaning_vector <=> (SELECT vec FROM target_vector))) AS semantic_score
-			FROM names_miracle
-			WHERE thname != $3 %s
+				FROM names_miracle
+				WHERE meaning_vector IS NOT NULL
+				  AND thname != $3 %s
 			ORDER BY meaning_vector <=> (SELECT vec FROM target_vector)
 			LIMIT 100
 		),
@@ -307,8 +308,9 @@ JSON Format:
 				COALESCE(rhythm_score, 0) AS rhythm_score,
 				word_similarity((SELECT ai_roots FROM ai_output), thname) AS root_score,
 				GREATEST(0, 1 - (meaning_vector <=> (SELECT vec FROM target_vector))) AS semantic_score
-			FROM names_miracle
-			WHERE thname != $3 %s
+				FROM names_miracle
+				WHERE meaning_vector IS NOT NULL
+				  AND thname != $3 %s
 			ORDER BY thname <-> (SELECT ai_roots FROM ai_output)
 			LIMIT 100
 		),

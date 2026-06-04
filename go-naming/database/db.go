@@ -135,6 +135,7 @@ func Connect() {
 	initNamingExampleTables()
 	initUserSavedNamesTables()
 	initArticlesTable()
+	initSemanticSearchIdeasTable()
 
 	fmt.Println("Database connection established")
 }
@@ -335,3 +336,23 @@ func initNamingExampleTables() {
 		fmt.Printf("Warning: Naming example tables init failed: %v\n", err)
 	}
 }
+
+func initSemanticSearchIdeasTable() {
+	query := `
+	CREATE TABLE IF NOT EXISTS semantic_search_ideas (
+		id SERIAL PRIMARY KEY,
+		text TEXT NOT NULL,
+		icon_name VARCHAR(100) DEFAULT 'sparkles',
+		icon_color VARCHAR(50) DEFAULT '#E2B237',
+		sort_order INTEGER DEFAULT 0,
+		is_active BOOLEAN DEFAULT true,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	`
+	_, err := DB.Exec(query)
+	if err != nil {
+		fmt.Printf("Warning: Semantic search ideas table init failed: %v\n", err)
+	}
+}
+

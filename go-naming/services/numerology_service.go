@@ -422,6 +422,9 @@ func RecommendNames(intent string, surname string, day string, limit int) ([]mod
 		query += fmt.Sprintf(", (meaning_vector <=> '%s') as distance ", formatVector(embedding))
 	}
 	query += " FROM names_miracle WHERE 1=1 "
+	if len(embedding) > 0 {
+		query += " AND meaning_vector IS NOT NULL "
+	}
 
 	// Filter Kalakini
 	if kakiColumn != "" {
@@ -630,6 +633,9 @@ func RecommendNamesFast(intent string, surname string, day string, limit int) ([
 		query += fmt.Sprintf(", (meaning_vector <=> '%s') as distance ", formatVector(embedding))
 	}
 	query += " FROM names_miracle WHERE 1=1 "
+	if len(embedding) > 0 {
+		query += " AND meaning_vector IS NOT NULL "
+	}
 
 	// Optimized Filters
 	query += " AND sat_sum = ANY($1) "

@@ -145,8 +145,8 @@ func DemoSearchHandler(w http.ResponseWriter, r *http.Request) {
 			SELECT name_id, COALESCE(thname, ''), COALESCE(meaning, ''), COALESCE(gender, ''),
 			       sat_sum, sha_sum,
 			       (meaning_vector <=> $1) as distance
-			FROM names_miracle 
-			WHERE 1=1
+			FROM names_miracle
+			WHERE meaning_vector IS NOT NULL
 		`
 		args := []interface{}{formatVector(embedding)}
 		argCounter := 2
@@ -249,11 +249,14 @@ func DemoSearchHandler(w http.ResponseWriter, r *http.Request) {
 		argCounter := len(args) + 1
 
 		query := fmt.Sprintf(`
-			SELECT name_id, COALESCE(thname, ''), COALESCE(meaning, ''), COALESCE(gender, ''),
-			       sat_sum, sha_sum, %s
-			FROM names_miracle 
-			WHERE (1=1) 
-		`, distanceExpr)
+				SELECT name_id, COALESCE(thname, ''), COALESCE(meaning, ''), COALESCE(gender, ''),
+				       sat_sum, sha_sum, %s
+				FROM names_miracle
+				WHERE (1=1)
+			`, distanceExpr)
+		if len(embedding) > 0 {
+			query += " AND meaning_vector IS NOT NULL"
+		}
 
 		if req.FilterKaki && kakiColumn != "" {
 			query += fmt.Sprintf(" AND %s = false", kakiColumn)

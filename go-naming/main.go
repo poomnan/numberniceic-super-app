@@ -337,6 +337,13 @@ func main() {
 	http.HandleFunc("/api/v1/saved-names/list", handlers.ListUserSavedNamesHandler)
 	http.HandleFunc("/api/v1/saved-names/delete", handlers.DeleteUserSavedNameHandler)
 
+	// Semantic Search Ideas Handlers
+	http.HandleFunc("/api/v1/semantic-search-ideas", handlers.ListSemanticSearchIdeasHandler)
+	http.HandleFunc("/api/v1/admin/semantic-search-ideas/list", adminOnly(handlers.AdminListSemanticSearchIdeasHandler))
+	http.HandleFunc("/api/v1/admin/semantic-search-ideas/add", adminOnly(handlers.AddSemanticSearchIdeaHandler))
+	http.HandleFunc("/api/v1/admin/semantic-search-ideas/update", adminOnly(handlers.UpdateSemanticSearchIdeaHandler))
+	http.HandleFunc("/api/v1/admin/semantic-search-ideas/delete", adminOnly(handlers.DeleteSemanticSearchIdeaHandler))
+
 	// Dream Interpretation Handlers
 	http.HandleFunc("/search-dream", handlers.SearchDreamHandler)
 	http.HandleFunc("/random-dream", handlers.GetRandomDreamHandler)

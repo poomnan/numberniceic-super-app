@@ -159,7 +159,11 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 	suggestionStrategy := "semantic"
 	switch {
 	case inputType == "full_name":
-		suggestionStrategy = "hybrid"
+		if existsInDB {
+			suggestionStrategy = "hybrid"
+		} else {
+			suggestionStrategy = "pg_trgm"
+		}
 	case existsInDB:
 		suggestionStrategy = "hybrid"
 	case inputType == "name" && !existsInDB:
@@ -181,6 +185,13 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	semanticQuery := classification.SemanticQuery
+	semanticMeaning := classification.SemanticQuery
+	if inputType == "full_name" {
+		semanticQuery = lookupName
+		semanticMeaning = dbMeaning
+	}
+
 	resp := NameInputResolveResponse{
 		Input:               input,
 		InputType:           inputType,
@@ -188,8 +199,8 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 		Surname:             classification.Surname,
 		SearchMode:          classification.SearchMode,
 		SeedName:            classification.SeedName,
-		SemanticQuery:       classification.SemanticQuery,
-		SemanticMeaning:     classification.SemanticQuery,
+		SemanticQuery:       semanticQuery,
+		SemanticMeaning:     semanticMeaning,
 		ExistsInDatabase:    existsInDB,
 		CanDecode:           canDecode,
 		CanRankFromTemplate: canRankFromTemplate,
@@ -201,10 +212,20 @@ func GetNameInputResolveHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, resp)
 }
 
-// GetNameSuggestionsHandler returns name suggestions based on semantic similarity (embeddings)
 func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 	mean := r.URL.Query().Get("meaning")
+
+	// If q contains multiple words (like a full name), extract the first word (first name)
+	// to prevent the surname from polluting trigram spelling matches and semantic search.
+	q = strings.TrimSpace(q)
+	if strings.Contains(q, " ") {
+		parts := strings.Fields(q)
+		if len(parts) > 0 {
+			q = parts[0]
+		}
+	}
+
 	if q == "" && mean == "" {
 		jsonResponse(w, http.StatusOK, map[string]interface{}{"ideas": []string{}, "names": []string{}})
 		return
@@ -214,7 +235,7 @@ func GetNameSuggestionsHandler(w http.ResponseWriter, r *http.Request) {
 	queryText := q
 	if mean != "" {
 		queryText = mean
-	} else if !strings.Contains(q, " ") && q != "" {
+	} else if q != "" {
 		// Fallback: If it's a single word (likely a name) and meaning is missing, lookup
 		var dbMeaning string
 		err := database.DB.QueryRow("SELECT meaning FROM names_miracle WHERE thname = $1 LIMIT 1", q).Scan(&dbMeaning)
@@ -1133,6 +1154,7 @@ func GetSimilarNames(w http.ResponseWriter, r *http.Request) {
 		SELECT name_id, COALESCE(thname, ''), satnum, shanum, 
 		       (meaning_vector <=> $1) as distance
 		FROM names_miracle
+		WHERE meaning_vector IS NOT NULL
 		ORDER BY distance ASC
 		LIMIT $2
 	`

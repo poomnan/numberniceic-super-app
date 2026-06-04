@@ -287,10 +287,11 @@ func NamingAssistantHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		vectorStr := formatVector(embedding)
 		query := `
-			SELECT name_id, thname, COALESCE(meaning, ''), satnum, shanum, sat_sum, sha_sum
-			FROM names_miracle
-			WHERE char_length(meaning) >= 25
-			  AND thname != 'เกิด'
+				SELECT name_id, thname, COALESCE(meaning, ''), satnum, shanum, sat_sum, sha_sum
+				FROM names_miracle
+				WHERE char_length(meaning) >= 25
+				  AND meaning_vector IS NOT NULL
+				  AND thname != 'เกิด'
 			  AND thname != 'เกตุเกิด'
 			  AND thname NOT LIKE '%ไม่ระบุ%'
 			  AND thname NOT LIKE '%ขึ้นชื่อ%'

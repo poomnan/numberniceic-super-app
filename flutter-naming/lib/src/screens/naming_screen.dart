@@ -480,7 +480,7 @@ class _NamingScreenState extends State<NamingScreen>
       if (!_hasCachedSuggestions) {
         unawaited(
           fetchNameSuggestions(
-            originalInput,
+            actualTarget,
             meaning:
                 (!shouldUsePgTrgmSuggestions && shouldFetchMeaningSuggestions)
                 ? suggestionMeaning
@@ -683,7 +683,7 @@ class _NamingScreenState extends State<NamingScreen>
         final Stopwatch suggestionWatch = Stopwatch()..start();
         if (!_hasCachedSuggestions) {
           unawaited(
-            fetchNameSuggestions(originalInput, meaning: suggestionMeaning),
+            fetchNameSuggestions(actualTarget, meaning: suggestionMeaning),
           );
         }
         debugPrint(
@@ -1409,10 +1409,7 @@ class _NamingScreenState extends State<NamingScreen>
           (_looksLikeTypedThaiName(trimmed) && meaning == null);
       final bool isResolvedFullName = resolved?.isFullName == true;
       final bool isTypedNameMissingInDb =
-          resolved?.isNameMissingInDatabase == true &&
-          !isResolvedFullName &&
-          _looksLikeTypedThaiName(trimmed) &&
-          (meaning == null || meaning.trim().isEmpty);
+          resolved != null ? !resolved.existsInDatabase : !_looksLikeTypedThaiName(trimmed);
       final String? resolvedSeedName =
           resolved?.seedName?.trim().isNotEmpty == true
           ? resolved!.seedName!.trim()
@@ -2718,7 +2715,7 @@ class _NamingScreenState extends State<NamingScreen>
     if (_hideSelectedMeaningCard) return const SizedBox.shrink();
 
     if (_isLoadingSelectedNameMeaning) return const SizedBox.shrink();
-    if (_selectedNameMissingInDb && _selectedNameMeaning == null) {
+    if (_selectedNameMissingInDb) {
       return const SizedBox.shrink();
     }
     final String? selectedMeaningText = _selectedNameMeaning;
@@ -4181,7 +4178,7 @@ class _NamingScreenState extends State<NamingScreen>
                                     ? (suggestionCount > 0
                                           ? "รายชื่อที่มีความหมายใกล้เคียง ($suggestionCount)"
                                           : "รายชื่อที่มีความหมายใกล้เคียง")
-                                    : "รายชื่อที่มีความหมายสอดคล้อง",
+                                    : "ชื่อคล้าย \"${_keywordController.text.trim()}\"",
                                 style: GoogleFonts.prompt(
                                   color: const Color(0xFF0F5132),
                                   fontSize: 14,
@@ -5166,24 +5163,6 @@ class _NamingScreenState extends State<NamingScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ANCHOR: 3 book miracle (หาชื่อตามตำราที่ดีที่สุดจาก 3 แสนรายชื่อ)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "หาชื่อตามตำราที่ดีที่สุด",
-                            style: GoogleFonts.prompt(
-                              color: AppColors.textLight,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
 
                   if (canUseRankingTemplate && prototypeName != null) ...[
                     const SizedBox(height: 4),
@@ -5609,13 +5588,13 @@ class _NamingScreenState extends State<NamingScreen>
     final bool canUse = isPremium || hasFreeDoubleGood;
     final Color activeGold = const Color(0xFFFFD700);
 
-    // Active VIP Theme (Deep Midnight Purple + Emerald Green)
+    // Active VIP Theme (Vibrant Auspicious Emerald Green & Gold)
     final BoxDecoration activeDecoration = BoxDecoration(
       gradient: const LinearGradient(
         colors: [
-          Color(0xFF1E1B4B),
-          Color(0xFF022C22),
-        ], // Midnight Indigo to Deep Emerald
+          Color(0xFF10B981), // Vibrant Emerald Green
+          Color(0xFF047857), // Deep Forest Green
+        ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -5623,13 +5602,13 @@ class _NamingScreenState extends State<NamingScreen>
       border: Border.all(color: activeGold, width: 2.0),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFF7C3AED).withValues(alpha: 0.35),
+          color: const Color(0xFF10B981).withValues(alpha: 0.35), // Green glow
           blurRadius: 18,
           spreadRadius: 1,
           offset: const Offset(0, 6),
         ),
         BoxShadow(
-          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+          color: const Color(0xFFFFD700).withValues(alpha: 0.2), // Gold glow
           blurRadius: 12,
           offset: const Offset(0, 2),
         ),
@@ -5687,8 +5666,8 @@ class _NamingScreenState extends State<NamingScreen>
                         "เลขศาสตร์ x พลังเงาดี",
                         style: GoogleFonts.prompt(
                           color: isActive
-                              ? Colors.white
-                              : const Color(0xFF064E3B), // Deep emerald green title text
+                              ? const Color(0xFFFFD700) // Premium Gold text instead of white
+                              : const Color(0xFFC5A029), // Premium gold color for title text
                           fontSize: 14,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.2,
@@ -5735,7 +5714,7 @@ class _NamingScreenState extends State<NamingScreen>
                     "จัดอันดับสูงสุดได้ Triple Lucky x3",
                     style: GoogleFonts.sarabun(
                       color: isActive
-                          ? Colors.white.withValues(alpha: 0.7)
+                          ? const Color(0xFFFFE082) // Light Gold text instead of white
                           : const Color(0xFF047857), // Medium emerald green subtitle
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
@@ -6856,7 +6835,7 @@ class _MagicSubtitleAnimationState extends State<_MagicSubtitleAnimation>
                 const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
                 const SizedBox(width: 4),
                 Text(
-                  "ความมหัศจรรย์เกิดขึ้นที่นี่",
+                  "มหัศจรรย์ชื่อตามตำราเกิดที่นี่",
                   style: GoogleFonts.sarabun(
                     color: Colors.white,
                     fontSize: 16,
@@ -7712,9 +7691,9 @@ class _PulsingPremiumIconState extends State<_PulsingPremiumIcon>
             gradient: LinearGradient(
               colors: widget.isActive
                   ? [
-                      const Color(0xFFFFDF00),
-                      const Color(0xFFD4AF37),
-                    ] // Pure gold gradient
+                      const Color(0xFF059669), // Emerald-600
+                      const Color(0xFF064E3B), // Emerald-900
+                    ] // Auspicious green gradient when active
                   : [
                       const Color(0xFF34D399),
                       const Color(0xFF047857),
@@ -7738,7 +7717,7 @@ class _PulsingPremiumIconState extends State<_PulsingPremiumIcon>
                   ? Icons.stars_rounded
                   : Icons.star_rounded,
               size: 20,
-              color: Colors.white,
+              color: widget.isActive ? const Color(0xFFFFD700) : Colors.white, // Gold star when active
             ),
           ),
         );

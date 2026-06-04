@@ -1969,9 +1969,10 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 		query += searchContext.SelectProjection()
 		query += `0.0 as bonus_calculated,
 		       phonetic_summary, phonetic_score, pronunciation_ease, euphony_score, rhythm_score
-			FROM names_miracle 
-			WHERE 1=1
-		`
+				FROM names_miracle
+				WHERE 1=1
+				  AND meaning_vector IS NOT NULL
+			`
 		if doubleGoodMode {
 			query += " AND char_length(thname) BETWEEN 2 AND 8 "
 		}
@@ -2365,7 +2366,7 @@ func MobileSearchHandler(w http.ResponseWriter, r *http.Request) {
 	runDesperateSearchWithContext := func(queryCtx context.Context, stage string, relaxLevel int, strongSoftPenalty bool) ([]MobileNameResult, retrievalScanStats, error) {
 		query := "SELECT name_id, thname, meaning, gender, sat_sum, sha_sum, " +
 			searchContext.SelectProjection() +
-			"0.0 as bonus_calculated, phonetic_summary, phonetic_score, pronunciation_ease, euphony_score, rhythm_score FROM names_miracle WHERE 1=1"
+			"0.0 as bonus_calculated, phonetic_summary, phonetic_score, pronunciation_ease, euphony_score, rhythm_score FROM names_miracle WHERE meaning_vector IS NOT NULL"
 		args := []interface{}{formatVector(embedding)}
 		argCounter := 2
 		if searchContext.HasKeywordSignal {
